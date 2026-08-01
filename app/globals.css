@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: #f8faff;
+  color: #0a0a0a;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { letter-spacing: -0.015em; }
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-playfair), Georgia, serif;
+  letter-spacing: -0.03em;
+}
+
+/* ---------- 3D CARD SYSTEM ---------- */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform;
+}
+.card-3d:hover {
+  transform: translateY(-8px) rotateX(5deg) rotateY(-4deg) scale(1.02);
+  box-shadow: 20px 30px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.8);
+}
+
+/* ---------- GLASS ---------- */
+.glass-light {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.9);
+}
+
+/* ---------- GRADIENT TEXT ---------- */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-red {
+  background: linear-gradient(135deg, #e11d48 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---------- GLOW BLOBS ---------- */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.35;
+  z-index: 0;
+}
+
+/* ---------- GRID BG ---------- */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(99,102,241,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ---------- 3D PERSPECTIVE WRAPPER ---------- */
+.perspective-1000 { perspective: 1000px; }
+.perspective-1200 { perspective: 1200px; }
+
+/* ---------- FLOATING ANIMATION ---------- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-14px) rotate(1deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-20px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(1.1); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes word-reveal {
+  0%   { opacity: 0; transform: translateY(100%) rotateX(-40deg); filter: blur(6px); }
+  60%  { filter: blur(0px); }
+  100% { opacity: 1; transform: translateY(0%) rotateX(0deg); filter: blur(0px); }
+}
+@keyframes fade-up {
+  0%   { opacity: 0; transform: translateY(32px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes slide-left {
+  0%   { opacity: 0; transform: translateX(-40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-right {
+  0%   { opacity: 0; transform: translateX(40px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes slide-up {
+  0%   { opacity: 0; transform: translateY(48px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes blur-in {
+  0%   { opacity: 0; filter: blur(12px); transform: scale(0.97); }
+  100% { opacity: 1; filter: blur(0px); transform: scale(1); }
+}
+
+.animate-float      { animation: float 7s ease-in-out infinite; }
+.animate-float-slow { animation: float-slow 9s ease-in-out infinite; }
+.animate-glow-pulse { animation: glow-pulse 4s ease-in-out infinite; }
+.animate-word-reveal { animation: word-reveal 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-fade-up    { animation: fade-up 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-fade-in    { animation: fade-in 0.6s ease both; }
+.animate-slide-left { animation: slide-left 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-slide-right{ animation: slide-right 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-slide-up   { animation: slide-up 0.65s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-blur-in    { animation: blur-in 0.8s cubic-bezier(0.16,1,0.3,1) both; }
