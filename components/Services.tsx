@@ -1,65 +1,178 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Home, Building2, Factory, Wrench, HardHat, Paintbrush, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 
 const services = [
-  { icon: Home,       title: "Residential",        desc: "Custom homes, renovations, and remodeling for your dream living space.", gradient: "from-red-500 to-orange-500",   bg: "from-red-50 to-orange-50",   border: "hover:border-red-200" },
-  { icon: Building2,  title: "Commercial",          desc: "Office buildings, retail spaces, and mixed-use developments.",          gradient: "from-blue-500 to-indigo-600",  bg: "from-blue-50 to-indigo-50",  border: "hover:border-blue-200" },
-  { icon: Factory,    title: "Industrial",          desc: "Warehouses, manufacturing facilities, and logistics centers.",          gradient: "from-red-500 to-rose-600",    bg: "from-red-50 to-rose-50",     border: "hover:border-red-200" },
-  { icon: Wrench,     title: "Renovation",          desc: "Transform existing spaces with modern upgrades and improvements.",      gradient: "from-blue-600 to-purple-600", bg: "from-blue-50 to-purple-50",  border: "hover:border-blue-200" },
-  { icon: HardHat,    title: "Project Management",  desc: "Full oversight keeping every project on schedule and budget.",          gradient: "from-red-500 to-pink-600",    bg: "from-red-50 to-pink-50",     border: "hover:border-red-200" },
-  { icon: Paintbrush, title: "Design Build",        desc: "Integrated design and construction from concept to completion.",        gradient: "from-blue-500 to-cyan-500",   bg: "from-blue-50 to-cyan-50",    border: "hover:border-blue-200" },
+  { 
+    icon: Home,       
+    title: "Residential Construction",        
+    desc: "From custom-built dream homes to extensive renovations and remodeling, we create living spaces that reflect your lifestyle. Our residential team ensures every detail is perfect, prioritizing comfort, aesthetics, and structural integrity.", 
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+    color: "text-orange-500",
+    bg: "bg-orange-50"
+  },
+  { 
+    icon: Building2,  
+    title: "Commercial Development",          
+    desc: "We build state-of-the-class office buildings, retail spaces, and mixed-use developments. Our commercial projects are designed for functionality, energy efficiency, and modern business needs, delivered strictly on schedule.",          
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
+    color: "text-blue-600",
+    bg: "bg-blue-50"
+  },
+  { 
+    icon: Factory,    
+    title: "Industrial Facilities",          
+    desc: "Specialized construction for warehouses, manufacturing facilities, and logistics centers. We understand the complex requirements of heavy-duty flooring, specialized ventilation, and large-scale industrial infrastructure.",          
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80",
+    color: "text-orange-500",
+    bg: "bg-orange-50"
+  },
+  { 
+    icon: Wrench,     
+    title: "Renovation & Remodeling",          
+    desc: "Transform your existing spaces with modern upgrades and improvements. We handle structural changes, aesthetic overhauls, and complete interior redesigns with minimal disruption to your daily life.",      
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
+    color: "text-blue-600",
+    bg: "bg-blue-50"
+  },
+  { 
+    icon: HardHat,    
+    title: "Project Management",  
+    desc: "Full oversight keeping every project on schedule and on budget. Our expert project managers coordinate all trades, handle permitting, and provide transparent, real-time updates from groundbreaking to final handover.",          
+    image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80",
+    color: "text-orange-500",
+    bg: "bg-orange-50"
+  },
+  { 
+    icon: Paintbrush, 
+    title: "Design Build",        
+    desc: "Integrated design and construction from concept to completion. By combining architectural design and construction under one contract, we streamline communication and accelerate project delivery.",        
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
+    color: "text-blue-600",
+    bg: "bg-blue-50"
+  },
 ];
 
 export default function Services() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
-    <section id="section-services" className="py-28 bg-surface relative overflow-hidden grid-bg">
-      {/* Blobs */}
-      <div className="blob w-96 h-96 bg-blue-200 top-20 right-0" />
-      <div className="blob w-80 h-80 bg-red-100 bottom-0 left-10" />
+    <section id="section-services" className="py-28 bg-white relative overflow-hidden">
+      
+      {/* Background Decorative Elements */}
+      <div className="absolute right-0 top-1/4 w-[600px] h-[600px] bg-gradient-to-l from-blue-50 to-transparent rounded-full blur-3xl opacity-60 pointer-events-none" />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 glass-light rounded-full px-4 py-1.5 mb-4 shadow-3d-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            <span className="text-[12px] text-gray-600 font-medium uppercase tracking-widest">What We Do</span>
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-[#E85D35]/10 text-[#E85D35] rounded-full px-4 py-1.5 mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E85D35]" />
+              <span className="text-[12px] font-semibold uppercase tracking-widest">Our Expertise</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 font-display">Specialized Services</h2>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 font-display">Our Services</h2>
-          <p className="text-gray-500 mt-3 max-w-xl mx-auto font-light">Comprehensive construction solutions tailored to your every need.</p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {services.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={i}
-                className={`group relative p-7 rounded-3xl bg-white border border-gray-100 ${s.border} shadow-3d-sm hover:shadow-3d-lg card-3d transition-all duration-300 overflow-hidden`}
-              >
-                {/* Background gradient on hover */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${s.bg} rounded-3xl`} />
-
-                <div className="relative z-10">
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-5 shadow-3d-sm group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-[17px] font-bold text-gray-900 mb-2 font-display">{s.title}</h3>
-                  <p className="text-[14px] text-gray-500 leading-relaxed font-light mb-5">{s.desc}</p>
-                  <div className={`inline-flex items-center gap-1 text-[13px] font-semibold bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent`}>
-                    Learn more <ArrowUpRight className="w-3.5 h-3.5 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="text-center mt-12">
+          
           <Link
             href="/services"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold px-8 py-3.5 rounded-full text-[14px] transition-all shadow-glow-blue hover:shadow-3d-lg"
+            className="group inline-flex items-center gap-2 text-gray-900 font-semibold hover:text-[#1A5F8C] transition-colors"
           >
-            View All Services <ArrowUpRight className="w-4 h-4" />
+            Explore all services 
+            <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-[#1A5F8C] transition-colors">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
           </Link>
+        </div>
+
+        {/* Interactive Split Layout */}
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
+          
+          {/* Left Side: Service List */}
+          <div className="w-full lg:w-5/12 flex flex-col gap-2">
+            {services.map((service, index) => {
+              const isActive = index === activeIndex;
+              const Icon = service.icon;
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => setActiveIndex(index)}
+                  className={`text-left w-full group relative p-5 rounded-2xl transition-all duration-300 ${
+                    isActive 
+                      ? "bg-white shadow-3d-md border border-gray-100 z-10 scale-[1.02]" 
+                      : "hover:bg-gray-50 border border-transparent"
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300 ${
+                      isActive ? service.bg + " " + service.color : "bg-gray-100 text-gray-500 group-hover:text-gray-700"
+                    }`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className={`text-[19px] font-bold font-display transition-colors ${
+                        isActive ? "text-gray-900" : "text-gray-500 group-hover:text-gray-900"
+                      }`}>
+                        {service.title}
+                      </h3>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Side: Service Details & Image */}
+          <div className="w-full lg:w-7/12 relative min-h-[500px]">
+            {services.map((service, index) => (
+              <div 
+                key={index}
+                className={`absolute inset-0 flex flex-col transition-all duration-500 ease-in-out ${
+                  index === activeIndex 
+                    ? "opacity-100 translate-x-0 pointer-events-auto z-10" 
+                    : "opacity-0 translate-x-12 pointer-events-none z-0"
+                }`}
+              >
+                {/* Large Image Showcase */}
+                <div className="relative w-full h-[350px] rounded-3xl overflow-hidden mb-8 shadow-3d-lg group">
+                  <img 
+                    src={service.image} 
+                    alt={service.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  {/* Overlay Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+                  
+                  {/* Bottom Text in Image */}
+                  <div className="absolute bottom-6 left-8 flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full ${service.bg} flex items-center justify-center`}>
+                      <service.icon className={`w-5 h-5 ${service.color}`} />
+                    </div>
+                    <span className="text-white font-display font-semibold text-xl">{service.title}</span>
+                  </div>
+                </div>
+
+                {/* Description and CTA */}
+                <div className="pr-4">
+                  <p className="text-[17px] text-gray-600 leading-relaxed font-light mb-8">
+                    {service.desc}
+                  </p>
+                  <Link 
+                    href="/contact"
+                    className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-8 py-3.5 rounded-full text-[15px] transition-all shadow-3d-sm"
+                  >
+                    Discuss your project
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </section>

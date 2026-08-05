@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { ArrowRight, Building2, HardHat, Award } from "lucide-react";
 
 function RevealWord({ word, delay }: { word: string; delay: number }) {
@@ -13,7 +14,123 @@ function RevealWord({ word, delay }: { word: string; delay: number }) {
   );
 }
 
+const heroSlides = [
+  {
+    image: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1600&q=85",
+    title: (
+      <>
+        <span className="block">
+          <RevealWord word="Building" delay={0.15} />{" "}
+          <RevealWord word="Your" delay={0.24} />
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-red animate-word-reveal" style={{ animationDelay: "0.34s" }}>Vision</span>
+          </span>
+          {" "}
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gray-900 animate-word-reveal" style={{ animationDelay: "0.43s" }}>Into</span>
+          </span>
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-blue animate-word-reveal" style={{ animationDelay: "0.53s" }}>Reality</span>
+          </span>
+        </span>
+      </>
+    ),
+    subtitle: "Professional construction services for residential, commercial, and industrial projects. Quality craftsmanship delivered on time, every time."
+  },
+  {
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=85",
+    title: (
+      <>
+        <span className="block">
+          <RevealWord word="Engineering" delay={0.15} />{" "}
+          <RevealWord word="The" delay={0.24} />
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-blue animate-word-reveal" style={{ animationDelay: "0.34s" }}>Future</span>
+          </span>
+          {" "}
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gray-900 animate-word-reveal" style={{ animationDelay: "0.43s" }}>With</span>
+          </span>
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-red animate-word-reveal" style={{ animationDelay: "0.53s" }}>Excellence</span>
+          </span>
+        </span>
+      </>
+    ),
+    subtitle: "Innovative design and cutting-edge technology for sustainable and resilient infrastructure that stands the test of time."
+  },
+  {
+    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1600&q=85",
+    title: (
+      <>
+        <span className="block">
+          <RevealWord word="Crafting" delay={0.15} />{" "}
+          <RevealWord word="Spaces" delay={0.24} />
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gray-900 animate-word-reveal" style={{ animationDelay: "0.34s" }}>With</span>
+          </span>
+          {" "}
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-red animate-word-reveal" style={{ animationDelay: "0.43s" }}>Utmost</span>
+          </span>
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-blue animate-word-reveal" style={{ animationDelay: "0.53s" }}>Precision</span>
+          </span>
+        </span>
+      </>
+    ),
+    subtitle: "Transforming empty lots into vibrant communities with unparalleled attention to detail and uncompromising quality."
+  },
+  {
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&q=85",
+    title: (
+      <>
+        <span className="block">
+          <RevealWord word="Innovating" delay={0.15} />{" "}
+          <RevealWord word="Design" delay={0.24} />
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-red animate-word-reveal" style={{ animationDelay: "0.34s" }}>For</span>
+          </span>
+          {" "}
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gray-900 animate-word-reveal" style={{ animationDelay: "0.43s" }}>Tomorrow's</span>
+          </span>
+        </span>
+        <span className="block">
+          <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
+            <span className="inline-block text-gradient-blue animate-word-reveal" style={{ animationDelay: "0.53s" }}>Infrastructure</span>
+          </span>
+        </span>
+      </>
+    ),
+    subtitle: "Sustainable and cutting-edge building technologies that reduce environmental impact and maximize efficiency."
+  }
+];
+
 export default function Hero() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section id="section-hero" className="relative min-h-screen bg-surface overflow-hidden flex items-center justify-center pt-24 pb-16 px-4 perspective-1200 grid-bg">
 
@@ -34,54 +151,38 @@ export default function Hero() {
           <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">EST. 1999</span>
         </div>
 
-        {/* Headline — word reveal */}
-        <h1 className="text-5xl md:text-7xl lg:text-[86px] font-bold leading-[1.08] mb-6 font-display">
-          <span className="block">
-            <RevealWord word="Building" delay={0.15} />{" "}
-            <RevealWord word="Your" delay={0.24} />
-          </span>
-          <span className="block">
-            <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
-              <span className="inline-block text-gradient-red animate-word-reveal" style={{ animationDelay: "0.34s" }}>Vision</span>
-            </span>
-            {" "}
-            <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
-              <span className="inline-block text-gray-900 animate-word-reveal" style={{ animationDelay: "0.43s" }}>Into</span>
-            </span>
-          </span>
-          <span className="block">
-            <span className="inline-block overflow-hidden leading-[1.15]" style={{ verticalAlign: "bottom" }}>
-              <span className="inline-block text-gradient-blue animate-word-reveal" style={{ animationDelay: "0.53s" }}>Reality</span>
-            </span>
-          </span>
-        </h1>
+        <div key={currentSlide} className="min-h-[320px]">
+          {/* Headline — word reveal */}
+          <h1 className="text-5xl md:text-7xl lg:text-[86px] font-bold leading-[1.08] mb-6 font-display">
+            {heroSlides[currentSlide].title}
+          </h1>
 
-        {/* Subtitle */}
-        <p
-          className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10 font-light leading-relaxed animate-blur-in"
-          style={{ animationDelay: "0.7s" }}
-        >
-          Professional construction services for residential, commercial, and industrial projects.
-          Quality craftsmanship delivered on time, every time.
-        </p>
+          {/* Subtitle */}
+          <p
+            className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto mb-10 font-light leading-relaxed animate-blur-in"
+            style={{ animationDelay: "0.7s" }}
+          >
+            {heroSlides[currentSlide].subtitle}
+          </p>
 
-        {/* CTA buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-          <Link
-            href="/contact"
-            className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-7 py-3.5 rounded-full text-[15px] transition-all shadow-glow-blue hover:shadow-3d-lg animate-slide-left"
-            style={{ animationDelay: "0.82s" }}
-          >
-            Start Your Project
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link
-            href="/projects"
-            className="inline-flex items-center justify-center gap-2 glass-light text-gray-800 font-semibold px-7 py-3.5 rounded-full text-[15px] transition-all shadow-3d-sm hover:shadow-3d-md animate-slide-right"
-            style={{ animationDelay: "0.82s" }}
-          >
-            View Portfolio
-          </Link>
+          {/* CTA buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
+            <Link
+              href="/contact"
+              className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-7 py-3.5 rounded-full text-[15px] transition-all shadow-glow-blue hover:shadow-3d-lg animate-slide-left"
+              style={{ animationDelay: "0.82s" }}
+            >
+              Start Your Project
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              href="/projects"
+              className="inline-flex items-center justify-center gap-2 glass-light text-gray-800 font-semibold px-7 py-3.5 rounded-full text-[15px] transition-all shadow-3d-sm hover:shadow-3d-md animate-slide-right"
+              style={{ animationDelay: "0.82s" }}
+            >
+              View Portfolio
+            </Link>
+          </div>
         </div>
 
         {/* 3D Floating cards above the hero image */}
@@ -128,18 +229,40 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Hero Image */}
+          {/* Hero Image Slider */}
           <div
-            className="rounded-3xl overflow-hidden shadow-3d-xl border border-white/80 animate-blur-in card-3d"
+            className="rounded-3xl overflow-hidden shadow-3d-xl border border-white/80 animate-blur-in card-3d relative group"
             style={{ animationDelay: "0.9s" }}
           >
-            <img
-              src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1600&q=85"
-              alt="Construction site"
-              className="w-full h-[500px] object-cover"
-            />
+            <div className="w-full h-[500px] relative">
+              {heroSlides.map((slide, idx) => (
+                <img
+                  key={idx}
+                  src={slide.image}
+                  alt={`Construction site ${idx + 1}`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+                    idx === currentSlide ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Slider Dots */}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-30">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    idx === currentSlide ? "bg-white w-8" : "bg-white/50 hover:bg-white/80"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+
             {/* Gradient overlay at bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/20 via-transparent to-transparent pointer-events-none z-10" />
           </div>
         </div>
 

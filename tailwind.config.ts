@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans:    ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],
-        display: ["var(--font-playfair)", "Georgia", "serif"],
+        display: ["var(--font-poppins)", "system-ui", "sans-serif"],
       },
       colors: {
         surface: {
