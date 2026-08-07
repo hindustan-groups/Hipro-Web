@@ -1,18 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import PhoneCaptureModal from "@/components/PhoneCaptureModal";
 
 export default function CostEstimatorPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if the user has already entered their phone number (via cookie)
+    const hasCookie = document.cookie.includes("cost_estimator_unlocked=true");
+    if (!hasCookie) {
+      setShowModal(true);
+    } else {
+      setIsUnlocked(true);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
+  // Prevent flashing of the page content before the check completes
+  if (!isUnlocked && !showModal) return <div className="min-h-screen bg-white" />;
+
   return (
-    <div className="pt-24 pb-20 bg-white min-h-screen">
+    <div className="pt-24 pb-20 bg-white min-h-screen relative">
+      <PhoneCaptureModal 
+        isOpen={showModal} 
+        onClose={() => router.push("/")} 
+        onSuccess={() => {
+           setShowModal(false);
+           setIsUnlocked(true);
+        }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-16 items-start">
           

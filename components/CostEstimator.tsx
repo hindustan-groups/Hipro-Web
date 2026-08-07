@@ -1,10 +1,16 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
+import PhoneCaptureModal from "./PhoneCaptureModal";
 
 export default function CostEstimator() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <section className="py-24 relative bg-white">
+      {/* Phone Capture Modal */}
+      <PhoneCaptureModal isOpen={showModal} onClose={() => setShowModal(false)} />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Banner Container */}
@@ -30,12 +36,12 @@ export default function CostEstimator() {
             <p className="text-slate-300 text-lg mb-10 font-light max-w-lg leading-relaxed">
               Quickly calculate how much it will cost to build your home with our detailed, reliable estimation tool.
             </p>
-            <Link 
-              href="/cost-estimator"
+            <button 
+              onClick={() => setShowModal(true)}
               className="inline-flex items-center justify-center bg-[#F36B2B] hover:bg-[#d5591f] text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg shadow-orange-600/20 text-base md:text-lg"
             >
               Calculate Cost Instantly
-            </Link>
+            </button>
           </div>
           
           {/* Right Image/Illustration Area */}
