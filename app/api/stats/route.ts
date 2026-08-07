@@ -37,7 +37,7 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
-    const updated = updateOne<Stats>("stats", id, updates);
+    const updated = await updateOne<Stats>("stats", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Stat not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse<Stats>>({ success: true, data: updated });

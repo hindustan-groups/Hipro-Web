@@ -5,11 +5,11 @@ import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testi
 // GET /api/dashboard — summary stats for admin
 export async function GET() {
   try {
-    const contacts     = readDB<ContactMessage>("contacts");
-    const quotes       = readDB<QuoteRequest>("quotes");
-    const subscribers  = readDB<NewsletterSubscriber>("newsletter");
-    const projects     = readDB<Project>("projects");
-    const testimonials = readDB<Testimonial>("testimonials");
+    const contacts     = await readDB<ContactMessage>("contacts");
+    const quotes       = await readDB<QuoteRequest>("quotes");
+    const subscribers  = await readDB<NewsletterSubscriber>("newsletter");
+    const projects     = await readDB<Project>("projects");
+    const testimonials = await readDB<Testimonial>("testimonials");
 
     const summary = {
       contacts: {

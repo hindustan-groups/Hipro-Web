@@ -12,7 +12,7 @@ export default function CostEstimatorPage() {
   };
 
   return (
-    <div className="pt-24 pb-20 bg-[#fafafa] min-h-screen">
+    <div className="pt-24 pb-20 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row gap-16 items-start">
           
@@ -25,15 +25,15 @@ export default function CostEstimatorPage() {
             {/* Stats */}
             <div className="flex flex-wrap gap-8 md:gap-16 mb-10">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-[#E85D35] mb-2 font-display">10,000+</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">10,000+</div>
                 <div className="text-gray-600 text-sm">Homes built</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-[#E85D35] mb-2 font-display">470+</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">470+</div>
                 <div className="text-gray-600 text-sm">Quality checks completed</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-[#E85D35] mb-2 font-display">1,000+</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">1,000+</div>
                 <div className="text-gray-600 text-sm">Pincodes served</div>
               </div>
             </div>
@@ -48,26 +48,26 @@ export default function CostEstimatorPage() {
             </p>
 
             {/* Indicative Rates Widget */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm mb-12">
+            <div className="bg-white border border-gray-100 rounded-none p-6 shadow-sm mb-12">
               <h3 className="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-5">
                 Indicative Rates Per Sqft
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="border border-gray-100 rounded-xl p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Basic</div>
-                  <div className="text-[#E85D35] font-bold">₹1,680</div>
+                  <div className="text-construction-red font-bold">₹1,680</div>
                 </div>
-                <div className="border border-gray-100 rounded-xl p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Classic</div>
-                  <div className="text-[#E85D35] font-bold">₹1,840</div>
+                  <div className="text-construction-red font-bold">₹1,840</div>
                 </div>
-                <div className="border border-gray-100 rounded-xl p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Premium</div>
-                  <div className="text-[#E85D35] font-bold">₹2,110</div>
+                  <div className="text-construction-red font-bold">₹2,110</div>
                 </div>
-                <div className="border border-gray-100 rounded-xl p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Royale</div>
-                  <div className="text-[#E85D35] font-bold">₹2,270</div>
+                  <div className="text-construction-red font-bold">₹2,270</div>
                 </div>
               </div>
               <p className="text-xs text-gray-400 mt-5">
@@ -86,12 +86,12 @@ export default function CostEstimatorPage() {
 
           {/* Right Side: Form Card */}
           <div className="w-full lg:w-5/12">
-            <div className="bg-white rounded-[24px] shadow-3d-lg border border-gray-100 p-8 lg:p-10 sticky top-32">
+            <div className="bg-white rounded-none shadow-3d-lg border border-gray-100 p-8 lg:p-10 sticky top-32">
               <h2 className="text-[28px] font-bold text-gray-900 mb-8 font-display">Calculate My Estimate</h2>
               
               {submitted ? (
                 <div className="py-12 flex flex-col items-center justify-center text-center animate-fade-in">
-                  <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6">
+                  <div className="w-20 h-20 bg-green-100 text-green-500 rounded-none flex items-center justify-center mb-6">
                     <CheckCircle className="w-10 h-10" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3 font-display">Estimate Generated!</h3>
@@ -100,7 +100,7 @@ export default function CostEstimatorPage() {
                   </p>
                   <button 
                     onClick={() => setSubmitted(false)}
-                    className="text-[#E85D35] font-semibold hover:underline"
+                    className="text-construction-red font-semibold hover:underline"
                   >
                     Calculate another estimate
                   </button>
@@ -110,7 +110,7 @@ export default function CostEstimatorPage() {
                   
                   <div className="relative">
                     <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Plot</label>
-                    <select className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] appearance-none bg-transparent">
+                    <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                       <option value="other">Other</option>
                       <option value="square">Square</option>
                       <option value="rectangular">Rectangular</option>
@@ -125,14 +125,14 @@ export default function CostEstimatorPage() {
                     <input 
                       type="number" 
                       defaultValue="1000"
-                      className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] bg-transparent text-gray-900 font-medium"
+                      className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red bg-transparent text-gray-900 font-medium"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">City</label>
-                      <select className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] appearance-none bg-transparent">
+                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="pune">Pune</option>
                         <option value="mumbai">Mumbai</option>
                         <option value="delhi">Delhi</option>
@@ -144,7 +144,7 @@ export default function CostEstimatorPage() {
 
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Floors</label>
-                      <select className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] appearance-none bg-transparent">
+                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="g+1">G+1</option>
                         <option value="g+2">G+2</option>
                         <option value="g+3">G+3</option>
@@ -162,7 +162,7 @@ export default function CostEstimatorPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Parking</label>
-                      <select className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] appearance-none bg-transparent">
+                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="0">None</option>
@@ -174,7 +174,7 @@ export default function CostEstimatorPage() {
 
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Balcony</label>
-                      <select className="w-full h-14 px-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-[#E85D35] appearance-none bg-transparent">
+                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>
@@ -192,13 +192,13 @@ export default function CostEstimatorPage() {
 
                   <button 
                     type="submit"
-                    className="w-full bg-[#E85D35] hover:bg-[#d64f2a] text-white font-semibold py-4 rounded-xl text-[16px] transition-colors shadow-lg shadow-orange-500/20"
+                    className="w-full bg-construction-red hover:bg-red-700 text-white font-bold py-4 rounded-none text-[16px] transition-all uppercase tracking-wider shadow-lg shadow-red-600/30"
                   >
                     Calculate Your Cost
                   </button>
 
                   <p className="text-[11px] text-gray-500 leading-relaxed pt-2">
-                    By submitting this form, I confirm that I have read and agreed to accept our <a href="#" className="text-[#E85D35] hover:underline">privacy policy</a>.
+                    By submitting this form, I confirm that I have read and agreed to accept our <a href="#" className="text-construction-red hover:underline">privacy policy</a>.
                   </p>
                 </form>
               )}

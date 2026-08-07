@@ -1,101 +1,59 @@
 import Link from "next/link";
-import { Home, Building2, Factory, Wrench, HardHat, Paintbrush } from "lucide-react";
+import { findAll } from "@/lib/db";
+import type { Service } from "@/lib/types";
+import * as Icons from "lucide-react";
 
-const services = [
-  {
-    icon: Home,
-    title: "Residential Construction",
-    description: "Custom homes, renovations, additions, and remodeling. We bring your dream home to life with quality craftsmanship.",
-    features: ["Custom Home Building", "Kitchen & Bath Remodeling", "Home Additions", "Basement Finishing"],
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=85",
-    accent: "red",
-  },
-  {
-    icon: Building2,
-    title: "Commercial Construction",
-    description: "Office buildings, retail spaces, and mixed-use developments tailored to your business needs.",
-    features: ["Office Buildings", "Retail Spaces", "Restaurants", "Shopping Centers"],
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=85",
-    accent: "blue",
-  },
-  {
-    icon: Factory,
-    title: "Industrial Projects",
-    description: "Warehouses, manufacturing facilities, and logistics centers built for efficiency and durability.",
-    features: ["Warehouses", "Manufacturing Plants", "Distribution Centers", "Cold Storage"],
-    image: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=85",
-    accent: "red",
-  },
-  {
-    icon: Wrench,
-    title: "Renovation & Restoration",
-    description: "Transform existing spaces with modern upgrades while preserving structural integrity.",
-    features: ["Building Restoration", "Structural Repairs", "Modern Upgrades", "Historic Preservation"],
-    image: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=85",
-    accent: "blue",
-  },
-  {
-    icon: HardHat,
-    title: "Project Management",
-    description: "Comprehensive oversight from planning to completion, ensuring on schedule and on budget delivery.",
-    features: ["Budget Planning", "Timeline Management", "Quality Control", "Vendor Coordination"],
-    image: "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=800&q=85",
-    accent: "red",
-  },
-  {
-    icon: Paintbrush,
-    title: "Design Build Services",
-    description: "Integrated design and construction for a seamless project experience from concept to completion.",
-    features: ["Architectural Design", "3D Visualization", "Cost Estimation", "Integrated Delivery"],
-    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=85",
-    accent: "blue",
-  },
-];
+export default async function ServicesPage() {
+  const allServices = await findAll<Service>("services");
+  const services = allServices.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
 
-export default function ServicesPage() {
   return (
     <>
       {/* Header */}
-      <section className="bg-white pt-36 pb-20 px-4">
+      <section className="bg-white pt-36 pb-20 px-4 border-b border-slate-200/80">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-            <span className="text-[12px] text-gray-600 font-medium">Full-Service Construction</span>
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red mb-6 shadow-sm">
+            <span className="w-2 h-2 rounded-none bg-construction-red animate-pulse" />
+            <span className="text-xs font-bold uppercase tracking-wider">End-To-End Infrastructure</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-5">
-            Our <span className="text-blue-600">Services</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
+            Our <span className="text-construction-red">Capabilities</span>
           </h1>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
-            Comprehensive construction solutions for residential, commercial, and industrial projects.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Turnkey engineering, architecture, and construction solutions across residential, commercial, and industrial sectors.
           </p>
         </div>
       </section>
 
       {/* Services */}
-      <section className="pb-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           {services.map((s, i) => {
-            const Icon = s.icon;
-            const isRed = s.accent === "red";
+            const Icon = (Icons as any)[s.icon] || Icons.Wrench;
+            const features = typeof s.features === 'string' ? JSON.parse(s.features) : s.features;
+            
+            // Format title to match sublink hashes, e.g. "Interior & Exterior" -> "interior-exterior"
+            const sectionId = s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+            
             return (
-              <div key={i} className={`rounded-3xl overflow-hidden border border-gray-100 bg-gray-50/40 grid lg:grid-cols-2 ${i % 2 === 1 ? "lg:grid-flow-dense" : ""}`}>
+              <div id={sectionId} key={i} className={`rounded-none overflow-hidden border border-slate-200/80 bg-white shadow-lg shadow-slate-900/5 grid lg:grid-cols-2 ${i % 2 === 1 ? "lg:grid-flow-dense" : ""}`}>
                 <div className={`p-10 flex flex-col justify-center ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${isRed ? "bg-red-50" : "bg-blue-50"}`}>
-                    <Icon className={`w-5 h-5 ${isRed ? "text-red-600" : "text-blue-600"}`} />
+                  <div className="w-12 h-12 rounded-none flex items-center justify-center mb-6 bg-red-50 border border-red-100 text-construction-red shadow-sm">
+                    <Icon className="w-6 h-6" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">{s.title}</h2>
-                  <p className="text-gray-500 font-light mb-6 leading-relaxed">{s.description}</p>
-                  <div className="space-y-2">
-                    {s.features.map((f, fi) => (
-                      <div key={fi} className="flex items-center gap-2.5 text-[14px] text-gray-700">
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isRed ? "bg-red-500" : "bg-blue-500"}`}></span>
+                  <h2 className="text-2xl md:text-3xl font-bold text-black mb-3 font-display uppercase tracking-tight">{s.title}</h2>
+                  <p className="text-slate-600 font-light mb-6 leading-relaxed text-sm">{s.description}</p>
+                  <div className="space-y-2.5">
+                    {Array.isArray(features) && features.map((f: string, fi: number) => (
+                      <div key={fi} className="flex items-center gap-3 text-xs font-semibold text-black">
+                        <span className="w-2 h-2 rounded-none bg-construction-red shrink-0" />
                         {f}
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className={`h-64 lg:h-auto ${i % 2 === 1 ? "lg:order-1" : ""}`}>
-                  <img src={s.image} alt={s.title} className="w-full h-full object-cover" />
+                <div className={`${i % 2 === 1 ? "lg:order-1" : ""}`}>
+                  <img src={s.image} alt={s.title} className="w-full h-full object-cover min-h-[300px]" />
                 </div>
               </div>
             );
@@ -103,21 +61,58 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-8 px-4 bg-white pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="rounded-3xl bg-black px-10 py-14 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to Start Your <span className="text-red-500">Project?</span>
+      {/* Our Process Section */}
+      <section className="py-24 bg-slate-50 border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red mb-4 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider">Methodology</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight">
+              Our <span className="text-construction-red">Process</span>
             </h2>
-            <p className="text-gray-400 font-light mb-8 max-w-lg mx-auto">
-              Get a free consultation and quote for your construction needs.
+            <p className="text-slate-600 mt-3 font-light text-base">
+              A systematic approach ensuring structural integrity, timely delivery, and precise execution on every site.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8 relative">
+            {/* Desktop Connector Line */}
+            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-[1px] bg-slate-200 -translate-y-1/2 z-0" />
+            
+            {[
+              { step: "01", title: "Consultation & Planning", desc: "Initial blueprint reviews, site evaluations, and feasibility studies." },
+              { step: "02", title: "Design & Engineering", desc: "Structural calculations, 3D modeling, and obtaining necessary permits." },
+              { step: "03", title: "Execution & Build", desc: "Active construction phase with rigorous safety and quality controls." },
+              { step: "04", title: "Handover & Support", desc: "Final inspections, project delivery, and post-construction warranties." },
+            ].map((p, i) => (
+              <div key={i} className="relative z-10 bg-white border border-slate-200/80 p-8 shadow-lg shadow-slate-900/5 text-center group hover:-translate-y-1 transition-all">
+                <div className="w-16 h-16 mx-auto bg-black text-white rounded-none flex items-center justify-center font-display font-bold text-2xl mb-6 shadow-md group-hover:bg-construction-red transition-colors">
+                  {p.step}
+                </div>
+                <h3 className="text-lg font-bold text-black mb-3 font-display uppercase tracking-tight">{p.title}</h3>
+                <p className="text-xs text-slate-600 font-light leading-relaxed">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-12 px-4 bg-white pb-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-none bg-black px-10 py-16 text-center shadow-2xl border border-white/10">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display uppercase tracking-tight">
+              Ready To Launch <span className="text-construction-red">Your Next Build?</span>
+            </h2>
+            <p className="text-slate-300 font-light mb-8 max-w-xl mx-auto text-base">
+              Consult with our senior technical engineering team for complete BOQ estimation and blueprint reviews.
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3.5 rounded-full text-[14px] transition-colors"
+              className="inline-flex items-center gap-3 bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-none text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/30"
             >
-              Contact Us Today
+              Contact Technical Team
             </Link>
           </div>
         </div>

@@ -5,7 +5,7 @@ import type { Service, ApiResponse } from "@/lib/types";
 // GET /api/services
 export async function GET() {
   try {
-    const services = findAll<Service>("services");
+    const services = await findAll<Service>("services");
     const active = services
       .filter((s) => s.active !== false)
       .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json<ApiResponse>({ success: false, error: "title and description required" }, { status: 400 });
     }
 
-    const doc = insertOne<Service>("services", {
+    const doc = await insertOne<Service>("services", {
       title: title.trim(),
       description: description.trim(),
       icon: icon?.trim() || "Wrench",
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
-    const updated = updateOne<Service>("services", id, updates);
+    const updated = await updateOne<Service>("services", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Service not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse<Service>>({ success: true, data: updated });
@@ -63,7 +63,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
-    const deleted = deleteOne("services", id);
+    const deleted = await deleteOne("services", id);
     if (!deleted) return NextResponse.json<ApiResponse>({ success: false, error: "Service not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse>({ success: true, message: "Service deleted" });

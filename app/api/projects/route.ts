@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get("category");
     const featured = searchParams.get("featured");
 
-    let projects = findAll<Project>("projects");
+    let projects = await findAll<Project>("projects");
 
     if (category && category !== "All") {
       projects = projects.filter((p) =>
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const doc = insertOne<Project>("projects", {
+    const doc = await insertOne<Project>("projects", {
       title: title.trim(),
       category: category.trim(),
       location: location.trim(),
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id is required" }, { status: 400 });
 
-    const updated = updateOne<Project>("projects", id, updates);
+    const updated = await updateOne<Project>("projects", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Project not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse<Project>>({ success: true, data: updated });
@@ -90,7 +90,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id is required" }, { status: 400 });
 
-    const deleted = deleteOne("projects", id);
+    const deleted = await deleteOne("projects", id);
     if (!deleted) return NextResponse.json<ApiResponse>({ success: false, error: "Project not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse>({ success: true, message: "Project deleted" });

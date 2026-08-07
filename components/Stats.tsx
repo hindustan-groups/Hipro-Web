@@ -1,46 +1,41 @@
-import { Trophy, Users, CheckCircle, Star } from "lucide-react";
+import AnimatedCounter from "./AnimatedCounter";
+import DynamicIcon from "./DynamicIcon";
+import type { Stats as StatType } from "@/lib/types";
 
-const stats = [
-  { icon: Trophy, number: "150+", label: "Awards Won", gradient: "from-red-500 to-orange-500", bg: "from-red-50 to-orange-50" },
-  { icon: Users, number: "1,000+", label: "Happy Clients", gradient: "from-blue-500 to-indigo-600", bg: "from-blue-50 to-indigo-50" },
-  { icon: CheckCircle, number: "500+", label: "Projects Done", gradient: "from-red-500 to-rose-600", bg: "from-red-50 to-rose-50" },
-  { icon: Star, number: "4.9/5", label: "Average Rating", gradient: "from-blue-600 to-purple-600", bg: "from-blue-50 to-purple-50" },
-];
-
-export default function Stats() {
+export default function Stats({ stats }: { stats: StatType[] }) {
   return (
-    <section id="section-stats" className="py-16 bg-white relative overflow-hidden">
-      {/* Top border gradient */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-300 to-transparent" />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={i}
-                className={`relative p-7 rounded-3xl bg-gradient-to-br ${s.bg} border border-white shadow-3d-sm card-3d text-center group overflow-hidden`}
-              >
-                {/* Glow on hover */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br ${s.bg} rounded-3xl`} />
-                <div className="relative z-10">
-                  <div className={`w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center mb-4 shadow-3d-sm`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className={`text-4xl font-bold mb-1 font-display bg-gradient-to-r ${s.gradient} bg-clip-text text-transparent`}>
-                    {s.number}
-                  </div>
-                  <div className="text-[13px] text-gray-500 font-medium">{s.label}</div>
-                </div>
+    <section id="section-stats" className="py-16 bg-white relative border-y border-slate-200">
+      {/* Subtle background glow for premium feel */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-50/50 via-transparent to-transparent opacity-80"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-12">
+          {stats.map((s, i) => (
+            <div
+              key={i}
+              className={`group flex flex-col items-center justify-center text-center px-4 ${
+                i !== 0 && i !== 3 ? 'md:border-l md:border-slate-200' : ''
+              } ${
+                i !== 0 ? 'border-slate-200 max-md:border-t max-md:pt-8' : ''
+              } ${
+                i > 0 && i % 2 !== 0 ? 'max-md:border-l max-md:border-t-0 max-md:pt-0' : ''
+              } lg:border-l lg:border-t-0 lg:pt-0 ${
+                i === 0 ? 'lg:border-l-0' : ''
+              }`}
+            >
+              <div className="w-14 h-14 mb-5 rounded-none bg-slate-50 border border-slate-200 text-construction-red flex items-center justify-center group-hover:bg-construction-red group-hover:text-white group-hover:border-construction-red transition-all duration-500 shadow-sm">
+                <DynamicIcon name={s.icon} className="w-6 h-6" />
               </div>
-            );
-          })}
+              <div className="text-4xl font-bold mb-2 font-display text-black tracking-tight">
+                <AnimatedCounter value={s.value} />
+              </div>
+              <div className="text-[11px] font-bold uppercase tracking-[0.15em] text-slate-500 group-hover:text-construction-navy transition-colors duration-300">
+                {s.label}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-
-      {/* Bottom border gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-300 to-transparent" />
     </section>
   );
 }

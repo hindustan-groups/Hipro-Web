@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "image": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=1600&q=85",
+    "tagline": "WELCOME TO HINDUSTAN PROJECTS",
+    "title": "Building Infrastructure. Enabling Innovation.",
+    "subtitle": "Hindustan Projects is committed to building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors.",
+    "order": 1,
+    "active": true,
+    "createdAt": "2026-08-06T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=85",
+    "tagline": "ENGINEERING EXCELLENCE",
+    "title": "Crafting Resilient Spaces For Tomorrow",
+    "subtitle": "Innovative design, cutting-edge technology, and robust project execution that stands the test of time.",
+    "order": 2,
+    "active": true,
+    "createdAt": "2026-08-06T10:00:00Z"
+  },
+  {
+    "id": "3",
+    "image": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1600&q=85",
+    "tagline": "TRANSFORMING COMMUNITIES",
+    "title": "Precision Construction & Master Planning",
+    "subtitle": "Transforming ambitious visions into landmark structures with uncompromising quality, safety, and operational speed.",
+    "order": 3,
+    "active": true,
+    "createdAt": "2026-08-06T10:00:00Z"
+  },
+  {
+    "image": "https://res.cloudinary.com/n6wyv7jr/image/upload/v1786015400/TIME_TABLE_otvvbi.jpg",
+    "tagline": "tata",
+    "title": "what is your need",
+    "subtitle": "what is your need",
+    "order": 4,
+    "active": true,
+    "id": "1786015408279",
+    "createdAt": "2026-08-06T11:23:28.279Z"
+  }
+]

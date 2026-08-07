@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  service   String?
+  message   String
+  status    String   @default("new") // "new", "read", "replied"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuoteRequest {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  projectType String
+  budget      String
+  location    String
+  description String
+  timeline    String?
+  status      String   @default("pending") // "pending", "reviewed", "approved", "rejected"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  location    String
+  date        String
+  image       String
+  description String
+  featured    Boolean  @default(false)
+  status      String   @default("active") // "active", "archived"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  features    String   // Storing JSON stringified array of features
+  image       String
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  image     String?
+  rating    Int
+  text      String
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Stats {
+  id        String   @id @default(cuid())
+  label     String
+  value     String
+  icon      String
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model Settings {
+  id                     String   @id @default(cuid())
+  cloudinaryCloudName    String
+  cloudinaryUploadPreset String
+  updatedAt              DateTime @updatedAt
+}
+
+model HeroSlide {
+  id        String   @id @default(cuid())
+  image     String
+  tagline   String
+  title     String
+  subtitle  String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  img       String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

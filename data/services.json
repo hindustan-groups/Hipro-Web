@@ -1,0 +1,97 @@
+[
+  {
+    "id": "1",
+    "icon": "Home",
+    "title": "Residential Construction",
+    "description": "From custom-built dream homes to extensive renovations and remodeling, we create living spaces that reflect your lifestyle. Our residential team ensures every detail is perfect, prioritizing comfort, aesthetics, and structural integrity.",
+    "image": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+    "features": [],
+    "order": 1,
+    "active": false,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T11:00:13.471Z"
+  },
+  {
+    "id": "2",
+    "icon": "Building2",
+    "title": "Commercial Development",
+    "description": "We build state-of-the-class office buildings, retail spaces, and mixed-use developments. Our commercial projects are designed for functionality, energy efficiency, and modern business needs, delivered strictly on schedule.",
+    "image": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
+    "features": [],
+    "order": 2,
+    "active": true,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T09:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "icon": "Factory",
+    "title": "Industrial Facilities",
+    "description": "Specialized construction for warehouses, manufacturing facilities, and logistics centers. We understand the complex requirements of heavy-duty flooring, specialized ventilation, and large-scale industrial infrastructure.",
+    "image": "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?w=800&q=80",
+    "features": [],
+    "order": 3,
+    "active": true,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T09:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "icon": "Wrench",
+    "title": "Renovation & Remodeling",
+    "description": "Transform your existing spaces with modern upgrades and improvements. We handle structural changes, aesthetic overhauls, and complete interior redesigns with minimal disruption to your daily life.",
+    "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80",
+    "features": [],
+    "order": 4,
+    "active": false,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T10:42:01.806Z"
+  },
+  {
+    "id": "5",
+    "icon": "HardHat",
+    "title": "Project Management",
+    "description": "Full oversight keeping every project on schedule and on budget. Our expert project managers coordinate all trades, handle permitting, and provide transparent, real-time updates from groundbreaking to final handover.",
+    "image": "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80",
+    "features": [],
+    "order": 5,
+    "active": false,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T10:41:48.278Z"
+  },
+  {
+    "id": "6",
+    "icon": "Paintbrush",
+    "title": "Design Build",
+    "description": "Integrated design and construction from concept to completion. By combining architectural design and construction under one contract, we streamline communication and accelerate project delivery.",
+    "image": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80",
+    "features": [],
+    "order": 6,
+    "active": true,
+    "createdAt": "2026-08-06T09:00:00.000Z",
+    "updatedAt": "2026-08-06T09:00:00.000Z"
+  },
+  {
+    "title": "l&t",
+    "description": "eqwe wed qe r qdq eeqee  qeqe",
+    "icon": "sdfds",
+    "features": [],
+    "image": "https://sp.yimg.com/ib/th?&id=ODL.0f49e7c6c2ca2a3121a001e6d98b0a74&w=148&h=148&c=4&dpr=2&rs=1",
+    "order": 99,
+    "active": false,
+    "id": "1786009080388",
+    "createdAt": "2026-08-06T09:38:00.388Z",
+    "updatedAt": "2026-08-06T10:41:45.888Z"
+  },
+  {
+    "title": "title",
+    "description": "fsfee",
+    "icon": "Wrench",
+    "features": [],
+    "image": "https://res.cloudinary.com/n6wyv7jr/image/upload/v1786012927/images_1_hhkia7.jpg",
+    "order": 99,
+    "active": true,
+    "id": "1786012940120",
+    "createdAt": "2026-08-06T10:42:20.120Z"
+  }
+]

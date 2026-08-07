@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": "1",
+    "name": "Michael Johnson",
+    "role": "Homeowner",
+    "image": "https://i.pravatar.cc/150?img=12",
+    "rating": 5,
+    "text": "Hindustan Projects transformed our outdated house into a stunning modern home. Professional, flawless, and two weeks ahead of schedule!",
+    "approved": true
+  },
+  {
+    "id": "2",
+    "name": "Sarah Williams",
+    "role": "Business Owner",
+    "image": "https://i.pravatar.cc/150?img=5",
+    "rating": 5,
+    "text": "From consultation to handover, Hindustan Projects exceeded every expectation. Our office was completed on budget — the quality is outstanding.",
+    "approved": true
+  },
+  {
+    "id": "3",
+    "name": "David Chen",
+    "role": "Property Developer",
+    "image": "https://i.pravatar.cc/150?img=7",
+    "rating": 5,
+    "text": "I've worked with many contractors, but Hindustan Projects is in a class of their own. Unmatched attention to detail and execution.",
+    "approved": true
+  }
+]

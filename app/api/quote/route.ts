@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const doc = insertOne<QuoteRequest>("quotes", {
+    const doc = await insertOne<QuoteRequest>("quotes", {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 // GET /api/quote — get all quote requests
 export async function GET() {
   try {
-    const quotes = findAll<QuoteRequest>("quotes");
+    const quotes = await findAll<QuoteRequest>("quotes");
     quotes.sort((a, b) =>
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
     );
@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest) {
     if (!id || !status) {
       return NextResponse.json<ApiResponse>({ success: false, error: "id and status required" }, { status: 400 });
     }
-    const updated = updateOne<QuoteRequest>("quotes", id, { status });
+    const updated = await updateOne<QuoteRequest>("quotes", id, { status });
     if (!updated) {
       return NextResponse.json<ApiResponse>({ success: false, error: "Quote not found" }, { status: 404 });
     }

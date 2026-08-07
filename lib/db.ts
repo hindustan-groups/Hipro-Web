@@ -1,85 +1,64 @@
-/**
- * Simple JSON file-based database
- * Stores data in /data/*.json files
- * In production, replace with a real DB (MongoDB, PostgreSQL etc.)
- */
+import { PrismaClient } from "@prisma/client";
 
-import fs from "fs";
-import path from "path";
+// Global Prisma instance for Next.js in dev mode
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+export const prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-const DATA_DIR = path.join(process.cwd(), "data");
-
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+function getModel(collection: string) {
+  switch (collection) {
+    case "contacts": return prisma.contactMessage;
+    case "quotes": return prisma.quoteRequest;
+    case "projects": return prisma.project;
+    case "services": return prisma.service;
+    case "testimonials": return prisma.testimonial;
+    case "newsletter": return prisma.newsletterSubscriber;
+    case "stats": return prisma.stats;
+    case "settings": return prisma.settings;
+    case "hero": return prisma.heroSlide;
+    case "team": return prisma.teamMember;
+    default: throw new Error(`Unknown collection: ${collection}`);
+  }
 }
 
-export function readDB<T>(collection: string): T[] {
-  const filePath = path.join(DATA_DIR, `${collection}.json`);
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]", "utf-8");
-    return [];
-  }
-  const raw = fs.readFileSync(filePath, "utf-8");
+export async function readDB<T>(collection: string): Promise<T[]> {
+  return await findAll<T>(collection);
+}
+
+export async function writeDB<T>(collection: string, data: T[]): Promise<void> {
+  // Unused in typical prisma, just a stub
+}
+
+export async function insertOne<T>(collection: string, doc: any): Promise<T> {
+  const model = getModel(collection) as any;
+  return await model.create({ data: doc });
+}
+
+export async function findAll<T>(collection: string): Promise<T[]> {
+  const model = getModel(collection) as any;
+  return await model.findMany();
+}
+
+export async function findById<T>(collection: string, id: string): Promise<T | null> {
+  const model = getModel(collection) as any;
+  return await model.findUnique({ where: { id } });
+}
+
+export async function updateOne<T>(collection: string, id: string, updates: any): Promise<T | null> {
+  const model = getModel(collection) as any;
   try {
-    return JSON.parse(raw) as T[];
+    return await model.update({ where: { id }, data: updates });
   } catch {
-    return [];
+    return null; // Prisma throws if record not found
   }
 }
 
-export function writeDB<T>(collection: string, data: T[]): void {
-  const filePath = path.join(DATA_DIR, `${collection}.json`);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-}
-
-export function insertOne<T extends { id?: string; createdAt?: string }>(
-  collection: string,
-  doc: T
-): T {
-  const data = readDB<T>(collection);
-  const newDoc: T = {
-    ...doc,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString(),
-  };
-  data.push(newDoc);
-  writeDB(collection, data);
-  return newDoc;
-}
-
-export function findAll<T>(collection: string): T[] {
-  return readDB<T>(collection);
-}
-
-export function findById<T extends { id?: string }>(
-  collection: string,
-  id: string
-): T | null {
-  const data = readDB<T>(collection);
-  return data.find((d) => d.id === id) ?? null;
-}
-
-export function updateOne<T extends { id?: string; updatedAt?: string }>(
-  collection: string,
-  id: string,
-  updates: Partial<T>
-): T | null {
-  const data = readDB<T>(collection);
-  const idx = data.findIndex((d) => d.id === id);
-  if (idx === -1) return null;
-  data[idx] = { ...data[idx], ...updates, updatedAt: new Date().toISOString() };
-  writeDB(collection, data);
-  return data[idx];
-}
-
-export function deleteOne<T extends { id?: string }>(
-  collection: string,
-  id: string
-): boolean {
-  const data = readDB<T>(collection);
-  const filtered = data.filter((d) => d.id !== id);
-  if (filtered.length === data.length) return false;
-  writeDB(collection, filtered);
-  return true;
+export async function deleteOne(collection: string, id: string): Promise<boolean> {
+  const model = getModel(collection) as any;
+  try {
+    await model.delete({ where: { id } });
+    return true;
+  } catch {
+    return false;
+  }
 }

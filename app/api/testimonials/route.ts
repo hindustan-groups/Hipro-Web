@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const all = searchParams.get("all") === "true";
 
-    let testimonials = findAll<Testimonial>("testimonials");
+    let testimonials = await findAll<Testimonial>("testimonials");
 
     if (!all) {
       testimonials = testimonials.filter((t) => t.approved === true);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json<ApiResponse>({ success: false, error: "Rating must be between 1 and 5" }, { status: 400 });
     }
 
-    const doc = insertOne<Testimonial>("testimonials", {
+    const doc = await insertOne<Testimonial>("testimonials", {
       name: name.trim(),
       role: role.trim(),
       text: text.trim(),
@@ -68,7 +68,7 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
-    const updated = updateOne<Testimonial>("testimonials", id, updates);
+    const updated = await updateOne<Testimonial>("testimonials", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Testimonial not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse<Testimonial>>({ success: true, data: updated });
@@ -83,7 +83,7 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
-    const deleted = deleteOne("testimonials", id);
+    const deleted = await deleteOne("testimonials", id);
     if (!deleted) return NextResponse.json<ApiResponse>({ success: false, error: "Testimonial not found" }, { status: 404 });
 
     return NextResponse.json<ApiResponse>({ success: true, message: "Testimonial deleted" });

@@ -1,79 +1,107 @@
-import { Star, Quote } from "lucide-react";
+"use client";
 
-const testimonials = [
-  {
-    name: "Michael Johnson",
-    role: "Homeowner",
-    image: "https://i.pravatar.cc/150?img=12",
-    text: "Hindustan Projects transformed our outdated house into a stunning modern home. Professional, flawless, and two weeks ahead of schedule!",
-    gradient: "from-red-500 to-orange-500",
-    bg: "from-red-50/60 to-orange-50/40",
-  },
-  {
-    name: "Sarah Williams",
-    role: "Business Owner",
-    image: "https://i.pravatar.cc/150?img=5",
-    text: "From consultation to handover, Hindustan Projects exceeded every expectation. Our office was completed on budget — the quality is outstanding.",
-    gradient: "from-blue-500 to-indigo-600",
-    bg: "from-blue-50/60 to-indigo-50/40",
-  },
-  {
-    name: "David Chen",
-    role: "Property Developer",
-    image: "https://i.pravatar.cc/150?img=7",
-    text: "I've worked with many contractors, but Hindustan Projects is in a class of their own. Unmatched attention to detail and execution.",
-    gradient: "from-purple-500 to-blue-600",
-    bg: "from-purple-50/60 to-blue-50/40",
-  },
-];
+import { useState, useEffect } from "react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Testimonial } from "@/lib/types";
 
-export default function Testimonials() {
+export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Auto-advance
+  useEffect(() => {
+    if (testimonials.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [testimonials.length]);
+
+  if (!testimonials || testimonials.length === 0) return null;
+
+  const next = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+  const prev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+
+  const t = testimonials[currentIndex];
+
   return (
-    <section id="section-testimonials" className="py-28 bg-white relative overflow-hidden">
-      <div className="blob w-96 h-96 bg-purple-100 top-0 right-0" />
-      <div className="blob w-80 h-80 bg-blue-100 bottom-0 left-0" />
+    <section id="section-testimonials" className="py-8 bg-slate-800 relative overflow-hidden border-t border-slate-700">
+      {/* Background Subtle Grid Pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundSize: "32px 32px"
+        }}
+      />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 glass-light rounded-full px-4 py-1.5 mb-4 shadow-3d-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span className="text-[12px] text-gray-600 font-medium uppercase tracking-widest">Client Stories</span>
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-none px-4 py-1 mb-2 shadow-sm backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-none bg-white animate-pulse" />
+            <span className="text-[10px] md:text-[11px] text-white font-bold uppercase tracking-widest">Client Stories</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 font-display">What Our Clients Say</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white font-display tracking-tight uppercase">What Our Partners Say</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((t, i) => (
-            <div
-              key={i}
-              className={`relative p-7 rounded-3xl bg-gradient-to-br ${t.bg} border border-white shadow-3d-md card-3d hover:shadow-3d-xl transition-all duration-300 overflow-hidden`}
-            >
-              {/* Quote icon */}
-              <div className={`absolute top-5 right-5 w-10 h-10 rounded-xl bg-gradient-to-br ${t.gradient} flex items-center justify-center opacity-20`}>
-                <Quote className="w-5 h-5 text-white" />
-              </div>
+        <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center">
+          <div className="relative w-full max-w-lg h-[320px] md:h-[280px]">
+            {testimonials.map((t, i) => {
+              let positionClass = "translate-x-0 scale-75 opacity-0 z-0 pointer-events-none";
+              
+              if (i === currentIndex) {
+                positionClass = "translate-x-0 scale-100 opacity-100 z-30 shadow-2xl shadow-black/50";
+              } else if (testimonials.length > 1) {
+                const nextIndex = (currentIndex + 1) % testimonials.length;
+                const prevIndex = (currentIndex - 1 + testimonials.length) % testimonials.length;
+                
+                if (i === nextIndex) {
+                  positionClass = "translate-x-[40%] md:translate-x-[60%] lg:translate-x-[75%] scale-90 opacity-30 z-20 cursor-pointer hover:opacity-50";
+                } else if (i === prevIndex && testimonials.length > 2) {
+                  positionClass = "-translate-x-[40%] md:-translate-x-[60%] lg:-translate-x-[75%] scale-90 opacity-30 z-20 cursor-pointer hover:opacity-50";
+                }
+              }
 
-              {/* Stars */}
-              <div className="flex gap-0.5 mb-4">
-                {[...Array(5)].map((_, si) => (
-                  <Star key={si} className={`w-4 h-4 fill-current ${si < 3 ? "text-red-500" : "text-blue-500"}`} />
-                ))}
-              </div>
+              return (
+                <div 
+                  key={i}
+                  onClick={() => i !== currentIndex && setCurrentIndex(i)}
+                  className={`absolute top-0 left-0 w-full transition-all duration-700 ease-out ${positionClass}`}
+                >
+                  <div className="relative p-6 md:p-8 rounded-none bg-white/[0.05] border border-white/20 backdrop-blur-md overflow-hidden group flex flex-col justify-center h-full">
+                    {/* Massive watermark quote */}
+                    <div className="absolute -top-6 -left-2 text-[120px] leading-none font-serif text-white/5 pointer-events-none select-none transition-all duration-500 group-hover:text-white/10">
+                      &ldquo;
+                    </div>
 
-              <p className="text-[14px] text-gray-700 leading-relaxed font-light mb-6">"{t.text}"</p>
+                    <div className="relative z-10">
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(t.rating || 5)].map((_, si) => (
+                          <Star key={si} className="w-4 h-4 fill-amber-500 text-amber-500 opacity-90" />
+                        ))}
+                      </div>
 
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <img src={t.image} alt={t.name} className="w-11 h-11 rounded-full object-cover shadow-3d-sm" />
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-br ${t.gradient} border-2 border-white`} />
+                      <p className="text-sm md:text-base text-slate-200 leading-relaxed font-light mb-6 italic max-w-2xl line-clamp-4">
+                        &quot;{t.text}&quot;
+                      </p>
+
+                      <div className="flex items-center gap-4 border-t border-white/10 pt-4 mt-auto">
+                        <div className="relative shrink-0">
+                          <img src={t.image} alt={t.name} className="w-12 h-12 rounded-none object-cover border border-white/20 grayscale group-hover:grayscale-0 transition-all duration-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white font-display uppercase tracking-wider">{t.name}</p>
+                          <p className="text-[10px] font-semibold text-construction-navy mt-1 bg-white px-1.5 py-0.5 inline-block uppercase tracking-wider">{t.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[14px] font-bold text-gray-900 font-display">{t.name}</p>
-                  <p className={`text-[12px] font-medium bg-gradient-to-r ${t.gradient} bg-clip-text text-transparent`}>{t.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
+
+          {/* Navigation Controls */}
+          
         </div>
       </div>
     </section>

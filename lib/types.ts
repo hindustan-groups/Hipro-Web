@@ -86,3 +86,33 @@ export interface ApiResponse<T = unknown> {
   message?: string;
   error?: string;
 }
+
+export interface Settings {
+  id?: string;
+  cloudinaryCloudName: string;
+  cloudinaryUploadPreset: string;
+  updatedAt?: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  image: string;
+  tagline: string;
+  title: string;
+  subtitle: string;
+  order?: number;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  img: string;
+  order?: number;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}

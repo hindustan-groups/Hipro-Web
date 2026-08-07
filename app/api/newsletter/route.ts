@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       }, { status: 409 });
     }
 
-    const doc = insertOne<NewsletterSubscriber>("newsletter", {
+    const doc = await insertOne<NewsletterSubscriber>("newsletter", {
       email: normalised,
       active: true,
     });
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 // GET /api/newsletter — get all subscribers (admin)
 export async function GET() {
   try {
-    const subscribers = findAll<NewsletterSubscriber>("newsletter");
+    const subscribers = await findAll<NewsletterSubscriber>("newsletter");
     const active = subscribers.filter((s) => s.active !== false);
     return NextResponse.json<ApiResponse>({
       success: true,

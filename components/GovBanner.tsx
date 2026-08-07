@@ -65,7 +65,7 @@ export default function GovBanner() {
                   Government websites always use a{" "}
                   <span className="text-white font-medium">.gov</span> or{" "}
                   <span className="text-white font-medium">.gov.in</span> domain.
-                  Before sharing sensitive information, verify you're on an official site.
+                  Before sharing sensitive information, verify you&apos;re on an official site.
                 </p>
               </div>
             </div>

@@ -67,62 +67,62 @@ export default function AdminStats() {
 
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <p className="text-gray-400 text-sm">Edit the numbers shown on the public website.</p>
+        <p className="text-slate-500 text-sm font-medium">Edit the numbers shown on the public website.</p>
         <button
           onClick={fetchStats}
           disabled={loading}
-          className="flex items-center gap-2 bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-xl text-xs font-medium disabled:opacity-50 hover:bg-gray-700 transition-colors"
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-medium disabled:opacity-50 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </button>
       </div>
 
-      {error   && <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>}
-      {success && <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm">✓ {success}</div>}
+      {error   && <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
+      {success && <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-700 text-sm font-medium">✓ {success}</div>}
 
       {loading ? (
         <div className="grid md:grid-cols-2 gap-4 animate-pulse">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-900 border border-gray-800 rounded-2xl" />
+            <div key={i} className="h-32 bg-white border border-slate-200 shadow-sm rounded-2xl" />
           ))}
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {stats.map((s) => (
-            <div key={s.id} className="bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-2xl p-5 transition-colors">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-gray-500 text-xs uppercase tracking-widest font-bold">{s.icon}</span>
-                <span className="text-gray-700 text-xs">Order: {s.order}</span>
+            <div key={s.id} className="bg-white border border-slate-200 shadow-sm hover:shadow-md rounded-2xl p-5 transition-shadow">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <span className="text-slate-500 text-xs uppercase tracking-widest font-bold">{s.icon}</span>
+                <span className="text-slate-400 text-xs font-medium">Order: {s.order}</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-gray-500 text-[10px] uppercase tracking-widest font-bold block mb-1">
+                  <label className="text-slate-500 text-[10px] uppercase tracking-widest font-bold block mb-1">
                     Label
                   </label>
                   <input
                     type="text"
                     value={s.label}
                     onChange={(e) => handleChange(s.id, "label", e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-gray-500 text-[10px] uppercase tracking-widest font-bold block mb-1">
+                  <label className="text-slate-500 text-[10px] uppercase tracking-widest font-bold block mb-1">
                     Value
                   </label>
                   <input
                     type="text"
                     value={s.value}
                     onChange={(e) => handleChange(s.id, "value", e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all"
                   />
                 </div>
               </div>
               <button
                 onClick={() => updateStat(s)}
                 disabled={saving === s.id}
-                className="mt-4 w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+                className="mt-5 w-full flex items-center justify-center gap-2 bg-construction-navy hover:bg-blue-800 disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors shadow-md shadow-blue-900/20"
               >
                 {saving === s.id ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />

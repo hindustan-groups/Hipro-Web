@@ -1,92 +1,113 @@
 "use client";
 
-import { ArrowRight, Calculator, PhoneCall, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function CostEstimator() {
-
   return (
-    <section className="py-24 bg-surface relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br from-blue-50/50 to-orange-50/50 rounded-full blur-3xl opacity-70 -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="bg-white rounded-[2.5rem] shadow-3d-xl overflow-hidden border border-gray-100 flex flex-col lg:flex-row">
+    <section className="py-24 relative bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Main Banner Container */}
+        <div className="bg-[#11243E] rounded-3xl md:rounded-[2.5rem] overflow-hidden relative flex flex-col md:flex-row items-center justify-between shadow-2xl shadow-blue-900/10">
           
-          {/* Left Content */}
-          <div className="p-10 md:p-16 lg:w-1/2 flex flex-col justify-center">
-            <div className="inline-flex items-center gap-2 bg-orange-50 text-[#E85D35] px-4 py-2 rounded-full text-sm font-semibold mb-6 w-max">
-              <Calculator className="w-4 h-4" />
-              <span>Cost Estimator</span>
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 font-display leading-[1.1]">
-              Estimate Your Construction Cost <span className="text-[#1A5F8C]">Instantly</span>
+          {/* Decorative Background curve */}
+          <div className="absolute bottom-0 right-0 w-full md:w-[60%] h-full z-0 overflow-hidden pointer-events-none">
+            <svg 
+              viewBox="0 0 100 100" 
+              preserveAspectRatio="none" 
+              className="absolute bottom-0 right-0 w-full h-full text-[#183152] fill-current"
+            >
+              <path d="M0,100 C40,100 50,0 100,0 L100,100 Z" />
+            </svg>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-transparent to-[#11243E]" />
+          </div>
+
+          {/* Left Text Content */}
+          <div className="p-10 md:p-16 lg:p-20 relative z-10 w-full md:w-[55%]">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 font-display tracking-tight leading-[1.15]">
+              Estimate Your Construction Cost Instantly
             </h2>
-            
-            <p className="text-lg text-gray-500 mb-10 leading-relaxed font-light">
-              Quickly calculate how much it will cost to build your home with our detailed, reliable estimation tool. Get a clear picture of your investment.
+            <p className="text-slate-300 text-lg mb-10 font-light max-w-lg leading-relaxed">
+              Quickly calculate how much it will cost to build your home with our detailed, reliable estimation tool.
             </p>
-            
             <Link 
               href="/cost-estimator"
-              className="group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#1A5F8C] to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-8 py-4 rounded-full text-[16px] transition-all shadow-glow-blue hover:shadow-3d-lg w-max"
+              className="inline-flex items-center justify-center bg-[#F36B2B] hover:bg-[#d5591f] text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg shadow-orange-600/20 text-base md:text-lg"
             >
               Calculate Cost Instantly
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
+          
+          {/* Right Image/Illustration Area */}
+          <div className="relative z-10 w-full md:w-[45%] h-64 md:h-auto flex items-center justify-center p-8 md:p-10 lg:p-0 lg:-mr-10">
+            {/* Custom 3D-styled CSS Calculator */}
+            <div className="relative w-full max-w-[280px] md:max-w-[320px] aspect-[3/4] flex items-center justify-center hover:scale-105 transition-transform duration-700 z-10">
+              
+              <div className="w-full h-full bg-[#1A1C23] rounded-3xl p-5 shadow-[20px_20px_60px_rgba(0,0,0,0.6),-5px_-5px_20px_rgba(255,255,255,0.05)] border-t border-l border-white/10 flex flex-col transform rotate-[12deg]">
+                
+                {/* Calculator Screen */}
+                <div className="h-24 bg-[#0F1115] rounded-xl mb-6 shadow-inner border border-black/50 p-4 flex flex-col justify-end items-end relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                  <span className="text-white text-5xl font-light tracking-wider font-mono">0</span>
+                </div>
 
-          {/* Right Content - Mockup Image */}
-          <div className="lg:w-1/2 bg-gray-50 p-10 flex items-center justify-center relative overflow-hidden">
-            {/* Abstract UI representation */}
-            <div className="relative w-full max-w-md aspect-square">
-              {/* Main App Card */}
-              <div className="absolute inset-0 bg-white rounded-3xl shadow-3d-lg p-8 flex flex-col justify-between border border-gray-100 transform rotate-[-2deg] transition-transform duration-500 hover:rotate-0">
-                <div>
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl mb-6 flex items-center justify-center">
-                    <Calculator className="w-6 h-6 text-[#1A5F8C]" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="h-3 w-1/3 bg-gray-200 rounded-full"></div>
-                    <div className="h-6 w-3/4 bg-gray-300 rounded-full"></div>
-                    <div className="space-y-2 mt-8">
-                      <div className="h-12 w-full bg-gray-50 border border-gray-100 rounded-xl"></div>
-                      <div className="h-12 w-full bg-gray-50 border border-gray-100 rounded-xl"></div>
-                      <div className="h-12 w-full bg-gray-50 border border-gray-100 rounded-xl"></div>
+                {/* Calculator Grid */}
+                <div className="grid grid-cols-4 gap-3 flex-1">
+                  {/* Row 1 */}
+                  {['MM', 'M+', 'M-', '%'].map((btn, i) => (
+                    <div key={'r1'+i} className="bg-[#2A2D35] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-[10px] font-bold text-slate-400">
+                      {btn}
                     </div>
+                  ))}
+                  {/* Row 2 */}
+                  {['7', '8', '9', 'GC'].map((btn, i) => (
+                    <div key={'r2'+i} className="bg-[#22242B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                      {btn}
+                    </div>
+                  ))}
+                  {/* Row 3 */}
+                  {['4', '5', '6', '×'].map((btn, i) => (
+                    <div key={'r3'+i} className="bg-[#22242B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                      {btn}
+                    </div>
+                  ))}
+                  {/* Row 4 */}
+                  {['1', '2', '3', '-'].map((btn, i) => (
+                    <div key={'r4'+i} className="bg-[#22242B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                      {btn}
+                    </div>
+                  ))}
+                  {/* Row 5 */}
+                  <div className="col-span-2 bg-[#22242B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                    0
+                  </div>
+                  <div className="bg-[#22242B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                    .
+                  </div>
+                  <div className="bg-[#F36B2B] rounded-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.3),0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center text-sm font-bold text-white">
+                    =
                   </div>
                 </div>
-                <div className="h-14 w-full bg-[#E85D35] rounded-xl opacity-90 mt-6"></div>
               </div>
 
-              {/* Floating Element 1 */}
-              <div className="absolute -right-8 top-12 bg-white p-4 rounded-2xl shadow-3d-md border border-gray-100 flex items-center gap-4 animate-float" style={{ animationDelay: '0.5s' }}>
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 font-bold">$</span>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500 font-medium">Estimated</div>
-                  <div className="font-bold text-gray-900 font-display">Accurate Pricing</div>
-                </div>
+              {/* Upward Arrow Graphic (Behind Calculator) */}
+              <div className="absolute -right-8 top-12 w-24 h-24 transform rotate-12 -z-10 opacity-80">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#2A476D" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                  <path d="M7 17L17 7M17 7H7M17 7V17" />
+                </svg>
               </div>
-
-              {/* Floating Element 2 */}
-              <div className="absolute -left-6 bottom-20 bg-white p-4 rounded-2xl shadow-3d-md border border-gray-100 flex items-center gap-4 animate-float" style={{ animationDelay: '2s' }}>
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Calculator className="w-5 h-5 text-[#E85D35]" />
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500 font-medium">Detailed</div>
-                  <div className="font-bold text-gray-900 font-display">Material Breakdown</div>
-                </div>
+              {/* Floating rupee coins decoration */}
+              <div className="absolute bottom-10 -left-6 w-16 h-16 bg-[#183152] rounded-full border-4 border-[#2A476D] flex items-center justify-center shadow-2xl shadow-black/50 transform -rotate-[15deg] animate-bounce" style={{ animationDuration: '3s' }}>
+                <span className="text-white font-bold text-2xl">₹</span>
+              </div>
+              <div className="absolute top-1/3 -left-10 w-12 h-12 bg-[#183152] rounded-full border-4 border-[#2A476D] flex items-center justify-center shadow-xl shadow-black/40 transform rotate-[25deg] animate-bounce" style={{ animationDuration: '4s' }}>
+                <span className="text-white font-bold text-lg">₹</span>
               </div>
             </div>
           </div>
+
         </div>
       </div>
-
     </section>
   );
 }

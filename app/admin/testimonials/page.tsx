@@ -73,15 +73,15 @@ export default function AdminTestimonials() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
+        <div className="flex gap-2 p-1 bg-slate-100 rounded-full border border-slate-200">
           {["all", "approved", "pending"].map((s) => (
             <button
               key={s}
               onClick={() => setFilter(s)}
               className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
                 filter === s
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
               }`}
             >
               {s}
@@ -91,7 +91,7 @@ export default function AdminTestimonials() {
         <button
           onClick={fetchTestimonials}
           disabled={loading}
-          className="flex items-center gap-2 bg-gray-800 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-xl text-xs font-medium disabled:opacity-50 transition-colors hover:bg-gray-700"
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -99,7 +99,7 @@ export default function AdminTestimonials() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
           {error}
         </div>
       )}
@@ -108,11 +108,11 @@ export default function AdminTestimonials() {
       {loading ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-gray-900 border border-gray-800 rounded-2xl" />
+            <div key={i} className="h-48 bg-white border border-slate-200 rounded-2xl shadow-sm" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center text-gray-500 py-24">
+        <div className="text-center text-slate-500 py-24">
           <Star className="w-10 h-10 mx-auto mb-3 opacity-20" />
           <p>No testimonials found.</p>
         </div>
@@ -121,7 +121,7 @@ export default function AdminTestimonials() {
           {filtered.map((t) => (
             <div
               key={t.id}
-              className="bg-gray-900 border border-gray-800 hover:border-gray-700 rounded-2xl p-5 transition-colors flex flex-col gap-4"
+              className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 rounded-2xl p-5 transition-all flex flex-col gap-4"
             >
               {/* Stars */}
               <div className="flex gap-0.5">
@@ -130,16 +130,16 @@ export default function AdminTestimonials() {
                     key={si}
                     className={`w-4 h-4 ${
                       si < t.rating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-700 fill-gray-700"
+                        ? "text-yellow-500 fill-yellow-500"
+                        : "text-slate-200 fill-slate-200"
                     }`}
                   />
                 ))}
               </div>
 
               {/* Quote */}
-              <p className="text-gray-300 text-[13px] leading-relaxed flex-1 line-clamp-4">
-                "{t.text}"
+              <p className="text-slate-600 text-[13px] leading-relaxed flex-1 line-clamp-4">
+                &quot;{t.text}&quot;
               </p>
 
               {/* Author */}
@@ -148,16 +148,16 @@ export default function AdminTestimonials() {
                   <img
                     src={t.image}
                     alt={t.name}
-                    className="w-9 h-9 rounded-full object-cover ring-1 ring-gray-700"
+                    className="w-9 h-9 rounded-full object-cover ring-1 ring-slate-200"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-construction-navy to-blue-700 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                     {t.name[0]}
                   </div>
                 )}
                 <div>
-                  <p className="text-white text-[13px] font-semibold">{t.name}</p>
-                  <p className="text-gray-500 text-[11px]">{t.role}</p>
+                  <p className="text-slate-900 text-[13px] font-semibold">{t.name}</p>
+                  <p className="text-slate-500 text-[11px]">{t.role}</p>
                 </div>
                 <div className="ml-auto">
                   <StatusBadge status={t.approved ? "approved" : "pending"} />
@@ -165,18 +165,18 @@ export default function AdminTestimonials() {
               </div>
 
               {/* Date */}
-              <p className="text-gray-600 text-[11px]">
+              <p className="text-slate-500 text-[11px]">
                 {new Date(t.createdAt).toLocaleDateString("en-US", {
                   year: "numeric", month: "short", day: "numeric",
                 })}
               </p>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-1 border-t border-gray-800">
+              <div className="flex gap-2 pt-4 border-t border-slate-100">
                 {!t.approved && (
                   <button
                     onClick={() => approve(t.id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-xs font-semibold py-2 rounded-xl transition-colors"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 text-xs font-semibold py-2 rounded-xl transition-colors shadow-sm"
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     Approve
@@ -184,7 +184,7 @@ export default function AdminTestimonials() {
                 )}
                 <button
                   onClick={() => remove(t.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold py-2 rounded-xl transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 text-xs font-semibold py-2 rounded-xl transition-colors shadow-sm"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Delete
@@ -197,7 +197,7 @@ export default function AdminTestimonials() {
 
       {/* Summary */}
       {!loading && (
-        <p className="text-gray-600 text-xs text-right">
+        <p className="text-slate-500 text-xs text-right font-medium">
           {filtered.length} record{filtered.length !== 1 ? "s" : ""}
           {" · "}
           {testimonials.filter((t) => t.approved).length} approved

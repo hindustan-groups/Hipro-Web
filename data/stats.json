@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "label": "Years Experience",
+    "value": "25+",
+    "icon": "Trophy",
+    "order": 1,
+    "updatedAt": "2026-08-06T09:19:27.856Z"
+  },
+  {
+    "id": "2",
+    "label": "Projects Done",
+    "value": "500+",
+    "icon": "CheckCircle",
+    "order": 2,
+    "updatedAt": "2026-08-06T09:17:41.262Z"
+  },
+  {
+    "id": "3",
+    "label": "Team Members",
+    "value": "200+",
+    "icon": "Users",
+    "order": 3,
+    "updatedAt": "2026-08-06T09:17:41.262Z"
+  },
+  {
+    "id": "4",
+    "label": "Satisfaction Rate",
+    "value": "98%",
+    "icon": "Star",
+    "order": 4,
+    "updatedAt": "2026-08-06T09:17:41.262Z"
+  },
+  {
+    "id": "5",
+    "label": "Awards Won",
+    "value": "150+",
+    "icon": "Award",
+    "order": 5,
+    "updatedAt": "2026-08-06T09:17:41.262Z"
+  },
+  {
+    "id": "6",
+    "label": "Happy Clients",
+    "value": "1000+",
+    "icon": "Heart",
+    "order": 6,
+    "updatedAt": "2026-08-06T09:17:41.262Z"
+  }
+]

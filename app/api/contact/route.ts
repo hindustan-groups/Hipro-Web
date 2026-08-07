@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const doc = insertOne<ContactMessage>("contacts", {
+    const doc = await insertOne<ContactMessage>("contacts", {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       phone: phone?.trim() || "",
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 // GET /api/contact — get all messages (admin)
 export async function GET() {
   try {
-    const messages = findAll<ContactMessage>("contacts");
+    const messages = await findAll<ContactMessage>("contacts");
     // Sort newest first
     messages.sort((a, b) =>
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
@@ -83,7 +83,7 @@ export async function PATCH(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const updated = updateOne<ContactMessage>("contacts", id, { status });
+    const updated = await updateOne<ContactMessage>("contacts", id, { status });
     if (!updated) {
       return NextResponse.json<ApiResponse>({
         success: false,

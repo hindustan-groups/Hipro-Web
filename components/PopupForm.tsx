@@ -23,16 +23,50 @@ export default function PopupForm() {
     }
   }, []);
 
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", location: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
   const handleClose = () => {
     setIsOpen(false);
     localStorage.setItem("hasSeenConsultationPopup", "true");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, handle form submission here
-    handleClose();
-    alert("Thank you! We will contact you shortly.");
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          projectType: "Consultation Request",
+          budget: "Not Specified",
+          description: "Requested a free consultation via website popup.",
+        }),
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(true);
+        setTimeout(() => {
+          handleClose();
+        }, 3000);
+      } else {
+        setError(data.error || "Failed to submit request");
+      }
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Don't render anything on server to prevent hydration mismatch
@@ -43,13 +77,13 @@ export default function PopupForm() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       {/* Modal Container */}
       <div 
-        className="relative flex w-full max-w-4xl bg-white rounded-2xl overflow-hidden shadow-2xl animate-scale-up"
+        className="relative flex w-full max-w-4xl bg-white rounded-none overflow-hidden shadow-2xl animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button 
           onClick={handleClose}
-          className="absolute top-4 right-4 z-10 p-1.5 bg-white/80 hover:bg-gray-100 rounded-full text-gray-500 transition-colors"
+          className="absolute top-4 right-4 z-10 p-1.5 bg-white/80 hover:bg-gray-100 rounded-none text-gray-500 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -71,27 +105,53 @@ export default function PopupForm() {
             Your Dream Home <br className="hidden sm:block" /> Awaits!
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {success ? (
+            <div className="text-center py-10 space-y-3">
+              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+              </div>
+              <p className="text-xl font-bold text-gray-900">Request Received!</p>
+              <p className="text-gray-500 text-sm">We will contact you shortly.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="p-3 bg-red-50 text-red-600 text-sm border border-red-100">{error}</div>}
             {/* Name Input */}
             <div>
               <input 
                 type="text" 
                 placeholder="Name" 
                 required
-                className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E85D35] focus:border-transparent transition-all text-sm text-gray-900 placeholder-gray-500"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 placeholder-gray-500"
+              />
+            </div>
+
+            {/* Email Input */}
+            <div>
+              <input 
+                type="email" 
+                placeholder="Email Address" 
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 placeholder-gray-500"
               />
             </div>
 
             {/* Phone Input */}
             <div className="relative flex items-center">
               <div className="absolute left-0 inset-y-0 flex items-center pl-4 pr-3 border-r border-gray-300">
-                <span className="text-sm font-medium text-gray-700">+1</span>
+                <span className="text-sm font-medium text-gray-700">+91</span>
               </div>
               <input 
                 type="tel" 
                 placeholder="Phone Number" 
                 required
-                className="w-full pl-16 pr-4 py-3.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E85D35] focus:border-transparent transition-all text-sm text-gray-900 placeholder-gray-500"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full pl-16 pr-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -99,15 +159,16 @@ export default function PopupForm() {
             <div className="relative">
               <select 
                 required
-                defaultValue=""
-                className="w-full px-4 py-3.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E85D35] focus:border-transparent transition-all text-sm text-gray-900 appearance-none bg-white"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 appearance-none bg-white"
               >
                 <option value="" disabled>Location of your Plot - City*</option>
-                <option value="new-york">New York</option>
-                <option value="los-angeles">Los Angeles</option>
-                <option value="chicago">Chicago</option>
-                <option value="houston">Houston</option>
-                <option value="other">Other</option>
+                <option value="New Delhi / NCR">New Delhi / NCR</option>
+                <option value="Mumbai">Mumbai</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Other">Other City</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -115,17 +176,19 @@ export default function PopupForm() {
             </div>
 
             {/* Submit Button */}
-            <button 
+            <button
               type="submit"
-              className="w-full mt-2 bg-[#E85D35] hover:bg-[#d64f2a] text-white font-medium py-3.5 rounded-xl text-[15px] transition-colors shadow-lg shadow-orange-500/20"
+              disabled={loading}
+              className="w-full bg-construction-navy btn-sweep text-white font-bold py-3.5 px-4 rounded-none transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase tracking-wider text-sm shadow-md shadow-blue-900/20"
             >
-              Book FREE Consultation
+              {loading ? "Submitting..." : "Book FREE Consultation"}
             </button>
           </form>
+          )}
 
           {/* Privacy Policy Note */}
           <p className="mt-5 text-[11px] text-gray-500 leading-relaxed text-center sm:text-left">
-            By submitting, you agree to our <a href="#" className="text-[#E85D35] hover:underline">privacy policy</a>, allowing us to use your information as outlined.
+            By submitting, you agree to our <a href="#" className="text-construction-red hover:underline font-semibold">privacy policy</a>, allowing us to use your information as outlined.
           </p>
         </div>
       </div>

@@ -3,51 +3,53 @@ import { HardHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, A
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-950 text-gray-400 relative overflow-hidden">
-      {/* Top gradient border */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
-      {/* Background blobs */}
-      <div className="blob w-96 h-96 bg-blue-900/40 top-0 right-0" />
-      <div className="blob w-80 h-80 bg-red-900/20 bottom-0 left-0" />
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+    <footer className="bg-black text-slate-400 relative overflow-hidden border-t border-slate-800">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-14">
 
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-glow-red">
-                <HardHat className="w-5 h-5 text-white" />
+            <Link href="/" className="inline-flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl mb-6">
+              <img 
+                src="/logo.jpg" 
+                alt="HiPRO Logo" 
+                className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" 
+              />
+              <div className="w-[1px] h-10 bg-slate-200"></div>
+              <div className="flex flex-col justify-center">
+                <span className="font-bold text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
+                  Hindustan
+                </span>
+                <span className="font-bold text-[13px] leading-tight tracking-[0.1em] text-construction-navy font-display uppercase">
+                  Projects
+                </span>
               </div>
-              <span className="text-white font-bold text-[15px] font-display">
-                Hindustan <span className="text-gradient-red">Projects</span>
-              </span>
-            </div>
-            <p className="text-[13px] text-gray-500 font-light leading-relaxed mb-6">
-              Building excellence since 1999. Your trusted partner for residential, commercial, and industrial construction projects.
+            </Link>
+            <p className="text-xs text-slate-400 font-light leading-relaxed mb-6">
+              Building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors since 1999.
             </p>
             <div className="flex gap-2.5">
               {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
                 <a
                   key={i}
                   href="#"
-                  className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center hover:bg-blue-600 hover:border-blue-600 transition-all duration-200 group"
+                  className="w-9 h-9 rounded-none bg-white/5 border border-white/10 flex items-center justify-center hover:bg-construction-red hover:border-construction-red transition-all duration-200 group shadow-sm"
                 >
-                  <Icon className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                  <Icon className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Company */}
+          {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold text-[13px] mb-4 uppercase tracking-widest">Company</h3>
-            <ul className="space-y-2.5 text-[13px]">
-              {[["About Us", "/about"], ["Services", "/services"], ["Projects", "/projects"], ["Contact", "/contact"], ["Careers", "#"]].map(([label, href]) => (
+            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display">Company</h3>
+            <ul className="space-y-3 text-xs">
+              {[["About Us", "/about"], ["Services", "/services"], ["Projects", "/projects"], ["Contact", "/contact"], ["Cost Estimator", "/cost-estimator"]].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="hover:text-white transition-colors inline-flex items-center gap-1 group">
+                  <Link href={href} className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium">
                     {label}
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-construction-red" />
                   </Link>
                 </li>
               ))}
@@ -56,13 +58,13 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-white font-semibold text-[13px] mb-4 uppercase tracking-widest">Services</h3>
-            <ul className="space-y-2.5 text-[13px]">
-              {["Residential", "Commercial", "Industrial", "Renovation", "Design Build"].map((item) => (
+            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display">Capabilities</h3>
+            <ul className="space-y-3 text-xs">
+              {["Residential Construction", "Commercial Development", "Industrial Facilities", "Renovation & Remodeling", "Project Management", "Turnkey Design Build"].map((item) => (
                 <li key={item}>
-                  <Link href="/services" className="hover:text-white transition-colors inline-flex items-center gap-1 group">
+                  <Link href="/services" className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium">
                     {item}
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-construction-red" />
                   </Link>
                 </li>
               ))}
@@ -71,41 +73,38 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-[13px] mb-4 uppercase tracking-widest">Contact</h3>
-            <ul className="space-y-3 text-[13px]">
-              <li className="flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-red-400" />
+            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display">Headquarters</h3>
+            <ul className="space-y-4 text-xs">
+              <li className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>123 Construction Ave<br />Building District, BD 12345</span>
+                <span className="leading-relaxed">101 Executive Tower, Infrastructure Complex, New Delhi, India</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-                  <Phone className="w-3.5 h-3.5 text-blue-400" />
+              <li className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>+1 (555) 123-4567</span>
+                <span>+91 98765 43210</span>
               </li>
-              <li className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0">
-                  <Mail className="w-3.5 h-3.5 text-red-400" />
+              <li className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>info@hindustanprojects.com</span>
+                <span>contact@hindustanprojects.com</span>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/[0.06] pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-gray-600">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-light">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-              <HardHat className="w-3 h-3 text-white" />
-            </div>
             <span>© {new Date().getFullYear()} Hindustan Projects. All rights reserved.</span>
           </div>
-          <div className="flex gap-5">
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((item) => (
-              <Link key={item} href="#" className="hover:text-gray-400 transition-colors">
+          <div className="flex gap-6">
+            {["Privacy Policy", "Terms of Service", "Quality Policy"].map((item) => (
+              <Link key={item} href="#" className="hover:text-slate-300 transition-colors">
                 {item}
               </Link>
             ))}

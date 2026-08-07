@@ -1,52 +1,47 @@
+import Link from "next/link";
 import { MapPin, Calendar } from "lucide-react";
-
-const projects = [
-  { title: "Skyline Office Tower", category: "Commercial", location: "Downtown District", date: "2024", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=700&q=80", desc: "15-story modern office complex with sustainable design features." },
-  { title: "Riverside Luxury Residences", category: "Residential", location: "Riverside Park", date: "2023", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=700&q=80", desc: "Premium apartment complex with waterfront views and amenities." },
-  { title: "TechHub Innovation Center", category: "Industrial", location: "Tech Valley", date: "2024", image: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=700&q=80", desc: "State-of-the-art technology and research facility." },
-  { title: "Oakwood Shopping Plaza", category: "Commercial", location: "Oakwood District", date: "2023", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=700&q=80", desc: "Modern retail center with 50+ stores and dining." },
-  { title: "Heritage Home Restoration", category: "Residential", location: "Historic District", date: "2023", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=700&q=80", desc: "Complete restoration of a Victorian-era mansion." },
-  { title: "Green Valley Logistics Hub", category: "Industrial", location: "Green Valley", date: "2024", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=700&q=80", desc: "500,000 sq ft warehouse and distribution center." },
-  { title: "Mountain View School", category: "Commercial", location: "Mountain View", date: "2022", image: "https://images.unsplash.com/photo-1562564055-71e051d33c19?w=700&q=80", desc: "Modern educational facility for 800 students." },
-  { title: "Lakeside Custom Estate", category: "Residential", location: "Lake District", date: "2023", image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=700&q=80", desc: "7,000 sq ft luxury home with lake views." },
-  { title: "Metro Hospital Expansion", category: "Commercial", location: "Metro Center", date: "2024", image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=700&q=80", desc: "50,000 sq ft medical facility addition." },
-];
+import { findAll } from "@/lib/db";
+import type { Project } from "@/lib/types";
 
 const categoryColor: Record<string, string> = {
-  Commercial: "text-blue-600 bg-blue-50",
-  Residential: "text-red-600 bg-red-50",
-  Industrial: "text-gray-700 bg-gray-100",
+  Commercial: "text-black bg-slate-100 border border-slate-200",
+  Residential: "text-construction-red bg-red-50 border border-red-100",
+  Industrial: "text-slate-800 bg-slate-100 border border-slate-200",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const allProjects = await findAll<Project>("projects");
+  const ongoingProjects = allProjects.filter(p => p.status === "active");
+  const completedProjects = allProjects.filter(p => p.status === "archived");
+
   return (
     <>
       {/* Header */}
-      <section className="bg-white pt-36 pb-20 px-4">
+      <section className="bg-white pt-36 pb-20 px-4 border-b border-slate-200/80">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-1.5 mb-6">
-            <span className="w-2 h-2 rounded-full bg-red-500"></span>
-            <span className="text-[12px] text-gray-600 font-medium">500+ Completed Projects</span>
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red mb-6 shadow-sm">
+            <span className="w-2 h-2 rounded-none bg-construction-red animate-pulse"></span>
+            <span className="text-xs font-bold uppercase tracking-wider">500+ Completed Projects</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-5">
-            Our <span className="text-red-600">Projects</span>
+          <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
+            Featured <span className="text-construction-red">Portfolio</span>
           </h1>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
-            A showcase of our best work across residential, commercial, and industrial sectors.
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+            Exemplary civil engineering, landmark developments, and luxury construction delivered with structural perfection.
           </p>
         </div>
       </section>
 
       {/* Filter row */}
-      <section className="bg-white pb-10 px-4">
-        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-2">
+      <section className="bg-white py-8 px-4 border-b border-slate-100">
+        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-3">
           {["All", "Residential", "Commercial", "Industrial"].map((cat) => (
             <button
               key={cat}
-              className={`px-5 py-2 rounded-full text-[13px] font-semibold border transition-colors ${
+              className={`px-6 py-2.5 rounded-none text-xs font-bold uppercase tracking-wider transition-all shadow-sm ${
                 cat === "All"
-                  ? "bg-gray-900 text-white border-gray-900"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-gray-400"
+                  ? "bg-black text-white shadow-md"
+                  : "bg-white text-slate-600 border border-slate-200 hover:border-construction-red hover:text-construction-red"
               }`}
             >
               {cat}
@@ -55,50 +50,105 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      {/* Grid */}
-      <section className="pb-24 bg-white px-4">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {projects.map((p, i) => (
-            <div
-              key={i}
-              className="group rounded-2xl border border-gray-100 bg-white overflow-hidden hover:border-gray-200 hover:shadow-xl hover:shadow-gray-100 transition-all duration-300"
-            >
-              <div className="overflow-hidden h-52">
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-5">
-                <span className={`inline-block text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3 ${categoryColor[p.category]}`}>
-                  {p.category}
-                </span>
-                <h3 className="text-[15px] font-semibold text-gray-900 mb-1.5">{p.title}</h3>
-                <p className="text-[13px] text-gray-500 font-light mb-3">{p.desc}</p>
-                <div className="flex items-center gap-4 text-[12px] text-gray-400">
-                  <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{p.location}</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{p.date}</span>
+      {/* Grid - Ongoing */}
+      <section id="ongoing" className="py-16 bg-white px-4">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-black mb-8 font-display uppercase tracking-tight border-b border-slate-200 pb-4">
+            Ongoing <span className="text-construction-red">Projects</span>
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {ongoingProjects.map((p, i) => (
+              <Link
+                href={`/projects/${p.id}`}
+                key={i}
+                className="group rounded-none border border-slate-200/80 bg-white overflow-hidden hover:border-construction-red/40 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300 flex flex-col hover:-translate-y-1"
+              >
+                <div className="overflow-hidden h-60 relative">
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 </div>
-              </div>
-            </div>
-          ))}
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-none mb-3 ${categoryColor[p.category] || categoryColor.Commercial}`}>
+                      {p.category}
+                    </span>
+                    <h3 className="text-xl font-bold text-black mb-2 font-display uppercase tracking-tight group-hover:text-construction-red transition-colors">{p.title}</h3>
+                    <p className="text-xs text-slate-600 font-light mb-4 leading-relaxed">{p.description}</p>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-medium pt-4 border-t border-slate-100">
+                    <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-construction-red" />{p.location}</span>
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-black" />{p.date}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+            {ongoingProjects.length === 0 && (
+              <p className="text-slate-500 font-light italic col-span-full">No ongoing projects to display.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Grid - Completed */}
+      <section id="completed" className="py-16 bg-slate-50 px-4 border-t border-slate-200/80">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-black mb-8 font-display uppercase tracking-tight border-b border-slate-200 pb-4">
+            Completed <span className="text-construction-red">Projects</span>
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {completedProjects.map((p, i) => (
+              <Link
+                href={`/projects/${p.id}`}
+                key={i}
+                className="group rounded-none border border-slate-200/80 bg-white overflow-hidden hover:border-construction-red/40 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300 flex flex-col hover:-translate-y-1"
+              >
+                <div className="overflow-hidden h-60 relative">
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-none mb-3 ${categoryColor[p.category] || categoryColor.Commercial}`}>
+                      {p.category}
+                    </span>
+                    <h3 className="text-xl font-bold text-black mb-2 font-display uppercase tracking-tight group-hover:text-construction-red transition-colors">{p.title}</h3>
+                    <p className="text-xs text-slate-600 font-light mb-4 leading-relaxed">{p.description}</p>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 font-medium pt-4 border-t border-slate-100">
+                    <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-construction-red" />{p.location}</span>
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-black" />{p.date}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+            {completedProjects.length === 0 && (
+              <p className="text-slate-500 font-light italic col-span-full">No completed projects to display.</p>
+            )}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-8 px-4 bg-white pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="rounded-3xl bg-black px-10 py-14 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Want to See Your Project <span className="text-blue-400">Here?</span>
+      <section className="py-12 px-4 bg-white pb-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-none bg-black px-10 py-16 text-center shadow-2xl border border-white/10">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 font-display uppercase tracking-tight">
+              Want To Showcase <span className="text-construction-red">Your Build Here?</span>
             </h2>
-            <p className="text-gray-400 font-light mb-8 max-w-lg mx-auto">
-              Let's discuss how we can bring your vision to life.
+            <p className="text-slate-300 font-light mb-8 max-w-xl mx-auto text-base">
+              Partner with Hindustan Projects for end-to-end master planning, structural design, and construction execution.
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-8 py-3.5 rounded-full text-[14px] transition-colors"
+              className="inline-flex items-center gap-3 bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-none text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/30"
             >
               Start Your Project
             </a>

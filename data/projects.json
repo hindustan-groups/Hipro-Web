@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "id": "1",
+    "image": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
+    "title": "Skyline Corporate Tower",
+    "category": "Commercial",
+    "location": "Financial District",
+    "description": "24-Story Commercial Complex",
+    "date": "2026-08-01",
+    "featured": false,
+    "status": "active",
+    "updatedAt": "2026-08-06T10:41:15.967Z"
+  },
+  {
+    "id": "2",
+    "image": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80",
+    "title": "Riverside Luxury Estates",
+    "category": "Residential",
+    "location": "Green Valley Sector",
+    "description": "Premium Gated Community",
+    "date": "2026-07-15",
+    "featured": false,
+    "status": "active",
+    "updatedAt": "2026-08-06T10:41:16.704Z"
+  },
+  {
+    "id": "3",
+    "image": "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=800&q=80",
+    "title": "TechHub Logistics Hub",
+    "category": "Industrial",
+    "location": "Industrial Corridor",
+    "description": "High-Tech Logistics Park",
+    "date": "2026-06-20",
+    "featured": true,
+    "status": "active"
+  }
+]
