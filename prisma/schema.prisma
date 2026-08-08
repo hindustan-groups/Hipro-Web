@@ -170,3 +170,17 @@ model JobPosting {
   updatedAt   DateTime @updatedAt
 }
 
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  excerpt     String
+  content     String
+  image       String
+  date        String
+  author      String
+  category    String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

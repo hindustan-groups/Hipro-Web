@@ -9,7 +9,7 @@ import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
 import AnimateIn from "@/components/AnimateIn";
 import { findAll } from "@/lib/db";
-import type { Service, Project, Stats as StatType, Testimonial, Settings } from "@/lib/types";
+import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost } from "@/lib/types";
 
 export default async function Home() {
   const settingsData = await findAll<Settings>("settings");
@@ -29,6 +29,11 @@ export default async function Home() {
   const testimonials = await findAll<Testimonial>("testimonials");
   const testimonialsData = testimonials.filter(t => t.approved !== false);
 
+  const blogs = await findAll<BlogPost>("blogs");
+  const blogsData = blogs
+    .filter(b => b.active !== false)
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
   return (
     <>
       <Hero />
@@ -37,7 +42,7 @@ export default async function Home() {
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
       <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} /></AnimateIn>
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
-      <AnimateIn><Blogs /></AnimateIn>
+      <AnimateIn><Blogs posts={blogsData} /></AnimateIn>
       <AnimateIn><CTASection /></AnimateIn>
     </>
   );

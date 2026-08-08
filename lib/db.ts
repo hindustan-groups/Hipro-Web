@@ -20,6 +20,7 @@ function getModel(collection: string) {
     case "applications": return prisma.jobApplication;
     case "jobs": return prisma.jobPosting;
     case "guarantees": return prisma.guarantee;
+    case "blogs": return prisma.blogPost;
     default: throw new Error(`Unknown collection: ${collection}`);
   }
 }

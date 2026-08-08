@@ -1,39 +1,12 @@
 import Link from "next/link";
 import { ArrowUpRight, Calendar, User, Newspaper } from "lucide-react";
+import type { BlogPost } from "@/lib/types";
 
-const BLOG_POSTS = [
-  {
-    id: "1",
-    title: "The Future of Sustainable Construction",
-    excerpt: "Explore how green building practices are reshaping the industry and what it means for your next project. We delve into eco-friendly materials and energy-efficient designs.",
-    image: "https://images.unsplash.com/photo-1541888081604-3a216f966141?q=80&w=2000&auto=format&fit=crop",
-    date: "August 12, 2024",
-    author: "John Doe",
-    category: "Sustainability"
-  },
-  {
-    id: "2",
-    title: "Top 5 Safety Protocols on Modern Job Sites",
-    excerpt: "Safety is our number one priority. Learn about the new technologies keeping workers safe.",
-    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2000&auto=format&fit=crop",
-    date: "July 28, 2024",
-    author: "Jane Smith",
-    category: "Safety"
-  },
-  {
-    id: "3",
-    title: "Cost-Effective Material Choices for 2024",
-    excerpt: "Supply chain insights to help you make the best material choices without compromising quality.",
-    image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2000&auto=format&fit=crop",
-    date: "July 15, 2024",
-    author: "Mike Johnson",
-    category: "Industry News"
-  }
-];
+export default function Blogs({ posts }: { posts: BlogPost[] }) {
+  if (!posts || posts.length === 0) return null;
 
-export default function Blogs() {
-  const featuredPost = BLOG_POSTS[0];
-  const sidePosts = BLOG_POSTS.slice(1);
+  const featuredPost = posts[0];
+  const sidePosts = posts.slice(1, 4); // Show max 3 side posts
 
   return (
     <section id="section-blogs" className="py-24 bg-white relative border-t border-slate-200">

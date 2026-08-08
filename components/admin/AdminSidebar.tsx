@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen,
-  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase
+  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, Newspaper
 } from "lucide-react";
 
 const navItems = [
@@ -17,6 +17,7 @@ const navItems = [
   { href: "/admin/testimonials", label: "Reviews",  icon: Star },
   { href: "/admin/team",        label: "Team",        icon: Users },
   { href: "/admin/newsletter",label: "Newsletter",  icon: Mail },
+  { href: "/admin/blogs",     label: "Blogs",       icon: Newspaper },
   { href: "/admin/stats",     label: "Stats",       icon: BarChart2 },
   { href: "/admin/applications", label: "Applications", icon: Briefcase },
   { href: "/admin/jobs", label: "Job Postings", icon: Briefcase },
