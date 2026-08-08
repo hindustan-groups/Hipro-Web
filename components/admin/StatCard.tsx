@@ -10,9 +10,9 @@ interface StatCardProps {
 
 export default function StatCard({ label, value, sub, icon: Icon, trend }: StatCardProps) {
   return (
-    <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-md p-5 hover:shadow-md hover:border-slate-300 transition-all relative overflow-hidden">
+    <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-none p-5 hover:shadow-md hover:border-slate-300 transition-all relative overflow-hidden">
       <div className="flex items-start justify-between mb-4">
-        <div className="w-10 h-10 rounded-md bg-slate-50 border border-slate-200/60 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-none bg-slate-50 border border-slate-200/60 flex items-center justify-center">
           <Icon className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
         </div>
         {trend && (

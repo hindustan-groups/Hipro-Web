@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, role, img, order, active } = body;
+    const { name, role, img, bio, order, active } = body;
 
     if (!name || !role || !img) {
       return NextResponse.json<ApiResponse>({ success: false, error: "name, role, and img required" }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       role: role.trim(),
       img: img.trim(),
+      bio: bio?.trim() || "",
       order: order ?? 99,
       active: active ?? true,
     });

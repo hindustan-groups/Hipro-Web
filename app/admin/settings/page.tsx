@@ -59,12 +59,12 @@ export default function AdminSettings() {
         <p className="text-slate-500 text-sm">Manage site-wide configuration and third-party integrations.</p>
       </div>
 
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-none shadow-sm overflow-hidden">
         
         {/* Cloudinary Section */}
         <div className="p-6 md:p-8 border-b border-slate-200">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+            <div className="w-10 h-10 rounded-none bg-blue-50 flex items-center justify-center border border-blue-100">
               <Cloud className="w-5 h-5 text-blue-600" />
             </div>
             <div>
@@ -81,7 +81,7 @@ export default function AdminSettings() {
                 value={settings.cloudinaryCloudName || ""} 
                 onChange={(e) => setSettings({ ...settings, cloudinaryCloudName: e.target.value })}
                 placeholder="e.g. dxyz123ab"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400" 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400" 
               />
             </div>
             <div>
@@ -91,11 +91,84 @@ export default function AdminSettings() {
                 value={settings.cloudinaryUploadPreset || ""} 
                 onChange={(e) => setSettings({ ...settings, cloudinaryUploadPreset: e.target.value })}
                 placeholder="e.g. my_preset"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400" 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400" 
               />
               <p className="text-slate-500 text-xs mt-2">
                 Make sure your Upload Preset in Cloudinary is set to <strong className="text-slate-700">Unsigned</strong>.
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information Section */}
+        <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/30">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Contact Information</h2>
+            <p className="text-slate-500 text-xs mt-0.5">These details will appear in the footer and on the Contact page.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Email Address</label>
+              <input 
+                type="email" 
+                value={settings.companyEmail || ""} 
+                onChange={(e) => setSettings({ ...settings, companyEmail: e.target.value })}
+                placeholder="contact@hindustanprojects.com"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+              />
+            </div>
+            <div>
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Phone Number</label>
+              <input 
+                type="text" 
+                value={settings.companyPhone || ""} 
+                onChange={(e) => setSettings({ ...settings, companyPhone: e.target.value })}
+                placeholder="+91 98765 43210"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Headquarters Address</label>
+              <input 
+                type="text" 
+                value={settings.companyAddress || ""} 
+                onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
+                placeholder="123 Builder Avenue, New Delhi, India"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Social Links (JSON)</label>
+              <input 
+                type="text" 
+                value={settings.socialLinks || ""} 
+                onChange={(e) => setSettings({ ...settings, socialLinks: e.target.value })}
+                placeholder='{"facebook": "url", "linkedin": "url"}'
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-mono" 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Page Content Section */}
+        <div className="p-6 md:p-8 border-b border-slate-200">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-slate-900 leading-tight">Dynamic Page Content (JSON)</h2>
+            <p className="text-slate-500 text-xs mt-0.5">Edit text blocks across the site. Keys like 'aboutHero', 'aboutStory', 'projectsHeader'.</p>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Page Content (Raw JSON)</label>
+              <textarea 
+                rows={10}
+                value={settings.pageContent || ""} 
+                onChange={(e) => setSettings({ ...settings, pageContent: e.target.value })}
+                placeholder='{
+  "projectsHeader": "Landmarks In The Making",
+  "aboutHero": "Building Infrastructure Since 1999"
+}'
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-mono" 
+              />
             </div>
           </div>
         </div>
@@ -112,7 +185,7 @@ export default function AdminSettings() {
           <button 
             type="submit" 
             disabled={saving}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20"
+            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? "Saving..." : "Save Settings"}

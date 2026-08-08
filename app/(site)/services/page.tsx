@@ -25,39 +25,48 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Services */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {services.map((s, i) => {
-            const Icon = (Icons as any)[s.icon] || Icons.Wrench;
-            const features = typeof s.features === 'string' ? JSON.parse(s.features) : s.features;
-            
-            // Format title to match sublink hashes, e.g. "Interior & Exterior" -> "interior-exterior"
-            const sectionId = s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
-            
-            return (
-              <div id={sectionId} key={i} className={`rounded-none overflow-hidden border border-slate-200/80 bg-white shadow-lg shadow-slate-900/5 grid lg:grid-cols-2 ${i % 2 === 1 ? "lg:grid-flow-dense" : ""}`}>
-                <div className={`p-10 flex flex-col justify-center ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                  <div className="w-12 h-12 rounded-none flex items-center justify-center mb-6 bg-red-50 border border-red-100 text-construction-red shadow-sm">
-                    <Icon className="w-6 h-6" />
+      {/* Services Grid */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {services.map((s, i) => {
+              const Icon = (Icons as any)[s.icon] || Icons.Wrench;
+              const slug = s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+              
+              return (
+                <Link 
+                  href={`/services/${slug}`} 
+                  key={i} 
+                  className="group bg-white border border-slate-200/80 rounded-none overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={s.image} 
+                      alt={s.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4 w-12 h-12 bg-construction-red flex items-center justify-center text-white shadow-lg">
+                      <Icon className="w-6 h-6" />
+                    </div>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-black mb-3 font-display uppercase tracking-tight">{s.title}</h2>
-                  <p className="text-slate-600 font-light mb-6 leading-relaxed text-sm">{s.description}</p>
-                  <div className="space-y-2.5">
-                    {Array.isArray(features) && features.map((f: string, fi: number) => (
-                      <div key={fi} className="flex items-center gap-3 text-xs font-semibold text-black">
-                        <span className="w-2 h-2 rounded-none bg-construction-red shrink-0" />
-                        {f}
-                      </div>
-                    ))}
+                  
+                  <div className="p-8 flex flex-col flex-1">
+                    <h3 className="text-xl font-bold text-black mb-3 font-display uppercase tracking-tight group-hover:text-construction-red transition-colors">
+                      {s.title}
+                    </h3>
+                    <p className="text-slate-600 font-light leading-relaxed text-sm flex-1 mb-6">
+                      {s.description}
+                    </p>
+                    
+                    <div className="mt-auto inline-flex items-center text-sm font-bold text-construction-navy uppercase tracking-wider group-hover:text-construction-red transition-colors">
+                      Explore Capability <Icons.ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                </div>
-                <div className={`${i % 2 === 1 ? "lg:order-1" : ""}`}>
-                  <img src={s.image} alt={s.title} className="w-full h-full object-cover min-h-[300px]" />
-                </div>
-              </div>
-            );
-          })}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 

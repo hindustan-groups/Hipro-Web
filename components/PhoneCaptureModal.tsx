@@ -32,6 +32,21 @@ export default function PhoneCaptureModal({
     setIsLoading(true);
     
     try {
+      // Send the captured phone number to the admin panel via the Quote API
+      await fetch("/api/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Estimator User",
+          email: "Not provided",
+          phone: phone,
+          location: "Not provided",
+          projectType: "Cost Estimator Access",
+          budget: "Not provided",
+          description: "User entered their phone number to access the Cost Estimator.",
+        }),
+      });
+
       // Set a cookie so the user can access the page
       document.cookie = "cost_estimator_unlocked=true; path=/; max-age=86400"; // 24 hours
       

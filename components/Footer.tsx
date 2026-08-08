@@ -1,7 +1,20 @@
 import Link from "next/link";
 import { HardHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
+import { findAll } from "@/lib/db";
+import type { Settings } from "@/lib/types";
 
-export default function Footer() {
+export default async function Footer() {
+  const settingsData = await findAll<Settings>("settings");
+  const settings = settingsData[0] || {};
+  
+  const address = settings.companyAddress || "101 Executive Tower, Infrastructure Complex, New Delhi, India";
+  const phone = settings.companyPhone || "+91 98765 43210";
+  const email = settings.companyEmail || "contact@hindustanprojects.com";
+  
+  let socials: any = {};
+  try {
+    if (settings.socialLinks) socials = JSON.parse(settings.socialLinks);
+  } catch { /* silent */ }
   return (
     <footer className="bg-black text-slate-400 relative overflow-hidden border-t border-slate-800">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
@@ -29,10 +42,17 @@ export default function Footer() {
               Building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors since 1999.
             </p>
             <div className="flex gap-2.5">
-              {[Facebook, Twitter, Instagram, Linkedin].map((Icon, i) => (
+              {[
+                { icon: Facebook, url: socials.facebook },
+                { icon: Twitter, url: socials.twitter },
+                { icon: Instagram, url: socials.instagram },
+                { icon: Linkedin, url: socials.linkedin }
+              ].map(({ icon: Icon, url }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={url || "#"}
+                  target={url ? "_blank" : undefined}
+                  rel={url ? "noreferrer" : undefined}
                   className="w-9 h-9 rounded-none bg-white/5 border border-white/10 flex items-center justify-center hover:bg-construction-red hover:border-construction-red transition-all duration-200 group shadow-sm"
                 >
                   <Icon className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
@@ -45,7 +65,7 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display">Company</h3>
             <ul className="space-y-3 text-xs">
-              {[["About Us", "/about"], ["Services", "/services"], ["Projects", "/projects"], ["Contact", "/contact"], ["Cost Estimator", "/cost-estimator"]].map(([label, href]) => (
+              {[["About Us", "/about"], ["Why Hindustan Projects", "/why-us"], ["Services", "/services"], ["Projects", "/projects"], ["Contact", "/contact"], ["Cost Estimator", "/cost-estimator"]].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium">
                     {label}
@@ -79,19 +99,19 @@ export default function Footer() {
                 <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
                   <MapPin className="w-4 h-4 text-construction-red" />
                 </div>
-                <span className="leading-relaxed">101 Executive Tower, Infrastructure Complex, New Delhi, India</span>
+                <span className="leading-relaxed">{address}</span>
               </li>
               <li className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>+91 98765 43210</span>
+                <span>{phone}</span>
               </li>
               <li className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>contact@hindustanprojects.com</span>
+                <span>{email}</span>
               </li>
             </ul>
           </div>

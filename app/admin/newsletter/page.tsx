@@ -54,8 +54,8 @@ export default function AdminNewsletter() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-construction-navy to-blue-700 flex items-center justify-center shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="w-10 h-10 rounded-none bg-gradient-to-br from-construction-navy to-blue-700 flex items-center justify-center shadow-sm">
             <Users className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -63,8 +63,8 @@ export default function AdminNewsletter() {
             <div className="text-slate-500 text-sm font-medium">Total Subscribers</div>
           </div>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-construction-red to-red-700 flex items-center justify-center shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-none p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+          <div className="w-10 h-10 rounded-none bg-gradient-to-br from-construction-red to-red-700 flex items-center justify-center shadow-sm">
             <Mail className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -87,12 +87,12 @@ export default function AdminNewsletter() {
           placeholder="Search email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy w-64 shadow-sm transition-all"
+          className="bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy w-64 shadow-sm transition-all"
         />
         <button
           onClick={fetchSubscribers}
           disabled={loading}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-xl text-xs font-medium disabled:opacity-50 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-none text-xs font-medium disabled:opacity-50 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -100,11 +100,11 @@ export default function AdminNewsletter() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>
+        <div className="p-4 rounded-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>
       )}
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-none overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -122,7 +122,7 @@ export default function AdminNewsletter() {
                   <tr key={i} className="animate-pulse">
                     {[...Array(5)].map((_, j) => (
                       <td key={j} className="px-5 py-4">
-                        <div className="h-4 bg-slate-100 rounded-lg" />
+                        <div className="h-4 bg-slate-100 rounded-none" />
                       </td>
                     ))}
                   </tr>
@@ -152,7 +152,7 @@ export default function AdminNewsletter() {
                     <td className="px-5 py-4">
                       <button
                         onClick={() => unsubscribe(s.email)}
-                        className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors shadow-sm"
+                        className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-400 hover:text-red-600 flex items-center justify-center transition-colors shadow-sm"
                         title="Unsubscribe"
                       >
                         <Trash2 className="w-4 h-4" />

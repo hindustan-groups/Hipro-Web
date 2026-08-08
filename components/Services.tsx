@@ -30,7 +30,7 @@ export default function Services({ services }: { services: Service[] }) {
             return (
               <div 
                 key={index}
-                className="group relative h-[450px] md:h-[550px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10"
+                className="group relative h-[300px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10"
               >
                 {/* Background Image */}
                 <img 

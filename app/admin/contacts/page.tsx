@@ -54,15 +54,15 @@ export default function AdminContacts() {
           ))}
         </div>
         <button onClick={fetchContacts} disabled={loading}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors disabled:opacity-50 shadow-sm">
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-medium transition-colors disabled:opacity-50 shadow-sm">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
         </button>
       </div>
 
-      {error && <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
+      {error && <div className="p-4 rounded-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
 
       {/* Table */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -81,7 +81,7 @@ export default function AdminContacts() {
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     {[...Array(7)].map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-lg" /></td>
+                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none" /></td>
                     ))}
                   </tr>
                 ))
@@ -99,11 +99,11 @@ export default function AdminContacts() {
                     <td className="px-5 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
                         <button onClick={() => updateStatus(c.id, "read")} title="Mark read"
-                          className="w-8 h-8 rounded-lg bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-600 flex items-center justify-center transition-colors shadow-sm">
+                          className="w-8 h-8 rounded-none bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 text-yellow-600 flex items-center justify-center transition-colors shadow-sm">
                           <Eye className="w-4 h-4" />
                         </button>
                         <button onClick={() => updateStatus(c.id, "replied")} title="Mark replied"
-                          className="w-8 h-8 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 flex items-center justify-center transition-colors shadow-sm">
+                          className="w-8 h-8 rounded-none bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 flex items-center justify-center transition-colors shadow-sm">
                           <CheckCircle className="w-4 h-4" />
                         </button>
                       </div>

@@ -1,32 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findAll, readDB, writeDB, updateOne } from "@/lib/db";
+import { findAll, insertOne, updateOne } from "@/lib/db";
 import type { Stats, ApiResponse } from "@/lib/types";
 
-const DEFAULT_STATS: Stats[] = [
-  { id: "1", label: "Years Experience",  value: "25+",   icon: "Trophy",       order: 1, updatedAt: new Date().toISOString() },
-  { id: "2", label: "Projects Done",     value: "500+",  icon: "CheckCircle",  order: 2, updatedAt: new Date().toISOString() },
-  { id: "3", label: "Team Members",      value: "200+",  icon: "Users",        order: 3, updatedAt: new Date().toISOString() },
-  { id: "4", label: "Satisfaction Rate", value: "98%",   icon: "Star",         order: 4, updatedAt: new Date().toISOString() },
-  { id: "5", label: "Awards Won",        value: "150+",  icon: "Award",        order: 5, updatedAt: new Date().toISOString() },
-  { id: "6", label: "Happy Clients",     value: "1000+", icon: "Heart",        order: 6, updatedAt: new Date().toISOString() },
+const DEFAULT_STATS = [
+  { label: "Years Experience",  value: "25+",   icon: "Trophy",       order: 1 },
+  { label: "Projects Done",     value: "500+",  icon: "CheckCircle",  order: 2 },
+  { label: "Team Members",      value: "200+",  icon: "Users",        order: 3 },
+  { label: "Satisfaction Rate", value: "98%",   icon: "Star",         order: 4 },
+  { label: "Awards Won",        value: "150+",  icon: "Award",        order: 5 },
+  { label: "Happy Clients",     value: "1000+", icon: "Heart",        order: 6 },
 ];
 
 // GET /api/stats
 export async function GET() {
   try {
-    let stats = readDB<Stats>("stats");
+    let stats = await findAll<Stats>("stats");
 
     // Seed default stats if empty
     if (stats.length === 0) {
-      const { writeDB } = await import("@/lib/db");
-      writeDB("stats", DEFAULT_STATS);
-      stats = DEFAULT_STATS;
+      for (const stat of DEFAULT_STATS) {
+        await insertOne<Stats>("stats", stat);
+      }
+      stats = await findAll<Stats>("stats");
     }
 
     stats.sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
 
     return NextResponse.json<ApiResponse<Stats[]>>({ success: true, data: stats });
-  } catch {
+  } catch (error) {
+    console.error(error);
     return NextResponse.json<ApiResponse>({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

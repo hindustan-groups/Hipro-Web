@@ -1,74 +1,62 @@
 import Link from "next/link";
-import { ArrowUpRight, MapPin, Building } from "lucide-react";
+import { ArrowUpRight, Building } from "lucide-react";
 import type { Project } from "@/lib/types";
 
-export default function Projects({ projects }: { projects: Project[] }) {
+export default function Projects({ projects, title }: { projects: Project[], title?: string }) {
+  // Only take first 3 projects to ensure the 3-column layout is perfect
+  const displayProjects = projects.slice(0, 3);
+
   return (
-    <section id="section-projects" className="py-24 bg-white relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+    <section id="section-projects" className="pt-24 bg-white relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 border-b border-slate-200 pb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-slate-100 border border-slate-200 mb-4">
-              <Building className="w-4 h-4 text-construction-navy" />
-              <span className="text-xs font-bold text-construction-navy uppercase tracking-wider">Portfolio Showcase</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-construction-navy font-display uppercase tracking-wider mb-4">
+              {title || "Landmarks In The Making"}
+            </h2>
+            <div className="flex w-64 h-1">
+              <div className="w-1/3 h-full bg-yellow-500"></div>
+              <div className="w-2/3 h-full bg-construction-navy"></div>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight">Featured Projects</h2>
           </div>
           <Link 
             href="/projects" 
-            className="group inline-flex items-center gap-3 text-black font-bold hover:text-construction-navy transition-colors uppercase tracking-wider text-sm"
+            className="group inline-flex items-center gap-2 text-construction-navy font-bold hover:text-construction-red transition-colors uppercase tracking-widest text-xs"
           >
             View Full Portfolio 
-            <div className="w-10 h-10 border border-slate-300 flex items-center justify-center group-hover:border-construction-navy group-hover:bg-construction-navy group-hover:text-white transition-all rounded-none shadow-sm">
-              <ArrowUpRight className="w-5 h-5" />
-            </div>
+            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
           </Link>
         </div>
+      </div>
 
-        {/* Project Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
-          {projects.map((p, i) => (
+      {/* Gapless Project Grid */}
+      <div className="w-full">
+        <div className="grid md:grid-cols-3 w-full">
+          {displayProjects.map((p, i) => (
             <Link
               href={`/projects/${p.id}`}
               key={i}
-              className="group rounded-none overflow-hidden bg-white border border-slate-200/80 hover:border-slate-300 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300 flex flex-col hover:-translate-y-1.5"
+              className="group relative overflow-hidden h-[500px] md:h-[600px] block w-full bg-slate-900"
             >
               {/* Image */}
-              <div className="relative overflow-hidden h-64">
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                {/* Category badge */}
-                <div className="absolute top-4 left-4">
-                  <span className="bg-black/90 backdrop-blur-md text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-none border border-white/10 shadow-sm">
-                    {p.category}
-                  </span>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-black mb-2 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors">
-                    {p.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 font-medium mb-4">{p.description}</p>
-                </div>
-                
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-construction-navy" />
-                    {p.location}
-                  </div>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-construction-navy uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                    Explore <ArrowUpRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
+              <img
+                src={p.image}
+                alt={p.title}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+              />
+              
+              {/* Hover Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Content Overlay (Appears on Hover) */}
+              <div className="absolute bottom-0 left-0 right-0 p-8 translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center text-center">
+                <h3 className="text-xl md:text-2xl font-bold text-white font-display tracking-tight mb-2 drop-shadow-lg">
+                  {p.title}
+                </h3>
+                <span className="text-xs font-bold text-white/80 uppercase tracking-widest flex items-center gap-2">
+                  View Details <ArrowUpRight className="w-4 h-4 text-construction-red" />
+                </span>
               </div>
             </Link>
           ))}

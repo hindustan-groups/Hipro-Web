@@ -45,19 +45,20 @@ export default function AdminDashboard() {
           <h2 className="text-slate-900 font-bold text-2xl">Overview</h2>
         </div>
         <button onClick={fetchData} disabled={loading}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm disabled:opacity-50">
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+          className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 px-5 py-2.5 rounded-none text-sm font-medium transition-all shadow-sm shadow-blue-600/20 disabled:opacity-50 disabled:cursor-not-allowed">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> 
+          <span>Refresh Data</span>
         </button>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium">{error}</div>
+        <div className="p-4 rounded-none bg-red-50 border border-red-100 text-red-600 text-sm font-medium">{error}</div>
       )}
 
       {loading && !data ? (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 bg-white border border-slate-200 shadow-sm rounded-md" />
+            <div key={i} className="h-28 bg-white border border-slate-200 shadow-sm rounded-none" />
           ))}
         </div>
       ) : data ? (
@@ -74,7 +75,7 @@ export default function AdminDashboard() {
           {/* Recent activity */}
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Recent contacts */}
-            <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-md overflow-hidden flex flex-col">
+            <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-none overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
                 <h3 className="text-slate-900 font-bold text-sm tracking-tight">Recent Messages</h3>
                 <a href="/admin/contacts" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all &rarr;</a>
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Recent quotes */}
-            <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-md overflow-hidden flex flex-col">
+            <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 rounded-none overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
                 <h3 className="text-slate-900 font-bold text-sm tracking-tight">Recent Quote Requests</h3>
                 <a href="/admin/quotes" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all &rarr;</a>

@@ -61,14 +61,14 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
   };
 
   if (loading) {
-    return <div className="h-32 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-200 animate-pulse" />;
+    return <div className="h-32 bg-slate-50 rounded-none flex items-center justify-center border border-slate-200 animate-pulse" />;
   }
 
   const isConfigured = settings?.cloudinaryCloudName && settings?.cloudinaryUploadPreset;
 
   if (!isConfigured) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+      <div className="bg-red-500/10 border border-red-500/20 rounded-none p-4 flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
         <div>
           <p className="text-red-400 text-sm font-medium">Image Upload Disabled</p>
@@ -83,12 +83,12 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       {error && <p className="text-red-400 text-xs font-medium">{error}</p>}
       
       {value ? (
-        <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group">
+        <div className="relative rounded-none overflow-hidden border border-slate-200 bg-slate-50 group">
           <img src={value} alt="Uploaded" className="w-full h-48 object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-construction-red text-white rounded-lg flex items-center justify-center backdrop-blur-sm transition-colors"
+            className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-construction-red text-white rounded-none flex items-center justify-center backdrop-blur-sm transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -96,7 +96,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       ) : (
         <label className={`
           border-2 border-dashed border-slate-300 hover:border-construction-navy bg-slate-50 hover:bg-slate-100 
-          rounded-xl h-32 flex flex-col items-center justify-center cursor-pointer transition-all
+          rounded-none h-32 flex flex-col items-center justify-center cursor-pointer transition-all
           ${uploading ? "opacity-50 pointer-events-none" : ""}
         `}>
           <input 

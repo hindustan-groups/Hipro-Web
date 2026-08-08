@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       text: text.trim(),
       rating: Number(rating),
       image: image?.trim() || "",
-      approved: false, // requires admin approval
+      approved: body.approved ?? false,
     });
 
     return NextResponse.json<ApiResponse<Testimonial>>({

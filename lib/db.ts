@@ -17,6 +17,9 @@ function getModel(collection: string) {
     case "settings": return prisma.settings;
     case "hero": return prisma.heroSlide;
     case "team": return prisma.teamMember;
+    case "applications": return prisma.jobApplication;
+    case "jobs": return prisma.jobPosting;
+    case "guarantees": return prisma.guarantee;
     default: throw new Error(`Unknown collection: ${collection}`);
   }
 }

@@ -157,8 +157,32 @@ export default async function AboutPage() {
             </p>
           </div>
 
+          {team.length > 0 && (
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-16 border border-slate-200/80 bg-white p-8 md:p-12 shadow-md">
+              <div className="relative h-[400px] lg:h-[500px] w-full rounded-none overflow-hidden border border-slate-200 shadow-xl bg-slate-100">
+                <img src={team[0].img} alt={team[0].name} className="w-full h-full object-cover object-top" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 border border-red-100 text-construction-red text-[10px] font-bold uppercase tracking-widest mb-4">
+                  Founder & CEO
+                </div>
+                <h3 className="text-3xl md:text-4xl font-bold text-black font-display uppercase tracking-tight mb-2">{team[0].name}</h3>
+                <p className="text-construction-navy font-bold text-sm uppercase tracking-wider mb-6">{team[0].role}</p>
+                <div className="text-slate-600 font-light leading-relaxed space-y-4 mb-8">
+                  {team[0].bio ? (
+                    team[0].bio.split('\n').map((paragraph, idx) => (
+                      <p key={idx}>{paragraph}</p>
+                    ))
+                  ) : (
+                    <p>Visionary leader committed to excellence in infrastructure and engineering.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {team.map((m, i) => (
+            {team.slice(1).map((m, i) => (
               <div
                 key={i}
                 className="group relative h-[440px] overflow-hidden rounded-none border border-slate-200/50 bg-slate-900"
@@ -189,38 +213,6 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* ── Careers ─────────────────────────────────────── */}
-      <section id="careers" className="py-24 bg-slate-50 border-t border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-slate-100 border border-slate-200 text-construction-navy mb-4 shadow-sm">
-            <span className="w-2 h-2 rounded-none bg-construction-navy animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider">Join Our Team</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight mb-5">
-            Build Your <span className="text-construction-navy">Career</span> With Us
-          </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto font-light leading-relaxed mb-10">
-            We are always looking for passionate engineers, visionary architects, and dedicated site managers to join Hindustan Projects.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6 text-left mb-10">
-            {[
-              { title: "Senior Civil Engineer", type: "Full-Time", location: "New Delhi" },
-              { title: "Project Manager", type: "Full-Time", location: "Mumbai" },
-              { title: "Site Supervisor", type: "Contract", location: "Bengaluru" },
-            ].map((job, i) => (
-              <div key={i} className="bg-white p-6 border border-slate-200/80 shadow-md">
-                <h3 className="text-lg font-bold text-black font-display uppercase">{job.title}</h3>
-                <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 mt-2 mb-4">
-                  <span>{job.type}</span>
-                  <span>•</span>
-                  <span>{job.location}</span>
-                </div>
-                <a href="/contact" className="text-construction-navy text-xs font-bold uppercase tracking-wider hover:underline hover:text-blue-800">Apply Now →</a>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }

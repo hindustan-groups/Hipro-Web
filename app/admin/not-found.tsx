@@ -9,7 +9,7 @@ export default function AdminNotFound() {
       <p className="text-gray-400 text-sm mb-8">This admin page doesn&apos;t exist.</p>
       <Link
         href="/admin"
-        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
+        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-none text-sm transition-colors"
       >
         <Home className="w-4 h-4" /> Back to Dashboard
       </Link>

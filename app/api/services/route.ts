@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       title: title.trim(),
       description: description.trim(),
       icon: icon?.trim() || "Wrench",
-      features: features || [],
+      features: JSON.stringify(features || []),
       image: image?.trim() || "",
       order: order ?? 99,
       active: true,
@@ -48,6 +48,9 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
+    if (updates.features && Array.isArray(updates.features)) {
+      updates.features = JSON.stringify(updates.features);
+    }
     const updated = await updateOne<Service>("services", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Service not found" }, { status: 404 });
 

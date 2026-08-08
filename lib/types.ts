@@ -91,6 +91,17 @@ export interface Settings {
   id?: string;
   cloudinaryCloudName: string;
   cloudinaryUploadPreset: string;
+  navigationConfig?: string;
+  
+  // Phase 2: Contact Info
+  companyEmail?: string;
+  companyPhone?: string;
+  companyAddress?: string;
+  socialLinks?: string;
+  
+  // Phase 3: Page Content
+  pageContent?: string;
+
   updatedAt?: string;
 }
 
@@ -111,8 +122,49 @@ export interface TeamMember {
   name: string;
   role: string;
   img: string;
+  bio?: string;
   order?: number;
   active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Guarantee {
+  id?: string;
+  badge: string;
+  title: string;
+  description: string;
+  bg: string;
+  accent: string;
+  image: string;
+  hasShield?: boolean;
+  order?: number;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface JobApplication {
+  id?: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  experience: string;
+  cvUrl: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface JobPosting {
+  id?: string;
+  title: string;
+  type: string;
+  location: string;
+  description?: string;
+  active?: boolean;
+  order?: number;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -3,38 +3,67 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HardHat, X, Menu, ChevronDown } from "lucide-react";
+import { HardHat, X, Menu, ChevronDown, ArrowRight } from "lucide-react";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About", subLinks: [
-    { href: "/about#team", label: "Our Team" },
-    { href: "/about#history", label: "History" },
-    { href: "/about#careers", label: "Careers" },
-  ]},
-  { href: "/services", label: "Services", subLinks: [
-    { href: "/services#architecture-planning", label: "Architecture Planning" },
-    { href: "/services#structure-analysis", label: "Structure Analysis" },
-    { href: "/services#interior-exterior", label: "Interior & Exterior" },
-    { href: "/services#construction-services", label: "Construction Services" },
-    { href: "/services#property-developer", label: "Property Developer" },
-    { href: "/services#surveying", label: "Surveying" },
-    { href: "/services#estimation", label: "Estimation" },
-    { href: "/services#civil-structure-testing", label: "Civil Structure Testing" },
-    { href: "/services#project-management", label: "Project Management" },
-    { href: "/services#water-treatment-plant", label: "Water Treatment Plant" },
-  ]},
-  { href: "/projects", label: "Projects", subLinks: [
-    { href: "/projects#ongoing", label: "Ongoing" },
-    { href: "/projects#completed", label: "Completed" },
-  ]},
-  { href: "/contact", label: "Contact" },
+const defaultNavLinks = [
+  { href: "/", label: "Home", isMegaMenu: false },
+  { href: "/about", label: "About Us", isMegaMenu: false },
+  { 
+    href: "/services", 
+    label: "Services", 
+    isMegaMenu: true,
+    megaMenuCategories: [
+      {
+        title: "Design & Planning",
+        links: [
+          { href: "/services/architecture-planning", label: "Architecture Planning" },
+          { href: "/services/structure-analysis", label: "Structure Analysis" },
+          { href: "/services/interior-exterior", label: "Interior & Exterior" },
+          { href: "/services/estimation", label: "Estimation" },
+          { href: "/services/surveying", label: "Surveying" },
+        ]
+      },
+      {
+        title: "Construction & Execution",
+        links: [
+          { href: "/services/construction-services", label: "Construction Services" },
+          { href: "/services/property-developer", label: "Property Developer" },
+          { href: "/services/civil-structure-testing", label: "Civil Structure Testing" },
+        ]
+      },
+      {
+        title: "Management & Specialized",
+        links: [
+          { href: "/services/project-management", label: "Project Management" },
+          { href: "/services/water-treatment-plant", label: "Water Treatment Plant" },
+        ]
+      }
+    ],
+  },
+  { href: "/projects", label: "Projects", isMegaMenu: false },
+  { href: "/careers", label: "Careers", isMegaMenu: false },
+  { href: "/contact", label: "Contact", isMegaMenu: false },
 ];
 
-export default function Navbar() {
+export default function Navbar({ 
+  navConfigString,
+  previewMode = false
+}: { 
+  navConfigString?: string | null;
+  previewMode?: boolean;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+
+  let navLinks: any[] = defaultNavLinks;
+  if (navConfigString) {
+    try {
+      navLinks = JSON.parse(navConfigString);
+    } catch (e) {
+      console.error("Failed to parse navConfigString", e);
+    }
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -46,24 +75,28 @@ export default function Navbar() {
 
   return (
     <header 
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled 
-          ? "bg-white py-2 border-b border-gray-100 shadow-sm" 
-          : isHome 
-            ? "bg-transparent py-4 border-b border-white/10"
-            : "bg-white/90 backdrop-blur-sm py-4 border-b border-gray-100"
-      }`}
+      className={
+        previewMode 
+        ? "relative z-50 bg-white py-2 border border-gray-200 shadow-sm rounded-lg overflow-visible w-full"
+        : `fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled 
+            ? "bg-white py-2 border-b border-gray-100 shadow-sm" 
+            : isHome 
+              ? "bg-transparent py-4 border-b border-white/10"
+              : "bg-white/90 backdrop-blur-sm py-4 border-b border-gray-100"
+        }`
+      }
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 bg-white md:px-5 md:py-1.5 rounded-2xl md:border md:border-slate-100 transition-transform hover:scale-[1.02]">
+          <Link href="/" className="flex items-center gap-3 shrink-0 transition-transform hover:scale-[1.02] group">
             <img 
               src="/logo.jpg" 
               alt="HiPRO Logo" 
-              className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" 
+              className="h-10 md:h-12 w-auto object-contain mix-blend-multiply"
             />
-            <div className="hidden md:block w-[1px] h-10 bg-slate-200"></div>
+            <div className="hidden md:block w-[1px] h-10 bg-slate-200/50"></div>
             <div className="hidden md:flex flex-col justify-center">
               <span className="font-bold text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
                 Hindustan
@@ -75,9 +108,9 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 h-full">
             {navLinks.map((link) => (
-              <div key={link.href} className="relative group">
+              <div key={link.href} className="relative group h-full flex items-center">
                 <Link
                   href={link.href}
                   className={`flex items-center text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-4 border-b-[3px] ${
@@ -87,10 +120,11 @@ export default function Navbar() {
                   }`}
                 >
                   {link.label}
-                  {link.subLinks && <ChevronDown className="w-4 h-4 ml-1" />}
+                  {(link.subLinks || link.isMegaMenu) && <ChevronDown className="w-4 h-4 ml-1" />}
                 </Link>
-                {/* Dropdown Menu Desktop */}
-                {link.subLinks && (
+                
+                {/* Standard Dropdown Menu Desktop */}
+                {link.subLinks && !link.isMegaMenu && (
                   <div className="absolute top-[100%] left-0 w-48 pt-1 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50">
                     <div className="bg-white shadow-xl flex flex-col py-2 rounded-b-md border border-slate-100">
                       {link.subLinks.map(sub => (
@@ -105,11 +139,74 @@ export default function Navbar() {
                     </div>
                   </div>
                 )}
+
+                {/* Mega Menu Dropdown */}
+                {link.isMegaMenu && (
+                  <div className="fixed top-[70px] md:top-[85px] left-0 w-full pt-1 opacity-0 invisible -translate-y-4 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-[100]">
+                    <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex mx-auto">
+                      <div className="max-w-[1400px] mx-auto w-full flex">
+                        
+                        {/* Columns Container */}
+                        <div className="flex-1 p-10 grid grid-cols-3 gap-10">
+                          {link.megaMenuCategories?.map((category: any, idx: number) => (
+                            <div key={idx} className="flex flex-col gap-5">
+                              <h3 className="text-construction-navy font-display font-bold uppercase tracking-widest text-[15px] mb-1 border-b border-slate-200 pb-3">
+                                {category.title}
+                              </h3>
+                              <div className="flex flex-col gap-3">
+                                {category.links.map((sub: any) => (
+                                  <Link 
+                                    key={sub.href} 
+                                    href={sub.href}
+                                    className="text-sm font-semibold uppercase tracking-wider text-slate-600 hover:text-construction-red transition-colors py-1.5"
+                                  >
+                                    {sub.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Featured Image Block (Right Side) */}
+                        {link.megaMenuImage && (
+                          <div className="w-[450px] shrink-0 bg-slate-50 border-l border-slate-200 p-10 flex flex-col justify-between group/feature cursor-pointer">
+                            <div>
+                              <div className="flex items-center gap-2 text-construction-red font-bold text-xs uppercase tracking-widest mb-4">
+                                <span className="w-8 h-[2px] bg-construction-red"></span> Featured
+                              </div>
+                              <h3 className="text-2xl font-bold text-slate-900 font-display uppercase tracking-tight mb-2 leading-tight">
+                                {link.megaMenuTitle}
+                              </h3>
+                              <p className="text-slate-600 font-medium text-sm">
+                                {link.megaMenuSubtitle}
+                              </p>
+                            </div>
+                            
+                            <div className="relative h-48 w-full mt-6 overflow-hidden rounded-none shadow-lg">
+                              <img 
+                                src={link.megaMenuImage} 
+                                alt={link.megaMenuTitle} 
+                                className="w-full h-full object-cover group-hover/feature:scale-105 transition-transform duration-700"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                                <span className="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2 group-hover/feature:gap-4 transition-all">
+                                  View Project <ArrowRight className="w-4 h-4" />
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             <Link 
               href="/contact" 
-              className="bg-construction-navy btn-sweep text-white px-6 py-2.5 rounded-none font-semibold uppercase tracking-wider text-sm shadow-md shadow-blue-900/20"
+              className="bg-construction-navy btn-sweep text-white px-6 py-2.5 rounded-none font-semibold uppercase tracking-wider text-sm shadow-md shadow-blue-900/20 ml-2"
             >
               Get a Quote
             </Link>
@@ -129,12 +226,12 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="md:hidden pt-4 pb-2 border-t border-gray-100 mt-4 flex flex-col gap-2 bg-white">
+          <div className="md:hidden pt-4 pb-2 border-t border-gray-100 mt-4 flex flex-col gap-2 bg-white max-h-[80vh] overflow-y-auto shadow-xl">
             {navLinks.map((link) => (
               <div key={link.href} className="flex flex-col">
                 <Link
                   href={link.href}
-                  onClick={() => !link.subLinks && setMobileOpen(false)}
+                  onClick={() => !link.subLinks && !link.isMegaMenu && setMobileOpen(false)}
                   className={`px-4 py-3 rounded-none text-base font-semibold uppercase tracking-wider transition-colors ${
                     pathname === link.href
                       ? "text-construction-navy bg-slate-100"
@@ -143,17 +240,39 @@ export default function Navbar() {
                 >
                   {link.label}
                 </Link>
-                {link.subLinks && (
-                  <div className="pl-6 flex flex-col">
+                {link.subLinks && !link.isMegaMenu && (
+                  <div className="pl-6 flex flex-col bg-slate-50">
                     {link.subLinks.map((sub) => (
                       <Link
                         key={sub.href}
                         href={sub.href}
                         onClick={() => setMobileOpen(false)}
-                        className="px-4 py-2 text-sm font-semibold uppercase tracking-wider text-slate-500 hover:text-construction-red border-l-2 border-slate-100"
+                        className="px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-slate-500 hover:text-construction-red border-l border-slate-200"
                       >
                         {sub.label}
                       </Link>
+                    ))}
+                  </div>
+                )}
+                {/* Mobile version of Mega Menu */}
+                {link.isMegaMenu && link.megaMenuCategories && (
+                  <div className="pl-6 flex flex-col bg-slate-50 py-2 gap-4">
+                    {link.megaMenuCategories.map((category, idx) => (
+                      <div key={idx} className="flex flex-col">
+                        <span className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 px-4">
+                          {category.title}
+                        </span>
+                        {category.links.map((sub) => (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            onClick={() => setMobileOpen(false)}
+                            className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-construction-red border-l-2 border-slate-200 ml-4"
+                          >
+                            {sub.label}
+                          </Link>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -162,7 +281,7 @@ export default function Navbar() {
             <Link 
               href="/contact" 
               onClick={() => setMobileOpen(false)}
-              className="mt-2 mx-4 bg-construction-navy btn-sweep text-white px-4 py-3 rounded-none font-semibold text-center uppercase tracking-wider shadow-md shadow-blue-900/20"
+              className="mt-4 mb-2 mx-4 bg-construction-navy btn-sweep text-white px-4 py-3.5 rounded-none font-semibold text-center uppercase tracking-wider shadow-md shadow-blue-900/20"
             >
               Get a Quote
             </Link>
