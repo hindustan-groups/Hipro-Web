@@ -22,7 +22,6 @@ export async function GET(req: NextRequest) {
       projects = projects.filter((p) => p.featured === true);
     }
 
-    projects = projects.filter((p) => p.status !== "archived");
     projects.sort((a, b) => new Date(b.date).getFullYear() - new Date(a.date).getFullYear());
 
     return NextResponse.json<ApiResponse<Project[]>>({
@@ -54,9 +53,10 @@ export async function POST(req: NextRequest) {
       location: location.trim(),
       date: date.trim(),
       image: image?.trim() || "",
+      images: body.images || "",
       description: description.trim(),
       featured: body.featured ?? false,
-      status: "active",
+      status: body.status || "active",
     });
 
     return NextResponse.json<ApiResponse<Project>>({

@@ -52,8 +52,9 @@ export async function updateOne<T>(collection: string, id: string, updates: any)
   const model = getModel(collection) as any;
   try {
     return await model.update({ where: { id }, data: updates });
-  } catch {
-    return null; // Prisma throws if record not found
+  } catch (err) {
+    console.error(`updateOne error in ${collection} (id: ${id}):`, err);
+    return null; // Prisma throws if record not found or data mismatch
   }
 }
 

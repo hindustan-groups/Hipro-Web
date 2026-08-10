@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function ContactForm() {
+export default function ContactForm({ services = [] }: { services?: { title: string }[] }) {
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", service: "", message: "",
   });
@@ -99,12 +99,20 @@ export default function ContactForm() {
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           >
             <option value="">Select a service category</option>
-            <option value="residential">Residential Construction</option>
-            <option value="commercial">Commercial Development</option>
-            <option value="industrial">Industrial Facilities</option>
-            <option value="renovation">Renovation & Remodeling</option>
-            <option value="design-build">Design Build Turnkey</option>
-            <option value="management">Project Management</option>
+            {services.length > 0 ? (
+              services.map((s, idx) => (
+                <option key={idx} value={s.title}>{s.title}</option>
+              ))
+            ) : (
+              <>
+                <option value="residential">Residential Construction</option>
+                <option value="commercial">Commercial Development</option>
+                <option value="industrial">Industrial Facilities</option>
+                <option value="renovation">Renovation & Remodeling</option>
+                <option value="design-build">Design Build Turnkey</option>
+                <option value="management">Project Management</option>
+              </>
+            )}
           </select>
         </div>
       </div>

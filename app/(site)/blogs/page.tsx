@@ -39,7 +39,7 @@ export default async function BlogsPage() {
               blogs.map((post) => (
                 <Link
                   key={post.id}
-                  href={`/blogs/${post.id}`}
+                  href={`/blogs/${post.slug}`}
                   className="group flex flex-col h-full bg-white border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300 rounded-none overflow-hidden"
                 >
                   {/* Image */}

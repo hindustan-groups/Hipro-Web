@@ -20,7 +20,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, excerpt, content, image, date, author, category } = body;
+    const { title, excerpt, content, image, date, author, category, slug, metaTitle, metaDescription, keywords } = body;
 
     if (!title || !content || !category) {
       return NextResponse.json<ApiResponse>({ success: false, error: "title, content, and category required" }, { status: 400 });
@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
       author: author?.trim() || "Admin",
       category: category.trim(),
       active: true,
+      slug: slug ? slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "") : title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, ""),
+      metaTitle: metaTitle || null,
+      metaDescription: metaDescription || null,
+      keywords: keywords || null,
     });
 
     return NextResponse.json<ApiResponse<BlogPost>>({ success: true, data: doc }, { status: 201 });
@@ -49,6 +53,10 @@ export async function PATCH(req: NextRequest) {
     const { id, ...updates } = await req.json();
     if (!id) return NextResponse.json<ApiResponse>({ success: false, error: "id required" }, { status: 400 });
 
+    if (updates.slug) {
+      updates.slug = updates.slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    }
+    
     const updated = await updateOne<BlogPost>("blogs", id, updates);
     if (!updated) return NextResponse.json<ApiResponse>({ success: false, error: "Blog post not found" }, { status: 404 });
 

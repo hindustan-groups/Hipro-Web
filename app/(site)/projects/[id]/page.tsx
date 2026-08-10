@@ -17,6 +17,22 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
     Industrial: "text-slate-800 bg-slate-100 border border-slate-200",
   };
 
+  // Extract project specific gallery images
+  let galleryImages: string[] = [];
+  if (project.images) {
+    try {
+      if (project.images.trim().startsWith("[")) {
+        galleryImages = JSON.parse(project.images);
+      } else {
+        galleryImages = project.images.split("\n").map(s => s.trim()).filter(Boolean);
+      }
+    } catch {
+      galleryImages = project.images.split("\n").map(s => s.trim()).filter(Boolean);
+    }
+  }
+
+  const allProjectImages = Array.from(new Set([project.image, ...galleryImages].filter(Boolean)));
+
   return (
     <article className="bg-white min-h-screen pb-24">
       {/* Hero Section */}
@@ -43,8 +59,8 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
             <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-none ${categoryColor[project.category] || categoryColor.Commercial}`}>
               {project.category}
             </span>
-            <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-none ${project.status === 'active' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
-              {project.status === 'active' ? 'Ongoing' : 'Completed'}
+            <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-none ${project.status === 'active' || project.status === 'ongoing' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+              {project.status === 'active' || project.status === 'ongoing' ? 'Ongoing' : 'Completed'}
             </span>
           </div>
           
@@ -88,37 +104,21 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
               {/* Project Gallery */}
               <div>
                 <h3 className="text-xl font-bold text-black font-display uppercase tracking-tight mb-6 border-b border-slate-200 pb-3">
-                  Gallery & Execution
+                  Gallery & Execution ({allProjectImages.length} Photos)
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 h-64 md:h-[400px] relative group overflow-hidden bg-slate-100">
-                    <img 
-                      src={project.image} 
-                      alt={`${project.title} - Main View`} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                  </div>
-                  <div className="h-48 md:h-72 relative group overflow-hidden bg-slate-100">
-                    <img 
-                      src="https://images.unsplash.com/photo-1541888086925-0c13d42e2c45?w=800&q=80" 
-                      alt="Construction site detailing" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                  </div>
-                  <div className="h-48 md:h-72 relative group overflow-hidden bg-slate-100">
-                    <img 
-                      src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80" 
-                      alt="Architectural structure" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                  </div>
-                  <div className="col-span-2 h-64 md:h-[450px] relative group overflow-hidden bg-slate-100">
-                    <img 
-                      src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&q=80" 
-                      alt="Engineering blueprint review" 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                  </div>
+                  {allProjectImages.map((imgUrl, i) => (
+                    <div 
+                      key={i} 
+                      className={`${i % 3 === 0 ? "col-span-2 h-64 md:h-[400px]" : "h-48 md:h-72"} relative group overflow-hidden bg-slate-100 border border-slate-200 shadow-sm`}
+                    >
+                      <img 
+                        src={imgUrl} 
+                        alt={`${project.title} - Image ${i + 1}`} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

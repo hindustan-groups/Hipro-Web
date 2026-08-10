@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import ImageUpload from "@/components/admin/ImageUpload";
+import DynamicIcon from "@/components/DynamicIcon";
 import { Service, Guarantee } from "@/lib/types";
 
 const EMPTY_SERVICE: Omit<Service, "id" | "createdAt"> = {
@@ -111,13 +112,22 @@ export default function AdminServices() {
         <form onSubmit={handleServiceSubmit} className="bg-white border border-slate-200 shadow-sm rounded-none p-6 space-y-4">
           <h3 className="text-slate-900 font-bold text-lg">New Service</h3>
           <div className="grid md:grid-cols-2 gap-4">
-            {(["title", "icon"] as const).map((field) => (
-              <div key={field}>
-                <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">{field}</label>
-                <input required value={serviceForm[field as keyof typeof serviceForm] as string} onChange={(e) => setServiceForm((p) => ({ ...p, [field]: e.target.value }))}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+            <div>
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Title</label>
+              <input required value={serviceForm.title} onChange={(e) => setServiceForm((p) => ({ ...p, title: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+            </div>
+            <div>
+              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Icon (Lucide Name)</label>
+              <div className="relative flex items-center">
+                <input required value={serviceForm.icon} onChange={(e) => setServiceForm((p) => ({ ...p, icon: e.target.value }))}
+                  placeholder="e.g. HardHat, Wrench, Building"
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none pl-4 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-mono" />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-none bg-slate-100 border border-slate-200 flex items-center justify-center text-construction-navy pointer-events-none shadow-sm">
+                  <DynamicIcon name={serviceForm.icon || "HelpCircle"} className="w-3.5 h-3.5" />
+                </div>
               </div>
-            ))}
+            </div>
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Image</label>
               <ImageUpload value={serviceForm.image} onChange={(url) => setServiceForm((p) => ({ ...p, image: url }))} />
@@ -210,7 +220,12 @@ export default function AdminServices() {
                   services.map((s) => (
                     <tr key={s.id} className={`transition-colors ${s.active === false ? "opacity-50 bg-slate-50/50" : "hover:bg-slate-50"}`}>
                       <td className="px-5 py-4"><p className="text-slate-900 font-semibold">{s.title}</p></td>
-                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{s.icon}</td>
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                        <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-800 text-xs font-mono">
+                          <DynamicIcon name={s.icon} className="w-3.5 h-3.5 text-construction-navy" />
+                          <span>{s.icon}</span>
+                        </div>
+                      </td>
                       <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{s.order}</td>
                       <td className="px-5 py-4"><button onClick={() => toggleActive("services", s)} className={`w-8 h-8 rounded-none flex items-center justify-center ${s.active !== false ? "bg-green-100 text-green-700" : "bg-slate-50 text-slate-400"}`}>{s.active !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}</button></td>
                       <td className="px-5 py-4"><button onClick={() => deleteItem("services", s.id as string)} className="w-8 h-8 rounded-none text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button></td>

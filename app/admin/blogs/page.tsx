@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { RefreshCw, Plus, Trash2, Eye, EyeOff, Search } from "lucide-react";
 import type { BlogPost } from "@/lib/types";
 import ImageUpload from "@/components/admin/ImageUpload";
 
 const EMPTY: Omit<BlogPost, "id" | "createdAt" | "updatedAt"> = {
   title: "", excerpt: "", content: "", image: "", date: "", author: "Admin", category: "News", active: true,
+  slug: "", metaTitle: "", metaDescription: "", keywords: "",
 };
 
 export default function AdminBlogs() {
@@ -121,6 +122,38 @@ export default function AdminBlogs() {
               <input value={form.author} onChange={(e) => setForm((p) => ({ ...p, author: e.target.value }))}
                 placeholder="Admin"
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+            </div>
+            
+            <div className="md:col-span-2 pt-4 mt-2 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <Search className="w-4 h-4 text-blue-500" /> SEO & Discovery Settings
+              </h4>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">URL Slug (Auto-generated if blank)</label>
+                  <input value={form.slug || ""} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
+                    placeholder="e.g. latest-industry-trends"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-mono" />
+                </div>
+                <div>
+                  <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Meta Title</label>
+                  <input value={form.metaTitle || ""} onChange={(e) => setForm((p) => ({ ...p, metaTitle: e.target.value }))}
+                    placeholder="Custom SEO Title"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+                </div>
+                <div>
+                  <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Keywords (comma separated)</label>
+                  <input value={form.keywords || ""} onChange={(e) => setForm((p) => ({ ...p, keywords: e.target.value }))}
+                    placeholder="construction, news, read my blogs"
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Meta Description</label>
+                  <textarea rows={2} value={form.metaDescription || ""} onChange={(e) => setForm((p) => ({ ...p, metaDescription: e.target.value }))}
+                    placeholder="Search engine snippet text..."
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+                </div>
+              </div>
             </div>
           </div>
           <div className="flex gap-3 pt-2">

@@ -12,6 +12,10 @@ const defaultNavLinks = [
     href: "/services", 
     label: "Services", 
     isMegaMenu: true,
+    megaMenuImage: "https://images.unsplash.com/photo-1541888086925-0c13d42e2c45?w=800&q=80",
+    megaMenuTitle: "Turnkey Construction & Engineering",
+    megaMenuSubtitle: "Delivering visionary architectural blueprints, BIM modeling, and master infrastructure execution across India.",
+    megaMenuLink: "/services",
     megaMenuCategories: [
       {
         title: "Design & Planning",
@@ -170,32 +174,35 @@ export default function Navbar({
 
                         {/* Featured Image Block (Right Side) */}
                         {link.megaMenuImage && (
-                          <div className="w-[450px] shrink-0 bg-slate-50 border-l border-slate-200 p-10 flex flex-col justify-between group/feature cursor-pointer">
-                            <div>
-                              <div className="flex items-center gap-2 text-construction-red font-bold text-xs uppercase tracking-widest mb-4">
-                                <span className="w-8 h-[2px] bg-construction-red"></span> Featured
+                          <Link 
+                            href={link.megaMenuLink || "/services"}
+                            className="w-[420px] shrink-0 bg-slate-900 border-l border-slate-800 p-8 flex flex-col justify-between group/feature cursor-pointer relative overflow-hidden"
+                          >
+                            {/* Background Image with Dark Overlay */}
+                            <img 
+                              src={link.megaMenuImage} 
+                              alt={link.megaMenuTitle || "Services Feature"} 
+                              className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover/feature:scale-105 group-hover/feature:opacity-45 transition-all duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                            
+                            <div className="relative z-10">
+                              <div className="flex items-center gap-2 text-construction-red font-bold text-xs uppercase tracking-widest mb-3">
+                                <span className="w-8 h-[2px] bg-construction-red"></span> Featured Capabilities
                               </div>
-                              <h3 className="text-2xl font-bold text-slate-900 font-display uppercase tracking-tight mb-2 leading-tight">
+                              <h3 className="text-2xl font-bold text-white font-display uppercase tracking-tight mb-2 leading-tight drop-shadow-md">
                                 {link.megaMenuTitle}
                               </h3>
-                              <p className="text-slate-600 font-medium text-sm">
+                              <p className="text-slate-300 font-light text-xs leading-relaxed">
                                 {link.megaMenuSubtitle}
                               </p>
                             </div>
                             
-                            <div className="relative h-48 w-full mt-6 overflow-hidden rounded-none shadow-lg">
-                              <img 
-                                src={link.megaMenuImage} 
-                                alt={link.megaMenuTitle} 
-                                className="w-full h-full object-cover group-hover/feature:scale-105 transition-transform duration-700"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-                                <span className="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2 group-hover/feature:gap-4 transition-all">
-                                  View Project <ArrowRight className="w-4 h-4" />
-                                </span>
-                              </div>
+                            <div className="relative z-10 mt-8 pt-4 border-t border-white/15 flex items-center justify-between text-white text-xs font-bold uppercase tracking-wider group-hover/feature:text-construction-red transition-colors">
+                              <span>Explore All Services</span>
+                              <ArrowRight className="w-4 h-4 group-hover/feature:translate-x-2 transition-transform text-construction-red" />
                             </div>
-                          </div>
+                          </Link>
                         )}
 
                       </div>

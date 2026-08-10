@@ -9,7 +9,7 @@ import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
 import AnimateIn from "@/components/AnimateIn";
 import { findAll } from "@/lib/db";
-import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost } from "@/lib/types";
+import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee } from "@/lib/types";
 
 export default async function Home() {
   const settingsData = await findAll<Settings>("settings");
@@ -34,11 +34,16 @@ export default async function Home() {
     .filter(b => b.active !== false)
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
+  const guarantees = await findAll<Guarantee>("guarantees");
+  const guaranteesData = guarantees
+    .filter(g => g.active !== false)
+    .sort((a, b) => (a.order || 99) - (b.order || 99));
+
   return (
     <>
       <Hero />
       <AnimateIn><Services services={servicesData} /></AnimateIn>
-      <AnimateIn delay={100}><Guarantees /></AnimateIn>
+      <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
       <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} /></AnimateIn>
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>

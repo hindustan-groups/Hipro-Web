@@ -9,18 +9,24 @@ export default async function ServicesPage() {
 
   return (
     <>
-      {/* Header */}
-      <section className="bg-white pt-36 pb-20 px-4 border-b border-slate-200/80">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red mb-6 shadow-sm">
+      {/* Premium Light Hero Header */}
+      <section className="relative pt-36 pb-20 bg-slate-50 border-b border-slate-200 overflow-hidden">
+        {/* Subtle Architectural Grid Pattern */}
+        <div className="absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-200/50 to-transparent z-0"></div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-none bg-white border border-slate-200 text-slate-700 mb-6 shadow-sm">
             <span className="w-2 h-2 rounded-none bg-construction-red animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider">End-To-End Infrastructure</span>
+            <span className="text-xs font-bold uppercase tracking-wider">End-To-End Engineering & Construction</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
+          
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 font-display uppercase tracking-tight">
             Our <span className="text-construction-red">Capabilities</span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
-            Turnkey engineering, architecture, and construction solutions across residential, commercial, and industrial sectors.
+          
+          <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto font-light leading-relaxed mb-8">
+            Turnkey civil engineering, structural design, architecture, and construction solutions across residential, commercial, and industrial sectors.
           </p>
         </div>
       </section>

@@ -41,6 +41,7 @@ model Project {
   location    String
   date        String
   image       String
+  images      String?
   description String
   featured    Boolean  @default(false)
   status      String   @default("active") // "active", "archived"
@@ -124,6 +125,11 @@ model TeamMember {
   name      String
   role      String
   img       String
+  bio       String?
+  isFounder Boolean  @default(false)
+  instagram String?
+  linkedin  String?
+  facebook  String?
   order     Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -171,16 +177,35 @@ model JobPosting {
 }
 
 model BlogPost {
-  id          String   @id @default(cuid())
-  title       String
-  excerpt     String
-  content     String
-  image       String
-  date        String
-  author      String
-  category    String
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  excerpt         String
+  content         String
+  image           String
+  date            String
+  author          String
+  category        String
+  active          Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?
+  keywords        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
+model AdminUser {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        String   @default("employee")
+  permissions String?  
+  createdAt   DateTime @default(now())
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+}

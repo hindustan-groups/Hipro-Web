@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { findAll } from "@/lib/db";
-import type { Service } from "@/lib/types";
+import type { Service, Settings } from "@/lib/types";
 import * as Icons from "lucide-react";
 
 export async function generateStaticParams() {
@@ -12,7 +12,13 @@ export async function generateStaticParams() {
 }
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
-  const allServices = await findAll<Service>("services");
+  const [allServices, settingsData] = await Promise.all([
+    findAll<Service>("services"),
+    findAll<Settings>("settings"),
+  ]);
+
+  const settings = settingsData[0] || {};
+  const phone = settings.companyPhone || "+91 98765 43210";
   
   const service = allServices.find(s => 
     s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-') === params.slug
@@ -22,7 +28,13 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
     notFound();
   }
 
-  const features = typeof service.features === 'string' ? JSON.parse(service.features) : service.features;
+  let features: string[] = [];
+  try {
+    features = typeof service.features === 'string' ? JSON.parse(service.features) : service.features;
+  } catch {
+    features = [];
+  }
+
   const Icon = (Icons as any)[service.icon] || Icons.Wrench;
 
   // Dynamically create supplementary images from other services so it's not hardcoded
@@ -67,45 +79,47 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
       </section>
 
       {/* 2. Visual Zig-Zag Features */}
-      <section className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
-          
-          {Array.isArray(features) && features.slice(0, 2).map((f: string, fi: number) => {
-            const isEven = fi % 2 === 0;
-            const imgSrc = supplementaryImages[fi % supplementaryImages.length];
+      {Array.isArray(features) && features.length > 0 && (
+        <section className="py-24 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+            
+            {features.map((f: string, fi: number) => {
+              const isEven = fi % 2 === 0;
+              const imgSrc = supplementaryImages[fi % supplementaryImages.length];
 
-            return (
-              <div key={fi} className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-24 ${isEven ? '' : 'lg:flex-row-reverse'}`}>
-                
-                {/* Text Content */}
-                <div className="flex-1 space-y-6">
-                  <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red shadow-sm">
-                    <span className="text-xs font-bold uppercase tracking-wider">Capability 0{fi + 1}</span>
+              return (
+                <div key={fi} className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-24 ${isEven ? '' : 'lg:flex-row-reverse'}`}>
+                  
+                  {/* Text Content */}
+                  <div className="flex-1 space-y-6">
+                    <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red shadow-sm">
+                      <span className="text-xs font-bold uppercase tracking-wider">Capability 0{fi + 1}</span>
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 font-display uppercase tracking-tight leading-tight">
+                      {f}
+                    </h2>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-slate-900 font-display uppercase tracking-tight leading-tight">
-                    {f}
-                  </h2>
-                </div>
 
-                {/* Image Content */}
-                <div className="flex-1 w-full">
-                  <div className="relative h-[300px] lg:h-[350px] w-full shadow-2xl">
-                    <img 
-                      src={imgSrc} 
-                      alt={f} 
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    {/* Decorative Element */}
-                    <div className={`absolute top-1/2 -translate-y-1/2 ${isEven ? '-left-6' : '-right-6'} w-12 h-24 bg-construction-red hidden lg:block`} />
+                  {/* Image Content */}
+                  <div className="flex-1 w-full">
+                    <div className="relative h-[300px] lg:h-[350px] w-full shadow-2xl">
+                      <img 
+                        src={imgSrc} 
+                        alt={f} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                      {/* Decorative Element */}
+                      <div className={`absolute top-1/2 -translate-y-1/2 ${isEven ? '-left-6' : '-right-6'} w-12 h-24 bg-construction-red hidden lg:block`} />
+                    </div>
                   </div>
+                  
                 </div>
-                
-              </div>
-            );
-          })}
+              );
+            })}
 
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* 3. CTA Section */}
       <section className="bg-construction-navy py-20 border-t-4 border-construction-red">
@@ -118,13 +132,13 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/contact"
+              href={`/contact?service=${encodeURIComponent(service.title)}`}
               className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-lg"
             >
               Get a Free Quote
             </Link>
             <a 
-              href="tel:+1234567890" 
+              href={`tel:${phone.replace(/\s+/g, '')}`} 
               className="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider flex items-center gap-2"
             >
               <Icons.Phone className="w-4 h-4" /> Call Us Directly

@@ -3,47 +3,30 @@
 import { useState, useEffect, useRef } from "react";
 import { ShieldCheck } from "lucide-react";
 import AnimateIn from "@/components/AnimateIn";
+import type { Guarantee } from "@/lib/types";
 
-export default function Guarantees() {
-  const [guarantees, setGuarantees] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const defaultGuarantees = [
+  {
+    id: "1", badge: "EXPERT ASSURANCE", title: "In-House Technical Specialists",
+    description: "Dedicated cross-functional team – Chartered Architect, Senior Site Manager, Lead Engineer, and Quality Control Inspector.",
+    bg: "bg-construction-red", accent: "text-red-100", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80", hasShield: false
+  },
+  {
+    id: "2", badge: "VETTED QUALITY", title: "Top-Tier Certified Contractors",
+    description: "Every trade contractor undergoes a rigorous 6-stage auditing process ensuring compliance, safety, and craftsmanship.",
+    bg: "bg-construction-navy", accent: "text-blue-200", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80", hasShield: false
+  },
+  {
+    id: "3", badge: "LONG-TERM PROTECTION", title: "Built To Last. 10-Year Structural Guarantee",
+    description: "Comprehensive post-handover warranty and structural inspections giving complete peace of mind for decades.",
+    bg: "bg-black", accent: "text-slate-300", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80", hasShield: true
+  }
+];
+
+export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) {
+  const displayGuarantees = guarantees.length > 0 ? guarantees : defaultGuarantees;
   const [progress, setProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchGuarantees = async () => {
-      try {
-        const res = await fetch("/api/guarantees");
-        const json = await res.json();
-        if (json.success && json.data.length > 0) {
-          setGuarantees(json.data);
-        } else {
-          // Fallback to defaults
-          setGuarantees([
-            {
-              id: "1", badge: "EXPERT ASSURANCE", title: "In-House Technical Specialists",
-              description: "Dedicated cross-functional team – Chartered Architect, Senior Site Manager, Lead Engineer, and Quality Control Inspector.",
-              bg: "bg-construction-red", accent: "text-red-100", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80"
-            },
-            {
-              id: "2", badge: "VETTED QUALITY", title: "Top-Tier Certified Contractors",
-              description: "Every trade contractor undergoes a rigorous 6-stage auditing process ensuring compliance, safety, and craftsmanship.",
-              bg: "bg-construction-navy", accent: "text-blue-200", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80"
-            },
-            {
-              id: "3", badge: "LONG-TERM PROTECTION", title: "Built To Last. 10-Year Structural Guarantee",
-              description: "Comprehensive post-handover warranty and structural inspections giving complete peace of mind for decades.",
-              bg: "bg-black", accent: "text-slate-300", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80", hasShield: true
-            }
-          ]);
-        }
-      } catch {
-        // Fallback handled
-      }
-      setLoading(false);
-    };
-    fetchGuarantees();
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,8 +53,6 @@ export default function Guarantees() {
     handleScroll(); // initialize
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  if (loading) return null;
 
   return (
     <section className="py-24 bg-white border-y border-slate-200/80 overflow-hidden">

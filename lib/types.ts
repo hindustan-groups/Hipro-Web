@@ -32,9 +32,10 @@ export interface Project {
   location: string;
   date: string;
   image: string;
+  images?: string;
   description: string;
   featured?: boolean;
-  status?: "active" | "archived";
+  status?: "active" | "archived" | "completed" | "ongoing";
   createdAt?: string;
   updatedAt?: string;
 }
@@ -123,6 +124,10 @@ export interface TeamMember {
   role: string;
   img: string;
   bio?: string;
+  isFounder?: boolean;
+  instagram?: string;
+  linkedin?: string;
+  facebook?: string;
   order?: number;
   active?: boolean;
   createdAt?: string;
@@ -171,6 +176,7 @@ export interface JobPosting {
 
 export interface BlogPost {
   id?: string;
+  slug?: string;
   title: string;
   excerpt: string;
   content: string;
@@ -179,6 +185,9 @@ export interface BlogPost {
   author: string;
   category: string;
   active?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
   createdAt?: string;
   updatedAt?: string;
 }

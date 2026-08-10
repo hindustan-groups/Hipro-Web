@@ -1,7 +1,7 @@
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { findAll } from "@/lib/db";
-import type { Settings } from "@/lib/types";
+import type { Settings, Service } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,9 @@ export default async function ContactPage() {
   const address = settings.companyAddress || "101 Executive Tower, Infrastructure Complex\nNew Delhi, India";
   const phone = settings.companyPhone || "+91 98765 43210\n+91 11 2345 6789";
   const email = settings.companyEmail || "contact@hindustanprojects.com\nprojects@hindustanprojects.com";
+
+  const servicesData = await findAll<Service>("services");
+  const activeServices = servicesData.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
 
   const contactItems = [
     { icon: MapPin, label: "Headquarters", value: address, accent: "red" },
@@ -68,7 +71,7 @@ export default async function ContactPage() {
               <h2 className="text-2xl font-bold text-black mb-1 font-display uppercase tracking-tight">Send Us A Message</h2>
               <p className="text-sm text-slate-500 font-light mb-8">Fill out your project specifications and our technical leads will reach out within 24 hours.</p>
 
-              <ContactForm />
+              <ContactForm services={activeServices} />
             </div>
           </div>
         </div>
