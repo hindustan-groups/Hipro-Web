@@ -13,8 +13,8 @@ const statusMap: Record<string, { bg: string; text: string; dot: string }> = {
 export default function StatusBadge({ status }: { status: string }) {
   const s = statusMap[status] ?? { bg: "bg-slate-100", text: "text-slate-700", dot: "bg-slate-500" };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none-full text-[11px] font-bold uppercase tracking-wide ${s.bg} ${s.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-none-full ${s.dot}`} />
       {status}
     </span>
   );

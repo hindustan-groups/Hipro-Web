@@ -38,7 +38,7 @@ export default function AdminHeader({ user }: { user: any }) {
         <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">{title}</h1>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-2.5 border border-slate-200 w-64 focus-within:ring-4 focus-within:ring-blue-50 focus-within:border-blue-500 transition-all">
+        <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none-none px-3 py-2.5 border border-slate-200 w-64 focus-within:ring-4 focus-within:ring-blue-50 focus-within:border-blue-500 transition-all">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />
           <input
             type="text"
@@ -46,15 +46,15 @@ export default function AdminHeader({ user }: { user: any }) {
             className="bg-transparent text-[13px] text-slate-900 placeholder-slate-400 outline-none w-full"
           />
         </div>
-        <button className="relative w-10 h-10 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm text-slate-500">
+        <button className="relative w-10 h-10 rounded-none-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-blue-600 transition-colors shadow-sm text-slate-500">
           <Bell className="w-4 h-4" />
-          <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+          <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-none-full border-2 border-white" />
         </button>
-        <button onClick={handleLogout} className="relative w-10 h-10 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors shadow-sm text-slate-500">
+        <button onClick={handleLogout} className="relative w-10 h-10 rounded-none-none bg-white border border-slate-200 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors shadow-sm text-slate-500">
           <LogOut className="w-4 h-4" />
         </button>
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-          <div className="w-10 h-10 rounded-none bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm shadow-sm">
+          <div className="w-10 h-10 rounded-none-none bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm shadow-sm">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="hidden md:block">

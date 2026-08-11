@@ -66,7 +66,7 @@ export default function AdminSidebar({ user }: { user: any }) {
       >
       {/* Brand */}
       <div className="h-16 px-6 border-b border-slate-100 flex items-center gap-3">
-        <div className="w-9 h-9 shrink-0 rounded-none bg-transparent border-2 border-construction-red flex items-center justify-center shadow-sm">
+        <div className="w-9 h-9 shrink-0 rounded-none-none bg-transparent border-2 border-construction-red flex items-center justify-center shadow-sm">
           <span className="text-construction-red font-black text-sm tracking-tighter">Hi</span>
         </div>
         <div>
@@ -93,7 +93,7 @@ export default function AdminSidebar({ user }: { user: any }) {
             <Link
               key={href}
               href={href}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-none text-[14px] font-medium transition-all group ${
+              className={`flex items-center justify-between px-3 py-2.5 rounded-none-none text-[14px] font-medium transition-all group ${
                 active
                   ? "bg-blue-50 text-blue-600"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -103,7 +103,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                 <Icon className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`} />
                 {label}
               </div>
-              {active && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+              {active && <div className="w-1.5 h-1.5 rounded-none-full bg-blue-600" />}
             </Link>
           );
         })}
@@ -112,17 +112,17 @@ export default function AdminSidebar({ user }: { user: any }) {
       {/* Footer */}
       <div className="px-4 py-6 border-t border-slate-100 space-y-1.5 bg-slate-50/50">
         {isAdmin && (
-          <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2.5 rounded-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+          <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
             <Users className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Users & Roles
           </Link>
         )}
-        <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+        <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
           <Settings className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Settings
         </Link>
-        <Link href="/admin/navigation" className="flex items-center gap-3 px-3 py-2.5 rounded-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+        <Link href="/admin/navigation" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
           <LinkIcon className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Navigation
         </Link>
-        <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+        <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
           <LogOut className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> View Site
         </Link>
       </div>

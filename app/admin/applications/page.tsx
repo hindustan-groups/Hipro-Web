@@ -12,7 +12,7 @@ export default async function AdminApplicationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white p-6 rounded-none border border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between bg-white p-6 rounded-none-none border border-slate-200 shadow-sm">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 font-display uppercase tracking-tight">Job Applications</h1>
           <p className="text-sm text-slate-500 mt-1">Review and manage candidates applying through the Careers page.</p>
@@ -23,7 +23,7 @@ export default async function AdminApplicationsPage() {
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-none shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-none-none shadow-sm overflow-hidden">
         {sortedApps.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
             <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -62,11 +62,11 @@ export default async function AdminApplicationsPage() {
                     </td>
                     <td className="px-6 py-4">
                       {app.status === "new" ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none-full bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider">
                           <Clock className="w-3 h-3" /> New
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
                           <CheckCircle className="w-3 h-3" /> {app.status}
                         </span>
                       )}
@@ -77,7 +77,7 @@ export default async function AdminApplicationsPage() {
                           href={app.cvUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:text-construction-red hover:border-construction-red/30 transition-all text-xs font-bold uppercase tracking-wider rounded-none shadow-sm hover:shadow"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:text-construction-red hover:border-construction-red/30 transition-all text-xs font-bold uppercase tracking-wider rounded-none-none shadow-sm hover:shadow"
                         >
                           <Download className="w-3.5 h-3.5" /> CV
                         </a>

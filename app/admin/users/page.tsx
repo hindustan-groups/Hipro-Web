@@ -107,7 +107,7 @@ export default function UsersPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-construction-navy hover:bg-slate-800 text-white px-5 py-2.5 rounded-none text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2"
+          className="bg-construction-navy hover:bg-slate-800 text-white px-5 py-2.5 rounded-none-none text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2"
         >
           {showForm ? "Cancel" : <><Plus className="w-4 h-4" /> Add User</>}
         </button>
@@ -147,7 +147,7 @@ export default function UsersPage() {
                       type="checkbox"
                       checked={formData.permissions.includes(section.key)}
                       onChange={() => handleTogglePermission(section.key)}
-                      className="w-4 h-4 border-slate-300 text-construction-red focus:ring-construction-red rounded-sm"
+                      className="w-4 h-4 border-slate-300 text-construction-red focus:ring-construction-red rounded-none-none"
                     />
                     <span className="text-sm font-medium text-slate-700 group-hover:text-black transition-colors">{section.label}</span>
                   </label>
@@ -157,7 +157,7 @@ export default function UsersPage() {
           )}
 
           <div className="flex justify-end pt-4 border-t border-slate-100">
-            <button disabled={submitting} type="submit" className="bg-construction-red hover:bg-red-700 text-white px-8 py-3 rounded-none text-sm font-bold uppercase tracking-wider transition-colors disabled:opacity-50">
+            <button disabled={submitting} type="submit" className="bg-construction-red hover:bg-red-700 text-white px-8 py-3 rounded-none-none text-sm font-bold uppercase tracking-wider transition-colors disabled:opacity-50">
               {submitting ? "Saving..." : "Create User"}
             </button>
           </div>
@@ -180,7 +180,7 @@ export default function UsersPage() {
                 <tr key={user.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-none bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-none-none bg-slate-100 border border-slate-200 flex items-center justify-center">
                         {user.role === "admin" ? <Shield className="w-5 h-5 text-amber-500" /> : <User className="w-5 h-5 text-slate-400" />}
                       </div>
                       <div>
@@ -206,7 +206,7 @@ export default function UsersPage() {
                             const perms = JSON.parse(user.permissions);
                             if (!perms.length) return <span className="text-slate-400 text-xs">No access</span>;
                             return perms.map((p: string) => (
-                              <span key={p} className="bg-slate-100 text-slate-600 px-2 py-0.5 text-xs rounded-none border border-slate-200 capitalize">
+                              <span key={p} className="bg-slate-100 text-slate-600 px-2 py-0.5 text-xs rounded-none-none border border-slate-200 capitalize">
                                 {p}
                               </span>
                             ));

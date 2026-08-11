@@ -186,11 +186,11 @@ export default function AdminProjects() {
         
         <div className="flex items-center gap-3">
           <button onClick={fetchProjects} disabled={loading}
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 rounded-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 rounded-none-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
           <button onClick={handleStartAdd}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 rounded-none text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
+            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 rounded-none-none text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
             <Plus className="w-4 h-4" /> Add New Project
           </button>
         </div>
@@ -279,11 +279,11 @@ export default function AdminProjects() {
         </div>
       </div>
 
-      {error && <div className="p-4 rounded-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
+      {error && <div className="p-4 rounded-none-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
 
       {/* Add / Edit Project Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border-2 border-construction-navy shadow-lg rounded-none p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-white border-2 border-construction-navy shadow-lg rounded-none-none p-6 space-y-5">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-slate-900 font-bold text-lg">
               {editingProject ? `Edit Project & Images: "${editingProject.title}"` : "New Construction Project"}
@@ -303,7 +303,7 @@ export default function AdminProjects() {
                 <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">{field}</label>
                 <input required value={form[field]} onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
                   placeholder={`e.g. ${field === "title" ? "Cyber Tower Phase 2" : field === "location" ? "New Delhi" : "2024 - 2026"}`}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
               </div>
             ))}
 
@@ -311,7 +311,7 @@ export default function AdminProjects() {
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Category</label>
               <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all">
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all">
                 <option>Commercial</option>
                 <option>Residential</option>
                 <option>Industrial</option>
@@ -322,7 +322,7 @@ export default function AdminProjects() {
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Project Status</label>
               <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-semibold">
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-semibold">
                 <option value="active">Ongoing (In Progress)</option>
                 <option value="completed">Completed</option>
               </select>
@@ -365,16 +365,16 @@ export default function AdminProjects() {
             <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Description</label>
             <textarea required rows={3} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               placeholder="Provide key details about structural scope, square footage, engineering highlights..."
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none transition-all" />
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none transition-all" />
           </div>
 
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={saving}
-              className="bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20">
+              className="bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20">
               {saving ? "Saving..." : editingProject ? "Update Project & Photos" : "Save New Project"}
             </button>
             <button type="button" onClick={() => { setShowForm(false); setEditingProject(null); }}
-              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-2.5 rounded-none text-sm font-semibold transition-colors">
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-2.5 rounded-none-none text-sm font-semibold transition-colors">
               Cancel
             </button>
           </div>
@@ -382,7 +382,7 @@ export default function AdminProjects() {
       )}
 
       {/* Projects Table */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
+      <div className="bg-white border border-slate-200 shadow-sm rounded-none-none overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -401,7 +401,7 @@ export default function AdminProjects() {
                 [...Array(4)].map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     {[...Array(7)].map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none" /></td>
+                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none-none" /></td>
                     ))}
                   </tr>
                 ))
@@ -428,7 +428,7 @@ export default function AdminProjects() {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           {p.image && (
-                            <img src={p.image} alt={p.title} className="w-10 h-10 object-cover rounded-none border border-slate-200 shrink-0" />
+                            <img src={p.image} alt={p.title} className="w-10 h-10 object-cover rounded-none-none border border-slate-200 shrink-0" />
                           )}
                           <div>
                             <p className="text-slate-900 font-semibold">{p.title}</p>
@@ -447,7 +447,7 @@ export default function AdminProjects() {
                         <button
                           onClick={() => toggleStatus(p)}
                           title="Click to toggle status between Ongoing and Completed"
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none border transition-all cursor-pointer ${
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none-none border transition-all cursor-pointer ${
                             isDone 
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
                               : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
@@ -460,7 +460,7 @@ export default function AdminProjects() {
                             </>
                           ) : (
                             <>
-                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                              <span className="w-2 h-2 rounded-none-full bg-amber-500 animate-pulse" />
                               <span>Ongoing</span>
                             </>
                           )}
@@ -477,7 +477,7 @@ export default function AdminProjects() {
                       <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{p.date}</td>
 
                       <td className="px-5 py-4">
-                        <button onClick={() => toggleFeatured(p)} className={`w-8 h-8 rounded-none flex items-center justify-center transition-colors ${p.featured ? "bg-yellow-100 text-yellow-600 border border-yellow-200" : "bg-slate-50 border border-slate-200 text-slate-400 hover:text-yellow-500"}`}>
+                        <button onClick={() => toggleFeatured(p)} className={`w-8 h-8 rounded-none-none flex items-center justify-center transition-colors ${p.featured ? "bg-yellow-100 text-yellow-600 border border-yellow-200" : "bg-slate-50 border border-slate-200 text-slate-400 hover:text-yellow-500"}`}>
                           <Star className={`w-4 h-4 ${p.featured ? "fill-yellow-500 text-yellow-500" : ""}`} />
                         </button>
                       </td>
@@ -488,7 +488,7 @@ export default function AdminProjects() {
                           <button
                             onClick={() => handleStartEdit(p)}
                             title="Edit Project Details & Add Images"
-                            className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-600 text-xs font-semibold rounded-none transition-all shadow-sm"
+                            className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-600 text-xs font-semibold rounded-none-none transition-all shadow-sm"
                           >
                             <Pencil className="w-3.5 h-3.5" />
                             <span>Edit / Add Photos</span>
@@ -497,7 +497,7 @@ export default function AdminProjects() {
                           <button
                             onClick={() => deleteProject(p.id)}
                             title="Delete Project"
-                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-400 flex items-center justify-center transition-all shadow-sm"
+                            className="w-8 h-8 rounded-none-none bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-400 flex items-center justify-center transition-all shadow-sm"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

@@ -48,25 +48,25 @@ export default function AdminQuotes() {
     <div className="space-y-5">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2 p-1 bg-slate-100 rounded-full border border-slate-200 overflow-x-auto">
+        <div className="flex gap-2 p-1 bg-slate-100 rounded-none-full border border-slate-200 overflow-x-auto">
           {["all", "pending", "reviewed", "approved", "rejected"].map((s) => (
             <button key={s} onClick={() => setFilter(s)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all whitespace-nowrap ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+              className={`px-4 py-1.5 rounded-none-full text-xs font-bold uppercase tracking-wide transition-all whitespace-nowrap ${filter === s ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
               {s}
             </button>
           ))}
         </div>
         <button onClick={fetchQuotes} disabled={loading}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
+          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
         </button>
       </div>
 
-      {error && <div className="p-4 rounded-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
+      {error && <div className="p-4 rounded-none-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Table */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
+        <div className="lg:col-span-2 bg-white border border-slate-200 shadow-sm rounded-none-none overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -83,7 +83,7 @@ export default function AdminQuotes() {
                   [...Array(5)].map((_, i) => (
                     <tr key={i} className="animate-pulse">
                       {[...Array(5)].map((_, j) => (
-                        <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none" /></td>
+                        <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none-none" /></td>
                       ))}
                     </tr>
                   ))
@@ -103,15 +103,15 @@ export default function AdminQuotes() {
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => updateStatus(q.id, "reviewed")} title="Review"
-                            className="w-8 h-8 rounded-none bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 flex items-center justify-center transition-colors shadow-sm">
+                            className="w-8 h-8 rounded-none-none bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 flex items-center justify-center transition-colors shadow-sm">
                             <Eye className="w-4 h-4" />
                           </button>
                           <button onClick={() => updateStatus(q.id, "approved")} title="Approve"
-                            className="w-8 h-8 rounded-none bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 flex items-center justify-center transition-colors shadow-sm">
+                            className="w-8 h-8 rounded-none-none bg-green-50 hover:bg-green-100 border border-green-200 text-green-700 flex items-center justify-center transition-colors shadow-sm">
                             <CheckCircle className="w-4 h-4" />
                           </button>
                           <button onClick={() => updateStatus(q.id, "rejected")} title="Reject"
-                            className="w-8 h-8 rounded-none bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 flex items-center justify-center transition-colors shadow-sm">
+                            className="w-8 h-8 rounded-none-none bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 flex items-center justify-center transition-colors shadow-sm">
                             <XCircle className="w-4 h-4" />
                           </button>
                         </div>
@@ -128,12 +128,12 @@ export default function AdminQuotes() {
         </div>
 
         {/* Detail panel */}
-        <div className="bg-white border border-slate-200 shadow-sm rounded-none p-5 h-fit sticky top-24">
+        <div className="bg-white border border-slate-200 shadow-sm rounded-none-none p-5 h-fit sticky top-24">
           {selected ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 className="text-slate-900 font-bold text-lg">Quote Details</h3>
-                <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-none text-slate-400 hover:text-slate-600 hover:bg-slate-50 flex items-center justify-center transition-colors">✕</button>
+                <button onClick={() => setSelected(null)} className="w-8 h-8 rounded-none-none text-slate-400 hover:text-slate-600 hover:bg-slate-50 flex items-center justify-center transition-colors">✕</button>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -153,15 +153,15 @@ export default function AdminQuotes() {
               </div>
               <div className="pt-2 border-t border-slate-100">
                 <p className="text-slate-500 text-[10px] uppercase tracking-widest font-bold mb-1">Description</p>
-                <p className="text-slate-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-none border border-slate-100">{selected.description}</p>
+                <p className="text-slate-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-none-none border border-slate-100">{selected.description}</p>
               </div>
               <div className="flex gap-2 pt-4">
                 <button onClick={() => updateStatus(selected.id, "approved")}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2.5 rounded-none transition-colors shadow-sm shadow-green-900/20">
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2.5 rounded-none-none transition-colors shadow-sm shadow-green-900/20">
                   Approve Quote
                 </button>
                 <button onClick={() => updateStatus(selected.id, "rejected")}
-                  className="flex-1 bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 text-xs font-bold py-2.5 rounded-none transition-colors shadow-sm">
+                  className="flex-1 bg-white border border-slate-200 text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 text-xs font-bold py-2.5 rounded-none-none transition-colors shadow-sm">
                   Reject
                 </button>
               </div>

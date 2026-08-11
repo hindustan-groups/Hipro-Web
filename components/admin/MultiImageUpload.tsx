@@ -78,7 +78,7 @@ export default function MultiImageUpload({ value = [], onChange }: MultiImageUpl
   };
 
   if (loading) {
-    return <div className="h-28 bg-slate-50 rounded-none border border-slate-200 animate-pulse" />;
+    return <div className="h-28 bg-slate-50 rounded-none-none border border-slate-200 animate-pulse" />;
   }
 
   const isConfigured = settings?.cloudinaryCloudName && settings?.cloudinaryUploadPreset;
@@ -91,17 +91,17 @@ export default function MultiImageUpload({ value = [], onChange }: MultiImageUpl
       {value.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
           {value.map((url, idx) => (
-            <div key={idx} className="relative group h-24 rounded-none overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+            <div key={idx} className="relative group h-24 rounded-none-none overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
               <img src={url} alt={`Project photo ${idx + 1}`} className="w-full h-full object-cover" />
               <button
                 type="button"
                 onClick={() => handleRemove(idx)}
-                className="absolute top-1 right-1 w-6 h-6 bg-black/70 hover:bg-red-600 text-white rounded-none flex items-center justify-center transition-colors z-10"
+                className="absolute top-1 right-1 w-6 h-6 bg-black/70 hover:bg-red-600 text-white rounded-none-none flex items-center justify-center transition-colors z-10"
                 title="Remove photo"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-mono px-1.5 py-0.5 rounded-none">
+              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-mono px-1.5 py-0.5 rounded-none-none">
                 #{idx + 1}
               </div>
             </div>
@@ -114,7 +114,7 @@ export default function MultiImageUpload({ value = [], onChange }: MultiImageUpl
         {isConfigured ? (
           <label className={`
             border-2 border-dashed border-slate-300 hover:border-construction-navy bg-slate-50 hover:bg-slate-100 
-            rounded-none py-6 flex flex-col items-center justify-center cursor-pointer transition-all
+            rounded-none-none py-6 flex flex-col items-center justify-center cursor-pointer transition-all
             ${uploading ? "opacity-50 pointer-events-none" : ""}
           `}>
             <input type="file" multiple accept="image/*" onChange={handleUpload} className="hidden" />
@@ -146,12 +146,12 @@ export default function MultiImageUpload({ value = [], onChange }: MultiImageUpl
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
-            className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+            className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
           />
           <button
             type="button"
             onClick={handleAddUrl}
-            className="flex items-center gap-1 bg-slate-800 hover:bg-black text-white px-4 py-2 rounded-none text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
+            className="flex items-center gap-1 bg-slate-800 hover:bg-black text-white px-4 py-2 rounded-none-none text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
           >
             <Plus className="w-3.5 h-3.5" /> Add Image
           </button>

@@ -117,7 +117,7 @@ export default function AdminNavigation() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none text-sm font-semibold transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none-none text-sm font-semibold transition-colors disabled:opacity-50"
           >
             <Save className="w-4 h-4" /> Save Navigation
           </button>
@@ -125,7 +125,7 @@ export default function AdminNavigation() {
       </div>
 
       {/* Live Preview */}
-      <div className="bg-slate-100 p-8 rounded-lg border border-slate-200 shadow-inner">
+      <div className="bg-slate-100 p-8 rounded-none-none border border-slate-200 shadow-inner">
         <h3 className="text-xs uppercase tracking-widest font-bold text-slate-400 mb-4">Live Preview</h3>
         <div className="pointer-events-auto z-50">
           <Navbar navConfigString={JSON.stringify(navConfig)} previewMode={true} />

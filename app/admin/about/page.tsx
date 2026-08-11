@@ -106,7 +106,7 @@ export default function AdminAbout() {
         </div>
         
         {/* View Toggle Tabs */}
-        <div className="flex p-1 bg-slate-100 border border-slate-200 rounded-none w-fit">
+        <div className="flex p-1 bg-slate-100 border border-slate-200 rounded-none-none w-fit">
           <button
             onClick={() => setActiveTab("editor")}
             className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
@@ -127,7 +127,7 @@ export default function AdminAbout() {
       </div>
 
       {activeTab === "preview" ? (
-        <div className="w-full bg-slate-100 border border-slate-200 rounded-none overflow-hidden relative" style={{ height: "calc(100vh - 180px)", minHeight: "800px" }}>
+        <div className="w-full bg-slate-100 border border-slate-200 rounded-none-none overflow-hidden relative" style={{ height: "calc(100vh - 180px)", minHeight: "800px" }}>
           <div className="absolute top-0 left-0 right-0 bg-slate-800 text-white text-xs font-bold px-4 py-2 flex items-center justify-between z-10">
             <span>LIVE PAGE PREVIEW</span>
             <span className="text-slate-400 font-normal">Save changes in Editor tab to refresh</span>
@@ -139,12 +139,12 @@ export default function AdminAbout() {
           />
         </div>
       ) : (
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-none shadow-sm overflow-hidden space-y-0">
+      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-none-none shadow-sm overflow-hidden space-y-0">
         
         {/* ── 1. Hero Section ─────────────────────────────────── */}
         <div className="p-6 md:p-8 border-b border-slate-200">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-blue-50 flex items-center justify-center border border-blue-100">
+            <div className="w-10 h-10 rounded-none-none bg-blue-50 flex items-center justify-center border border-blue-100">
               <Sparkles className="w-5 h-5 text-blue-600" />
             </div>
             <div>
@@ -160,7 +160,7 @@ export default function AdminAbout() {
               value={content.aboutHero} 
               onChange={(e) => setContent({ ...content, aboutHero: e.target.value })}
               placeholder="Building sustainable infrastructure..."
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all leading-relaxed" 
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all leading-relaxed" 
             />
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function AdminAbout() {
         {/* ── 2. Our Heritage / Story Section ────────────────── */}
         <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/20">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-red-50 flex items-center justify-center border border-red-100">
+            <div className="w-10 h-10 rounded-none-none bg-red-50 flex items-center justify-center border border-red-100">
               <ShieldCheck className="w-5 h-5 text-construction-red" />
             </div>
             <div>
@@ -186,7 +186,7 @@ export default function AdminAbout() {
                   value={content.aboutHeritageTag} 
                   onChange={(e) => setContent({ ...content, aboutHeritageTag: e.target.value })}
                   placeholder="e.g. Our Heritage"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
                 />
               </div>
               <div>
@@ -196,7 +196,7 @@ export default function AdminAbout() {
                   value={content.aboutStoryTitle} 
                   onChange={(e) => setContent({ ...content, aboutStoryTitle: e.target.value })}
                   placeholder="e.g. Building Infrastructure Since 1999"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
                 />
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function AdminAbout() {
                 value={content.aboutStory} 
                 onChange={(e) => setContent({ ...content, aboutStory: e.target.value })}
                 placeholder="Paragraph 1...\n\nParagraph 2...\n\nParagraph 3..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all leading-relaxed" 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all leading-relaxed" 
               />
             </div>
 
@@ -223,7 +223,7 @@ export default function AdminAbout() {
                 value={content.aboutChecklist} 
                 onChange={(e) => setContent({ ...content, aboutChecklist: e.target.value })}
                 placeholder="ISO 9001:2015 Certified Operations\nNational Excellence Awards Winner\nZero-Accident Safety Protocol"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
               />
             </div>
 
@@ -246,7 +246,7 @@ export default function AdminAbout() {
                     value={content.aboutBadge1Label} 
                     onChange={(e) => setContent({ ...content, aboutBadge1Label: e.target.value })}
                     placeholder="e.g. ESTABLISHED"
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy" 
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy" 
                   />
                   <label className="text-slate-500 text-[11px] uppercase tracking-wider block mt-2 mb-1 font-bold">Bottom-Left Badge Value</label>
                   <input 
@@ -254,7 +254,7 @@ export default function AdminAbout() {
                     value={content.aboutBadge1Value} 
                     onChange={(e) => setContent({ ...content, aboutBadge1Value: e.target.value })}
                     placeholder="e.g. 1999"
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold" 
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold" 
                   />
                 </div>
 
@@ -265,7 +265,7 @@ export default function AdminAbout() {
                     value={content.aboutBadge2Label} 
                     onChange={(e) => setContent({ ...content, aboutBadge2Label: e.target.value })}
                     placeholder="e.g. PROJECTS HANDED OVER"
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy" 
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy" 
                   />
                   <label className="text-slate-500 text-[11px] uppercase tracking-wider block mt-2 mb-1 font-bold">Top-Right Badge Value</label>
                   <input 
@@ -273,7 +273,7 @@ export default function AdminAbout() {
                     value={content.aboutBadge2Value} 
                     onChange={(e) => setContent({ ...content, aboutBadge2Value: e.target.value })}
                     placeholder="e.g. 500+"
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold text-construction-red" 
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold text-construction-red" 
                   />
                 </div>
               </div>
@@ -284,7 +284,7 @@ export default function AdminAbout() {
         {/* ── 3. Core Values Section ──────────────────────────── */}
         <div className="p-6 md:p-8 border-b border-slate-200">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-emerald-50 flex items-center justify-center border border-emerald-100">
+            <div className="w-10 h-10 rounded-none-none bg-emerald-50 flex items-center justify-center border border-emerald-100">
               <HeartHandshake className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
@@ -302,7 +302,7 @@ export default function AdminAbout() {
                   value={content.valuesTag} 
                   onChange={(e) => setContent({ ...content, valuesTag: e.target.value })}
                   placeholder="e.g. Principles"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
                 />
               </div>
               <div>
@@ -312,7 +312,7 @@ export default function AdminAbout() {
                   value={content.valuesTitle} 
                   onChange={(e) => setContent({ ...content, valuesTitle: e.target.value })}
                   placeholder="e.g. Our Core Values"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
                 />
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function AdminAbout() {
                 value={content.valuesSubtitle} 
                 onChange={(e) => setContent({ ...content, valuesSubtitle: e.target.value })}
                 placeholder="e.g. The foundational pillars guiding every blueprint..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
               />
             </div>
           </div>
@@ -341,7 +341,7 @@ export default function AdminAbout() {
           <button 
             type="submit" 
             disabled={saving}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20"
+            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             {saving ? "Saving..." : "Save About Us Content"}
