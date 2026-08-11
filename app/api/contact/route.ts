@@ -3,6 +3,8 @@ import { insertOne, findAll, updateOne } from "@/lib/db";
 import { validateEmail, validateRequired } from "@/lib/validate";
 import type { ContactMessage, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // POST /api/contact — submit contact form
 export async function POST(req: NextRequest) {
   try {

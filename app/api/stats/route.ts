@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { findAll, insertOne, updateOne } from "@/lib/db";
 import type { Stats, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 const DEFAULT_STATS = [
   { label: "Years Experience",  value: "25+",   icon: "Trophy",       order: 1 },
   { label: "Projects Done",     value: "500+",  icon: "CheckCircle",  order: 2 },

@@ -3,6 +3,8 @@ import { insertOne, findAll, readDB, writeDB } from "@/lib/db";
 import { validateEmail } from "@/lib/validate";
 import type { NewsletterSubscriber, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // POST /api/newsletter — subscribe
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +21,7 @@ export async function POST(req: NextRequest) {
     const normalised = email.trim().toLowerCase();
 
     // Check duplicate
-    const existing = readDB<NewsletterSubscriber>("newsletter");
+    const existing = await readDB<NewsletterSubscriber>("newsletter");
     const dupe = existing.find((s) => s.email === normalised && s.active !== false);
     if (dupe) {
       return NextResponse.json<ApiResponse>({
@@ -64,12 +66,12 @@ export async function DELETE(req: NextRequest) {
     const { email } = await req.json();
     if (!email) return NextResponse.json<ApiResponse>({ success: false, error: "Email required" }, { status: 400 });
 
-    const all = readDB<NewsletterSubscriber>("newsletter");
+    const all = await readDB<NewsletterSubscriber>("newsletter");
     const idx = all.findIndex((s) => s.email === email.trim().toLowerCase());
     if (idx === -1) return NextResponse.json<ApiResponse>({ success: false, error: "Email not found" }, { status: 404 });
 
     all[idx].active = false;
-    writeDB("newsletter", all);
+    await writeDB("newsletter", all);
 
     return NextResponse.json<ApiResponse>({ success: true, message: "Unsubscribed successfully" });
   } catch {

@@ -62,7 +62,7 @@ export default function WhyUs() {
             </h2>
             
             <p className="text-slate-600 text-base md:text-lg font-light leading-relaxed mb-10 border-l-2 border-slate-300 pl-4">
-              We don't just construct buildings; we engineer landmark residential, commercial, and industrial infrastructure with uncompromising safety and precision.
+              We don&apos;t just construct buildings; we engineer landmark residential, commercial, and industrial infrastructure with uncompromising safety and precision.
             </p>
 
             {/* Features List (No Cards) */}

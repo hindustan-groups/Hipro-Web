@@ -42,7 +42,7 @@ export default async function CareersPage() {
         <div className="max-w-7xl mx-auto">
           <div className="rounded-none bg-black px-10 py-16 text-center shadow-2xl border border-white/10">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-display uppercase tracking-tight">
-              Don't See a <span className="text-construction-red">Fit?</span>
+              Don&apos;t See a <span className="text-construction-red">Fit?</span>
             </h2>
             <p className="text-slate-300 font-light mb-8 max-w-xl mx-auto text-base">
               Send us your resume anyway. We are always on the lookout for top-tier talent to help shape the future of infrastructure.

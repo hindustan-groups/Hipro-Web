@@ -3,6 +3,8 @@ import { insertOne, findAll, updateOne, deleteOne } from "@/lib/db";
 import { validateRequired } from "@/lib/validate";
 import type { Project, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/projects — get all projects
 export async function GET(req: NextRequest) {
   try {

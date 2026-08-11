@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { findAll, updateOne, insertOne } from "@/lib/db";
 import type { Settings } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const data = await findAll<Settings>("settings");

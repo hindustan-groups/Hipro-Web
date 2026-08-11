@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { insertOne, findAll, updateOne, deleteOne } from "@/lib/db";
 import type { BlogPost, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/blogs
 export async function GET() {
   try {

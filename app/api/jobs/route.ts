@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { insertOne, findAll, updateOne, deleteOne } from "@/lib/db";
 import type { JobPosting, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const items = await findAll<JobPosting>("jobs");

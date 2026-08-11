@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { readDB } from "@/lib/db";
 import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testimonial, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/dashboard — summary stats for admin
 export async function GET() {
   try {

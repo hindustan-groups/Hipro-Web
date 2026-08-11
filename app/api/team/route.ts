@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { insertOne, findAll } from "@/lib/db";
 import type { TeamMember, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/team
 export async function GET() {
   try {

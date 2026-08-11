@@ -3,6 +3,8 @@ import { insertOne, findAll, updateOne } from "@/lib/db";
 import { validateEmail, validatePhone, validateRequired } from "@/lib/validate";
 import type { QuoteRequest, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // POST /api/quote — submit quote request
 export async function POST(req: NextRequest) {
   try {

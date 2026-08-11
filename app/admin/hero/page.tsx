@@ -165,7 +165,7 @@ export default function AdminHero() {
         </div>
       ) : slides.length === 0 ? (
         <div className="bg-white border border-slate-200 shadow-sm rounded-none-none p-12 text-center">
-          <p className="text-slate-500 font-medium">No slides found. Click "Add Slide" to create one.</p>
+          <p className="text-slate-500 font-medium">No slides found. Click &quot;Add Slide&quot; to create one.</p>
         </div>
       ) : (
         <div className="space-y-4">

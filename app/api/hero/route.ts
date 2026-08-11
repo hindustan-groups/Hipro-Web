@@ -3,6 +3,8 @@ import { findAll, insertOne, updateOne, deleteOne } from "@/lib/db";
 import { validateRequired } from "@/lib/validate";
 import type { HeroSlide, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/hero
 export async function GET() {
   try {

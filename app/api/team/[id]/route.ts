@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateOne, deleteOne } from "@/lib/db";
 import type { TeamMember, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // PATCH /api/team/[id]
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {

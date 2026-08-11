@@ -3,6 +3,8 @@ import { insertOne, findAll, updateOne, deleteOne } from "@/lib/db";
 import { validateEmail, validateRequired } from "@/lib/validate";
 import type { Testimonial, ApiResponse } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/testimonials — get approved testimonials
 export async function GET(req: NextRequest) {
   try {

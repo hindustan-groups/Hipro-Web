@@ -131,7 +131,7 @@ export default function Navbar({
                 {link.subLinks && !link.isMegaMenu && (
                   <div className="absolute top-[100%] left-0 w-48 pt-1 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50">
                     <div className="bg-white shadow-xl flex flex-col py-2 rounded-b-md border border-slate-100">
-                      {link.subLinks.map(sub => (
+                      {link.subLinks.map((sub: { label: string; href: string }) => (
                         <Link 
                           key={sub.href} 
                           href={sub.href} 
@@ -249,7 +249,7 @@ export default function Navbar({
                 </Link>
                 {link.subLinks && !link.isMegaMenu && (
                   <div className="pl-6 flex flex-col bg-slate-50">
-                    {link.subLinks.map((sub) => (
+                    {link.subLinks.map((sub: { label: string; href: string }) => (
                       <Link
                         key={sub.href}
                         href={sub.href}
@@ -264,12 +264,12 @@ export default function Navbar({
                 {/* Mobile version of Mega Menu */}
                 {link.isMegaMenu && link.megaMenuCategories && (
                   <div className="pl-6 flex flex-col bg-slate-50 py-2 gap-4">
-                    {link.megaMenuCategories.map((category, idx) => (
+                    {link.megaMenuCategories.map((category: any, idx: number) => (
                       <div key={idx} className="flex flex-col">
                         <span className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 px-4">
                           {category.title}
                         </span>
-                        {category.links.map((sub) => (
+                        {category.links.map((sub: any) => (
                           <Link
                             key={sub.href}
                             href={sub.href}
