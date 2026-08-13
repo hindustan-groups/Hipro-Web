@@ -4,12 +4,7 @@ import { findAll } from "@/lib/db";
 import type { Service, Settings } from "@/lib/types";
 import * as Icons from "lucide-react";
 
-export async function generateStaticParams() {
-  const allServices = await findAll<Service>("services");
-  return allServices.map((service) => ({
-    slug: service.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-'),
-  }));
-}
+export const dynamic = "force-dynamic";
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
   const [allServices, settingsData] = await Promise.all([

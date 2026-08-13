@@ -1,27 +1,12 @@
-import { PrismaClient } from "@prisma/client";
+const BACKEND_URL = process.env.BACKEND_API_URL || "http://localhost:5000";
 
-// Global Prisma instance for Next.js in dev mode
-const globalForPrisma = globalThis as unknown as { prisma_new: PrismaClient };
-export const prisma = globalForPrisma.prisma_new || new PrismaClient();
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma_new = prisma;
-
-function getModel(collection: string) {
+function getEndpoint(collection: string): string {
   switch (collection) {
-    case "contacts": return prisma.contactMessage;
-    case "quotes": return prisma.quoteRequest;
-    case "projects": return prisma.project;
-    case "services": return prisma.service;
-    case "testimonials": return prisma.testimonial;
-    case "newsletter": return prisma.newsletterSubscriber;
-    case "stats": return prisma.stats;
-    case "settings": return prisma.settings;
-    case "hero": return prisma.heroSlide;
-    case "team": return prisma.teamMember;
-    case "applications": return prisma.jobApplication;
-    case "jobs": return prisma.jobPosting;
-    case "guarantees": return prisma.guarantee;
-    case "blogs": return prisma.blogPost;
-    default: throw new Error(`Unknown collection: ${collection}`);
+    case "contacts": return "contact";
+    case "quotes": return "quote";
+    case "admin-users":
+    case "adminUsers": return "admin-users";
+    default: return collection; 
   }
 }
 
@@ -30,40 +15,84 @@ export async function readDB<T>(collection: string): Promise<T[]> {
 }
 
 export async function writeDB<T>(collection: string, data: T[]): Promise<void> {
-  // Unused in typical prisma, just a stub
+  // Stub for backward compatibility
 }
 
 export async function insertOne<T>(collection: string, doc: any): Promise<T> {
-  const model = getModel(collection) as any;
-  return await model.create({ data: doc });
+  const endpoint = getEndpoint(collection);
+  const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(doc),
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to insert into ${collection}: ${res.statusText}`);
+  }
+  
+  const json = await res.json();
+  return json.data || json;
 }
 
 export async function findAll<T>(collection: string): Promise<T[]> {
-  const model = getModel(collection) as any;
-  return await model.findMany();
+  const endpoint = getEndpoint(collection);
+  const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+    cache: "no-store", // Ensure we fetch fresh data on server components
+  });
+  
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${collection}: ${res.statusText}`);
+  }
+  
+  const json = await res.json();
+  return json.data || json;
 }
 
 export async function findById<T>(collection: string, id: string): Promise<T | null> {
-  const model = getModel(collection) as any;
-  return await model.findUnique({ where: { id } });
+  const items = await findAll<any>(collection);
+  return items.find((item: any) => item.id === id) || null;
 }
 
 export async function updateOne<T>(collection: string, id: string, updates: any): Promise<T | null> {
-  const model = getModel(collection) as any;
-  try {
-    return await model.update({ where: { id }, data: updates });
-  } catch (err) {
-    console.error(`updateOne error in ${collection} (id: ${id}):`, err);
-    return null; // Prisma throws if record not found or data mismatch
+  const endpoint = getEndpoint(collection);
+  const useParamId = ["team", "admin-users", "adminUsers"].includes(endpoint);
+  
+  const url = useParamId 
+    ? `${BACKEND_URL}/api/${endpoint}/${id}` 
+    : `${BACKEND_URL}/api/${endpoint}`;
+    
+  const body = useParamId ? updates : { id, ...updates };
+
+  const res = await fetch(url, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  
+  if (!res.ok) {
+    console.error(`updateOne error in ${collection} (id: ${id}): ${res.statusText}`);
+    return null;
   }
+  
+  const json = await res.json();
+  return json.data || json;
 }
 
 export async function deleteOne(collection: string, id: string): Promise<boolean> {
-  const model = getModel(collection) as any;
-  try {
-    await model.delete({ where: { id } });
-    return true;
-  } catch {
-    return false;
-  }
+  const endpoint = getEndpoint(collection);
+  const useParamId = ["team", "admin-users", "adminUsers"].includes(endpoint);
+  
+  const url = useParamId 
+    ? `${BACKEND_URL}/api/${endpoint}/${id}` 
+    : `${BACKEND_URL}/api/${endpoint}`;
+    
+  const body = useParamId ? undefined : { id };
+
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  
+  return res.ok;
 }
