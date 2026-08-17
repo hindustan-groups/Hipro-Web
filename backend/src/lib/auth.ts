@@ -20,14 +20,10 @@ export function verifyPassword(password: string, hash: string): boolean {
 }
 
 export async function createSession(userId: string, res: Response) {
-  // Session expires in 7 days
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   const session = await prisma.adminSession.create({
-    data: {
-      userId,
-      expiresAt,
-    },
+    data: { userId, expiresAt },
   });
 
   res.cookie("admin_session", session.id, {

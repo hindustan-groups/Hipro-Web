@@ -1,3 +1,4 @@
+
 const BACKEND_URL = process.env.BACKEND_API_URL || "http://localhost:5000";
 
 function getEndpoint(collection: string): string {

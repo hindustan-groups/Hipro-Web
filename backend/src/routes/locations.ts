@@ -1,17 +1,21 @@
-import { Router, Request, Response } from "express";
 
+import { Router,Request,Response } from "express";
 const router = Router();
 
+
+
+
 interface StateItem {
-  state: string;
-  districts: string[];
+  state:string,
+  districts:string[];
 }
 
 interface StatesResponse {
-  states: StateItem[];
+  states:StateItem[];
 }
 
 let cachedData: StateItem[] | null = null;
+
 
 // Fallback data in case the external API is unreachable
 const fallbackData: StateItem[] = [
@@ -41,8 +45,9 @@ const fallbackData: StateItem[] = [
   }
 ];
 
-async function getLocationsData(): Promise<StateItem[]> {
-  if (cachedData) {
+
+async function getLocationsData():Promise<StateItem[]>{
+  if(cachedData) {
     return cachedData;
   }
 

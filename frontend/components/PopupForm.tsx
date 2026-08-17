@@ -23,10 +23,46 @@ export default function PopupForm() {
     }
   }, []);
 
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", location: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [states, setStates] = useState<string[]>([]);
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [selectedState, setSelectedState] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const res = await fetch("/api/locations/states");
+        const json = await res.json();
+        if (json.success) {
+          setStates(json.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch states:", err);
+      }
+    };
+    if (isOpen) {
+      fetchStates();
+    }
+  }, [isOpen]);
+
+  const handleStateChange = async (stateName: string) => {
+    setSelectedState(stateName);
+    setSelectedDistrict("");
+    setDistricts([]);
+    try {
+      const res = await fetch(`/api/locations/districts?state=${encodeURIComponent(stateName)}`);
+      const json = await res.json();
+      if (json.success) {
+        setDistricts(json.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch districts:", err);
+    }
+  };
 
   const handleClose = () => {
     setIsOpen(false);
@@ -35,6 +71,10 @@ export default function PopupForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedState || !selectedDistrict) {
+      setError("Please select both State and District");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -46,7 +86,7 @@ export default function PopupForm() {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
-          location: formData.location,
+          location: `${selectedDistrict}, ${selectedState}`,
           projectType: "Consultation Request",
           budget: "Not Specified",
           description: "Requested a free consultation via website popup.",
@@ -155,20 +195,37 @@ export default function PopupForm() {
               />
             </div>
 
-            {/* Location Select */}
+            {/* State Select */}
             <div className="relative">
               <select 
                 required
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                value={selectedState}
+                onChange={(e) => handleStateChange(e.target.value)}
                 className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 appearance-none bg-white"
               >
-                <option value="" disabled>Location of your Plot - City*</option>
-                <option value="New Delhi / NCR">New Delhi / NCR</option>
-                <option value="Mumbai">Mumbai</option>
-                <option value="Bengaluru">Bengaluru</option>
-                <option value="Hyderabad">Hyderabad</option>
-                <option value="Other">Other City</option>
+                <option value="" disabled>Select State*</option>
+                {states.map((state) => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+
+            {/* District Select */}
+            <div className="relative">
+              <select 
+                required
+                disabled={!selectedState}
+                value={selectedDistrict}
+                onChange={(e) => setSelectedDistrict(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-400"
+              >
+                <option value="" disabled>Select District*</option>
+                {districts.map((district) => (
+                  <option key={district} value={district}>{district}</option>
+                ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

@@ -14,26 +14,21 @@ import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPo
 export default async function Home() {
   const settingsData = await findAll<Settings>("settings");
   const settings = settingsData[0] || {};
-  
+  const slides = await findAll<HeroSlide>("hero");
+  const slidedata = slides.filter(s => s.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const stats = await findAll<StatType>("stats");
+  const statsdata = stats.sort((a, b) => (a.order || 0) - (b.order || 0))
   let pageContent: any = {};
   try {
     if (settings.pageContent) pageContent = JSON.parse(settings.pageContent);
   } catch { /* silent */ }
 
-  const slides = await findAll<HeroSlide>("hero");
-  const slidesData = slides
-    .filter(s => s.active !== false)
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-  const stats = await findAll<StatType>("stats");
-  const statsData = stats.sort((a, b) => (a.order || 0) - (b.order || 0));
-
   const services = await findAll<Service>("services");
   const servicesData = services.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
-  
+
   const projects = await findAll<Project>("projects");
   const projectsData = projects.filter(p => p.status !== "archived");
-  
+
   const testimonials = await findAll<Testimonial>("testimonials");
   const testimonialsData = testimonials.filter(t => t.approved !== false);
 
@@ -49,7 +44,7 @@ export default async function Home() {
 
   return (
     <>
-      <Hero initialSlides={slidesData} initialStats={statsData} />
+      <Hero initialSlides={slidedata} initialStats={statsdata} />
       <AnimateIn><Services services={servicesData} /></AnimateIn>
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
