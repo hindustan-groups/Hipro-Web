@@ -11,13 +11,19 @@ interface HeroProps {
   initialStats?: StatType[];
 }
 
+const fallbackHeroImages = [
+  "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=2000&q=85",
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=85",
+  "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=2000&q=85"
+];
+
 const defaultSlides: HeroSlide[] = [
   {
     id: "default-1",
     title: "ENGINEERING LANDMARKS. DELIVERING EXCELLENCE.",
     subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across India.",
     tagline: "India's Premier Construction & Infrastructure Firm",
-    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=2000&q=85",
     order: 1,
     active: true
   },
@@ -26,8 +32,17 @@ const defaultSlides: HeroSlide[] = [
     title: "ARCHITECTURAL MASTERY & PRECISION EXECUTION",
     subtitle: "Creating state-of-the-art commercial complexes, residential townships, and industrial facilities.",
     tagline: "Delivering Visionary Infrastructure",
-    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=80",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=85",
     order: 2,
+    active: true
+  },
+  {
+    id: "default-3",
+    title: "SUSTAINABLE INFRASTRUCTURE FOR THE FUTURE",
+    subtitle: "Pioneering smart construction methodologies, eco-friendly concrete, and rapid project deliveries.",
+    tagline: "Building Tomorrow, Today",
+    image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=2000&q=85",
+    order: 3,
     active: true
   }
 ];
@@ -129,26 +144,37 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     <section id="section-hero" className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden">
       
       {/* Background Images Slider */}
-      <div className="absolute inset-0 z-0">
-        {activeSlideList.map((slide, idx) => (
-          <div 
-            key={slide.id || idx}
-            className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-              idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-          >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className={`w-full h-full object-cover transition-transform duration-[10000ms] ${
-                idx === currentSlide ? "scale-105" : "scale-100"
+      <div className="absolute inset-0 z-0 bg-slate-950">
+        {activeSlideList.map((slide, idx) => {
+          const validImg = slide.image && slide.image.trim() !== "" 
+            ? slide.image 
+            : fallbackHeroImages[idx % fallbackHeroImages.length];
+
+          return (
+            <div 
+              key={slide.id || idx}
+              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
-            />
-            {/* Cinematic Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-          </div>
-        ))}
+            >
+              <img
+                src={validImg}
+                alt={slide.title || "Construction Project"}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.onerror = null;
+                  target.src = fallbackHeroImages[idx % fallbackHeroImages.length];
+                }}
+                className={`w-full h-full object-cover object-center transition-transform duration-[10000ms] ${
+                  idx === currentSlide ? "scale-105" : "scale-100"
+                }`}
+              />
+              {/* Cinematic Gradient Overlay (Text readable while image stays clearly visible) */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40" />
+            </div>
+          );
+        })}
         {/* Blueprint Vector Grid Overlay Pattern */}
         <div 
           className="absolute inset-0 opacity-20 z-10 pointer-events-none mix-blend-overlay"
