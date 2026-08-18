@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen,
-  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info
+  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info, Bell
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin",           label: "Dashboard",   icon: LayoutDashboard },
   { href: "/admin/hero",      label: "Hero Section", icon: LayoutTemplate },
   { href: "/admin/about",     label: "About Page",  icon: Info },
+  { href: "/admin/notifications", label: "Push Notifications", icon: Bell },
   { href: "/admin/contacts",  label: "Contacts",    icon: Mail },
   { href: "/admin/quotes",    label: "Quotes",      icon: FileText },
   { href: "/admin/projects",  label: "Projects",    icon: FolderOpen },

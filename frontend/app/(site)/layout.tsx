@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PopupForm from "@/components/PopupForm";
+import PushNotificationPrompt from "@/components/PushNotificationPrompt";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 
@@ -24,6 +25,7 @@ export default async function SiteLayout({
         {children}
       </main>
       <PopupForm />
+      <PushNotificationPrompt />
       <Footer />
     </>
   );
