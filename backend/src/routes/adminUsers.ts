@@ -35,20 +35,26 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { email, password, name, role, permissions } = req.body;
 
-    if (!email || !password || !name) {
+    const normalizedEmail = (email || "").trim().toLowerCase();
+    const cleanPassword = (password || "").trim();
+    const cleanName = (name || "").trim();
+
+    if (!normalizedEmail || !cleanPassword || !cleanName) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const existing = await prisma.adminUser.findUnique({ where: { email } });
+    const existing = await prisma.adminUser.findFirst({
+      where: { email: { equals: normalizedEmail } }
+    });
     if (existing) {
       return res.status(400).json({ error: "Email already exists" });
     }
 
     const newUser = await prisma.adminUser.create({
       data: {
-        email,
-        password: hashPassword(password),
-        name,
+        email: normalizedEmail,
+        password: hashPassword(cleanPassword),
+        name: cleanName,
         role: role || "employee",
         permissions: JSON.stringify(permissions || []),
       }

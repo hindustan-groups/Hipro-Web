@@ -8,32 +8,38 @@ const router = Router();
 router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = (email || "").trim().toLowerCase();
+    const cleanPassword = (password || "").trim();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !cleanPassword) {
       return res.status(400).json({ success: false, error: "Email and password required" });
     }
 
-    // Normal login flow
-    let user = await prisma.adminUser.findUnique({
-      where: { email },
+    // Lookup user in database
+    let user = await prisma.adminUser.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail
+        }
+      },
     });
 
-    const defaultEmail = process.env.ADMIN_EMAIL || "admin@hindustanprojects.com";
-    const defaultPassword = process.env.ADMIN_PASSWORD || "admin123";
+    // If configured via Environment Variables (ADMIN_EMAIL and ADMIN_PASSWORD), auto-seed if no admin exists yet
+    const envAdminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const envAdminPassword = process.env.ADMIN_PASSWORD?.trim();
 
-    // Auto-seed default super admin if missing on live database
-    if (!user && (email === "admin@hindustanprojects.com" || email === defaultEmail)) {
-      if (password === defaultPassword) {
+    if (!user && envAdminEmail && envAdminPassword && normalizedEmail === envAdminEmail) {
+      if (cleanPassword === envAdminPassword) {
         user = await prisma.adminUser.create({
           data: {
-            email: email,
-            password: hashPassword(defaultPassword),
+            email: envAdminEmail,
+            password: hashPassword(envAdminPassword),
             name: process.env.ADMIN_NAME || "Admin",
             role: "admin",
             permissions: "[]",
           },
         });
-        console.log("Default admin account auto-initialized on Render:", user.email);
+        console.log("Admin account initialized from environment variables:", user.email);
       }
     }
 
@@ -41,7 +47,8 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
 
-    const isValid = verifyPassword(password, user.password);
+    // Verify password against stored hash
+    const isValid = verifyPassword(cleanPassword, user.password);
     if (!isValid) {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
     }
