@@ -14,8 +14,8 @@ const defaultServices: Service[] = [
     image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80",
     order: 1,
     active: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "2",
@@ -27,8 +27,8 @@ const defaultServices: Service[] = [
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
     order: 2,
     active: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 

@@ -14,8 +14,8 @@ const defaultBlogs: BlogPost[] = [
     author: "Chief Structural Engineer",
     category: "Engineering & Innovation",
     active: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "2",
@@ -28,8 +28,8 @@ const defaultBlogs: BlogPost[] = [
     author: "Senior Architect",
     category: "Architecture & Design",
     active: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 

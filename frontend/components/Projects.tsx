@@ -13,8 +13,8 @@ const defaultProjects: Project[] = [
     description: "Multi-story luxury commercial high-rise tower built to IGBC Green Building standards.",
     featured: true,
     status: "active",
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "2",
@@ -26,8 +26,8 @@ const defaultProjects: Project[] = [
     description: "Premium villa community featuring smart home integrations and bespoke landscaping.",
     featured: true,
     status: "active",
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: "3",
@@ -39,8 +39,8 @@ const defaultProjects: Project[] = [
     description: "Heavy-duty industrial warehouse facility with precision PEB steel engineering.",
     featured: true,
     status: "active",
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ];
 
