@@ -29,7 +29,10 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!settings?.cloudinaryCloudName || !settings?.cloudinaryUploadPreset) {
+    const cloudName = settings?.cloudinaryCloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh";
+    const uploadPreset = settings?.cloudinaryUploadPreset || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default";
+
+    if (!cloudName || !uploadPreset) {
       setError("Cloudinary is not configured. Please set it up in Settings.");
       return;
     }
@@ -39,10 +42,10 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", settings.cloudinaryUploadPreset);
+    formData.append("upload_preset", uploadPreset);
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${settings.cloudinaryCloudName}/image/upload`, {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
         body: formData,
       });
@@ -51,9 +54,14 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
       if (data.secure_url) {
         onChange(data.secure_url);
       } else {
-        setError(data.error?.message || "Upload failed");
+        const msg = data.error?.message || "Upload failed";
+        if (msg.toLowerCase().includes("unsigned") || msg.toLowerCase().includes("whitelist")) {
+          setError(`Upload preset '${uploadPreset}' must be set to 'Unsigned' in Cloudinary. Go to Cloudinary Settings > Upload > Upload Presets, click Edit on '${uploadPreset}', and select 'Unsigned'.`);
+        } else {
+          setError(msg);
+        }
       }
-    } catch (err) {
+    } catch {
       setError("Network error during upload");
     } finally {
       setUploading(false);

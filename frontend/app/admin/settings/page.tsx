@@ -5,7 +5,10 @@ import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail } from "lucide-react"
 import type { Settings } from "@/lib/types";
 
 export default function AdminSettings() {
-  const [settings, setSettings] = useState<Settings>({ cloudinaryCloudName: "", cloudinaryUploadPreset: "" });
+  const [settings, setSettings] = useState<Settings>({
+    cloudinaryCloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh",
+    cloudinaryUploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+  });
   
   // Structured state for socials
   const [socials, setSocials] = useState({
@@ -25,7 +28,11 @@ export default function AdminSettings() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
-          setSettings(data.data);
+          setSettings({
+            ...data.data,
+            cloudinaryCloudName: data.data.cloudinaryCloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh",
+            cloudinaryUploadPreset: data.data.cloudinaryUploadPreset || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+          });
           
           if (data.data.socialLinks) {
             try {
