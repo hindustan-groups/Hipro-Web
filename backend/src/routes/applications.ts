@@ -10,10 +10,10 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { name, email, phone, role, experience, cvUrl } = req.body;
 
-    if (!name || !email || !phone || !role || !experience || !cvUrl) {
+    if (!name || !email || !phone || !role) {
       return res.status(400).json({ 
         success: false, 
-        error: "All fields are required (name, email, phone, role, experience, cvUrl)" 
+        error: "Name, email, phone, and role are required." 
       } as ApiResponse);
     }
 
@@ -22,8 +22,8 @@ router.post("/", async (req: Request, res: Response) => {
       email: email.trim(),
       phone: phone.trim(),
       role: role.trim(),
-      experience: experience.trim(),
-      cvUrl: cvUrl.trim(),
+      experience: (experience || "Not specified").trim(),
+      cvUrl: (cvUrl || "").trim(),
       status: "new",
     });
 
@@ -65,6 +65,24 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
       return res.status(404).json({ success: false, error: "Application not found" } as ApiResponse);
     }
     return res.json({ success: true, data: updated } as ApiResponse<JobApplication>);
+  } catch (error) {
+    return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
+  }
+});
+
+// DELETE /api/applications — Delete Application (Protected)
+router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ success: false, error: "id parameter required" } as ApiResponse);
+    }
+    const { deleteOne } = await import("../lib/db");
+    const ok = await deleteOne("applications", id);
+    if (!ok) {
+      return res.status(404).json({ success: false, error: "Application not found" } as ApiResponse);
+    }
+    return res.json({ success: true, message: "Application deleted successfully" } as ApiResponse);
   } catch (error) {
     return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
   }

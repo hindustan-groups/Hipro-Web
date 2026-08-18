@@ -25,10 +25,6 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.cvUrl) {
-      setErrorMessage("Please upload your CV/Resume to proceed.");
-      return;
-    }
     
     setStatus("submitting");
     setErrorMessage("");
