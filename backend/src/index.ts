@@ -53,11 +53,19 @@ app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/applications", applicationsRouter);
 app.use("/api/locations", locationsRouter);
 
-// Health check
+// Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date() });
+  res.json({ status: "OK", uptime: process.uptime(), timestamp: new Date() });
 });
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", uptime: process.uptime(), timestamp: new Date() });
+});
+
+import { startKeepAlive } from "./utils/keep-alive";
 
 app.listen(PORT, () => {
   console.log(`Standalone Express backend is running on port ${PORT}`);
+  // Start self-pinging keep-alive service
+  startKeepAlive();
 });
