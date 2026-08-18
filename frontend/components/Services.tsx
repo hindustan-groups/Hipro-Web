@@ -3,9 +3,38 @@
 import Link from "next/link";
 import type { Service } from "@/lib/types";
 
-export default function Services({ services }: { services: Service[] }) {
-  // Take only the first 4 services for the homepage grid
-  const displayServices = services.slice(0, 4);
+const defaultServices: Service[] = [
+  {
+    id: "1",
+    title: "Civil & Structural Engineering",
+    description: "End-to-end heavy infrastructure and RCC structural execution built to international safety standards.",
+    category: "Design & Planning",
+    icon: "HardHat",
+    features: "[]",
+    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80",
+    order: 1,
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "2",
+    title: "Commercial & High-Rise Towers",
+    description: "Iconic commercial spaces, retail complexes, and corporate headquarters engineered for modern work.",
+    category: "Commercial Development",
+    icon: "Building",
+    features: "[]",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
+    order: 2,
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+export default function Services({ services = [] }: { services?: Service[] }) {
+  const list = services && services.length > 0 ? services : defaultServices;
+  const displayServices = list.slice(0, 4);
 
   return (
     <section id="section-services" className="py-24 bg-white relative">

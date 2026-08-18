@@ -2,11 +2,43 @@ import Link from "next/link";
 import { ArrowUpRight, Calendar, User, Newspaper } from "lucide-react";
 import type { BlogPost } from "@/lib/types";
 
-export default function Blogs({ posts }: { posts: BlogPost[] }) {
-  if (!posts || posts.length === 0) return null;
+const defaultBlogs: BlogPost[] = [
+  {
+    id: "1",
+    slug: "sustainable-construction-trends-2025",
+    title: "Sustainable Civil Engineering & Green Building Trends",
+    excerpt: "How modern high-rises and commercial complexes are utilizing energy-efficient materials and carbon-neutral concrete.",
+    content: "Full content...",
+    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80",
+    date: "August 2025",
+    author: "Chief Structural Engineer",
+    category: "Engineering & Innovation",
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "2",
+    slug: "seismic-design-and-structural-safety",
+    title: "Advanced Seismic Engineering for High-Rise Towers",
+    excerpt: "Exploring modern damping technologies, shear wall systems, and geotechnical foundation techniques for earthquake resilience.",
+    content: "Full content...",
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80",
+    date: "July 2025",
+    author: "Senior Architect",
+    category: "Architecture & Design",
+    active: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
 
-  const featuredPost = posts[0];
-  const sidePosts = posts.slice(1, 4); // Show max 3 side posts
+export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
+  const list = posts && posts.length > 0 ? posts : defaultBlogs;
+  if (!list || list.length === 0) return null;
+
+  const featuredPost = list[0];
+  const sidePosts = list.slice(1, 4); // Show max 3 side posts
 
   return (
     <section id="section-blogs" className="py-24 bg-white relative border-t border-slate-200">

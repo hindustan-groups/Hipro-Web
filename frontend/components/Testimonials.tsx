@@ -4,24 +4,50 @@ import { useState, useEffect } from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Testimonial } from "@/lib/types";
 
-export default function Testimonials({ testimonials }: { testimonials: Testimonial[] }) {
+const defaultTestimonials: Testimonial[] = [
+  {
+    id: "1",
+    name: "Rajesh Malhotra",
+    role: "Managing Director, Apex Logistics",
+    rating: 5,
+    text: "Hindustan Projects delivered our 120,000 sq.ft industrial facility ahead of schedule. Their engineering precision, material quality, and safety discipline are unmatched.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+    approved: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "2",
+    name: "Ananya Deshmukh",
+    role: "Director, Urban Greens Townships",
+    rating: 5,
+    text: "From architectural blueprints to final structural execution, their turnkey approach saved us months of coordinating with multiple vendors.",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+    approved: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+export default function Testimonials({ testimonials = [] }: { testimonials?: Testimonial[] }) {
+  const list = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Auto-advance
   useEffect(() => {
-    if (testimonials.length <= 1) return;
+    if (!list || list.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+      setCurrentIndex((prev) => (prev + 1) % list.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [list?.length]);
 
-  if (!testimonials || testimonials.length === 0) return null;
+  if (!list || list.length === 0) return null;
 
-  const next = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  const prev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  const next = () => setCurrentIndex((prev) => (prev + 1) % list.length);
+  const prev = () => setCurrentIndex((prev) => (prev - 1 + list.length) % list.length);
 
-  const t = testimonials[currentIndex];
+  const t = list[currentIndex] || list[0];
 
   return (
     <section id="section-testimonials" className="py-8 bg-slate-800 relative overflow-hidden border-t border-slate-700">

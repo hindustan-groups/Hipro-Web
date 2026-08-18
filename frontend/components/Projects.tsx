@@ -2,9 +2,51 @@ import Link from "next/link";
 import { ArrowUpRight, Building } from "lucide-react";
 import type { Project } from "@/lib/types";
 
-export default function Projects({ projects, title }: { projects: Project[], title?: string }) {
-  // Only take first 3 projects to ensure the 3-column layout is perfect
-  const displayProjects = projects.slice(0, 3);
+const defaultProjects: Project[] = [
+  {
+    id: "1",
+    title: "Executive Commercial Tower",
+    category: "Commercial",
+    location: "New Delhi",
+    date: "2024",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
+    description: "Multi-story luxury commercial high-rise tower built to IGBC Green Building standards.",
+    featured: true,
+    status: "active",
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "2",
+    title: "Luxury Gated Township",
+    category: "Residential",
+    location: "Gurugram",
+    date: "2023",
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80",
+    description: "Premium villa community featuring smart home integrations and bespoke landscaping.",
+    featured: true,
+    status: "active",
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "3",
+    title: "State-of-the-Art Logistics Park",
+    category: "Industrial",
+    location: "Pune",
+    date: "2023",
+    image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1200&q=80",
+    description: "Heavy-duty industrial warehouse facility with precision PEB steel engineering.",
+    featured: true,
+    status: "active",
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+export default function Projects({ projects = [], title }: { projects?: Project[], title?: string }) {
+  const list = projects && projects.length > 0 ? projects : defaultProjects;
+  const displayProjects = list.slice(0, 3);
 
   return (
     <section id="section-projects" className="pt-24 bg-white relative">

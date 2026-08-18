@@ -1,5 +1,5 @@
 
-const BACKEND_URL = process.env.BACKEND_API_URL || "http://127.0.0.1:5000";
+const BACKEND_URL = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
 
 function getEndpoint(collection: string): string {
   switch (collection) {
