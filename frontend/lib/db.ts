@@ -1,5 +1,13 @@
 
-const BACKEND_URL = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
+let rawUrl = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
+if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
+  rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
+} else if (rawUrl.startsWith("http:") && !rawUrl.startsWith("http://")) {
+  rawUrl = rawUrl.replace(/^http:?\/*/, "http://");
+} else if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
+  rawUrl = `https://${rawUrl}`;
+}
+const BACKEND_URL = rawUrl.replace(/\/+$/, "");
 
 function getEndpoint(collection: string): string {
   switch (collection) {
