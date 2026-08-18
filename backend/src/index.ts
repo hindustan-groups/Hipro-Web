@@ -65,9 +65,34 @@ app.get("/api/health", (req, res) => {
 });
 
 import { startKeepAlive } from "./utils/keep-alive";
+import { prisma } from "./lib/db";
+import { hashPassword } from "./lib/auth";
 
-app.listen(PORT, () => {
+async function ensureDefaultAdmin() {
+  try {
+    const adminCount = await prisma.adminUser.count();
+    if (adminCount === 0) {
+      const email = process.env.ADMIN_EMAIL || "admin@hindustanprojects.com";
+      const password = process.env.ADMIN_PASSWORD || "admin123";
+      await prisma.adminUser.create({
+        data: {
+          email,
+          password: hashPassword(password),
+          name: process.env.ADMIN_NAME || "Admin",
+          role: "admin",
+          permissions: "[]",
+        },
+      });
+      console.log(`[BOOT] Initialized default super admin account: ${email}`);
+    }
+  } catch (e) {
+    console.error("[BOOT] Could not check/seed default admin user:", e);
+  }
+}
+
+app.listen(PORT, async () => {
   console.log(`Standalone Express backend is running on port ${PORT}`);
+  await ensureDefaultAdmin();
   // Start self-pinging keep-alive service
   startKeepAlive();
 });

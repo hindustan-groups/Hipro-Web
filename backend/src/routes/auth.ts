@@ -14,9 +14,28 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     // Normal login flow
-    const user = await prisma.adminUser.findUnique({
+    let user = await prisma.adminUser.findUnique({
       where: { email },
     });
+
+    const defaultEmail = process.env.ADMIN_EMAIL || "admin@hindustanprojects.com";
+    const defaultPassword = process.env.ADMIN_PASSWORD || "admin123";
+
+    // Auto-seed default super admin if missing on live database
+    if (!user && (email === "admin@hindustanprojects.com" || email === defaultEmail)) {
+      if (password === defaultPassword) {
+        user = await prisma.adminUser.create({
+          data: {
+            email: email,
+            password: hashPassword(defaultPassword),
+            name: process.env.ADMIN_NAME || "Admin",
+            role: "admin",
+            permissions: "[]",
+          },
+        });
+        console.log("Default admin account auto-initialized on Render:", user.email);
+      }
+    }
 
     if (!user) {
       return res.status(401).json({ success: false, error: "Invalid credentials" });
