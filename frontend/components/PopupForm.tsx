@@ -3,6 +3,29 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
+const defaultIndianStates = [
+  "Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Gujarat", 
+  "Telangana", "Uttar Pradesh", "Haryana", "Rajasthan", "West Bengal", 
+  "Punjab", "Madhya Pradesh", "Kerala", "Andhra Pradesh"
+];
+
+const defaultDistrictsByState: Record<string, string[]> = {
+  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Solapur"],
+  "Delhi": ["Central Delhi", "East Delhi", "New Delhi", "North Delhi", "South Delhi", "West Delhi"],
+  "Karnataka": ["Bengaluru Urban", "Mysuru", "Mangaluru", "Hubballi-Dharwad", "Belagavi"],
+  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
+  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar"],
+  "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"],
+  "Uttar Pradesh": ["Lucknow", "Noida", "Ghaziabad", "Kanpur", "Varanasi", "Agra", "Prayagraj"],
+  "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal"],
+  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner"],
+  "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"],
+  "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Mohali"],
+  "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain"],
+  "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam"],
+  "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool"]
+};
+
 export default function PopupForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
@@ -11,20 +34,23 @@ export default function PopupForm() {
     setHasMounted(true);
     
     // Check if the user has already seen the popup
-    const hasSeenPopup = localStorage.getItem("hasSeenConsultationPopup");
-    
-    if (!hasSeenPopup) {
-      // Show popup after 3 seconds
-      const timer = setTimeout(() => {
-        setIsOpen(true);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
+    try {
+      const hasSeenPopup = localStorage.getItem("hasSeenConsultationPopup");
+      if (!hasSeenPopup) {
+        // Show popup after 3 seconds
+        const timer = setTimeout(() => {
+          setIsOpen(true);
+        }, 3000);
+        
+        return () => clearTimeout(timer);
+      }
+    } catch {
+      // localStorage may be disabled
     }
   }, []);
 
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
-  const [states, setStates] = useState<string[]>([]);
+  const [states, setStates] = useState<string[]>(defaultIndianStates);
   const [districts, setDistricts] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -36,12 +62,13 @@ export default function PopupForm() {
     const fetchStates = async () => {
       try {
         const res = await fetch("/api/locations/states");
+        if (!res.ok) return;
         const json = await res.json();
-        if (json.success) {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setStates(json.data);
         }
       } catch (err) {
-        console.error("Failed to fetch states:", err);
+        // Fallback to default states
       }
     };
     if (isOpen) {
@@ -52,15 +79,17 @@ export default function PopupForm() {
   const handleStateChange = async (stateName: string) => {
     setSelectedState(stateName);
     setSelectedDistrict("");
-    setDistricts([]);
+    const fallbackList = defaultDistrictsByState[stateName] || ["City Center", "North District", "South District", "East District", "West District"];
+    setDistricts(fallbackList);
     try {
       const res = await fetch(`/api/locations/districts?state=${encodeURIComponent(stateName)}`);
+      if (!res.ok) return;
       const json = await res.json();
-      if (json.success) {
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
         setDistricts(json.data);
       }
     } catch (err) {
-      console.error("Failed to fetch districts:", err);
+      // Keep fallback districts
     }
   };
 

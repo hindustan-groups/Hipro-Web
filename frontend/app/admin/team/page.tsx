@@ -8,7 +8,7 @@ import type { TeamMember } from "@/lib/types";
 const EMPTY: Omit<TeamMember, "id" | "createdAt" | "updatedAt"> = {
   name: "", role: "", img: "", bio: "", 
   isFounder: false, instagram: "", linkedin: "", facebook: "",
-  order: 99, active: true,
+  order: 1, active: true,
 };
 
 export default function AdminTeam() {
@@ -51,7 +51,7 @@ export default function AdminTeam() {
       instagram: m.instagram || "",
       linkedin: m.linkedin || "",
       facebook: m.facebook || "",
-      order: m.order,
+      order: m.order ?? 1,
       active: m.active
     });
     setShowForm(true);
@@ -128,7 +128,7 @@ export default function AdminTeam() {
             </div>
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Order Index (Low = First)</label>
-              <input type="number" required value={form.order} onChange={(e) => setForm((p) => ({ ...p, order: parseInt(e.target.value) || 99 }))}
+              <input type="number" min="1" required value={form.order ?? 1} onChange={(e) => setForm((p) => ({ ...p, order: e.target.value === "" ? 1 : parseInt(e.target.value) || 1 }))}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
             </div>
           </div>

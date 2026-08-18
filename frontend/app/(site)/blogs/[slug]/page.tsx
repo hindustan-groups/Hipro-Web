@@ -26,18 +26,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const allBlogs = await findAll<BlogPost>("blogs");
-  const post = allBlogs.find(p => p.slug === params.slug && p.active !== false);
-
-  const relatedBlogs = allBlogs
-    .filter(p => p.slug !== params.slug && p.active !== false)
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-    .slice(0, 3);
+  const post = allBlogs.find(p => (p.slug === params.slug || p.id === params.slug) && p.active !== false);
 
   if (!post) notFound();
 
+  const relatedBlogs = allBlogs
+    .filter(p => p.id !== post.id && p.slug !== post.slug && p.active !== false)
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 3);
+
   // Calculate read time
-  const wordCount = post.content.split(/\s+/).length;
-  const readTime = Math.ceil(wordCount / 200); // 200 words per min
+  const wordCount = (post.content || "").split(/\s+/).length;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per min
 
   // Schema.org structured data for SEO
   const jsonLd = {
@@ -120,7 +120,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               
               {/* Body Content Rendering */}
               <div itemProp="articleBody" className="space-y-8 text-slate-700 font-light leading-[1.8] text-[17px] md:text-[19px]">
-                {post.content.split('\n\n').map((paragraph, index) => {
+                {(post.content || "").split('\n\n').map((paragraph, index) => {
                   // Basic markdown rendering simulation
                   if (paragraph.startsWith('## ')) {
                     return <h2 key={index} className="text-3xl font-bold text-slate-900 mt-12 mb-6 font-display uppercase tracking-tight">{paragraph.replace('## ', '')}</h2>;
@@ -167,10 +167,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-6">About the Author</h4>
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-16 h-16 bg-slate-900 rounded-none flex items-center justify-center text-white text-2xl font-display font-bold">
-                    {post.author.charAt(0)}
+                    {(post.author || "A").charAt(0)}
                   </div>
                   <div>
-                    <div className="font-bold text-slate-900 text-lg">{post.author}</div>
+                    <div className="font-bold text-slate-900 text-lg">{post.author || "Author"}</div>
                     <div className="text-slate-500 text-sm">Industry Expert</div>
                   </div>
                 </div>

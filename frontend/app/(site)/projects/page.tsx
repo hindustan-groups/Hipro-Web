@@ -25,7 +25,7 @@ export default async function ProjectsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="rounded-none bg-slate-50 px-10 py-16 text-center shadow-lg border border-slate-200">
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 font-display uppercase tracking-tight">
-              Want To Showcase <span className="text-construction-red">Your Build Here?</span>
+              Want To Showcase <span className="font-serif italic font-normal text-construction-red normal-case">Your Build Here?</span>
             </h2>
             <p className="text-slate-600 font-light mb-8 max-w-xl mx-auto text-base leading-relaxed">
               Partner with Hindustan Projects for end-to-end master planning, structural design, and construction execution.

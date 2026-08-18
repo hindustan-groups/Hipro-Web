@@ -7,11 +7,11 @@ import DynamicIcon from "@/components/DynamicIcon";
 import { Service, Guarantee } from "@/lib/types";
 
 const EMPTY_SERVICE: Omit<Service, "id" | "createdAt"> = {
-  title: "", description: "", category: "Design & Planning", icon: "Wrench", image: "", order: 99, active: true, features: []
+  title: "", description: "", category: "Design & Planning", icon: "Wrench", image: "", order: 1, active: true, features: []
 };
 
 const EMPTY_GUARANTEE: Omit<Guarantee, "id" | "createdAt"> = {
-  badge: "", title: "", description: "", bg: "bg-construction-navy", accent: "text-blue-200", image: "", hasShield: false, order: 99, active: true,
+  badge: "", title: "", description: "", bg: "bg-construction-navy", accent: "text-blue-200", image: "", hasShield: false, order: 1, active: true,
 };
 
 export default function AdminServices() {
@@ -91,7 +91,7 @@ export default function AdminServices() {
       category: service.category || "Design & Planning",
       icon: service.icon || "Wrench",
       image: service.image || "",
-      order: service.order ?? 99,
+      order: service.order ?? 1,
       active: service.active !== false,
       features: featuresList,
     });
@@ -185,7 +185,7 @@ export default function AdminServices() {
             </div>
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Order Index</label>
-              <input type="number" required value={serviceForm.order} onChange={(e) => setServiceForm((p) => ({ ...p, order: parseInt(e.target.value) || 99 }))}
+              <input type="number" min="1" required value={serviceForm.order ?? 1} onChange={(e) => setServiceForm((p) => ({ ...p, order: e.target.value === "" ? 1 : parseInt(e.target.value) || 1 }))}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function AdminServices() {
             </div>
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Order Index</label>
-              <input type="number" required value={guaranteeForm.order} onChange={(e) => setGuaranteeForm((p) => ({ ...p, order: parseInt(e.target.value) || 99 }))}
+              <input type="number" min="1" required value={guaranteeForm.order ?? 1} onChange={(e) => setGuaranteeForm((p) => ({ ...p, order: e.target.value === "" ? 1 : parseInt(e.target.value) || 1 }))}
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
             </div>
             <div className="md:col-span-2">

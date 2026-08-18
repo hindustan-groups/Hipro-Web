@@ -94,11 +94,11 @@ export default function AdminDashboard() {
                     <div key={c.id} className="flex items-center justify-between px-6 py-4 gap-4 hover:bg-slate-50/80 transition-colors cursor-pointer group">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 shrink-0 rounded-none-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
-                          {c.name.charAt(0)}
+                          {(c.name || "U").charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-slate-900 text-[13.5px] font-semibold truncate group-hover:text-construction-navy transition-colors">{c.name}</p>
-                          <p className="text-slate-500 text-[12px] truncate">{c.email}</p>
+                          <p className="text-slate-900 text-[13.5px] font-semibold truncate group-hover:text-construction-navy transition-colors">{c.name || "Anonymous"}</p>
+                          <p className="text-slate-500 text-[12px] truncate">{c.email || ""}</p>
                         </div>
                       </div>
                     </div>
@@ -127,10 +127,10 @@ export default function AdminDashboard() {
                     <div key={q.id} className="flex items-center justify-between px-6 py-4 gap-4 hover:bg-slate-50/80 transition-colors cursor-pointer group">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-9 h-9 shrink-0 rounded-none-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
-                          {q.name.charAt(0)}
+                          {(q.name || "U").charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-slate-900 text-[13.5px] font-semibold truncate group-hover:text-construction-navy transition-colors">{q.name}</p>
+                          <p className="text-slate-900 text-[13.5px] font-semibold truncate group-hover:text-construction-navy transition-colors">{q.name || "Anonymous"}</p>
                           <p className="text-slate-500 text-[12px] truncate">{q.projectType} &middot; {q.budget}</p>
                         </div>
                       </div>

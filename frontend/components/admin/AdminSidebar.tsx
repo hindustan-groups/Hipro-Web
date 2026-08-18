@@ -86,9 +86,9 @@ export default function AdminSidebar({ user }: { user: any }) {
           
           if (!hasAccess) return null;
 
-          const active = href === "/admin"
-            ? pathname === "/admin"
-            : pathname.startsWith(href);
+          const active = pathname
+            ? (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href))
+            : false;
           return (
             <Link
               key={href}

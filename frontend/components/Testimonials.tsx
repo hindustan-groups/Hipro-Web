@@ -40,7 +40,9 @@ export default function Testimonials({ testimonials }: { testimonials: Testimoni
             <span className="w-1.5 h-1.5 rounded-none bg-white animate-pulse" />
             <span className="text-[10px] md:text-[11px] text-white font-bold uppercase tracking-widest">Client Stories</span>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white font-display tracking-tight uppercase">What Our Partners Say</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white font-display tracking-tight uppercase">
+            What Our <span className="font-serif italic font-normal text-construction-red normal-case">Partners</span> Say
+          </h2>
         </div>
 
         <div className="relative w-full max-w-5xl mx-auto flex flex-col items-center">

@@ -5,25 +5,51 @@ import { Plus, Trash2, Save, GripVertical } from "lucide-react";
 import ImageUpload from "@/components/admin/ImageUpload";
 import Navbar from "@/components/Navbar";
 
+const defaultNavLinks = [
+  { href: "/", label: "Home", isMegaMenu: false },
+  { href: "/about", label: "About Us", isMegaMenu: false },
+  { 
+    href: "/services", 
+    label: "Services", 
+    isMegaMenu: true,
+    megaMenuImage: "https://images.unsplash.com/photo-1541888086925-0c13d42e2c45?w=800&q=80",
+    megaMenuTitle: "Turnkey Construction & Engineering",
+    megaMenuSubtitle: "Delivering visionary architectural blueprints, BIM modeling, and master infrastructure execution across India.",
+    megaMenuLink: "/services",
+    megaMenuCategories: [],
+  },
+  { href: "/projects", label: "Projects", isMegaMenu: false },
+  { href: "/careers", label: "Careers", isMegaMenu: false },
+  { href: "/contact", label: "Contact", isMegaMenu: false },
+];
+
 export default function AdminNavigation() {
-  const [navConfig, setNavConfig] = useState<any[]>([]);
+  const [navConfig, setNavConfig] = useState<any[]>(defaultNavLinks);
+  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data?.navigationConfig) {
-          try {
-            setNavConfig(JSON.parse(data.data.navigationConfig));
-          } catch (e) {
-            setNavConfig([]);
+    Promise.all([
+      fetch("/api/settings").then((res) => res.json()).catch(() => ({})),
+      fetch("/api/services").then((res) => res.json()).catch(() => ({})),
+    ]).then(([settingsRes, servicesRes]) => {
+      if (settingsRes.success && settingsRes.data?.navigationConfig) {
+        try {
+          const parsed = JSON.parse(settingsRes.data.navigationConfig);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setNavConfig(parsed);
           }
+        } catch (e) {
+          setNavConfig(defaultNavLinks);
         }
-        setLoading(false);
-      });
+      }
+      if (servicesRes.success && Array.isArray(servicesRes.data)) {
+        setServices(servicesRes.data);
+      }
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
@@ -128,7 +154,7 @@ export default function AdminNavigation() {
       <div className="bg-slate-100 p-8 rounded-none-none border border-slate-200 shadow-inner">
         <h3 className="text-xs uppercase tracking-widest font-bold text-slate-400 mb-4">Live Preview</h3>
         <div className="pointer-events-auto z-50">
-          <Navbar navConfigString={JSON.stringify(navConfig)} previewMode={true} />
+          <Navbar navConfigString={JSON.stringify(navConfig)} previewMode={true} services={services} />
         </div>
       </div>
 
@@ -190,9 +216,15 @@ export default function AdminNavigation() {
                         className="w-full bg-white border border-slate-200 text-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-construction-navy"
                       />
                     </div>
-                    <div className="md:col-span-2">
-                      <label className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-1 block">Mega Menu Image</label>
+                    <div className="md:col-span-2 space-y-2">
+                      <label className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-1 block">Featured Banner Image (Right-Side Mega Menu)</label>
                       <ImageUpload value={link.megaMenuImage || ""} onChange={(url) => updateTopLevelLink(i, "megaMenuImage", url)} />
+                      <input
+                        value={link.megaMenuImage || ""}
+                        onChange={(e) => updateTopLevelLink(i, "megaMenuImage", e.target.value)}
+                        placeholder="Or paste direct image URL (https://...)"
+                        className="w-full bg-white border border-slate-200 text-slate-900 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-construction-navy mt-2"
+                      />
                     </div>
                   </div>
 

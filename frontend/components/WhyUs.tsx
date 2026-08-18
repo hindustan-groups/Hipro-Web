@@ -58,7 +58,7 @@ export default function WhyUs() {
             
             <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight mb-6 leading-[1.1]">
               Built On Trust &amp; <br className="hidden md:block" />
-              <span className="text-construction-red">Engineering Excellence</span>
+              <span className="font-serif italic font-normal text-construction-red normal-case">Engineering Excellence</span>
             </h2>
             
             <p className="text-slate-600 text-base md:text-lg font-light leading-relaxed mb-10 border-l-2 border-slate-300 pl-4">

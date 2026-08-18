@@ -16,7 +16,7 @@ export default function Blogs({ posts }: { posts: BlogPost[] }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-construction-navy font-display uppercase tracking-wider mb-4">
-              Industry Insights
+              Industry <span className="font-serif italic font-normal text-construction-red normal-case">Insights</span>
             </h2>
             <div className="flex w-64 h-1">
               <div className="w-1/3 h-full bg-yellow-500"></div>
@@ -37,7 +37,7 @@ export default function Blogs({ posts }: { posts: BlogPost[] }) {
           
           {/* Featured Post (Left, 2/3 width) */}
           <Link 
-            href={`/blogs/${featuredPost.id}`}
+            href={`/blogs/${featuredPost.slug || featuredPost.id}`}
             className="group w-full lg:w-2/3 relative h-[500px] md:h-[600px] block overflow-hidden bg-slate-900 border border-slate-200 shadow-md"
           >
             <img
@@ -83,7 +83,7 @@ export default function Blogs({ posts }: { posts: BlogPost[] }) {
             {sidePosts.map((post) => (
               <Link
                 key={post.id}
-                href={`/blogs/${post.id}`}
+                href={`/blogs/${post.slug || post.id}`}
                 className="group flex flex-col h-full bg-slate-50 border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300"
               >
                 <div className="relative h-48 sm:h-56 overflow-hidden">

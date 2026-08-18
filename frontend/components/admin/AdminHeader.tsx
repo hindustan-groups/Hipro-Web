@@ -55,11 +55,11 @@ export default function AdminHeader({ user }: { user: any }) {
         </button>
         <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
           <div className="w-10 h-10 rounded-none-none bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-sm shadow-sm">
-            {user?.name?.charAt(0).toUpperCase()}
+            {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
           </div>
           <div className="hidden md:block">
-            <p className="text-[13px] font-bold text-slate-900 leading-tight">{user?.name}</p>
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">{user?.role}</p>
+            <p className="text-[13px] font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">{user?.role || "admin"}</p>
           </div>
         </div>
       </div>

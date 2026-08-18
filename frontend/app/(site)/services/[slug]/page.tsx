@@ -3,6 +3,7 @@ import Link from "next/link";
 import { findAll } from "@/lib/db";
 import type { Service, Settings } from "@/lib/types";
 import * as Icons from "lucide-react";
+import DynamicIcon from "@/components/DynamicIcon";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
   const phone = settings.companyPhone || "+91 98765 43210";
   
   const service = allServices.find(s => 
-    s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-') === params.slug
+    s && s.title && s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-') === params.slug
   );
 
   if (!service || !service.active) {
@@ -25,18 +26,16 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
 
   let features: string[] = [];
   try {
-    features = typeof service.features === 'string' ? JSON.parse(service.features) : service.features;
+    features = typeof service.features === 'string' ? JSON.parse(service.features) : (Array.isArray(service.features) ? service.features : []);
   } catch {
     features = [];
   }
-
-  const Icon = (Icons as any)[service.icon] || Icons.Wrench;
 
   // Dynamically create supplementary images from other services so it's not hardcoded
   const supplementaryImages = [
     service.image,
     ...allServices.filter(s => s.id !== service.id).map(s => s.image)
-  ];
+  ].filter(Boolean);
 
   return (
     <div className="bg-white min-h-screen">
@@ -60,7 +59,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
           
           <div className="flex justify-center mb-6">
             <div className="w-12 h-12 bg-construction-red flex items-center justify-center text-white shadow-md rounded-full">
-              <Icon className="w-6 h-6" />
+              <DynamicIcon name={service.icon || "Wrench"} className="w-6 h-6" />
             </div>
           </div>
           

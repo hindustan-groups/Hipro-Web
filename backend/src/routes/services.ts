@@ -10,7 +10,7 @@ router.get("/", async (req: Request, res: Response) => {
         const services = await findAll<Service>("services");
         const active = services
             .filter((s) => s.active !== false)
-            .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+            .sort((a, b) => (a.order ?? 1) - (b.order ?? 1));
 
         return res.json({ success: true, data: active } as ApiResponse<Service[]>);
     } catch {
@@ -34,7 +34,7 @@ router.post("/", async (req: Request, res: Response) => {
             icon: icon?.trim() || "Wrench",
             features: JSON.stringify(features || []),
             image: image?.trim() || "",
-            order: order ?? 99,
+            order: Number(order) || 1,
             active: true,
         });
 

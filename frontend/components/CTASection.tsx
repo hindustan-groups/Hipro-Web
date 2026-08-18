@@ -25,7 +25,7 @@ export default function CTASection() {
                 <span className="text-xs text-white font-bold uppercase tracking-wider">Free Engineering Consultation</span>
               </div>
               <h2 className="text-3xl md:text-5xl font-bold text-black mb-4 font-display uppercase tracking-tight leading-tight">
-                Ready To Build <span className="text-construction-red">Your Next Milestone?</span>
+                Ready To Build <span className="font-serif italic font-normal text-construction-red normal-case">Your Next Milestone?</span>
               </h2>
               <p className="text-slate-600 font-light text-base md:text-lg leading-relaxed">
                 Connect with our senior technical advisors for a complimentary feasibility analysis and project estimate.

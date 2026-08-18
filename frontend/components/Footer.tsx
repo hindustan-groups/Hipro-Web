@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { HardHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
 import { findAll } from "@/lib/db";
-import type { Settings } from "@/lib/types";
+import type { Settings, Service } from "@/lib/types";
 
 export default async function Footer() {
-  const settingsData = await findAll<Settings>("settings");
+  const [settingsData, servicesData] = await Promise.all([
+    findAll<Settings>("settings"),
+    findAll<Service>("services")
+  ]);
+  
   const settings = settingsData[0] || {};
   
   const address = settings.companyAddress || "101 Executive Tower, Infrastructure Complex, New Delhi, India";
@@ -15,6 +19,25 @@ export default async function Footer() {
   try {
     if (settings.socialLinks) socials = JSON.parse(settings.socialLinks);
   } catch { /* silent */ }
+
+  const activeServices = servicesData
+    .filter(s => s.active !== false)
+    .sort((a, b) => (a.order || 99) - (b.order || 99))
+    .slice(0, 6);
+
+  const capabilities = activeServices.length > 0
+    ? activeServices.map(s => ({
+        label: s.title,
+        href: "/services"
+      }))
+    : [
+        { label: "Residential Construction", href: "/services" },
+        { label: "Commercial Development", href: "/services" },
+        { label: "Industrial Facilities", href: "/services" },
+        { label: "Renovation & Remodeling", href: "/services" },
+        { label: "Project Management", href: "/services" },
+        { label: "Turnkey Design Build", href: "/services" }
+      ];
   return (
     <footer className="bg-black text-slate-400 relative overflow-hidden border-t border-slate-800">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
@@ -80,10 +103,10 @@ export default async function Footer() {
           <div>
             <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display">Capabilities</h3>
             <ul className="space-y-3 text-xs">
-              {["Residential Construction", "Commercial Development", "Industrial Facilities", "Renovation & Remodeling", "Project Management", "Turnkey Design Build"].map((item) => (
-                <li key={item}>
-                  <Link href="/services" className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium">
-                    {item}
+              {capabilities.map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium">
+                    {item.label}
                     <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-construction-red" />
                   </Link>
                 </li>
@@ -120,7 +143,7 @@ export default async function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-light">
           <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} Hindustan Projects. All rights reserved.</span>
+            <span suppressHydrationWarning>© {new Date().getFullYear()} Hindustan Projects. All rights reserved.</span>
           </div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Quality Policy"].map((item) => (

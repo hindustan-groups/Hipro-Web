@@ -13,7 +13,7 @@ export default function Projects({ projects, title }: { projects: Project[], tit
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-construction-navy font-display uppercase tracking-wider mb-4">
-              {title || "Landmarks In The Making"}
+              {title ? title : <>Landmarks In The <span className="font-serif italic font-normal text-construction-red normal-case">Making</span></>}
             </h2>
             <div className="flex w-64 h-1">
               <div className="w-1/3 h-full bg-yellow-500"></div>

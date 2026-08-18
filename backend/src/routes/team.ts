@@ -10,7 +10,7 @@ router.get("/", async (req: Request, res: Response) => {
         const team = await findAll<TeamMember>("team");
         const active = team
             .filter((m) => m.active !== false)
-            .sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+            .sort((a, b) => (a.order ?? 1) - (b.order ?? 1));
 
         return res.json({ success: true, data: active } as ApiResponse<TeamMember[]>);
     } catch {
@@ -36,7 +36,7 @@ router.post("/", async (req: Request, res: Response) => {
             instagram: instagram?.trim() || "",
             linkedin: linkedin?.trim() || "",
             facebook: facebook?.trim() || "",
-            order: order ?? 99,
+            order: Number(order) || 1,
             active: active ?? true,
         });
 

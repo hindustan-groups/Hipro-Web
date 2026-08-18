@@ -82,7 +82,7 @@ export default async function AboutPage() {
             <span className="text-xs font-bold uppercase tracking-wider">Est. 1999 · 25+ Years of Engineering Excellence</span>
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-black mb-5 font-display uppercase tracking-tight">
-            About <span className="text-blue-900">Hindustan</span> <span className="text-construction-red">Projects</span>
+            About <span className="text-construction-navy">Hindustan</span> <span className="font-serif italic font-normal text-construction-red normal-case">Projects</span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto font-light leading-relaxed">
             {heroSubtext}

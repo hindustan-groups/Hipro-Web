@@ -11,6 +11,8 @@ const config: Config = {
       fontFamily: {
         sans:    ["var(--font-montserrat)", "Montserrat", "system-ui", "-apple-system", "sans-serif"],
         display: ["var(--font-montserrat)", "Montserrat", "system-ui", "sans-serif"],
+        serif:   ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
+        accent:  ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
       },
       colors: {
         surface: {

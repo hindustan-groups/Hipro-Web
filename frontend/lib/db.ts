@@ -1,5 +1,5 @@
 
-const BACKEND_URL = process.env.BACKEND_API_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_API_URL || "http://127.0.0.1:5000";
 
 function getEndpoint(collection: string): string {
   switch (collection) {
@@ -19,34 +19,52 @@ export async function writeDB<T>(collection: string, data: T[]): Promise<void> {
   // Stub for backward compatibility
 }
 
-export async function insertOne<T>(collection: string, doc: any): Promise<T> {
+export async function insertOne<T>(collection: string, doc: any): Promise<T | null> {
   const endpoint = getEndpoint(collection);
-  const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(doc),
-  });
-  
-  if (!res.ok) {
-    throw new Error(`Failed to insert into ${collection}: ${res.statusText}`);
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(doc),
+    });
+    
+    if (!res.ok) {
+      console.error(`Failed to insert into ${collection}: ${res.statusText}`);
+      return null;
+    }
+    
+    const json = await res.json();
+    return json.data || json;
+  } catch (err) {
+    console.error(`Network error inserting into ${collection}:`, err);
+    return null;
   }
-  
-  const json = await res.json();
-  return json.data || json;
 }
 
 export async function findAll<T>(collection: string): Promise<T[]> {
   const endpoint = getEndpoint(collection);
-  const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-    cache: "no-store", // Ensure we fetch fresh data on server components
-  });
-  
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${collection}: ${res.statusText}`);
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
+      cache: "no-store", // Ensure fresh data on server components
+    });
+    
+    if (!res.ok) {
+      console.error(`Failed to fetch ${collection}: ${res.statusText}`);
+      return [];
+    }
+    
+    const json = await res.json();
+    if (json.data) {
+      if (Array.isArray(json.data)) return json.data;
+      if (typeof json.data === "object" && json.data !== null) return [json.data];
+    }
+    if (Array.isArray(json)) return json;
+    if (typeof json === "object" && json !== null) return [json];
+    return [];
+  } catch (err) {
+    console.error(`Network error fetching ${collection}:`, err);
+    return [];
   }
-  
-  const json = await res.json();
-  return json.data || json;
 }
 
 export async function findById<T>(collection: string, id: string): Promise<T | null> {

@@ -2,35 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background-color: #ffffff;
   color: #000000;
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-montserrat), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-* { letter-spacing: -0.015em; }
+* {
+  letter-spacing: -0.015em;
+}
+
 h1, h2, h3, h4, h5 {
-  font-family: var(--font-poppins), system-ui, sans-serif;
+  font-family: var(--font-montserrat), system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
 
-/* Animations for basic fades instead of complex word reveals */
+.headline-accent,
+.font-accent-word {
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif !important;
+  font-style: italic !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+}
+
+/* Animations */
 @keyframes fade-in {
-  0%   { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-up {
-  0%   { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
-.animate-fade-up { animation: fade-up 0.6s ease-out forwards; }
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out forwards;
+}
 
 /* Loading Bar Style Sweep Hover Effect */
 .btn-sweep {
@@ -38,6 +66,7 @@ h1, h2, h3, h4, h5 {
   overflow: hidden;
   z-index: 1;
 }
+
 .btn-sweep::before {
   content: '';
   position: absolute;
@@ -45,10 +74,11 @@ h1, h2, h3, h4, h5 {
   left: 0;
   width: 0%;
   height: 100%;
-  background-color: #0F2C59; /* construction-navy */
+  background-color: #0F2C59;
   z-index: -1;
   transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
 .btn-sweep:hover::before {
   width: 100%;
 }

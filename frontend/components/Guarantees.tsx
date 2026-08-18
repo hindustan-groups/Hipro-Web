@@ -66,7 +66,7 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
               <span className="text-[11px] font-bold text-construction-red uppercase tracking-wider">Uncompromising Standards</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-black font-display uppercase tracking-tight leading-tight">
-              Guarantees Every Project Deserves
+              Guarantees Every <span className="font-serif italic font-normal text-construction-red normal-case">Project</span> Deserves
             </h2>
           </AnimateIn>
         </div>
@@ -84,11 +84,12 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
           ></div>
 
           <div className="space-y-32">
-            {guarantees.map((item, idx) => {
+            {displayGuarantees.map((item, idx) => {
               const isEven = idx % 2 === 0;
               // Only show the item when the red line reaches its point (approximately 0%, 33%, 66%)
               // Adding -2 to the threshold so it appears right as the line touches the dot
-              const showThreshold = idx * (100 / guarantees.length) - 2; 
+              const totalItems = displayGuarantees.length || 1;
+              const showThreshold = idx * (100 / totalItems) - 2; 
               const isVisible = progress >= showThreshold;
 
               return (

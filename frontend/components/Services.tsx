@@ -14,7 +14,7 @@ export default function Services({ services }: { services: Service[] }) {
         {/* Section Header */}
         <div className="mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-black font-display tracking-tight mb-4">
-            Our Construction Services
+            Our <span className="font-serif italic font-normal text-construction-red">Construction</span> Services
           </h2>
           <p className="text-slate-500 text-lg md:text-xl font-light">
             Expertise in delivering top-notch construction with precision, quality, and transparency.
@@ -24,17 +24,17 @@ export default function Services({ services }: { services: Service[] }) {
         {/* 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {displayServices.map((service, index) => {
-            // Generate anchor ID similar to the services page logic
-            const anchorId = service.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+            const slug = (service.title || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+            const imageUrl = service.image || "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80";
             
             return (
               <div 
                 key={index}
-                className="group relative h-[300px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10"
+                className="group relative h-[320px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
               >
                 {/* Background Image */}
                 <img 
-                  src={service.image} 
+                  src={imageUrl} 
                   alt={service.title}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -55,10 +55,10 @@ export default function Services({ services }: { services: Service[] }) {
                   </div>
                   
                   <Link 
-                    href={`/services#${anchorId}`}
+                    href={`/services/${slug}`}
                     className="inline-flex shrink-0 items-center justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-md shadow-orange-900/30 hover:shadow-orange-900/50"
                   >
-                    Explore {service.title.split(' ')[0]}
+                    Explore {(service.title || "Service").split(' ')[0]}
                   </Link>
 
                 </div>

@@ -6,28 +6,29 @@ export default function AnimatedCounter({
   value, 
   duration = 2000 
 }: { 
-  value: string; 
+  value?: string | number; 
   duration?: number;
 }) {
   const [count, setCount] = useState("0");
   const ref = useRef<HTMLSpanElement>(null);
   
   useEffect(() => {
+    const valStr = String(value ?? "0");
     let targetNum = 0;
     let prefix = "";
     let suffix = "";
     let isFloat = false;
 
-    const match = value.match(/^([^0-9]*)([0-9.,]+)(.*)$/);
+    const match = valStr.match(/^([^0-9]*)([0-9.,]+)(.*)$/);
     
     if (match) {
       prefix = match[1];
       const numStr = match[2].replace(/,/g, '');
-      targetNum = parseFloat(numStr);
+      targetNum = parseFloat(numStr) || 0;
       isFloat = numStr.includes('.');
       suffix = match[3];
     } else {
-      setCount(value);
+      setCount(valStr);
       return;
     }
 
@@ -54,7 +55,7 @@ export default function AnimatedCounter({
             if (progress < 1) {
               window.requestAnimationFrame(step);
             } else {
-              setCount(value); // Ensure exact final value
+              setCount(valStr); // Ensure exact final value
             }
           };
           window.requestAnimationFrame(step);
@@ -71,5 +72,5 @@ export default function AnimatedCounter({
     return () => observer.disconnect();
   }, [value, duration]);
 
-  return <span ref={ref}>{count}</span>;
+  return <span ref={ref} suppressHydrationWarning>{count}</span>;
 }

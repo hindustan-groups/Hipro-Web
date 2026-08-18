@@ -33,7 +33,7 @@ export default async function ContactPage() {
             <span className="text-xs font-bold uppercase tracking-wider">Engineering Inquiry</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
-            Get In <span className="text-construction-red">Touch</span>
+            Get In <span className="font-serif italic font-normal text-construction-red normal-case">Touch</span>
           </h1>
           <p className="text-lg text-slate-600 max-w-xl mx-auto font-light leading-relaxed">
             Connect with our technical engineering team for project quotes, site evaluations, or partnership inquiries.

@@ -12,24 +12,31 @@ function hashPassword(password: string): string {
 async function main() {
   console.log("Seeding database...");
 
-  // Check if admin user already exists
-  const existingAdmin = await prisma.adminUser.findUnique({
-    where: { email: "admin@hindustan.com" },
-  });
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminName = process.env.ADMIN_NAME || "Master Admin";
 
-  if (!existingAdmin) {
-    const admin = await prisma.adminUser.create({
-      data: {
-        email: "admin@hindustan.com",
-        password: hashPassword("password123"),
-        name: "Master Admin",
-        role: "admin",
-        permissions: "[]",
-      },
+  if (adminEmail && adminPassword) {
+    const existingAdmin = await prisma.adminUser.findUnique({
+      where: { email: adminEmail },
     });
-    console.log("Created master admin:", admin.email);
+
+    if (!existingAdmin) {
+      const admin = await prisma.adminUser.create({
+        data: {
+          email: adminEmail,
+          password: hashPassword(adminPassword),
+          name: adminName,
+          role: "admin",
+          permissions: "[]",
+        },
+      });
+      console.log("Created admin user:", admin.email);
+    } else {
+      console.log(`Admin user (${adminEmail}) already exists.`);
+    }
   } else {
-    console.log("Master admin already exists.");
+    console.log("No ADMIN_EMAIL and ADMIN_PASSWORD provided in environment. Skipping default admin creation.");
   }
 
   console.log("Seeding completed successfully.");

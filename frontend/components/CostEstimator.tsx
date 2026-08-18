@@ -29,32 +29,40 @@ export default function CostEstimator() {
           </div>
 
           {/* Left Text Content */}
-          <div className="p-10 md:p-16 lg:p-20 relative z-10 w-full md:w-[55%]">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 font-display tracking-tight leading-[1.15]">
-              Estimate Your Construction Cost Instantly
+          <div className="p-8 sm:p-10 md:p-16 lg:p-20 relative z-10 w-full md:w-[55%] flex flex-col items-center md:items-start text-center md:text-left">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6 font-display tracking-tight leading-[1.15]">
+              Estimate Your <span className="font-serif italic font-normal text-construction-red normal-case">Construction Cost</span> Instantly
             </h2>
-            <p className="text-slate-300 text-lg mb-10 font-light max-w-lg leading-relaxed">
+            <p className="text-slate-300 text-base sm:text-lg mb-6 sm:mb-8 md:mb-10 font-light max-w-lg leading-relaxed">
               Quickly calculate how much it will cost to build your home with our detailed, reliable estimation tool.
             </p>
             <button 
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center bg-[#F36B2B] hover:bg-[#d5591f] text-white font-semibold px-8 py-4 rounded-lg transition-all shadow-lg shadow-orange-600/20 text-base md:text-lg"
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-[#F36B2B] hover:bg-[#d5591f] active:scale-95 text-white font-bold px-8 py-4 rounded-xl transition-all shadow-xl shadow-orange-600/30 text-base md:text-lg z-20 cursor-pointer"
             >
               Calculate Cost Instantly
             </button>
           </div>
           
           {/* Right Image/Illustration Area */}
-          <div className="relative z-10 w-full md:w-[45%] h-64 md:h-auto flex items-center justify-center p-8 md:p-10 lg:p-0 lg:-mr-10">
+          <div 
+            onClick={() => setShowModal(true)}
+            className="relative z-10 w-full md:w-[45%] min-h-[360px] md:min-h-0 flex items-center justify-center p-6 sm:p-8 md:p-10 lg:p-0 lg:-mr-10 cursor-pointer group"
+          >
+            {/* Mobile tap hint */}
+            <div className="absolute top-2 md:hidden bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md z-30">
+              Tap calculator to start
+            </div>
+
             {/* Custom 3D-styled CSS Calculator */}
-            <div className="relative w-full max-w-[280px] md:max-w-[320px] aspect-[3/4] flex items-center justify-center hover:scale-105 transition-transform duration-700 z-10">
+            <div className="relative w-full max-w-[260px] sm:max-w-[280px] md:max-w-[320px] aspect-[3/4] flex items-center justify-center group-hover:scale-105 transition-transform duration-700 z-10">
               
-              <div className="w-full h-full bg-[#1A1C23] rounded-3xl p-5 shadow-[20px_20px_60px_rgba(0,0,0,0.6),-5px_-5px_20px_rgba(255,255,255,0.05)] border-t border-l border-white/10 flex flex-col transform rotate-[12deg]">
+              <div className="w-full h-full bg-[#1A1C23] rounded-3xl p-5 shadow-[20px_20px_60px_rgba(0,0,0,0.6),-5px_-5px_20px_rgba(255,255,255,0.05)] border-t border-l border-white/10 flex flex-col transform rotate-[10deg] md:rotate-[12deg]">
                 
                 {/* Calculator Screen */}
-                <div className="h-24 bg-[#0F1115] rounded-xl mb-6 shadow-inner border border-black/50 p-4 flex flex-col justify-end items-end relative overflow-hidden">
+                <div className="h-20 sm:h-24 bg-[#0F1115] rounded-xl mb-4 sm:mb-6 shadow-inner border border-black/50 p-4 flex flex-col justify-end items-end relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-                  <span className="text-white text-5xl font-light tracking-wider font-mono">0</span>
+                  <span className="text-white text-4xl sm:text-5xl font-light tracking-wider font-mono">0</span>
                 </div>
 
                 {/* Calculator Grid */}

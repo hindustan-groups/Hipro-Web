@@ -99,9 +99,9 @@ export default function ContactForm({ services = [] }: { services?: { title: str
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           >
             <option value="">Select a service category</option>
-            {services.length > 0 ? (
+            {services && services.length > 0 ? (
               services.map((s, idx) => (
-                <option key={idx} value={s.title}>{s.title}</option>
+                s && s.title ? <option key={idx} value={s.title}>{s.title}</option> : null
               ))
             ) : (
               <>

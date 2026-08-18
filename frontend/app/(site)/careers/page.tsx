@@ -22,7 +22,7 @@ export default async function CareersPage() {
             <span className="text-xs font-bold uppercase tracking-wider">Join Our Team</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
-            Build Your <span className="text-construction-red">Career</span> With Us
+            Build Your <span className="font-serif italic font-normal text-construction-red normal-case">Career</span> With Us
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
             We are always looking for passionate engineers, visionary architects, and dedicated site managers to join Hindustan Projects.

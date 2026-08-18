@@ -19,33 +19,41 @@ export default function PublicProjectGrid({ projects = [] }: { projects: Project
   const categories = ["All", "Commercial", "Residential", "Industrial"];
 
   // Filter logic
-  let filtered = projects.filter((p) => {
-    const matchesCategory = selectedCategory === "All" || p.category.toLowerCase() === selectedCategory.toLowerCase();
+  let filtered = (projects || []).filter((p) => {
+    if (!p) return false;
+    const cat = p.category || "Commercial";
+    const title = p.title || "";
+    const loc = p.location || "";
+    const desc = p.description || "";
+    const q = searchQuery.trim().toLowerCase();
+
+    const matchesCategory = selectedCategory === "All" || cat.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch =
-      !searchQuery.trim() ||
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      title.toLowerCase().includes(q) ||
+      loc.toLowerCase().includes(q) ||
+      desc.toLowerCase().includes(q);
 
     return matchesCategory && matchesSearch;
   });
 
   // Sort logic
   filtered = [...filtered].sort((a, b) => {
+    if (!a || !b) return 0;
     if (sortBy === "newest") {
-      return (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0);
+      return (new Date(b.date || 0).getTime() || 0) - (new Date(a.date || 0).getTime() || 0);
     }
     if (sortBy === "oldest") {
-      return (new Date(a.date).getTime() || 0) - (new Date(b.date).getTime() || 0);
+      return (new Date(a.date || 0).getTime() || 0) - (new Date(b.date || 0).getTime() || 0);
     }
     if (sortBy === "title") {
-      return a.title.localeCompare(b.title);
+      return (a.title || "").localeCompare(b.title || "");
     }
     return 0;
   });
 
-  const ongoingProjects   = filtered.filter((p) => p.status === "active" || p.status === "ongoing");
-  const completedProjects = filtered.filter((p) => p.status === "archived" || p.status === "completed");
+  const ongoingProjects   = filtered.filter((p) => p && (p.status === "active" || p.status === "ongoing"));
+  const completedProjects = filtered.filter((p) => p && (p.status === "archived" || p.status === "completed"));
 
   return (
     <div>

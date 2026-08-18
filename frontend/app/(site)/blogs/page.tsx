@@ -19,7 +19,7 @@ export default async function BlogsPage() {
             <span className="text-xs font-bold uppercase tracking-wider">Industry Insights</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
-            Our <span className="text-construction-navy">Blogs</span>
+            Our <span className="font-serif italic font-normal text-construction-red normal-case">Blogs &amp; Insights</span>
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
             Stay up to date with the latest trends, news, and insights from the world of construction and engineering.

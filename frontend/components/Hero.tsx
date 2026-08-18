@@ -11,18 +11,84 @@ interface HeroProps {
   initialStats?: StatType[];
 }
 
+const defaultSlides: HeroSlide[] = [
+  {
+    id: "default-1",
+    title: "ENGINEERING LANDMARKS. DELIVERING EXCELLENCE.",
+    subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across India.",
+    tagline: "India's Premier Construction & Infrastructure Firm",
+    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1600&q=80",
+    order: 1,
+    active: true
+  },
+  {
+    id: "default-2",
+    title: "ARCHITECTURAL MASTERY & PRECISION EXECUTION",
+    subtitle: "Creating state-of-the-art commercial complexes, residential townships, and industrial facilities.",
+    tagline: "Delivering Visionary Infrastructure",
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=80",
+    order: 2,
+    active: true
+  }
+];
+
+const defaultStats: StatType[] = [
+  { id: "1", label: "Projects Completed", value: "500+", icon: "Building", order: 1 },
+  { id: "2", label: "Expert Engineers", value: "200+", icon: "Users", order: 2 },
+  { id: "3", label: "Years Experience", value: "25+", icon: "History", order: 3 },
+  { id: "4", label: "Client Satisfaction", value: "99%", icon: "Award", order: 4 }
+];
+
+function formatHeroTitle(title: string) {
+  if (!title) return "";
+  if (title.includes("<span")) {
+    return <span dangerouslySetInnerHTML={{ __html: title }} />;
+  }
+  const words = title.split(" ");
+  if (words.length <= 2) {
+    return title;
+  }
+  const midIdx = Math.floor(words.length / 2);
+  return (
+    <>
+      {words.slice(0, midIdx).join(" ")}{" "}
+      <span className="font-serif italic font-normal text-construction-red normal-case drop-shadow-lg">
+        {words[midIdx]}
+      </span>{" "}
+      {words.slice(midIdx + 1).join(" ")}
+    </>
+  );
+}
+
 export default function Hero({ initialSlides = [], initialStats = [] }: HeroProps) {
-  const [slides, setSlides] = useState<HeroSlide[]>(initialSlides);
-  const [stats, setStats] = useState<StatType[]>(initialStats);
+  const [slides, setSlides] = useState<HeroSlide[]>(
+    initialSlides && initialSlides.length > 0 ? initialSlides : defaultSlides
+  );
+  const [stats, setStats] = useState<StatType[]>(
+    initialStats && initialStats.length > 0 ? initialStats : defaultStats
+  );
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    if (initialSlides && initialSlides.length > 0) {
+      setSlides(initialSlides);
+    }
+  }, [initialSlides]);
+
+  useEffect(() => {
+    if (initialStats && initialStats.length > 0) {
+      setStats(initialStats);
+    }
+  }, [initialStats]);
+
+  useEffect(() => {
     const fetchSlides = async () => {
-      if (initialSlides.length > 0) return;
+      if (initialSlides && initialSlides.length > 0) return;
       try {
         const res = await fetch("/api/hero");
+        if (!res.ok) return;
         const json = await res.json();
-        if (json.success && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setSlides(json.data.filter((s: HeroSlide) => s.active !== false));
         }
       } catch (err) {
@@ -31,11 +97,12 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     };
     
     const fetchStats = async () => {
-      if (initialStats.length > 0) return;
+      if (initialStats && initialStats.length > 0) return;
       try {
         const res = await fetch("/api/stats");
+        if (!res.ok) return;
         const json = await res.json();
-        if (json.success && json.data.length > 0) {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setStats(json.data);
         }
       } catch (err) {
@@ -55,14 +122,15 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  if (slides.length === 0) return null;
+  const activeSlideList = slides.length > 0 ? slides : defaultSlides;
+  const activeSlide = activeSlideList[currentSlide] || activeSlideList[0] || defaultSlides[0];
 
   return (
     <section id="section-hero" className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden">
       
       {/* Background Images Slider */}
       <div className="absolute inset-0 z-0">
-        {slides.map((slide, idx) => (
+        {activeSlideList.map((slide, idx) => (
           <div 
             key={slide.id || idx}
             className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
@@ -105,7 +173,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-construction-red"></span>
               </span>
               <span className="text-[13px] text-white font-bold uppercase tracking-[0.2em]">
-                {slides[currentSlide].tagline}
+                {activeSlide.tagline}
               </span>
             </div>
 
@@ -115,7 +183,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 key={`title-${currentSlide}`} 
                 className="text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-bold text-white leading-[1.05] mb-6 font-display tracking-tighter animate-fade-up drop-shadow-2xl"
               >
-                {slides[currentSlide].title}
+                {formatHeroTitle(activeSlide.title)}
               </h1>
               
               <p 
@@ -123,7 +191,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 className="text-lg md:text-xl text-slate-200 max-w-2xl font-light leading-relaxed animate-fade-up border-l-2 border-construction-red pl-6"
                 style={{ animationDelay: "0.2s" }}
               >
-                {slides[currentSlide].subtitle}
+                {activeSlide.subtitle}
               </p>
             </div>
 
