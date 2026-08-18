@@ -78,7 +78,7 @@ router.delete("/:id", authGuard, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "id parameter required" } as ApiResponse);
     }
     const { deleteOne } = await import("../lib/db");
-    const ok = await deleteOne("applications", id);
+    const ok = await deleteOne("applications", id as string);
     if (!ok) {
       return res.status(404).json({ success: false, error: "Application not found" } as ApiResponse);
     }

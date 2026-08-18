@@ -11,10 +11,14 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
   }
 
   let userPermissions: string[] = [];
-  try {
-    userPermissions = user?.permissions ? JSON.parse(user?.permissions) : [];
-  } catch (e) {
-    userPermissions = [];
+  if (Array.isArray(user?.permissions)) {
+    userPermissions = user.permissions;
+  } else if (typeof user?.permissions === "string") {
+    try {
+      userPermissions = JSON.parse(user.permissions);
+    } catch (e) {
+      userPermissions = [];
+    }
   }
 
   const sectionKey = pathname.split("/")[2] || "dashboard";

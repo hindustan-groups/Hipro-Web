@@ -31,10 +31,14 @@ export default function AdminSidebar({ user }: { user: any }) {
   const [isOpen, setIsOpen] = useState(false);
   
   let userPermissions: string[] = [];
-  try {
-    userPermissions = user?.permissions ? JSON.parse(user?.permissions) : [];
-  } catch (e) {
-    userPermissions = [];
+  if (Array.isArray(user?.permissions)) {
+    userPermissions = user.permissions;
+  } else if (typeof user?.permissions === "string") {
+    try {
+      userPermissions = JSON.parse(user.permissions);
+    } catch (e) {
+      userPermissions = [];
+    }
   }
 
   const isAdmin = user?.role === "admin";

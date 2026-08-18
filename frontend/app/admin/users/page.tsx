@@ -20,6 +20,7 @@ export default function UsersPage() {
   const availableSections = [
     { key: "hero", label: "Hero Section" },
     { key: "about", label: "About Page" },
+    { key: "notifications", label: "Push Notifications" },
     { key: "contacts", label: "Contacts" },
     { key: "quotes", label: "Quote Requests" },
     { key: "projects", label: "Projects" },
