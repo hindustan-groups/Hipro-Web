@@ -6,8 +6,9 @@ import type { BlogPost } from "@/lib/types";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const decodedSlug = decodeURIComponent(params.slug);
   const allBlogs = await findAll<BlogPost>("blogs");
-  const post = allBlogs.find((p) => p.slug === params.slug && p.active !== false);
+  const post = allBlogs.find((p) => p.slug === decodedSlug && p.active !== false);
 
   if (!post) return { title: "Blog Not Found" };
 
@@ -25,8 +26,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const decodedSlug = decodeURIComponent(params.slug);
   const allBlogs = await findAll<BlogPost>("blogs");
-  const post = allBlogs.find(p => (p.slug === params.slug || p.id === params.slug) && p.active !== false);
+  const post = allBlogs.find(p => (p.slug === decodedSlug || p.id === decodedSlug) && p.active !== false);
 
   if (!post) notFound();
 

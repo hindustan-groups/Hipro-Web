@@ -17,7 +17,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
   const phone = settings.companyPhone || "+91 98765 43210";
   
   const service = allServices.find(s => 
-    s && s.title && s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-') === params.slug
+    s && s.title && s.title.toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-') === decodeURIComponent(params.slug)
   );
 
   if (!service || !service.active) {

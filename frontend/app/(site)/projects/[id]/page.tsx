@@ -5,7 +5,7 @@ import { findById } from "@/lib/db";
 import type { Project } from "@/lib/types";
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
-  const project = await findById<Project>("projects", params.id);
+  const project = await findById<Project>("projects", decodeURIComponent(params.id));
 
   if (!project) {
     return notFound();
