@@ -21,7 +21,6 @@ import teamRouter from "./routes/team";
 import testimonialsRouter from "./routes/testimonials";
 import applicationsRouter from "./routes/applications";
 import locationsRouter from "./routes/locations";
-import notificationsRouter from "./routes/notifications";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,7 +52,6 @@ app.use("/api/team", teamRouter);
 app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/applications", applicationsRouter);
 app.use("/api/locations", locationsRouter);
-app.use("/api/notifications", notificationsRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {

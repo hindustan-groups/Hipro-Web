@@ -1,11 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PopupForm from "@/components/PopupForm";
-import PushNotificationPrompt from "@/components/PushNotificationPrompt";
+import BackButton from "@/components/BackButton";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function SiteLayout({
   children,
@@ -21,11 +21,11 @@ export default async function SiteLayout({
   return (
     <>
       <Navbar navConfigString={settings?.navigationConfig || null} services={services} />
+      <BackButton />
       <main className="min-h-screen">
         {children}
       </main>
       <PopupForm />
-      <PushNotificationPrompt />
       <Footer />
     </>
   );

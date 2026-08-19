@@ -53,7 +53,8 @@ export async function findAll<T>(collection: string): Promise<T[]> {
   const endpoint = getEndpoint(collection);
   try {
     const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-      cache: "no-store", // Ensure fresh data on server components
+      next: { revalidate: 60, tags: [collection] },
+      signal: AbortSignal.timeout(4000),
     });
     
     if (!res.ok) {

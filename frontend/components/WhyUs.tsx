@@ -18,8 +18,10 @@ export default function WhyUs() {
             {/* Main Image */}
             <div className="relative h-[600px] w-full rounded-none overflow-hidden shadow-2xl border border-slate-200/80 z-10">
               <img 
-                src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?w=800&q=85" 
+                src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75" 
                 alt="Construction Management" 
+                width={800}
+                height={600}
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

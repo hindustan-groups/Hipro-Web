@@ -49,6 +49,8 @@ export default async function Footer() {
               <img 
                 src="/logo.jpg" 
                 alt="HiPRO Logo" 
+                width={48}
+                height={48}
                 className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" 
               />
               <div className="w-[1px] h-10 bg-slate-200"></div>
@@ -61,24 +63,25 @@ export default async function Footer() {
                 </span>
               </div>
             </Link>
-            <p className="text-xs text-slate-400 font-light leading-relaxed mb-6">
+            <p className="text-xs text-slate-300 font-light leading-relaxed mb-6">
               Building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors since 1999.
             </p>
             <div className="flex gap-2.5">
               {[
-                { icon: Facebook, url: socials.facebook },
-                { icon: Twitter, url: socials.twitter },
-                { icon: Instagram, url: socials.instagram },
-                { icon: Linkedin, url: socials.linkedin }
-              ].map(({ icon: Icon, url }, i) => (
+                { icon: Facebook, url: socials.facebook, name: "Facebook" },
+                { icon: Twitter, url: socials.twitter, name: "Twitter" },
+                { icon: Instagram, url: socials.instagram, name: "Instagram" },
+                { icon: Linkedin, url: socials.linkedin, name: "LinkedIn" }
+              ].map(({ icon: Icon, url, name }, i) => (
                 <a
                   key={i}
                   href={url || "#"}
                   target={url ? "_blank" : undefined}
                   rel={url ? "noreferrer" : undefined}
+                  aria-label={`Visit Hindustan Projects on ${name}`}
                   className="w-9 h-9 rounded-none bg-white/5 border border-white/10 flex items-center justify-center hover:bg-construction-red hover:border-construction-red transition-all duration-200 group shadow-sm"
                 >
-                  <Icon className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
+                  <Icon className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
                 </a>
               ))}
             </div>
@@ -141,13 +144,13 @@ export default async function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-light">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-300 font-light">
           <div className="flex items-center gap-2">
             <span suppressHydrationWarning>© {new Date().getFullYear()} Hindustan Projects. All rights reserved.</span>
           </div>
           <div className="flex gap-6">
             {["Privacy Policy", "Terms of Service", "Quality Policy"].map((item) => (
-              <Link key={item} href="#" className="hover:text-slate-300 transition-colors">
+              <Link key={item} href="#" className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
                 {item}
               </Link>
             ))}

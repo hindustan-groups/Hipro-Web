@@ -12,32 +12,40 @@ import { findAll } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
 
 export default async function Home() {
-  const settingsData = await findAll<Settings>("settings");
+  const [
+    settingsData,
+    slides,
+    stats,
+    services,
+    projects,
+    testimonials,
+    blogs,
+    guarantees,
+  ] = await Promise.all([
+    findAll<Settings>("settings"),
+    findAll<HeroSlide>("hero"),
+    findAll<StatType>("stats"),
+    findAll<Service>("services"),
+    findAll<Project>("projects"),
+    findAll<Testimonial>("testimonials"),
+    findAll<BlogPost>("blogs"),
+    findAll<Guarantee>("guarantees"),
+  ]);
+
   const settings = settingsData[0] || {};
-  const slides = await findAll<HeroSlide>("hero");
   const slidedata = slides.filter(s => s.active !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
-  const stats = await findAll<StatType>("stats");
-  const statsdata = stats.sort((a, b) => (a.order || 0) - (b.order || 0))
+  const statsdata = stats.sort((a, b) => (a.order || 0) - (b.order || 0));
   let pageContent: any = {};
   try {
     if (settings.pageContent) pageContent = JSON.parse(settings.pageContent);
   } catch { /* silent */ }
 
-  const services = await findAll<Service>("services");
   const servicesData = services.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
-
-  const projects = await findAll<Project>("projects");
   const projectsData = projects.filter(p => p.status !== "archived");
-
-  const testimonials = await findAll<Testimonial>("testimonials");
   const testimonialsData = testimonials.filter(t => t.approved !== false);
-
-  const blogs = await findAll<BlogPost>("blogs");
   const blogsData = blogs
     .filter(b => b.active !== false)
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-
-  const guarantees = await findAll<Guarantee>("guarantees");
   const guaranteesData = guarantees
     .filter(g => g.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99));

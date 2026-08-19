@@ -33,6 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+      </head>
       <body className="font-sans" suppressHydrationWarning>
         {children}
       </body>

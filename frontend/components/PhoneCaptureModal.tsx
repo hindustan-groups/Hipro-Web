@@ -75,6 +75,7 @@ export default function PhoneCaptureModal({
       >
         <button 
           onClick={onClose}
+          aria-label="Close modal"
           className="absolute top-4 right-4 text-slate-400 hover:text-black transition-colors"
         >
           <X className="w-5 h-5" />

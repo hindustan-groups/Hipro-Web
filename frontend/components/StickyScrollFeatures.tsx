@@ -8,17 +8,17 @@ const features = [
   {
     title: "Attract the right clients",
     description: "Showcase your portfolio with stunning visuals and case studies that highlight your expertise in high-end construction.",
-    image: "https://images.unsplash.com/photo-1541888081622-15cb2a21e422?auto=format&fit=crop&q=80&w=1200"
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=75&w=800"
   },
   {
     title: "Win more business",
     description: "Build trust through verified testimonials, detailed service breakdowns, and transparent project methodologies.",
-    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=1200"
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=75&w=800"
   },
   {
     title: "Offer specialized services",
     description: "From architecture planning to civil structure testing, lay out your capabilities clearly for prospective partners.",
-    image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=1200"
+    image: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=75&w=800"
   }
 ];
 

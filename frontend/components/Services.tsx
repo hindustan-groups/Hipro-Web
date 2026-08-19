@@ -11,7 +11,7 @@ const defaultServices: Service[] = [
     category: "Design & Planning",
     icon: "HardHat",
     features: [],
-    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75",
     order: 1,
     active: true,
     createdAt: new Date().toISOString(),
@@ -24,7 +24,7 @@ const defaultServices: Service[] = [
     category: "Commercial Development",
     icon: "Building",
     features: [],
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=75",
     order: 2,
     active: true,
     createdAt: new Date().toISOString(),
@@ -54,7 +54,7 @@ export default function Services({ services = [] }: { services?: Service[] }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {displayServices.map((service, index) => {
             const slug = (service.title || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
-            const imageUrl = service.image || "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80";
+            const imageUrl = service.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75";
             
             return (
               <div 

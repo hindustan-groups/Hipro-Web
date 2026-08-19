@@ -1,0 +1,22 @@
+﻿# Hindustan Projects
+> India's premier turnkey construction, civil engineering, and infrastructure firm.
+
+## Overview
+Hindustan Projects (HiPRO) is an engineering and infrastructure company specializing in residential construction, high-rise commercial complexes, industrial facilities, and master turnkey project execution across India.
+
+## Key Services
+- Civil & Structural Engineering: RCC design, heavy foundation engineering, seismic damping, and high-load structural frameworks.
+- Commercial Development: Corporate headquarters, IT tech parks, retail shopping malls, and hospitality centers.
+- Residential Construction: Turnkey luxury villas, multi-storey apartment complexes, and gated community townships.
+- Industrial Infrastructure: Modern warehouses, manufacturing facilities, pre-engineered steel buildings (PEB), and industrial estates.
+- Turnkey Design & Build: Architectural planning, 3D BIM modeling, sanction approvals, and interior fit-outs.
+
+## Key Tools & Features
+- Cost Estimator: Package-based calculator providing accurate construction cost estimates per square foot across Indian cities.
+- Project Portfolio: Verified case studies detailing executed square footage, location, timelines, and architectural specifications.
+- Quality & Safety Assurance: 470+ quality checkpoints, milestone-based escrow payments, and ISO-compliant engineering standards.
+
+## Contact Information
+- Website: https://www.hindustanprojects.in
+- Headquarters: 101 Executive Tower, Infrastructure Complex, New Delhi, India
+- Inquiries: contact@hindustanprojects.com

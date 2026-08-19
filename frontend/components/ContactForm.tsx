@@ -66,16 +66,18 @@ export default function ContactForm({ services = [] }: { services?: { title: str
       )}
       <div className="grid md:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Full Name *</label>
+          <label htmlFor="contact-name" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Full Name *</label>
           <input
+            id="contact-name"
             type="text" name="name" value={formData.name} onChange={handleChange} required
             placeholder="John Doe"
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address *</label>
+          <label htmlFor="contact-email" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address *</label>
           <input
+            id="contact-email"
             type="email" name="email" value={formData.email} onChange={handleChange} required
             placeholder="john@company.com"
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
@@ -85,16 +87,19 @@ export default function ContactForm({ services = [] }: { services?: { title: str
 
       <div className="grid md:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Phone Number</label>
+          <label htmlFor="contact-phone" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Phone Number</label>
           <input
+            id="contact-phone"
             type="tel" name="phone" value={formData.phone} onChange={handleChange}
             placeholder="+91 98765 43210"
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Service Category</label>
+          <label htmlFor="contact-service" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Service Category</label>
           <select
+            id="contact-service"
+            aria-label="Service Category"
             name="service" value={formData.service} onChange={handleChange}
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           >
@@ -118,8 +123,9 @@ export default function ContactForm({ services = [] }: { services?: { title: str
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Project Details *</label>
+        <label htmlFor="contact-message" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Project Details *</label>
         <textarea
+          id="contact-message"
           name="message" value={formData.message} onChange={handleChange} required rows={4}
           placeholder="Specify project scope, location, timeline, and estimated plot area..."
           className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all resize-none"

@@ -12,7 +12,7 @@ const defaultNavLinks = [
     href: "/services", 
     label: "Services", 
     isMegaMenu: true,
-    megaMenuImage: "https://images.unsplash.com/photo-1541888086925-0c13d42e2c45?w=800&q=80",
+    megaMenuImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75",
     megaMenuTitle: "Turnkey Construction & Engineering",
     megaMenuSubtitle: "Delivering visionary architectural blueprints, BIM modeling, and master infrastructure execution across India.",
     megaMenuLink: "/services",

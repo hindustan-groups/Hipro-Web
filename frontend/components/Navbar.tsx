@@ -13,15 +13,15 @@ const defaultNavLinks = [
     href: "/services", 
     label: "Services", 
     isMegaMenu: true,
-    megaMenuImage: "https://images.unsplash.com/photo-1541888086925-0c13d42e2c45?w=800&q=80",
+    megaMenuImage: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=75&auto=format",
     megaMenuTitle: "Turnkey Construction & Engineering",
     megaMenuSubtitle: "Delivering visionary architectural blueprints, BIM modeling, and master infrastructure execution across India.",
     megaMenuLink: "/services",
     megaMenuCategories: [],
   },
   { href: "/projects", label: "Projects", isMegaMenu: false },
+  { href: "/blogs", label: "Blog", isMegaMenu: false },
   { href: "/careers", label: "Careers", isMegaMenu: false },
-  { href: "/contact", label: "Contact", isMegaMenu: false },
 ];
 
 export default function Navbar({ 
@@ -60,6 +60,20 @@ export default function Navbar({
       }
     } catch (e) {
       console.error("Failed to parse navConfigString", e);
+    }
+  }
+
+  // Remove "Contact" from nav links — the "Get a Quote" button already links to /contact
+  navLinks = navLinks.filter((l: any) => !(l && l.href === "/contact"));
+
+  // Ensure Blog link is always present
+  if (!navLinks.some((l: any) => l && l.href === "/blogs")) {
+    const insertIdx = navLinks.findIndex((l: any) => l && l.href === "/careers");
+    const blogLink = { href: "/blogs", label: "Blog", isMegaMenu: false };
+    if (insertIdx !== -1) {
+      navLinks.splice(insertIdx, 0, blogLink);
+    } else {
+      navLinks.push(blogLink);
     }
   }
 
@@ -146,6 +160,8 @@ export default function Navbar({
             <img 
               src="/logo.jpg" 
               alt="HiPRO Logo" 
+              width={48}
+              height={48}
               className="h-10 md:h-12 w-auto object-contain mix-blend-multiply"
             />
             <div className="w-[1px] h-9 bg-slate-200/50"></div>

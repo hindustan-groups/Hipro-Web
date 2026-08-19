@@ -152,6 +152,7 @@ export default function PopupForm() {
         {/* Close Button */}
         <button 
           onClick={handleClose}
+          aria-label="Close consultation modal"
           className="absolute top-4 right-4 z-10 p-1.5 bg-white/80 hover:bg-gray-100 rounded-none text-gray-500 transition-colors"
         >
           <X className="w-5 h-5" />
@@ -160,8 +161,10 @@ export default function PopupForm() {
         {/* Left Side - Image (hidden on mobile) */}
         <div className="hidden md:block md:w-5/12 relative bg-gray-100">
           <img 
-            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80" 
+            src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=75" 
             alt="Family outside dream home" 
+            width={600}
+            height={800}
             className="absolute inset-0 w-full h-full object-cover"
           />
           {/* Add a subtle gradient overlay to match the curved edge style somewhat, though Tailwind doesn't do complex curves easily without SVGs */}
@@ -190,6 +193,7 @@ export default function PopupForm() {
               <input 
                 type="text" 
                 placeholder="Name" 
+                aria-label="Your Name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -202,6 +206,7 @@ export default function PopupForm() {
               <input 
                 type="email" 
                 placeholder="Email Address" 
+                aria-label="Email Address"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -217,6 +222,7 @@ export default function PopupForm() {
               <input 
                 type="tel" 
                 placeholder="Phone Number" 
+                aria-label="Phone Number"
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -228,6 +234,7 @@ export default function PopupForm() {
             <div className="relative">
               <select 
                 required
+                aria-label="Select State"
                 value={selectedState}
                 onChange={(e) => handleStateChange(e.target.value)}
                 className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 appearance-none bg-white"
@@ -246,6 +253,7 @@ export default function PopupForm() {
             <div className="relative">
               <select 
                 required
+                aria-label="Select District"
                 disabled={!selectedState}
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}

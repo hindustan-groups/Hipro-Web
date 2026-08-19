@@ -63,7 +63,7 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
             <h3 className="text-xl font-bold text-slate-900 font-display uppercase">Apply for Position</h3>
             <p className="text-sm font-semibold text-construction-red mt-1 uppercase tracking-wider">{roleTitle}</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 text-slate-500 transition-colors">
+          <button onClick={onClose} aria-label="Close application modal" className="p-2 hover:bg-slate-200 text-slate-500 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

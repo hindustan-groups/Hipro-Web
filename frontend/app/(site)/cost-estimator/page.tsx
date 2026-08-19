@@ -136,7 +136,7 @@ export default function CostEstimatorPage() {
                   
                   <div className="relative">
                     <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Plot</label>
-                    <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                    <select aria-label="Plot Shape" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                       <option value="other">Other</option>
                       <option value="square">Square</option>
                       <option value="rectangular">Rectangular</option>
@@ -150,6 +150,7 @@ export default function CostEstimatorPage() {
                     <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Plot Area (sqft)</label>
                     <input 
                       type="number" 
+                      aria-label="Plot Area in sqft"
                       defaultValue="1000"
                       className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red bg-transparent text-gray-900 font-medium"
                     />
@@ -158,7 +159,7 @@ export default function CostEstimatorPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">City</label>
-                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                      <select aria-label="City" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="pune">Pune</option>
                         <option value="mumbai">Mumbai</option>
                         <option value="delhi">Delhi</option>
@@ -170,7 +171,7 @@ export default function CostEstimatorPage() {
 
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Floors</label>
-                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                      <select aria-label="Floors" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="g+1">G+1</option>
                         <option value="g+2">G+2</option>
                         <option value="g+3">G+3</option>
@@ -188,7 +189,7 @@ export default function CostEstimatorPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Parking</label>
-                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                      <select aria-label="Parking Units" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="0">None</option>
@@ -200,7 +201,7 @@ export default function CostEstimatorPage() {
 
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Balcony</label>
-                      <select className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                      <select aria-label="Balcony Units" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
                         <option value="1">1</option>
                         <option value="2">2</option>
                         <option value="3">3</option>

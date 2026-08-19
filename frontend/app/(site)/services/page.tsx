@@ -40,7 +40,7 @@ export default async function ServicesPage() {
             {services.map((s, i) => {
               const slug = (s.title || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
               const firstWord = (s.title || "Service").split(' ')[0];
-              const imageUrl = s.image || "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=1200&q=80";
+              const imageUrl = s.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75";
               
               return (
                 <div 

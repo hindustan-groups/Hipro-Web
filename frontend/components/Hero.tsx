@@ -12,9 +12,9 @@ interface HeroProps {
 }
 
 const fallbackHeroImages = [
-  "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=2000&q=85",
-  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=85",
-  "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=2000&q=85"
+  "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=75",
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=75",
+  "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1400&q=75"
 ];
 
 const defaultSlides: HeroSlide[] = [
@@ -23,7 +23,7 @@ const defaultSlides: HeroSlide[] = [
     title: "ENGINEERING LANDMARKS. DELIVERING EXCELLENCE.",
     subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across India.",
     tagline: "India's Premier Construction & Infrastructure Firm",
-    image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?auto=format&fit=crop&w=2000&q=85",
+    image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=75",
     order: 1,
     active: true
   },
@@ -32,7 +32,7 @@ const defaultSlides: HeroSlide[] = [
     title: "ARCHITECTURAL MASTERY & PRECISION EXECUTION",
     subtitle: "Creating state-of-the-art commercial complexes, residential townships, and industrial facilities.",
     tagline: "Delivering Visionary Infrastructure",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=85",
+    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=75",
     order: 2,
     active: true
   },
@@ -41,7 +41,7 @@ const defaultSlides: HeroSlide[] = [
     title: "SUSTAINABLE INFRASTRUCTURE FOR THE FUTURE",
     subtitle: "Pioneering smart construction methodologies, eco-friendly concrete, and rapid project deliveries.",
     tagline: "Building Tomorrow, Today",
-    image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=2000&q=85",
+    image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1400&q=75",
     order: 3,
     active: true
   }
@@ -160,6 +160,10 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
               <img
                 src={validImg}
                 alt={slide.title || "Construction Project"}
+                loading={idx === 0 ? "eager" : "lazy"}
+                fetchPriority={idx === 0 ? "high" : "low"}
+                width={1400}
+                height={900}
                 onError={(e) => {
                   const target = e.currentTarget;
                   target.onerror = null;
