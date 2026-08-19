@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Phone, Sparkles } from "lucide-react";
+import { findAll } from "@/lib/db";
+import type { Settings } from "@/lib/types";
 
-export default function CTASection() {
+export default async function CTASection() {
+  const settingsData = await findAll<Settings>("settings");
+  const settings = settingsData[0] || {};
+  const phone = settings.companyPhone || "+91 98765 43210";
+
   return (
     <section id="section-cta" className="py-20 px-4 bg-white relative">
       <div className="max-w-7xl mx-auto">
@@ -42,11 +48,11 @@ export default function CTASection() {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href="tel:+919876543210"
+                href={`tel:${phone.replace(/\s+/g, '')}`}
                 className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-semibold px-8 py-4 rounded-none text-sm transition-all border border-slate-300 shadow-sm uppercase tracking-wider"
               >
                 <Phone className="w-4 h-4 text-construction-red" />
-                +91 98765 43210
+                {phone}
               </a>
             </div>
           </div>
