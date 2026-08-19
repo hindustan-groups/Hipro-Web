@@ -3,6 +3,18 @@ import { ArrowUpRight, Calendar, User, Newspaper } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Construction Blog & Industry Insights | Hindustan Projects",
+  description: "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
+  openGraph: {
+    title: "Construction Blog & Industry Insights | Hindustan Projects",
+    description: "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
+    type: "website",
+  }
+};
+
 export default async function BlogsPage() {
   const allBlogs = await findAll<BlogPost>("blogs");
   const blogs = allBlogs
