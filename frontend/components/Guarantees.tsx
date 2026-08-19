@@ -9,17 +9,17 @@ const defaultGuarantees = [
   {
     id: "1", badge: "EXPERT ASSURANCE", title: "In-House Technical Specialists",
     description: "Dedicated cross-functional team – Chartered Architect, Senior Site Manager, Lead Engineer, and Quality Control Inspector.",
-    bg: "bg-construction-red", accent: "text-red-100", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&q=80", hasShield: false
+    bg: "bg-construction-red", accent: "text-red-100", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=75", hasShield: false
   },
   {
     id: "2", badge: "VETTED QUALITY", title: "Top-Tier Certified Contractors",
     description: "Every trade contractor undergoes a rigorous 6-stage auditing process ensuring compliance, safety, and craftsmanship.",
-    bg: "bg-construction-navy", accent: "text-blue-200", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80", hasShield: false
+    bg: "bg-construction-navy", accent: "text-blue-200", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=75", hasShield: false
   },
   {
     id: "3", badge: "LONG-TERM PROTECTION", title: "Built To Last. 10-Year Structural Guarantee",
     description: "Comprehensive post-handover warranty and structural inspections giving complete peace of mind for decades.",
-    bg: "bg-black", accent: "text-slate-300", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80", hasShield: true
+    bg: "bg-black", accent: "text-slate-300", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=75", hasShield: true
   }
 ];
 

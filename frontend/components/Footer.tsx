@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { HardHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
@@ -46,13 +47,7 @@ export default async function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-flex items-center gap-3 bg-white px-5 py-2.5 rounded-2xl mb-6">
-              <img 
-                src="/logo.jpg" 
-                alt="HiPRO Logo" 
-                width={48}
-                height={48}
-                className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" 
-              />
+              <Image src="/logo.jpg" alt="HiPRO Logo" width={48} height={48} className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" />
               <div className="w-[1px] h-10 bg-slate-200"></div>
               <div className="flex flex-col justify-center">
                 <span className="font-bold text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">

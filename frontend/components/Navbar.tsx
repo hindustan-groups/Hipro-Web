@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { HardHat, X, Menu, ChevronDown, ArrowRight } from "lucide-react";
 import type { Service } from "@/lib/types";
@@ -157,13 +158,7 @@ export default function Navbar({
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0 transition-transform hover:scale-[1.02] group">
-            <img 
-              src="/logo.jpg" 
-              alt="HiPRO Logo" 
-              width={48}
-              height={48}
-              className="h-10 md:h-12 w-auto object-contain mix-blend-multiply"
-            />
+            <Image src="/logo.jpg" alt="HiPRO Logo" width={48} height={48} className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" />
             <div className="w-[1px] h-9 bg-slate-200/50"></div>
             <div className="flex flex-col justify-center">
               <span className="font-bold text-[14px] sm:text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">

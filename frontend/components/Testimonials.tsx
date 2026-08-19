@@ -11,7 +11,7 @@ const defaultTestimonials: Testimonial[] = [
     role: "Managing Director, Apex Logistics",
     rating: 5,
     text: "Hindustan Projects delivered our 120,000 sq.ft industrial facility ahead of schedule. Their engineering precision, material quality, and safety discipline are unmatched.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=75",
     approved: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -22,7 +22,7 @@ const defaultTestimonials: Testimonial[] = [
     role: "Director, Urban Greens Townships",
     rating: 5,
     text: "From architectural blueprints to final structural execution, their turnkey approach saved us months of coordinating with multiple vendors.",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=75",
     approved: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
