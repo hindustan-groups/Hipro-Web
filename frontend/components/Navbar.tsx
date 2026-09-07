@@ -6,6 +6,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { HardHat, X, Menu, ChevronDown, ArrowRight } from "lucide-react";
 import type { Service } from "@/lib/types";
+import { cleanServiceTitle } from "@/lib/companyData";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const defaultNavLinks = [
   { href: "/", label: "Home", isMegaMenu: false },
@@ -99,14 +101,15 @@ export default function Navbar({
             categoriesMap[category] = [];
           }
           
-          const slug = String(s.title)
+          const cleanTitle = cleanServiceTitle(s.title);
+          const slug = String(cleanTitle)
             .toLowerCase()
             .replace(/ & /g, "-")
             .replace(/\s+/g, "-");
 
           categoriesMap[category].push({
             href: `/services/${slug}`,
-            label: s.title,
+            label: cleanTitle,
             order: s.order ?? 99,
           });
         });
@@ -262,10 +265,13 @@ export default function Navbar({
                             href={link.megaMenuLink || "/services"}
                             className="w-[420px] shrink-0 bg-slate-100 border-l border-slate-200 p-8 flex flex-col justify-between group/feature cursor-pointer relative overflow-hidden"
                           >
-                            <img 
+                            <Image 
                               src={link.megaMenuImage} 
                               alt={link.megaMenuTitle || "Services Feature"} 
-                              className="absolute inset-0 w-full h-full object-cover group-hover/feature:scale-105 transition-all duration-700"
+                              fill
+                              sizes="420px"
+                              unoptimized={!isOptimizableImage(link.megaMenuImage)}
+                              className="object-cover group-hover/feature:scale-105 transition-all duration-700"
                             />
                             
                             {(link.megaMenuTitle || link.megaMenuSubtitle) && (

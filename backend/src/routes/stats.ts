@@ -6,12 +6,10 @@ import type { Stats, ApiResponse } from "../lib/types";
 const router = Router();
 
 const DEFAULT_STATS = [
-  { label: "Years Experience",  value: "25+",   icon: "Trophy",       order: 1 },
-  { label: "Projects Done",     value: "500+",  icon: "CheckCircle",  order: 2 },
-  { label: "Team Members",      value: "200+",  icon: "Users",        order: 3 },
-  { label: "Satisfaction Rate", value: "98%",   icon: "Star",         order: 4 },
-  { label: "Awards Won",        value: "150+",  icon: "Award",        order: 5 },
-  { label: "Happy Clients",     value: "1000+", icon: "Heart",        order: 6 },
+  { label: "Years Experience",    value: "8+",   icon: "Trophy",       order: 1 },
+  { label: "Projects Completed",  value: "150+", icon: "CheckCircle",  order: 2 },
+  { label: "Team Members",        value: "30+",  icon: "Users",        order: 3 },
+  { label: "Client Satisfaction", value: "85%",  icon: "Star",         order: 4 },
 ];
 
 // GET /api/stats — Public

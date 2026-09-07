@@ -1,9 +1,10 @@
+import Image from "next/image";
 import { Shield, Clock, Users, Award, CheckCircle, Wrench, Sparkles } from "lucide-react";
 
 const features = [
   { icon: Shield,       title: "Licensed & Insured",  desc: "Fully compliant with international safety standards and comprehensive insurance coverage." },
   { icon: Clock,        title: "On-Time Delivery",    desc: "Rigorous milestone tracking and project scheduling ensuring guaranteed handover timelines." },
-  { icon: Users,        title: "Expert Engineering Team", desc: "200+ seasoned engineers, architects, and site directors with decades of combined experience." },
+  { icon: Users,        title: "Expert Engineering Team", desc: "30+ in-house technical specialists, engineers, and site supervisors ensuring quality-first execution." },
   { icon: Award,        title: "Award-Winning Quality", desc: "Recognized for structural excellence, safety compliance, and innovation across India." },
 ];
 
@@ -17,18 +18,18 @@ export default function WhyUs() {
           <div className="relative">
             {/* Main Image */}
             <div className="relative h-[600px] w-full rounded-none overflow-hidden shadow-2xl border border-slate-200/80 z-10">
-              <img 
+              <Image 
                 src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75" 
                 alt="Construction Management" 
-                width={800}
-                height={600}
-                className="w-full h-full object-cover object-center"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-none">
                   <h4 className="text-white font-bold font-display uppercase tracking-wider text-xl mb-1">Building The Future</h4>
-                  <p className="text-slate-300 text-sm font-light">Over two decades of defining cityscapes.</p>
+                  <p className="text-slate-300 text-sm font-light">Engineering landmark infrastructure across Rajasthan &amp; beyond.</p>
                 </div>
               </div>
             </div>
@@ -96,8 +97,8 @@ export default function WhyUs() {
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-slate-900 font-bold uppercase tracking-wider text-sm">10-Year Guarantee</p>
-                <p className="text-slate-500 text-xs font-medium mt-0.5">Comprehensive structural warranty</p>
+                <p className="text-slate-900 font-bold uppercase tracking-wider text-sm">Built To Last</p>
+                <p className="text-slate-500 text-xs font-medium mt-0.5">Quality-first execution &amp; vetted trade supervision</p>
               </div>
             </div>
 

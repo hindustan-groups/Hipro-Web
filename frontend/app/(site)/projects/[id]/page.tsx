@@ -1,8 +1,31 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MapPin, Calendar, CheckCircle2, ArrowLeft, Building } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { findById } from "@/lib/db";
 import type { Project } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
+
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const project = await findById<Project>("projects", decodeURIComponent(params.id));
+  if (!project) return { title: "Project Details" };
+
+  return {
+    title: `${project.title} | ${project.category} Project`,
+    description: project.description?.slice(0, 160) || "Executed construction and civil engineering project by Hindustan Projects (HiPRO).",
+    alternates: {
+      canonical: `/projects/${params.id}`,
+    },
+    openGraph: {
+      title: `${project.title} | Hindustan Projects (HiPRO)`,
+      description: project.description?.slice(0, 160),
+      images: project.image ? [{ url: project.image }] : undefined,
+    },
+  };
+}
 
 export default async function ProjectDetailPage({ params }: { params: { id: string } }) {
   const project = await findById<Project>("projects", decodeURIComponent(params.id));
@@ -38,11 +61,17 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] w-full pt-20">
         <div className="absolute inset-0 z-0">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-full object-cover"
-          />
+          {project.image && (
+            <Image
+              src={project.image}
+              alt={project.title}
+              fill
+              priority
+              sizes="100vw"
+              unoptimized={!isOptimizableImage(project.image)}
+              className="object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
         </div>
         
@@ -112,10 +141,13 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
                       key={i} 
                       className={`${i % 3 === 0 ? "col-span-2 h-64 md:h-[400px]" : "h-48 md:h-72"} relative group overflow-hidden bg-slate-100 border border-slate-200 shadow-sm`}
                     >
-                      <img 
+                      <Image 
                         src={imgUrl} 
                         alt={`${project.title} - Image ${i + 1}`} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                        fill
+                        sizes={i % 3 === 0 ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 50vw, 33vw"}
+                        unoptimized={!isOptimizableImage(imgUrl)}
+                        className="object-cover group-hover:scale-105 transition-transform duration-700" 
                       />
                     </div>
                   ))}

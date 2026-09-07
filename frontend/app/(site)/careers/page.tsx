@@ -1,10 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase } from "lucide-react";
 import CareersClient from "@/components/CareersClient";
 import { findAll } from "@/lib/db";
 import type { JobPosting } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Careers & Opportunities",
+  description: "Explore career opportunities at Hindustan Projects (HiPRO). Join our technical engineering, project management, and construction supervision team in Bhilwara, Rajasthan.",
+  alternates: {
+    canonical: "/careers",
+  },
+};
 
 export default async function CareersPage() {
   const jobs = await findAll<JobPosting>("jobs");

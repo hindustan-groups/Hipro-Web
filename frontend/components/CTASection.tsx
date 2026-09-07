@@ -1,12 +1,15 @@
 import Link from "next/link";
-import { ArrowRight, Phone, Sparkles } from "lucide-react";
+import { ArrowRight, Phone, MessageSquare, Sparkles } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings } from "@/lib/types";
+import { COMPANY_INFO } from "@/lib/companyData";
 
 export default async function CTASection() {
   const settingsData = await findAll<Settings>("settings");
   const settings = settingsData[0] || {};
-  const phone = settings.companyPhone || "+91 98765 43210";
+  const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
+  const telLink = `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, '')}`;
+  const whatsappLink = COMPANY_INFO.whatsappLink;
 
   return (
     <section id="section-cta" className="py-20 px-4 bg-white relative">
@@ -34,26 +37,37 @@ export default async function CTASection() {
                 Ready To Build <span className="font-serif italic font-normal text-construction-red normal-case">Your Next Milestone?</span>
               </h2>
               <p className="text-slate-600 font-light text-base md:text-lg leading-relaxed">
-                Connect with our senior technical advisors for a complimentary feasibility analysis and project estimate.
+                Connect with our senior technical advisors in Bhilwara for a complimentary feasibility analysis and project estimate.
               </p>
             </div>
 
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row md:flex-col gap-4 shrink-0 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0 w-full md:w-auto">
               <Link
                 href="/contact"
-                className="group inline-flex items-center justify-center gap-3 bg-construction-navy btn-sweep text-white font-bold px-8 py-4 rounded-none text-sm uppercase tracking-wider shadow-lg shadow-blue-900/30"
+                className="group inline-flex items-center justify-center gap-3 bg-construction-navy btn-sweep text-white font-bold px-8 py-3.5 rounded-none text-xs uppercase tracking-widest shadow-lg shadow-blue-900/30"
               >
                 Get Free Estimate
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <a
-                href={`tel:${phone.replace(/\s+/g, '')}`}
-                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-semibold px-8 py-4 rounded-none text-sm transition-all border border-slate-300 shadow-sm uppercase tracking-wider"
-              >
-                <Phone className="w-4 h-4 text-construction-red" />
-                {phone}
-              </a>
+              <div className="flex flex-col sm:flex-row md:flex-col gap-2.5">
+                <a
+                  href={telLink}
+                  className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-7 py-3 rounded-none text-xs transition-all border border-slate-300 shadow-sm uppercase tracking-wider"
+                >
+                  <Phone className="w-3.5 h-3.5 text-construction-red" />
+                  Call: {phone}
+                </a>
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 py-3 rounded-none text-xs transition-all shadow-sm uppercase tracking-wider"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-white" />
+                  WhatsApp Us
+                </a>
+              </div>
             </div>
           </div>
         </div>

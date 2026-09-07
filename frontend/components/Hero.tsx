@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 import type { HeroSlide, Stats as StatType } from "@/lib/types";
 
@@ -21,8 +23,8 @@ const defaultSlides: HeroSlide[] = [
   {
     id: "default-1",
     title: "ENGINEERING LANDMARKS. DELIVERING EXCELLENCE.",
-    subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across India.",
-    tagline: "India's Premier Construction & Infrastructure Firm",
+    subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across Rajasthan.",
+    tagline: "Hindustan Projects (HiPRO) · Est. 2019",
     image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=75",
     order: 1,
     active: true
@@ -30,8 +32,8 @@ const defaultSlides: HeroSlide[] = [
   {
     id: "default-2",
     title: "ARCHITECTURAL MASTERY & PRECISION EXECUTION",
-    subtitle: "Creating state-of-the-art commercial complexes, residential townships, and industrial facilities.",
-    tagline: "Delivering Visionary Infrastructure",
+    subtitle: "Creating state-of-the-art commercial complexes, residential projects, and industrial facilities in Bhilwara.",
+    tagline: "Engineering · Construction · Infrastructure",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=75",
     order: 2,
     active: true
@@ -39,7 +41,7 @@ const defaultSlides: HeroSlide[] = [
   {
     id: "default-3",
     title: "SUSTAINABLE INFRASTRUCTURE FOR THE FUTURE",
-    subtitle: "Pioneering smart construction methodologies, eco-friendly concrete, and rapid project deliveries.",
+    subtitle: "Pioneering smart construction methodologies, quality materials, and transparent project execution.",
     tagline: "Building Tomorrow, Today",
     image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=1400&q=75",
     order: 3,
@@ -48,11 +50,33 @@ const defaultSlides: HeroSlide[] = [
 ];
 
 const defaultStats: StatType[] = [
-  { id: "1", label: "Projects Completed", value: "500+", icon: "Building", order: 1 },
-  { id: "2", label: "Expert Engineers", value: "200+", icon: "Users", order: 2 },
-  { id: "3", label: "Years Experience", value: "25+", icon: "History", order: 3 },
-  { id: "4", label: "Client Satisfaction", value: "99%", icon: "Award", order: 4 }
+  { id: "1", label: "Years Experience", value: "8+", icon: "History", order: 1 },
+  { id: "2", label: "Projects Completed", value: "150+", icon: "Building", order: 2 },
+  { id: "3", label: "Team Members", value: "30+", icon: "Users", order: 3 },
+  { id: "4", label: "Client Satisfaction", value: "85%", icon: "Award", order: 4 }
 ];
+
+const verifiedStatsMap: Record<string, string> = {
+  "Years Experience": "8+",
+  "Projects Done": "150+",
+  "Projects Completed": "150+",
+  "Team Members": "30+",
+  "Satisfaction Rate": "85%",
+  "Client Satisfaction": "85%",
+  "Happy Clients": "200+",
+  "Awards Won": "10+",
+};
+
+function cleanHeroText(text: string = ""): string {
+  if (!text) return "";
+  return text
+    .replace(/IDEA TO EXCUTION/gi, "IDEA TO EXECUTION")
+    .replace(/EXCUTION/gi, "EXECUTION")
+    .replace(/all services provide by us/gi, "Engineering · Construction · Infrastructure")
+    .replace(/we povide all constrution services/gi, "We provide turnkey civil construction, surveying, and architectural services")
+    .replace(/constrution/gi, "construction")
+    .replace(/povide/gi, "provide");
+}
 
 function formatHeroTitle(title: string) {
   if (!title) return "";
@@ -80,7 +104,9 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     initialSlides && initialSlides.length > 0 ? initialSlides : defaultSlides
   );
   const [stats, setStats] = useState<StatType[]>(
-    initialStats && initialStats.length > 0 ? initialStats : defaultStats
+    initialStats && initialStats.length > 0 
+      ? initialStats.map(s => ({ ...s, value: verifiedStatsMap[s.label] || s.value }))
+      : defaultStats
   );
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -92,7 +118,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
 
   useEffect(() => {
     if (initialStats && initialStats.length > 0) {
-      setStats(initialStats);
+      setStats(initialStats.map(s => ({ ...s, value: verifiedStatsMap[s.label] || s.value })));
     }
   }, [initialStats]);
 
@@ -118,7 +144,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
         if (!res.ok) return;
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setStats(json.data);
+          setStats(json.data.map((s: StatType) => ({ ...s, value: verifiedStatsMap[s.label] || s.value })));
         }
       } catch (err) {
         console.error("Failed to load stats:", err);
@@ -157,19 +183,14 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
             >
-              <img
+              <Image
                 src={validImg}
                 alt={slide.title || "Construction Project"}
-                loading={idx === 0 ? "eager" : "lazy"}
-                fetchPriority={idx === 0 ? "high" : "low"}
-                width={1400}
-                height={900}
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.onerror = null;
-                  target.src = fallbackHeroImages[idx % fallbackHeroImages.length];
-                }}
-                className={`w-full h-full object-cover object-center transition-transform duration-[10000ms] ${
+                priority={idx === 0}
+                fill
+                sizes="100vw"
+                unoptimized={!isOptimizableImage(validImg)}
+                className={`object-cover object-center transition-transform duration-[10000ms] ${
                   idx === currentSlide ? "scale-105" : "scale-100"
                 }`}
               />
@@ -203,7 +224,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-construction-red"></span>
               </span>
               <span className="text-[13px] text-white font-bold uppercase tracking-[0.2em]">
-                {activeSlide.tagline}
+                {cleanHeroText(activeSlide.tagline)}
               </span>
             </div>
 
@@ -213,7 +234,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 key={`title-${currentSlide}`} 
                 className="text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-bold text-white leading-[1.05] mb-6 font-display tracking-tighter animate-fade-up drop-shadow-2xl"
               >
-                {formatHeroTitle(activeSlide.title)}
+                {formatHeroTitle(cleanHeroText(activeSlide.title))}
               </h1>
               
               <p 
@@ -221,7 +242,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
                 className="text-lg md:text-xl text-slate-200 max-w-2xl font-light leading-relaxed animate-fade-up border-l-2 border-construction-red pl-6"
                 style={{ animationDelay: "0.2s" }}
               >
-                {activeSlide.subtitle}
+                {cleanHeroText(activeSlide.subtitle)}
               </p>
             </div>
 

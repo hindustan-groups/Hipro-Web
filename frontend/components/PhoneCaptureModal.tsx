@@ -33,12 +33,13 @@ export default function PhoneCaptureModal({
     
     try {
       // Send the captured phone number to the admin panel via the Quote API
+      const cleanPhone = phone.replace(/\D/g, '');
       await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: "Estimator User",
-          email: "Not provided",
+          email: `lead-${cleanPhone || "phone"}@hindustanprojects.in`,
           phone: phone,
           location: "Not provided",
           projectType: "Cost Estimator Access",

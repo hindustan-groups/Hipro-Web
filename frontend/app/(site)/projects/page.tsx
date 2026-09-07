@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
 import PublicProjectGrid from "@/components/PublicProjectGrid";
 import ProjectsHero from "@/components/ProjectsHero";
 import { findAll } from "@/lib/db";
 import type { Project } from "@/lib/types";
+
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Project Portfolio",
+  description: "Explore executed construction, structural engineering, and infrastructure projects delivered by Hindustan Projects (HiPRO).",
+  alternates: {
+    canonical: "/projects",
+  },
+};
 
 export default async function ProjectsPage() {
   const allProjects = await findAll<Project>("projects");

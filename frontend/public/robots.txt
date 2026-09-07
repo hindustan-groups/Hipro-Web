@@ -1,6 +1,7 @@
-﻿User-agent: *
+User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /admin-login
 Disallow: /api/
 
 Sitemap: https://www.hindustanprojects.in/sitemap.xml

@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import WhyUs from "@/components/WhyUs";
 import CTASection from "@/components/CTASection";
 
-export const metadata = {
-  title: "Why Hindustan Projects - Our Differentiators",
-  description: "Discover why Hindustan Projects is the leading choice for landmark residential, commercial, and industrial infrastructure.",
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Why Us | Engineering Excellence & Quality Execution",
+  description: "Discover why clients trust Hindustan Projects (HiPRO) for turnkey civil engineering, vetted trade supervision, and quality-first construction in Rajasthan and beyond.",
+  alternates: {
+    canonical: "/why-us",
+  },
 };
 
 export default function WhyUsPage() {

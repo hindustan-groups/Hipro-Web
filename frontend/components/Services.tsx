@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { Service } from "@/lib/types";
+import { cleanServiceTitle, cleanContentTypos } from "@/lib/companyData";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const defaultServices: Service[] = [
   {
     id: "1",
-    title: "Civil & Structural Engineering",
-    description: "End-to-end heavy infrastructure and RCC structural execution built to international safety standards.",
+    title: "Architecture & Planning",
+    description: "Integrated architectural layouts, structural design, and 3D master planning tailored for modern construction.",
     category: "Design & Planning",
-    icon: "HardHat",
+    icon: "Compass",
     features: [],
     image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75",
     order: 1,
@@ -19,13 +22,39 @@ const defaultServices: Service[] = [
   },
   {
     id: "2",
-    title: "Commercial & High-Rise Towers",
-    description: "Iconic commercial spaces, retail complexes, and corporate headquarters engineered for modern work.",
-    category: "Commercial Development",
-    icon: "Building",
+    title: "Professional Construction Services",
+    description: "Turnkey civil construction, heavy structural RCC work, and durable residential and commercial execution.",
+    category: "Civil Construction",
+    icon: "HardHat",
     features: [],
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=75",
     order: 2,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: "3",
+    title: "Surveying & Site Measurements",
+    description: "High-precision digital land surveying, contour mapping, and boundary demarcations using advanced equipment.",
+    category: "Site Engineering",
+    icon: "Ruler",
+    features: [],
+    image: "https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=800&q=75",
+    order: 3,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: "4",
+    title: "Interior & Exterior Design",
+    description: "Premium architectural interiors, structural facade treatments, and turnkey aesthetic finishes for luxury spaces.",
+    category: "Architecture & Interiors",
+    icon: "Paintbrush",
+    features: [],
+    image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=75",
+    order: 4,
     active: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -53,7 +82,9 @@ export default function Services({ services = [] }: { services?: Service[] }) {
         {/* 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {displayServices.map((service, index) => {
-            const slug = (service.title || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+            const cleanTitle = cleanServiceTitle(service.title);
+            const cleanDesc = cleanContentTypos(service.description);
+            const slug = (cleanTitle || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
             const imageUrl = service.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75";
             
             return (
@@ -62,10 +93,13 @@ export default function Services({ services = [] }: { services?: Service[] }) {
                 className="group relative h-[320px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
               >
                 {/* Background Image */}
-                <img 
+                <Image 
                   src={imageUrl} 
-                  alt={service.title}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  alt={cleanTitle}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized={!isOptimizableImage(imageUrl)}
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 
                 {/* Gradient Overlay */}
@@ -76,10 +110,10 @@ export default function Services({ services = [] }: { services?: Service[] }) {
                   
                   <div className="flex-1">
                     <h3 className="text-3xl md:text-4xl font-bold text-white font-display mb-3 leading-tight">
-                      {service.title}
+                      {cleanTitle}
                     </h3>
                     <p className="text-slate-200 font-light line-clamp-2 md:text-lg">
-                      {service.description}
+                      {cleanDesc}
                     </p>
                   </div>
                   
@@ -87,7 +121,7 @@ export default function Services({ services = [] }: { services?: Service[] }) {
                     href={`/services/${slug}`}
                     className="inline-flex shrink-0 items-center justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-md shadow-orange-900/30 hover:shadow-orange-900/50"
                   >
-                    Explore {(service.title || "Service").split(' ')[0]}
+                    Explore {(cleanTitle || "Service").split(' ')[0]}
                   </Link>
 
                 </div>

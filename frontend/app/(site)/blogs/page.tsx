@@ -1,18 +1,25 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Calendar, User, Newspaper } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 import { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
-  title: "Construction Blog & Industry Insights | Hindustan Projects",
+  title: "Construction Blog & Industry Insights",
   description: "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
+  alternates: {
+    canonical: "/blogs",
+  },
   openGraph: {
     title: "Construction Blog & Industry Insights | Hindustan Projects",
     description: "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
     type: "website",
-  }
+  },
 };
 
 export default async function BlogsPage() {
@@ -56,11 +63,16 @@ export default async function BlogsPage() {
                 >
                   {/* Image */}
                   <div className="relative overflow-hidden h-56">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
+                    {post.image && (
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        unoptimized={!isOptimizableImage(post.image)}
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     {/* Category badge */}
                     <div className="absolute top-4 left-4">

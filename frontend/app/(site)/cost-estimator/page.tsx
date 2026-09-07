@@ -1,22 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PhoneCaptureModal from "@/components/PhoneCaptureModal";
 
 export default function CostEstimatorPage() {
   const [submitted, setSubmitted] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     // Check if the user has already entered their phone number (via cookie)
     const hasCookie = document.cookie.includes("cost_estimator_unlocked=true");
-    if (!hasCookie) {
-      setShowModal(true);
-    } else {
+    if (hasCookie) {
+      setShowModal(false);
       setIsUnlocked(true);
     }
   }, []);
@@ -51,16 +51,20 @@ export default function CostEstimatorPage() {
             {/* Stats */}
             <div className="flex flex-wrap gap-8 md:gap-16 mb-10">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">10,000+</div>
-                <div className="text-gray-600 text-sm">Homes built</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">150+</div>
+                <div className="text-gray-600 text-sm">Projects</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">470+</div>
-                <div className="text-gray-600 text-sm">Quality checks completed</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">8+</div>
+                <div className="text-gray-600 text-sm">Years Experience</div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">1,000+</div>
-                <div className="text-gray-600 text-sm">Pincodes served</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">30+</div>
+                <div className="text-gray-600 text-sm">Team Members</div>
+              </div>
+              <div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">85%</div>
+                <div className="text-gray-600 text-sm">Client Satisfaction</div>
               </div>
             </div>
 
@@ -225,7 +229,7 @@ export default function CostEstimatorPage() {
                   </button>
 
                   <p className="text-[11px] text-gray-500 leading-relaxed pt-2">
-                    By submitting this form, I confirm that I have read and agreed to accept our <a href="#" className="text-construction-red hover:underline">privacy policy</a>.
+                    By submitting this form, I confirm that I have read and agreed to accept our <Link href="/privacy-policy" className="text-construction-red hover:underline">privacy policy</Link>.
                   </p>
                 </form>
               )}

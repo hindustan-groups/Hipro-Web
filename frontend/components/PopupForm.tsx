@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { X } from "lucide-react";
 
 const defaultIndianStates = [
@@ -160,12 +162,12 @@ export default function PopupForm() {
 
         {/* Left Side - Image (hidden on mobile) */}
         <div className="hidden md:block md:w-5/12 relative bg-gray-100">
-          <img 
+          <Image 
             src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=75" 
             alt="Family outside dream home" 
-            width={600}
-            height={800}
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            sizes="(max-width: 1024px) 40vw, 30vw"
+            className="object-cover"
           />
           {/* Add a subtle gradient overlay to match the curved edge style somewhat, though Tailwind doesn't do complex curves easily without SVGs */}
           <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
@@ -282,7 +284,7 @@ export default function PopupForm() {
 
           {/* Privacy Policy Note */}
           <p className="mt-5 text-[11px] text-gray-500 leading-relaxed text-center sm:text-left">
-            By submitting, you agree to our <a href="#" className="text-construction-red hover:underline font-semibold">privacy policy</a>, allowing us to use your information as outlined.
+            By submitting, you agree to our <Link href="/privacy-policy" onClick={() => setIsOpen(false)} className="text-construction-red hover:underline font-semibold">privacy policy</Link>, allowing us to use your information as outlined.
           </p>
         </div>
       </div>

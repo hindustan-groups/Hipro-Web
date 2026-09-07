@@ -59,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
       text: text.trim(),
       rating: Number(rating),
       image: image?.trim() || "",
-      approved: req.body.approved ?? false,
+      approved: false,
     });
 
     return res.status(201).json({
