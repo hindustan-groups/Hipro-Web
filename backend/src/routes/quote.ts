@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
 import { validateEmail, validatePhone, validateRequired } from "../lib/validate";
+import { authGuard } from "../middleware/authGuard";
 import type { QuoteRequest, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -8,7 +9,14 @@ const router = Router();
 // POST /api/quote
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { name, email, phone, projectType, budget, location, description, timeline } = req.body;
+    let { name, email, phone, projectType, budget, location, description, timeline } = req.body;
+
+    // Support phone-only lead capture (e.g. from cost estimator phone modal)
+    const isPhoneOnlyLead = (!email || (typeof email === "string" && email.trim().toLowerCase() === "not provided")) && phone;
+    if (isPhoneOnlyLead && validatePhone(phone)) {
+      const cleanPhone = String(phone).replace(/\D/g, "");
+      email = `lead-${cleanPhone || "phone"}@hindustanprojects.in`;
+    }
 
     const missing = validateRequired({ name, email, phone, projectType, budget, description });
     if (missing.length > 0) {
@@ -50,7 +58,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // GET /api/quote
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", authGuard, async (req: Request, res: Response) => {
   try {
     const quotes = await findAll<QuoteRequest>("quotes");
     quotes.sort((a, b) =>
@@ -63,7 +71,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/quote
-router.patch("/", async (req: Request, res: Response) => {
+router.patch("/", authGuard, async (req: Request, res: Response) => {
   try {
     const { id, status } = req.body;
     if (!id || !status) {

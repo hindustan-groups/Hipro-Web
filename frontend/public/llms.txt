@@ -1,4 +1,4 @@
-﻿# Hindustan Projects
+# Hindustan Projects
 > India's premier turnkey construction, civil engineering, and infrastructure firm.
 
 ## Overview
@@ -14,7 +14,7 @@ Hindustan Projects (HiPRO) is an engineering and infrastructure company speciali
 ## Key Tools & Features
 - Cost Estimator: Package-based calculator providing accurate construction cost estimates per square foot across Indian cities.
 - Project Portfolio: Verified case studies detailing executed square footage, location, timelines, and architectural specifications.
-- Quality & Safety Assurance: 470+ quality checkpoints, milestone-based escrow payments, and ISO-compliant engineering standards.
+- Quality & Safety Assurance: Multi-tier quality checkpoints, milestone-based payments, and verified engineering standards.
 
 ## Contact Information
 - Website: https://www.hindustanprojects.in

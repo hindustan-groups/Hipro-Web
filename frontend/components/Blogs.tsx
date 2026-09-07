@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Calendar, User, Newspaper } from "lucide-react";
 import type { BlogPost } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const defaultBlogs: BlogPost[] = [
   {
@@ -72,11 +74,16 @@ export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
             href={`/blogs/${featuredPost.slug || featuredPost.id}`}
             className="group w-full lg:w-2/3 relative h-[500px] md:h-[600px] block overflow-hidden bg-slate-900 border border-slate-200 shadow-md"
           >
-            <img
-              src={featuredPost.image}
-              alt={featuredPost.title}
-              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100"
-            />
+            {featuredPost.image && (
+              <Image
+                src={featuredPost.image}
+                alt={featuredPost.title}
+                fill
+                sizes="(max-width: 1024px) 100vw, 66vw"
+                unoptimized={!isOptimizableImage(featuredPost.image)}
+                className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
             
             {/* Category badge */}
@@ -119,11 +126,16 @@ export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
                 className="group flex flex-col h-full bg-slate-50 border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300"
               >
                 <div className="relative h-48 sm:h-56 overflow-hidden">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+                  {post.image && (
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      unoptimized={!isOptimizableImage(post.image)}
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  )}
                   <div className="absolute top-4 left-4 z-10">
                     <span className="bg-black/90 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-sm">
                       {post.category}

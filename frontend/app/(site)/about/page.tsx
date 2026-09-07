@@ -1,7 +1,20 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import { Award, Users, Target, History, ArrowUpRight, CheckCircle, ShieldCheck, Instagram, Linkedin, Facebook } from "lucide-react";
 import DynamicIcon from "@/components/DynamicIcon";
 import { findAll } from "@/lib/db";
 import type { TeamMember, Settings, Stats as StatType } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
+
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description: "Founded in 2019 in Bhilwara, Rajasthan, Hindustan Projects (HiPRO) delivers comprehensive engineering, turnkey construction, and infrastructure solutions.",
+  alternates: {
+    canonical: "/about",
+  },
+};
 
 const defaultValues = [
   { icon: "Award", title: "Excellence", desc: "Uncompromising quality standards across every square foot of engineering." },
@@ -32,38 +45,38 @@ export default async function AboutPage() {
   const statPills = statsData.length > 0 
     ? statsData.sort((a, b) => (a.order || 99) - (b.order || 99)).map(s => `${s.value} ${s.label}`)
     : [
-        "500+ Landmark Builds",
-        "200+ Senior Engineers",
-        "25+ Years Experience",
-        "98.5% Client Satisfaction"
+        "150+ Projects",
+        "8+ Years Experience",
+        "30+ Team",
+        "85% Satisfaction"
       ];
 
   const heritageTag = pageContent.aboutHeritageTag || "Our Heritage";
-  const storyTitle = pageContent.aboutTitle || pageContent.aboutStoryTitle || "Building Infrastructure Since 1999";
+  const storyTitle = pageContent.aboutTitle || pageContent.aboutStoryTitle || "Engineering & Infrastructure Since 2019";
   
   const storyText: string[] = pageContent.aboutStory 
     ? (Array.isArray(pageContent.aboutStory) ? pageContent.aboutStory : pageContent.aboutStory.split('\n\n'))
     : [
-        "Founded in 1999, Hindustan Projects began with a vision to revolutionize urban infrastructure and civil engineering. Over two decades of relentless commitment to craftsmanship has earned us a reputation as one of the most trusted construction firms in the nation.",
-        "We have successfully executed over 500 high-impact projects ranging from luxury residential communities to multi-story commercial towers and state-of-the-art industrial logistics hubs.",
-        "Our multidisciplinary team of 200+ structural engineers, chartered architects, and project directors ensures every project is delivered on schedule, within budget, and to international safety benchmarks."
+        "Founded in 2019 in Bhilwara, Rajasthan, Hindustan Projects (HiPRO) delivers comprehensive engineering, construction, and infrastructure solutions with uncompromising precision and integrity.",
+        "We have successfully executed over 150 projects, serving 200+ clients across residential, commercial, and industrial developments.",
+        "Our dedicated team of 30+ technical specialists, engineers, and site supervisors ensures every project is delivered on schedule, within budget, and to rigorous quality benchmarks."
       ];
 
   const checklist: string[] = pageContent.aboutChecklist
     ? (Array.isArray(pageContent.aboutChecklist) ? pageContent.aboutChecklist : pageContent.aboutChecklist.split('\n'))
     : [
-        "ISO 9001:2015 Certified Operations",
-        "National Excellence Awards Winner",
-        "Zero-Accident Safety Protocol",
-        "Comprehensive 10-Year Warranty"
+        "Engineering, Construction & Infrastructure",
+        "150+ Projects Successfully Executed",
+        "Quality-First Execution & Dedicated Supervision",
+        "Transparent Milestones & Client Trust"
       ];
 
   const storyImage = pageContent.aboutImage || "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=85";
 
   const badge1Label = pageContent.aboutBadge1Label || "ESTABLISHED";
-  const badge1Value = pageContent.aboutBadge1Value || "1999";
-  const badge2Label = pageContent.aboutBadge2Label || "PROJECTS HANDED OVER";
-  const badge2Value = pageContent.aboutBadge2Value || "500+";
+  const badge1Value = pageContent.aboutBadge1Value || "2019";
+  const badge2Label = pageContent.aboutBadge2Label || "PROJECTS COMPLETED";
+  const badge2Value = pageContent.aboutBadge2Value || "150+";
 
   const valuesTag = pageContent.valuesTag || "Principles";
   const valuesTitle = pageContent.valuesTitle || "Our Core Values";
@@ -79,7 +92,7 @@ export default async function AboutPage() {
         <div className="relative z-10 max-w-6xl mx-auto text-center">
           <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-slate-100 border border-slate-200 text-construction-navy mb-6 shadow-sm">
             <ShieldCheck className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-wider">Est. 1999 · 25+ Years of Engineering Excellence</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Est. 2019 · Engineering · Construction · Infrastructure</span>
           </div>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-black mb-5 font-display uppercase tracking-tight">
             About <span className="text-construction-navy">Hindustan</span> <span className="font-serif italic font-normal text-construction-red normal-case">Projects</span>
@@ -136,11 +149,14 @@ export default async function AboutPage() {
 
             {/* Image card */}
             <div className="relative">
-              <div className="rounded-none overflow-hidden shadow-2xl border border-slate-200/80">
-                <img
+              <div className="relative h-[480px] rounded-none overflow-hidden shadow-2xl border border-slate-200/80">
+                <Image
                   src={storyImage}
                   alt="Construction site team"
-                  className="w-full h-[480px] object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized={!isOptimizableImage(storyImage)}
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               </div>
@@ -207,7 +223,14 @@ export default async function AboutPage() {
           {founder && (
             <div className="grid lg:grid-cols-2 gap-12 items-center mb-16 border border-slate-200/80 bg-white p-8 md:p-12 shadow-md">
               <div className="relative h-[400px] lg:h-[500px] w-full rounded-none overflow-hidden border border-slate-200 shadow-xl bg-slate-100 group">
-                <img src={founder.img} alt={founder.name} className="w-full h-full object-cover object-top" />
+                <Image 
+                  src={founder.img} 
+                  alt={founder.name} 
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized={!isOptimizableImage(founder.img)}
+                  className="object-cover object-top" 
+                />
                 {/* Low opacity overlay */}
                 <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-all duration-500" />
               </div>
@@ -255,11 +278,16 @@ export default async function AboutPage() {
                 key={i}
                 className="group relative h-[440px] overflow-hidden rounded-none border border-slate-200/50 bg-slate-900"
               >
-                <img
-                  src={m.img}
-                  alt={m.name}
-                  className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                />
+                {m.img && (
+                  <Image
+                    src={m.img}
+                    alt={m.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    unoptimized={!isOptimizableImage(m.img)}
+                    className="object-cover transition-all duration-700 group-hover:scale-105"
+                  />
+                )}
                 {/* Low opacity overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/20 opacity-90 group-hover:opacity-75 transition-opacity duration-500" />
                 

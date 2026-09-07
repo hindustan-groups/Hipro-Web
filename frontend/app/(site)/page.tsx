@@ -1,15 +1,19 @@
 import Hero from "@/components/Hero";
+import HomeAbout from "@/components/HomeAbout";
 import Guarantees from "@/components/Guarantees";
 import CostEstimator from "@/components/CostEstimator";
 import Services from "@/components/Services";
 import Projects from "@/components/Projects";
 import WhyUs from "@/components/WhyUs";
 import Testimonials from "@/components/Testimonials";
+import GroupEcosystem from "@/components/GroupEcosystem";
 import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
 import AnimateIn from "@/components/AnimateIn";
 import { findAll } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
+
+export const revalidate = 60;
 
 export default async function Home() {
   const [
@@ -42,7 +46,12 @@ export default async function Home() {
 
   const servicesData = services.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
   const projectsData = projects.filter(p => p.status !== "archived");
-  const testimonialsData = testimonials.filter(t => t.approved !== false);
+  const testimonialsData = testimonials.filter(
+    (t) =>
+      t.approved === true &&
+      !/^(avinash|piyush|test)/i.test(t.name?.trim() || "") &&
+      !/services of compan/i.test(t.text || "")
+  );
   const blogsData = blogs
     .filter(b => b.active !== false)
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
@@ -53,11 +62,13 @@ export default async function Home() {
   return (
     <>
       <Hero initialSlides={slidedata} initialStats={statsdata} />
+      <AnimateIn><HomeAbout pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Services services={servicesData} /></AnimateIn>
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
       <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} /></AnimateIn>
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
+      <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Blogs posts={blogsData} /></AnimateIn>
       <AnimateIn><CTASection /></AnimateIn>
     </>

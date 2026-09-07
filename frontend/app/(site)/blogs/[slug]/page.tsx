@@ -1,9 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
+
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const decodedSlug = decodeURIComponent(params.slug);
@@ -13,9 +17,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!post) return { title: "Blog Not Found" };
 
   return {
-    title: post.metaTitle || `${post.title} | Hindustan Projects`,
+    title: post.metaTitle || post.title,
     description: post.metaDescription || post.excerpt,
     keywords: post.keywords ? post.keywords.split(',').map(k => k.trim()) : undefined,
+    alternates: {
+      canonical: `/blogs/${decodedSlug}`,
+    },
     openGraph: {
       title: post.metaTitle || post.title,
       description: post.metaDescription || post.excerpt,
@@ -69,7 +76,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         <header className="relative w-full h-[60vh] md:h-[75vh] flex items-end pb-16 md:pb-24 pt-32">
           {/* Background Image with Parallax illusion */}
           <div className="absolute inset-0 w-full h-full">
-            <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+            {post.image && (
+              <Image 
+                src={post.image} 
+                alt={post.title} 
+                fill
+                priority
+                sizes="100vw"
+                unoptimized={!isOptimizableImage(post.image)}
+                className="object-cover" 
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
           </div>
 
@@ -217,8 +234,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   <div className="space-y-6">
                     {relatedBlogs.map(related => (
                       <Link href={`/blogs/${related.slug}`} key={related.id} className="group flex gap-4 items-center">
-                        <div className="w-20 h-20 overflow-hidden bg-slate-100 shrink-0">
-                          {related.image && <img src={related.image} alt={related.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
+                        <div className="w-20 h-20 overflow-hidden bg-slate-100 shrink-0 relative">
+                          {related.image && (
+                            <Image 
+                              src={related.image} 
+                              alt={related.title} 
+                              fill
+                              sizes="80px"
+                              unoptimized={!isOptimizableImage(related.image)}
+                              className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                            />
+                          )}
                         </div>
                         <div>
                           <h5 className="text-sm font-bold text-slate-900 group-hover:text-construction-red transition-colors line-clamp-2 mb-1">{related.title}</h5>

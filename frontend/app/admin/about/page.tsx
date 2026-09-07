@@ -11,14 +11,14 @@ export default function AdminAbout() {
   const [content, setContent] = useState({
     aboutHero: "Building sustainable infrastructure, landmark commercial developments, and luxury residences across India with uncompromising integrity.",
     aboutHeritageTag: "Our Heritage",
-    aboutStoryTitle: "Building Infrastructure Since 1999",
-    aboutStory: "Founded in 1999, Hindustan Projects began with a vision to revolutionize urban infrastructure and civil engineering. Over two decades of relentless commitment to craftsmanship has earned us a reputation as one of the most trusted construction firms in the nation.\n\nWe have successfully executed over 500 high-impact projects ranging from luxury residential communities to multi-story commercial towers and state-of-the-art industrial logistics hubs.\n\nOur multidisciplinary team of 200+ structural engineers, chartered architects, and project directors ensures every project is delivered on schedule, within budget, and to international safety benchmarks.",
-    aboutChecklist: "ISO 9001:2015 Certified Operations\nNational Excellence Awards Winner\nZero-Accident Safety Protocol\nComprehensive 10-Year Warranty",
+    aboutStoryTitle: "Engineering & Infrastructure Since 2019",
+    aboutStory: "Founded in 2019 in Bhilwara, Rajasthan, Hindustan Projects (HiPRO) delivers comprehensive engineering, construction, and infrastructure solutions with uncompromising precision and integrity.\n\nWe have successfully executed over 150 projects, serving 200+ clients across residential, commercial, and industrial developments.\n\nOur dedicated team of 30+ technical specialists, engineers, and site supervisors ensures every project is delivered on schedule, within budget, and to rigorous quality benchmarks.",
+    aboutChecklist: "Engineering, Construction & Infrastructure\n150+ Projects Successfully Executed\nQuality-First Execution & Dedicated Supervision\nTransparent Milestones & Client Trust",
     aboutImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=85",
     aboutBadge1Label: "ESTABLISHED",
-    aboutBadge1Value: "1999",
-    aboutBadge2Label: "PROJECTS HANDED OVER",
-    aboutBadge2Value: "500+",
+    aboutBadge1Value: "2019",
+    aboutBadge2Label: "PROJECTS COMPLETED",
+    aboutBadge2Value: "150+",
     valuesTag: "Principles",
     valuesTitle: "Our Core Values",
     valuesSubtitle: "The foundational pillars guiding every blueprint, site inspection, and client relationship."
@@ -195,7 +195,7 @@ export default function AdminAbout() {
                   type="text" 
                   value={content.aboutStoryTitle} 
                   onChange={(e) => setContent({ ...content, aboutStoryTitle: e.target.value })}
-                  placeholder="e.g. Building Infrastructure Since 1999"
+                  placeholder="e.g. Engineering & Infrastructure Since 2019"
                   className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
                 />
               </div>
@@ -222,7 +222,7 @@ export default function AdminAbout() {
                 rows={4}
                 value={content.aboutChecklist} 
                 onChange={(e) => setContent({ ...content, aboutChecklist: e.target.value })}
-                placeholder="ISO 9001:2015 Certified Operations\nNational Excellence Awards Winner\nZero-Accident Safety Protocol"
+                placeholder="Engineering, Construction & Infrastructure\n150+ Projects Successfully Executed\nQuality-First Execution"
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
               />
             </div>
@@ -253,7 +253,7 @@ export default function AdminAbout() {
                     type="text" 
                     value={content.aboutBadge1Value} 
                     onChange={(e) => setContent({ ...content, aboutBadge1Value: e.target.value })}
-                    placeholder="e.g. 1999"
+                    placeholder="e.g. 2019"
                     className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold" 
                   />
                 </div>
@@ -264,7 +264,7 @@ export default function AdminAbout() {
                     type="text" 
                     value={content.aboutBadge2Label} 
                     onChange={(e) => setContent({ ...content, aboutBadge2Label: e.target.value })}
-                    placeholder="e.g. PROJECTS HANDED OVER"
+                    placeholder="e.g. PROJECTS COMPLETED"
                     className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy" 
                   />
                   <label className="text-slate-500 text-[11px] uppercase tracking-wider block mt-2 mb-1 font-bold">Top-Right Badge Value</label>
@@ -272,7 +272,7 @@ export default function AdminAbout() {
                     type="text" 
                     value={content.aboutBadge2Value} 
                     onChange={(e) => setContent({ ...content, aboutBadge2Value: e.target.value })}
-                    placeholder="e.g. 500+"
+                    placeholder="e.g. 150+"
                     className="w-full bg-white border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy font-bold text-construction-red" 
                   />
                 </div>

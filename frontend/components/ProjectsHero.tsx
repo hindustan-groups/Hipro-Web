@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { ArrowRight, MapPin } from "lucide-react";
 import type { Project } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 export default function ProjectsHero({ featuredProjects }: { featuredProjects: Project[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -29,10 +31,14 @@ export default function ProjectsHero({ featuredProjects }: { featuredProjects: P
               idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
-            <img
+            <Image
               src={project.image}
               alt={project.title}
-              className={`w-full h-full object-cover transition-transform duration-[10000ms] ${
+              fill
+              priority={idx === 0}
+              sizes="100vw"
+              unoptimized={!isOptimizableImage(project.image)}
+              className={`object-cover transition-transform duration-[10000ms] ${
                 idx === currentSlide ? "scale-105" : "scale-100"
               }`}
             />

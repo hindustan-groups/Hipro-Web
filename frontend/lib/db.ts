@@ -1,4 +1,6 @@
 
+import { cache } from "react";
+
 let rawUrl = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
 if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
   rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
@@ -49,13 +51,34 @@ export async function insertOne<T>(collection: string, doc: any): Promise<T | nu
   }
 }
 
-export async function findAll<T>(collection: string): Promise<T[]> {
+// Private collections that MUST NEVER be publicly cached or cached at ISR level
+const PRIVATE_COLLECTIONS = new Set([
+  "quotes",
+  "quote",
+  "contacts",
+  "contact",
+  "admin-users",
+  "adminUsers",
+  "applications",
+  "newsletter",
+]);
+
+const _cachedFindAll = cache(async (collection: string): Promise<any[]> => {
   const endpoint = getEndpoint(collection);
+  const isPrivate = PRIVATE_COLLECTIONS.has(collection);
+
   try {
-    const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(4000),
-    });
+    const fetchOptions: RequestInit = isPrivate
+      ? {
+          cache: "no-store",
+          signal: AbortSignal.timeout(4000),
+        }
+      : {
+          next: { revalidate: 60, tags: [collection] },
+          signal: AbortSignal.timeout(4000),
+        };
+
+    const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, fetchOptions);
     
     if (!res.ok) {
       console.error(`Failed to fetch ${collection}: ${res.statusText}`);
@@ -74,6 +97,10 @@ export async function findAll<T>(collection: string): Promise<T[]> {
     console.error(`Network error fetching ${collection}:`, err);
     return [];
   }
+});
+
+export async function findAll<T>(collection: string): Promise<T[]> {
+  return (await _cachedFindAll(collection)) as T[];
 }
 
 export async function findById<T>(collection: string, id: string): Promise<T | null> {

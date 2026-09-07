@@ -1,17 +1,27 @@
+import type { Metadata } from "next";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
+import { COMPANY_INFO } from "@/lib/companyData";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description: "Get in touch with Hindustan Projects (HiPRO) for construction inquiries, architectural consultation, and site evaluations in Bhilwara, Rajasthan.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
 
 export default async function ContactPage() {
   const settingsData = await findAll<Settings>("settings");
   const settings = settingsData[0] || {};
   
-  const address = settings.companyAddress || "101 Executive Tower, Infrastructure Complex\nNew Delhi, India";
-  const phone = settings.companyPhone || "+91 98765 43210\n+91 11 2345 6789";
-  const email = settings.companyEmail || "contact@hindustanprojects.com\nprojects@hindustanprojects.com";
+  const address = settings.companyAddress || COMPANY_INFO.address;
+  const phone = settings.companyPhone || `${COMPANY_INFO.formattedPhone}\n+91 75970 00601`;
+  const email = settings.companyEmail || `${COMPANY_INFO.email}\ncontact@hindustanprojects.in`;
 
   const servicesData = await findAll<Service>("services");
   const activeServices = servicesData.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));

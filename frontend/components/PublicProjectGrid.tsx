@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Calendar, Search, ArrowUpDown, Filter, Building } from "lucide-react";
 import type { Project } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const categoryColor: Record<string, string> = {
   Commercial: "text-black bg-slate-100 border border-slate-200",
@@ -126,11 +128,16 @@ export default function PublicProjectGrid({ projects = [] }: { projects: Project
                   className="group rounded-none border border-slate-200/80 bg-white overflow-hidden hover:border-construction-red/40 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300 flex flex-col hover:-translate-y-1"
                 >
                   <div className="overflow-hidden h-60 relative">
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    {p.image && (
+                      <Image
+                        src={p.image}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        unoptimized={!isOptimizableImage(p.image)}
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     <div className="absolute top-3 right-3 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none shadow-md flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -177,11 +184,16 @@ export default function PublicProjectGrid({ projects = [] }: { projects: Project
                   className="group rounded-none border border-slate-200/80 bg-white overflow-hidden hover:border-construction-red/40 shadow-lg shadow-slate-900/5 hover:shadow-xl hover:shadow-slate-900/10 transition-all duration-300 flex flex-col hover:-translate-y-1"
                 >
                   <div className="overflow-hidden h-60 relative">
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    {p.image && (
+                      <Image
+                        src={p.image}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        unoptimized={!isOptimizableImage(p.image)}
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                     <div className="absolute top-3 right-3 bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-none shadow-md">
                       Completed

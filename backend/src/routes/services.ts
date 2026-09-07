@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
+import { authGuard } from "../middleware/authGuard";
 import type { Service, ApiResponse } from "../lib/types";
 
 const router = Router();
 
-// GET /api/services
+// GET /api/services — Public
 router.get("/", async (req: Request, res: Response) => {
     try {
         const services = await findAll<Service>("services");
@@ -18,8 +19,8 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-// POST /api/services
-router.post("/", async (req: Request, res: Response) => {
+// POST /api/services — Protected
+router.post("/", authGuard, async (req: Request, res: Response) => {
     try {
         const { title, description, category, icon, features, image, order } = req.body;
 
@@ -44,11 +45,14 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-// PATCH /api/services
-router.patch("/", async (req: Request, res: Response) => {
+// PATCH /api/services & /api/services/:id — Protected
+const handlePatch = async (req: Request, res: Response) => {
     try {
-        const { id, ...updates } = req.body;
+        const id = (req.params.id || req.body.id) as string;
         if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
+
+        const updates = { ...req.body };
+        delete updates.id;
 
         if (updates.features && Array.isArray(updates.features)) {
             updates.features = JSON.stringify(updates.features);
@@ -60,12 +64,15 @@ router.patch("/", async (req: Request, res: Response) => {
     } catch {
         return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
     }
-});
+};
 
-// DELETE /api/services
-router.delete("/", async (req: Request, res: Response) => {
+router.patch("/", authGuard, handlePatch);
+router.patch("/:id", authGuard, handlePatch);
+
+// DELETE /api/services & /api/services/:id — Protected
+const handleDelete = async (req: Request, res: Response) => {
     try {
-        const { id } = req.body;
+        const id = (req.params.id || req.body.id) as string;
         if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
 
         const deleted = await deleteOne("services", id);
@@ -75,6 +82,9 @@ router.delete("/", async (req: Request, res: Response) => {
     } catch {
         return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
     }
-});
+};
+
+router.delete("/", authGuard, handleDelete);
+router.delete("/:id", authGuard, handleDelete);
 
 export default router;

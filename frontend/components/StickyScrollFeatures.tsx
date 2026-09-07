@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const features = [
   {
@@ -103,11 +105,14 @@ export default function StickyScrollFeatures() {
           {/* Right Side: Media Container */}
           <div className="hidden lg:block h-[70vh] relative rounded-none overflow-hidden border border-white/10 shadow-2xl bg-slate-900 z-20">
             {features.map((feature, idx) => (
-              <img
+              <Image
                 key={idx}
                 src={feature.image}
                 alt={feature.title}
-                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                unoptimized={!isOptimizableImage(feature.image)}
+                className={`object-cover transition-all duration-700 ease-in-out ${
                   idx === activeIndex 
                     ? "opacity-100 scale-100 z-10" 
                     : "opacity-0 scale-105 z-0"
@@ -124,11 +129,14 @@ export default function StickyScrollFeatures() {
         {/* Mobile background image (absolute behind text) */}
         <div className="lg:hidden absolute inset-0 z-0">
            {features.map((feature, idx) => (
-              <img
+              <Image
                 key={idx}
                 src={feature.image}
                 alt={feature.title}
-                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${
+                fill
+                sizes="100vw"
+                unoptimized={!isOptimizableImage(feature.image)}
+                className={`object-cover transition-all duration-700 ease-in-out ${
                   idx === activeIndex 
                     ? "opacity-30 scale-100 z-10" 
                     : "opacity-0 scale-105 z-0"

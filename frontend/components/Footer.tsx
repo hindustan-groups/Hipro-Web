@@ -1,8 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
-import { HardHat, Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, ArrowUpRight } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, Phone, MapPin, MessageSquare, ArrowUpRight } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
+import { COMPANY_INFO, cleanServiceTitle } from "@/lib/companyData";
+
+function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345-.09.375-.291 1.199-.334 1.373-.053.224-.174.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026l.032-.026z" />
+    </svg>
+  );
+}
 
 export default async function Footer() {
   const [settingsData, servicesData] = await Promise.all([
@@ -12,14 +21,22 @@ export default async function Footer() {
   
   const settings = settingsData[0] || {};
   
-  const address = settings.companyAddress || "101 Executive Tower, Infrastructure Complex, New Delhi, India";
-  const phone = settings.companyPhone || "+91 98765 43210";
-  const email = settings.companyEmail || "contact@hindustanprojects.com";
+  const address = settings.companyAddress || COMPANY_INFO.address;
+  const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
+  const email = settings.companyEmail || COMPANY_INFO.email;
+  const telLink = `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, '')}`;
+  const mailtoLink = `mailto:${email}`;
+  const whatsappLink = COMPANY_INFO.whatsappLink;
   
   let socials: any = {};
   try {
     if (settings.socialLinks) socials = JSON.parse(settings.socialLinks);
   } catch { /* silent */ }
+
+  const instagramUrl = socials.instagram || COMPANY_INFO.socials.instagram;
+  const facebookUrl = socials.facebook || COMPANY_INFO.socials.facebook;
+  const linkedinUrl = socials.linkedin || COMPANY_INFO.socials.linkedin;
+  const pinterestUrl = socials.pinterest || COMPANY_INFO.socials.pinterest;
 
   const activeServices = servicesData
     .filter(s => s.active !== false)
@@ -27,18 +44,30 @@ export default async function Footer() {
     .slice(0, 6);
 
   const capabilities = activeServices.length > 0
-    ? activeServices.map(s => ({
-        label: s.title,
-        href: "/services"
-      }))
+    ? activeServices.map(s => {
+        const cleanTitle = cleanServiceTitle(s.title);
+        const slug = (cleanTitle || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
+        return {
+          label: cleanTitle,
+          href: `/services/${slug}`
+        };
+      })
     : [
-        { label: "Residential Construction", href: "/services" },
-        { label: "Commercial Development", href: "/services" },
-        { label: "Industrial Facilities", href: "/services" },
-        { label: "Renovation & Remodeling", href: "/services" },
-        { label: "Project Management", href: "/services" },
-        { label: "Turnkey Design Build", href: "/services" }
+        { label: "Architecture & Planning", href: "/services/architecture-planning" },
+        { label: "Professional Construction Services", href: "/services/professional-construction-services" },
+        { label: "Surveying & Site Measurements", href: "/services/surveying-site-measurements" },
+        { label: "Interior & Exterior Design", href: "/services/interior-exterior-design" },
+        { label: "Water Treatment Plant Construction", href: "/services/water-treatment-plant-construction" },
+        { label: "Project Management & Consultancy", href: "/services/project-management-consultancy" }
       ];
+
+  const socialLinks = [
+    { icon: Instagram, url: instagramUrl, name: "Instagram" },
+    { icon: Facebook, url: facebookUrl, name: "Facebook" },
+    { icon: Linkedin, url: linkedinUrl, name: "LinkedIn" },
+    { icon: PinterestIcon, url: pinterestUrl, name: "Pinterest" }
+  ];
+
   return (
     <footer className="bg-black text-slate-400 relative overflow-hidden border-t border-slate-800">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
@@ -59,20 +88,15 @@ export default async function Footer() {
               </div>
             </Link>
             <p className="text-xs text-slate-300 font-light leading-relaxed mb-6">
-              Building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors since 1999.
+              Building sustainable infrastructure and delivering innovative engineering solutions across residential, commercial, and industrial sectors since 2019.
             </p>
             <div className="flex gap-2.5">
-              {[
-                { icon: Facebook, url: socials.facebook, name: "Facebook" },
-                { icon: Twitter, url: socials.twitter, name: "Twitter" },
-                { icon: Instagram, url: socials.instagram, name: "Instagram" },
-                { icon: Linkedin, url: socials.linkedin, name: "LinkedIn" }
-              ].map(({ icon: Icon, url, name }, i) => (
+              {socialLinks.map(({ icon: Icon, url, name }, i) => (
                 <a
                   key={i}
-                  href={url || "#"}
-                  target={url ? "_blank" : undefined}
-                  rel={url ? "noreferrer" : undefined}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={`Visit Hindustan Projects on ${name}`}
                   className="w-9 h-9 rounded-none bg-white/5 border border-white/10 flex items-center justify-center hover:bg-construction-red hover:border-construction-red transition-all duration-200 group shadow-sm"
                 >
@@ -126,13 +150,21 @@ export default async function Footer() {
                 <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>{phone}</span>
+                <a href={telLink} className="hover:text-white transition-colors">{phone}</a>
               </li>
               <li className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-none bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4 text-construction-red" />
                 </div>
-                <span>{email}</span>
+                <a href={mailtoLink} className="hover:text-white transition-colors">{email}</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-none bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                </div>
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-300 transition-colors text-emerald-400 font-medium">
+                  WhatsApp: {COMPANY_INFO.whatsappNumber}
+                </a>
               </li>
             </ul>
           </div>
@@ -144,11 +176,12 @@ export default async function Footer() {
             <span suppressHydrationWarning>© {new Date().getFullYear()} Hindustan Projects. All rights reserved.</span>
           </div>
           <div className="flex gap-6">
-            {["Privacy Policy", "Terms of Service", "Quality Policy"].map((item) => (
-              <Link key={item} href="#" className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
-                {item}
-              </Link>
-            ))}
+            <Link href="/privacy-policy" className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-slate-300 hover:text-white transition-colors underline-offset-4 hover:underline">
+              Terms of Service
+            </Link>
           </div>
         </div>
       </div>

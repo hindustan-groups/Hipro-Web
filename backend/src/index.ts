@@ -25,9 +25,29 @@ import locationsRouter from "./routes/locations";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// CORS configuration with explicit allowlist
+const defaultAllowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://www.hindustanprojects.in",
+  "https://hindustanprojects.in",
+];
+
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envAllowedOrigins]));
+
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, Next.js SSR)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true,
 }));
 app.use(cookieParser());
@@ -70,13 +90,19 @@ async function ensureDefaultAdmin() {
   try {
     const adminCount = await prisma.adminUser.count();
     if (adminCount === 0) {
-      const email = process.env.ADMIN_EMAIL || "admin@hindustanprojects.com";
-      const password = process.env.ADMIN_PASSWORD || "admin123";
+      const email = process.env.ADMIN_EMAIL?.trim();
+      const password = process.env.ADMIN_PASSWORD?.trim();
+
+      if (!email || !password) {
+        console.warn("[BOOT] No admin user exists in database and ADMIN_EMAIL / ADMIN_PASSWORD are not configured. Skipping default admin bootstrap.");
+        return;
+      }
+
       await prisma.adminUser.create({
         data: {
           email,
           password: hashPassword(password),
-          name: process.env.ADMIN_NAME || "Admin",
+          name: process.env.ADMIN_NAME?.trim() || "Admin",
           role: "admin",
           permissions: "[]",
         },

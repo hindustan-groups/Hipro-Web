@@ -1,9 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { findAll } from "@/lib/db";
 import type { Service } from "@/lib/types";
 import * as Icons from "lucide-react";
-
 import DynamicIcon from "@/components/DynamicIcon";
+import { cleanServiceTitle, getServiceSlug } from "@/lib/companyData";
+import { isOptimizableImage } from "@/lib/imageUtils";
+
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: "Construction & Engineering Services",
+  description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects (HiPRO).",
+  alternates: {
+    canonical: "/services",
+  },
+};
 
 export default async function ServicesPage() {
   const allServices = await findAll<Service>("services");
@@ -38,8 +51,9 @@ export default async function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {services.map((s, i) => {
-              const slug = (s.title || "").toLowerCase().replace(/ & /g, '-').replace(/\s+/g, '-');
-              const firstWord = (s.title || "Service").split(' ')[0];
+              const cleanTitle = cleanServiceTitle(s.title);
+              const slug = getServiceSlug(cleanTitle);
+              const firstWord = (cleanTitle || "Service").split(' ')[0];
               const imageUrl = s.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75";
               
               return (
@@ -48,10 +62,13 @@ export default async function ServicesPage() {
                   className="group relative h-[320px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
                 >
                   {/* Background Image */}
-                  <img 
+                  <Image 
                     src={imageUrl} 
                     alt={s.title}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    unoptimized={!isOptimizableImage(imageUrl)}
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   
                   {/* Gradient Overlay */}

@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
 import AnimateIn from "@/components/AnimateIn";
 import type { Guarantee } from "@/lib/types";
+import { isOptimizableImage } from "@/lib/imageUtils";
 
 const defaultGuarantees = [
   {
@@ -12,13 +14,13 @@ const defaultGuarantees = [
     bg: "bg-construction-red", accent: "text-red-100", image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=75", hasShield: false
   },
   {
-    id: "2", badge: "VETTED QUALITY", title: "Top-Tier Certified Contractors",
-    description: "Every trade contractor undergoes a rigorous 6-stage auditing process ensuring compliance, safety, and craftsmanship.",
+    id: "2", badge: "VETTED QUALITY", title: "Vetted Trade Contractors & Supervision",
+    description: "Every trade contractor undergoes structured multi-stage vetting ensuring code compliance, safety discipline, and craftsmanship.",
     bg: "bg-construction-navy", accent: "text-blue-200", image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=75", hasShield: false
   },
   {
-    id: "3", badge: "LONG-TERM PROTECTION", title: "Built To Last. 10-Year Structural Guarantee",
-    description: "Comprehensive post-handover warranty and structural inspections giving complete peace of mind for decades.",
+    id: "3", badge: "LONG-TERM PROTECTION", title: "Built To Last. Quality-First Execution",
+    description: "Comprehensive post-handover inspections and rigorous engineering standards ensuring structural integrity and peace of mind.",
     bg: "bg-black", accent: "text-slate-300", image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=75", hasShield: true
   }
 ];
@@ -121,11 +123,16 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
                   {/* Media (Image) */}
                   <div className="w-full md:w-1/2 pl-16 md:pl-0 relative">
                     <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden border border-slate-200 shadow-xl bg-slate-50">
-                      <img 
-                        src={item.image} 
-                        alt={item.title} 
-                        className="w-full h-full object-cover" 
-                      />
+                      {item.image && (
+                        <Image 
+                          src={item.image} 
+                          alt={item.title} 
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          unoptimized={!isOptimizableImage(item.image)}
+                          className="object-cover" 
+                        />
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       
                       {/* Shield for the 3rd item */}
@@ -140,9 +147,9 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
                                 strokeWidth="3"
                               />
                             </svg>
-                            <div className="absolute flex flex-col items-center">
-                              <span className="text-4xl font-bold text-white font-display leading-none mb-0.5">10</span>
-                              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-red-200">Years</span>
+                            <div className="absolute flex flex-col items-center text-center px-1">
+                              <ShieldCheck className="w-8 h-8 text-white mb-0.5" />
+                              <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-red-200">Assured Quality</span>
                             </div>
                           </div>
                         </div>

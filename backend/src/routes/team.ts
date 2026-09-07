@@ -1,10 +1,11 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
+import { authGuard } from "../middleware/authGuard";
 import type { TeamMember, ApiResponse } from "../lib/types";
 
 const router = Router();
 
-// GET /api/team
+// GET /api/team — Public
 router.get("/", async (req: Request, res: Response) => {
     try {
         const team = await findAll<TeamMember>("team");
@@ -18,8 +19,8 @@ router.get("/", async (req: Request, res: Response) => {
     }
 });
 
-// POST /api/team
-router.post("/", async (req: Request, res: Response) => {
+// POST /api/team — Protected
+router.post("/", authGuard, async (req: Request, res: Response) => {
     try {
         const { name, role, img, bio, isFounder, instagram, linkedin, facebook, order, active } = req.body;
 
@@ -46,13 +47,14 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-// PATCH /api/team/:id
-router.patch("/:id", async (req: Request, res: Response) => {
+// PATCH /api/team/:id & /api/team — Protected
+const handlePatch = async (req: Request, res: Response) => {
     try {
-        const id = req.params.id as string;
+        const id = (req.params.id || req.body.id) as string;
         if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
 
-        const updates = req.body;
+        const updates = { ...req.body };
+        delete updates.id;
 
         const updated = await updateOne<TeamMember>("team", id, updates);
         if (!updated) return res.status(404).json({ success: false, error: "Team member not found" } as ApiResponse);
@@ -61,12 +63,15 @@ router.patch("/:id", async (req: Request, res: Response) => {
     } catch {
         return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
     }
-});
+};
 
-// DELETE /api/team/:id
-router.delete("/:id", async (req: Request, res: Response) => {
+router.patch("/:id", authGuard, handlePatch);
+router.patch("/", authGuard, handlePatch);
+
+// DELETE /api/team/:id & /api/team — Protected
+const handleDelete = async (req: Request, res: Response) => {
     try {
-        const id = req.params.id as string;
+        const id = (req.params.id || req.body.id) as string;
         if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
 
         const deleted = await deleteOne("team", id);
@@ -76,6 +81,9 @@ router.delete("/:id", async (req: Request, res: Response) => {
     } catch {
         return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
     }
-});
+};
+
+router.delete("/:id", authGuard, handleDelete);
+router.delete("/", authGuard, handleDelete);
 
 export default router;
