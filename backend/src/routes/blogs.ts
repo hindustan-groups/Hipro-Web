@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
+import { getSessionUser } from "../lib/auth";
 import type { BlogPost, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -8,6 +9,20 @@ const router = Router();
 // GET /api/blogs
 router.get("/", async (req: Request, res: Response) => {
   try {
+    const includeAll = req.query.all === "true";
+
+    // When all=true is requested, require valid admin authentication
+    if (includeAll) {
+      const user = await getSessionUser(req);
+      if (!user) {
+        return res.status(401).json({ success: false, error: "Unauthorized" } as ApiResponse);
+      }
+      const blogs = await findAll<BlogPost>("blogs");
+      const sorted = blogs.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      return res.json({ success: true, data: sorted } as ApiResponse<BlogPost[]>);
+    }
+
+    // Public request: return only published/active blogs
     const blogs = await findAll<BlogPost>("blogs");
     const active = blogs
       .filter((b) => b.active !== false)

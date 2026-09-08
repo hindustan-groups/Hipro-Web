@@ -6,7 +6,8 @@ import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
-import { generateBreadcrumbSchema } from "@/lib/schema";
+import { generateBreadcrumbSchema, generateFaqSchema } from "@/lib/schema";
+import { enrichBlogContent, parseMarkdownBlocks, extractFaqsFromMarkdown, renderFormattedText } from "@/lib/blogUtils";
 
 export const revalidate = 60;
 
@@ -45,23 +46,34 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
     .slice(0, 3);
 
-  // Calculate read time
-  const wordCount = (post.content || "").split(/\s+/).length;
-  const readTime = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per min
+  // Enrich content with clean markdown (no duplicate H1) and verified natural contextual internal links
+  const enrichedContent = enrichBlogContent(decodedSlug, post.content || "");
+  const blocks = parseMarkdownBlocks(enrichedContent);
 
-  // Schema.org structured data for SEO
+  // Calculate read time based on enriched text
+  const wordCount = enrichedContent.split(/\s+/).length;
+  const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+  const canonicalUrl = `https://www.hindustanprojects.in/blogs/${decodedSlug}`;
+
+  // Schema.org BlogPosting structured data
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": canonicalUrl
+    },
     "headline": post.metaTitle || post.title,
     "description": post.metaDescription || post.excerpt,
     "image": post.image,
     "datePublished": post.createdAt,
     "dateModified": post.updatedAt,
-    "author": { "@type": "Person", "name": post.author },
+    "author": { "@type": "Person", "name": post.author || "Admin" },
     "publisher": {
       "@type": "Organization",
       "name": "Hindustan Projects",
+      "url": "https://www.hindustanprojects.in",
       "logo": { "@type": "ImageObject", "url": "https://www.hindustanprojects.in/logo.jpg" }
     }
   };
@@ -69,14 +81,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const breadcrumbJsonLd = generateBreadcrumbSchema([
     { name: "Home", url: "https://www.hindustanprojects.in" },
     { name: "Blogs", url: "https://www.hindustanprojects.in/blogs" },
-    { name: post.title, url: `https://www.hindustanprojects.in/blogs/${decodedSlug}` },
+    { name: post.title, url: canonicalUrl },
   ]);
+
+  // Extract FAQ schema dynamically if FAQ section exists in visible content
+  const faqs = extractFaqsFromMarkdown(enrichedContent);
+  const faqJsonLd = faqs.length > 0 ? generateFaqSchema(faqs) : null;
 
   return (
     <>
       {/* Schema.org JSON-LD */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      {faqJsonLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      )}
 
       <article className="min-h-screen bg-[#FDFDFD]">
         
@@ -145,26 +164,96 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 {post.excerpt}
               </p>
               
-              {/* Body Content Rendering */}
-              <div itemProp="articleBody" className="space-y-8 text-slate-700 font-light leading-[1.8] text-[17px] md:text-[19px]">
-                {(post.content || "").split('\n\n').map((paragraph, index) => {
-                  // Basic markdown rendering simulation
-                  if (paragraph.startsWith('## ')) {
-                    return <h2 key={index} className="text-3xl font-bold text-slate-900 mt-12 mb-6 font-display uppercase tracking-tight">{paragraph.replace('## ', '')}</h2>;
+              {/* Body Content Rendering with Full Semantic Markdown Support */}
+              <div itemProp="articleBody" className="space-y-6 text-slate-700 font-light leading-[1.8] text-[17px] md:text-[18px]">
+                {blocks.map((block, index) => {
+                  switch (block.type) {
+                    case 'h1':
+                      if (block.content && block.content.toLowerCase() === post.title.toLowerCase()) {
+                        return null; // Skip duplicate title
+                      }
+                      return (
+                        <h2 key={index} className="text-3xl md:text-4xl font-bold text-slate-900 mt-12 mb-6 font-display uppercase tracking-tight">
+                          {block.content}
+                        </h2>
+                      );
+                    case 'h2':
+                      return (
+                        <h2 key={index} className="text-2xl md:text-3xl font-bold text-slate-900 mt-12 mb-5 font-display uppercase tracking-tight pt-4 border-t border-slate-100">
+                          {block.content}
+                        </h2>
+                      );
+                    case 'h3':
+                      return (
+                        <h3 key={index} className="text-xl md:text-2xl font-bold mt-8 mb-3 font-display tracking-tight text-construction-navy">
+                          {block.content}
+                        </h3>
+                      );
+                    case 'ul':
+                      return (
+                        <ul key={index} className="space-y-2.5 my-6 pl-2">
+                          {block.items?.map((item, itemIdx) => (
+                            <li key={itemIdx} className="flex items-start gap-3 text-slate-700">
+                              <span className="w-1.5 h-1.5 rounded-full bg-construction-red mt-2.5 shrink-0" />
+                              <span className="leading-relaxed">{renderFormattedText(item)}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      );
+                    case 'ol':
+                      return (
+                        <ol key={index} className="space-y-2.5 my-6 pl-2 list-none">
+                          {block.items?.map((item, itemIdx) => (
+                            <li key={itemIdx} className="flex items-start gap-3 text-slate-700">
+                              <span className="text-xs font-black text-construction-red mt-1 shrink-0 font-display tracking-wider">
+                                0{itemIdx + 1}.
+                              </span>
+                              <span className="leading-relaxed">{renderFormattedText(item)}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      );
+                    case 'blockquote':
+                      return (
+                        <blockquote key={index} className="border-l-4 border-construction-red bg-slate-50 p-6 my-8 italic text-slate-800 font-normal shadow-sm">
+                          {renderFormattedText(block.content || "")}
+                        </blockquote>
+                      );
+                    case 'table':
+                      return (
+                        <div key={index} className="overflow-x-auto my-8 border border-slate-200">
+                          <table className="w-full text-left text-sm">
+                            {block.headers && (
+                              <thead className="bg-slate-50 border-b border-slate-200 text-slate-900 uppercase tracking-wider text-xs font-bold font-display">
+                                <tr>
+                                  {block.headers.map((h, hi) => (
+                                    <th key={hi} className="p-3.5">{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                            )}
+                            {block.rows && (
+                              <tbody className="divide-y divide-slate-100">
+                                {block.rows.map((row, ri) => (
+                                  <tr key={ri} className="hover:bg-slate-50/50 transition-colors">
+                                    {row.map((cell, ci) => (
+                                      <td key={ci} className="p-3.5 text-slate-600">{renderFormattedText(cell)}</td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            )}
+                          </table>
+                        </div>
+                      );
+                    case 'paragraph':
+                    default:
+                      return (
+                        <p key={index} className="leading-relaxed">
+                          {renderFormattedText(block.content || "")}
+                        </p>
+                      );
                   }
-                  if (paragraph.startsWith('### ')) {
-                    return <h3 key={index} className="text-2xl font-bold text-slate-900 mt-10 mb-4 font-display tracking-tight">{paragraph.replace('### ', '')}</h3>;
-                  }
-                  
-                  return (
-                    <p key={index} className="mb-6">
-                      {paragraph.includes('**') ? (
-                        <span dangerouslySetInnerHTML={{ __html: paragraph.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-bold">$1</strong>') }} />
-                      ) : (
-                        paragraph
-                      )}
-                    </p>
-                  );
                 })}
               </div>
 
