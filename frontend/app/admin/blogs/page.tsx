@@ -21,12 +21,28 @@ export default function AdminBlogs() {
   const fetchBlogs = async () => {
     setLoading(true); setError("");
     try {
-      const res = await fetch("/api/blogs");
+      const res = await fetch("/api/blogs?all=true");
       const json = await res.json();
       if (json.success) setBlogs(json.data);
       else setError(json.error || "Failed to load blogs");
     } catch { setError("Network error"); }
     setLoading(false);
+  };
+
+  const insertMarkdown = (prefix: string, suffix: string = "") => {
+    const textarea = document.getElementById("blog-content-input") as HTMLTextAreaElement | null;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = form.content;
+    const selected = text.substring(start, end);
+    const replacement = `${prefix}${selected || "text"}${suffix}`;
+    const newContent = text.substring(0, start) + replacement + text.substring(end);
+    setForm((p) => ({ ...p, content: newContent }));
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected ? selected.length : 4));
+    }, 0);
   };
 
   useEffect(() => { fetchBlogs(); }, []);
@@ -107,9 +123,24 @@ export default function AdminBlogs() {
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
             </div>
             <div className="md:col-span-2">
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Content *</label>
-              <textarea required rows={5} value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <label className="text-slate-500 text-xs uppercase tracking-wider block font-medium">Content (Markdown Supported) *</label>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <button type="button" onClick={() => insertMarkdown("## ", "\n")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">H2</button>
+                  <button type="button" onClick={() => insertMarkdown("### ", "\n")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border border-slate-200">H3</button>
+                  <button type="button" onClick={() => insertMarkdown("**", "**")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200">Bold</button>
+                  <button type="button" onClick={() => insertMarkdown("- ", "\n")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200">• Bullet</button>
+                  <button type="button" onClick={() => insertMarkdown("1. ", "\n")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200">1. Numbered</button>
+                  <button type="button" onClick={() => insertMarkdown("[", "](https://)")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-blue-700 border border-slate-200 underline">Link</button>
+                  <button type="button" onClick={() => insertMarkdown("> ", "\n")} className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 italic border border-slate-200">&quot; Quote</button>
+                </div>
+              </div>
+              <textarea id="blog-content-input" required rows={10} value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
+                placeholder="Write your article in Markdown. Use ## for section headings, - for bullet points, [text](url) for links. Do not repeat the article title with # at the start."
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-mono" />
+              <p className="text-xs text-slate-500 mt-1">
+                Tip: The main article title serves as the primary H1 automatically. Start your article body with an introductory paragraph or ## Section Headings.
+              </p>
             </div>
             <div>
               <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Category *</label>

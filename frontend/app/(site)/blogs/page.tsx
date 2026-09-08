@@ -49,6 +49,18 @@ export default async function BlogsPage() {
       {/* Grid */}
       <section className="py-16 bg-slate-50 px-4">
         <div className="max-w-7xl mx-auto">
+          {/* Category Filter Pills (Minimal & Reusable) */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
+            <span className="bg-construction-navy text-white text-xs font-bold uppercase tracking-wider px-4 py-2 border border-construction-navy shadow-sm">
+              All Articles
+            </span>
+            {Array.from(new Set(blogs.map(b => b.category).filter(Boolean))).map((cat, ci) => (
+              <span key={ci} className="bg-white hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider px-4 py-2 border border-slate-200 transition-colors cursor-default">
+                {cat}
+              </span>
+            ))}
+          </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogs.length === 0 ? (
               <div className="col-span-full py-20 text-center text-slate-500">
@@ -110,6 +122,39 @@ export default async function BlogsPage() {
                 </Link>
               ))
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom Conversion CTA */}
+      <section className="py-20 bg-white border-t border-slate-200/80">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <span className="text-xs font-bold text-construction-red uppercase tracking-widest block mb-3">Project Planning &amp; Estimation</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-construction-navy mb-5 font-display uppercase tracking-tight">
+            Planning a Construction Project in Rajasthan?
+          </h2>
+          <p className="text-slate-600 mb-8 text-base md:text-lg font-light leading-relaxed max-w-2xl mx-auto">
+            From turnkey civil construction and architectural planning to site surveying and cost estimation, our team delivers disciplined engineering excellence across Bhilwara and Rajasthan.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              href="/cost-estimator"
+              className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
+            >
+              Use Cost Estimator
+            </Link>
+            <Link
+              href="/contact?service=General%20Inquiry"
+              className="bg-construction-navy hover:bg-blue-900 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
+            >
+              Consult an Engineer
+            </Link>
+            <a
+              href="tel:7597000601"
+              className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-sm"
+            >
+              Call +91 75970 00601
+            </a>
           </div>
         </div>
       </section>
