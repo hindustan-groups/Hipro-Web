@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { Award, Users, Target, History, ArrowUpRight, CheckCircle, ShieldCheck, Instagram, Linkedin, Facebook } from "lucide-react";
 import DynamicIcon from "@/components/DynamicIcon";
+import CTASection from "@/components/CTASection";
 import { findAll } from "@/lib/db";
 import type { TeamMember, Settings, Stats as StatType } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -144,6 +145,23 @@ export default async function AboutPage() {
                     {item}
                   </div>
                 ))}
+              </div>
+
+              {/* Contextual Links to Services and Projects */}
+              <div className="mt-8 pt-6 border-t border-slate-200/80 flex flex-wrap items-center gap-4">
+                <a
+                  href="/services"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red transition-colors"
+                >
+                  Our Capabilities <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+                <span className="text-slate-300">·</span>
+                <a
+                  href="/projects"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red transition-colors"
+                >
+                  Executed Projects <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
               </div>
             </div>
 
@@ -330,6 +348,8 @@ export default async function AboutPage() {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <CTASection />
     </>
   );
 }

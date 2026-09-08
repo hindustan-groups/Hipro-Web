@@ -6,6 +6,7 @@ import Image from "next/image";
 import { findById } from "@/lib/db";
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { generateBreadcrumbSchema } from "@/lib/schema";
 
 export const revalidate = 60;
 
@@ -56,10 +57,21 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
 
   const allProjectImages = Array.from(new Set([project.image, ...galleryImages].filter(Boolean)));
 
+  const breadcrumbJsonLd = generateBreadcrumbSchema([
+    { name: "Home", url: "https://www.hindustanprojects.in" },
+    { name: "Projects", url: "https://www.hindustanprojects.in/projects" },
+    { name: project.title, url: `https://www.hindustanprojects.in/projects/${params.id}` },
+  ]);
+
   return (
-    <article className="bg-white min-h-screen pb-24">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] w-full pt-20">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <article className="bg-white min-h-screen pb-24">
+        {/* Hero Section */}
+        <section className="relative h-[60vh] min-h-[500px] w-full pt-20">
         <div className="absolute inset-0 z-0">
           {project.image && (
             <Image
@@ -199,6 +211,7 @@ export default async function ProjectDetailPage({ params }: { params: { id: stri
           
         </div>
       </section>
-    </article>
+      </article>
+    </>
   );
 }

@@ -20,7 +20,7 @@ const defaultDistrictsByState: Record<string, string[]> = {
   "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Khammam"],
   "Uttar Pradesh": ["Lucknow", "Noida", "Ghaziabad", "Kanpur", "Varanasi", "Agra", "Prayagraj"],
   "Haryana": ["Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal"],
-  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner"],
+  "Rajasthan": ["Bhilwara", "Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner"],
   "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"],
   "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Mohali"],
   "Madhya Pradesh": ["Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain"],
@@ -39,10 +39,10 @@ export default function PopupForm() {
     try {
       const hasSeenPopup = localStorage.getItem("hasSeenConsultationPopup");
       if (!hasSeenPopup) {
-        // Show popup after 3 seconds
+        // Show popup after 20 seconds
         const timer = setTimeout(() => {
           setIsOpen(true);
-        }, 3000);
+        }, 20000);
         
         return () => clearTimeout(timer);
       }

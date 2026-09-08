@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PopupForm from "@/components/PopupForm";
 import BackButton from "@/components/BackButton";
+import MobileStickyBar from "@/components/MobileStickyBar";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export default async function SiteLayout({
         {children}
       </main>
       <PopupForm />
+      <MobileStickyBar />
       <Footer />
     </>
   );

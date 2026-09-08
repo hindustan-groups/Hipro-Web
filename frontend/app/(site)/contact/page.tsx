@@ -20,8 +20,8 @@ export default async function ContactPage() {
   const settings = settingsData[0] || {};
   
   const address = settings.companyAddress || COMPANY_INFO.address;
-  const phone = settings.companyPhone || `${COMPANY_INFO.formattedPhone}\n+91 75970 00601`;
-  const email = settings.companyEmail || `${COMPANY_INFO.email}\ncontact@hindustanprojects.in`;
+  const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
+  const email = settings.companyEmail || COMPANY_INFO.email;
 
   const servicesData = await findAll<Service>("services");
   const activeServices = servicesData.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
@@ -30,7 +30,7 @@ export default async function ContactPage() {
     { icon: MapPin, label: "Headquarters", value: address, accent: "red" },
     { icon: Phone, label: "Direct Phone", value: phone, accent: "navy" },
     { icon: Mail, label: "Official Email", value: email, accent: "red" },
-    { icon: Clock, label: "Business Hours", value: "Mon–Fri: 9:00 AM – 6:00 PM\nSat: 9:00 AM – 2:00 PM", accent: "navy" },
+    { icon: Clock, label: "Business Hours", value: "Monday–Saturday: 9:00 AM – 7:00 PM\nSunday: Closed", accent: "navy" },
   ];
 
   return (
@@ -90,12 +90,12 @@ export default async function ContactPage() {
       {/* Map */}
       <section className="h-80 bg-gray-100 border-t border-gray-100">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343008!2d-74.00425878428698!3d40.74076684379132!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259bf5c1654f3%3A0xc80f9cfce5383d5d!2sGoogle!5e0!3m2!1sen!2sus!4v1558489041815!5m2!1sen!2sus"
+          src="https://maps.google.com/maps?q=25.3510922,74.6330429&hl=en&z=17&output=embed"
           width="100%" height="100%"
           style={{ border: 0 }}
           allowFullScreen loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="Location Map"
+          title="HiPRO Bhilwara Office Location"
         />
       </section>
     </>

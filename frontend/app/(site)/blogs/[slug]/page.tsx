@@ -6,6 +6,7 @@ import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
+import { generateBreadcrumbSchema } from "@/lib/schema";
 
 export const revalidate = 60;
 
@@ -61,14 +62,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     "publisher": {
       "@type": "Organization",
       "name": "Hindustan Projects",
-      "logo": { "@type": "ImageObject", "url": "https://hindustanprojects.com/logo.png" }
+      "logo": { "@type": "ImageObject", "url": "https://www.hindustanprojects.in/logo.jpg" }
     }
   };
+
+  const breadcrumbJsonLd = generateBreadcrumbSchema([
+    { name: "Home", url: "https://www.hindustanprojects.in" },
+    { name: "Blogs", url: "https://www.hindustanprojects.in/blogs" },
+    { name: post.title, url: `https://www.hindustanprojects.in/blogs/${decodedSlug}` },
+  ]);
 
   return (
     <>
       {/* Schema.org JSON-LD */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <article className="min-h-screen bg-[#FDFDFD]">
         
@@ -212,6 +220,29 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   <button className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300">
                     <Facebook className="w-4 h-4" />
                   </button>
+                </div>
+              </div>
+
+              {/* Planning a Project CTA Widget */}
+              <div className="bg-slate-900 p-8 text-white border border-slate-800">
+                <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-2">Project Planning</h4>
+                <h5 className="text-xl font-bold font-display uppercase tracking-tight mb-3">Planning a build in Rajasthan?</h5>
+                <p className="text-xs text-slate-300 font-light leading-relaxed mb-6">
+                  Estimate realistic residential construction costs in Bhilwara, Jaipur, and Rajasthan with our free calculator.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <Link
+                    href="/cost-estimator"
+                    className="w-full bg-construction-red hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs py-3 text-center transition-colors shadow-md"
+                  >
+                    Calculate Cost
+                  </Link>
+                  <Link
+                    href="/services"
+                    className="w-full bg-white/10 hover:bg-white/20 text-white font-bold uppercase tracking-widest text-xs py-3 text-center transition-colors border border-white/20"
+                  >
+                    Explore Services
+                  </Link>
                 </div>
               </div>
 
