@@ -1,4 +1,4 @@
-/** @type {import('next').NextConfig} */
+   /** @type {import('next').NextConfig} */
 
 let rawBackendUrl = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
 

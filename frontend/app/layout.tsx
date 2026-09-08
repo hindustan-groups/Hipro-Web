@@ -66,6 +66,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  other: {
+    "geo.region": "IN-RJ",
+    "geo.placename": "Bhilwara",
+    "geo.position": "25.3510922;74.6330429",
+    "ICBM": "25.3510922, 74.6330429",
+  },
 };
 
 const jsonLd = {
@@ -91,6 +97,36 @@ const jsonLd = {
     postalCode: "311001",
     addressCountry: "IN",
   },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 25.3510922,
+    longitude: 74.6330429,
+  },
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ],
+      opens: "09:00",
+      closes: "19:00",
+    },
+  ],
+  areaServed: [
+    {
+      "@type": "AdministrativeArea",
+      name: "Bhilwara",
+    },
+    {
+      "@type": "AdministrativeArea",
+      name: "Rajasthan",
+    },
+  ],
   telephone: "+917597000601",
   email: "info@hindustanprojects.in",
   sameAs: [
@@ -99,7 +135,6 @@ const jsonLd = {
     "https://linkedin.com/company/hindustanprojects",
     "https://pin.it/5OlMWwi2w",
   ],
-  priceRange: "₹₹₹",
 };
 
 export default function RootLayout({

@@ -23,20 +23,22 @@ export default function CostEstimatorPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isUnlocked) {
+      setShowModal(true);
+      return;
+    }
     setSubmitted(true);
   };
-
-  // Prevent flashing of the page content before the check completes
-  if (!isUnlocked && !showModal) return <div className="min-h-screen bg-white" />;
 
   return (
     <div className="pt-24 pb-20 bg-white min-h-screen relative">
       <PhoneCaptureModal 
         isOpen={showModal} 
-        onClose={() => router.push("/")} 
+        onClose={() => setShowModal(false)} 
         onSuccess={() => {
            setShowModal(false);
            setIsUnlocked(true);
+           setSubmitted(true);
         }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -163,10 +165,14 @@ export default function CostEstimatorPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">City</label>
-                      <select aria-label="City" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
-                        <option value="pune">Pune</option>
-                        <option value="mumbai">Mumbai</option>
-                        <option value="delhi">Delhi</option>
+                      <select aria-label="City" defaultValue="Bhilwara" className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent">
+                        <option value="Bhilwara">Bhilwara</option>
+                        <option value="Jaipur">Jaipur</option>
+                        <option value="Udaipur">Udaipur</option>
+                        <option value="Kota">Kota</option>
+                        <option value="Jodhpur">Jodhpur</option>
+                        <option value="Ajmer">Ajmer</option>
+                        <option value="Other Rajasthan">Other Rajasthan</option>
                       </select>
                       <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>

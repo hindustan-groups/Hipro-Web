@@ -60,15 +60,15 @@ export default function ProjectsHero({ featuredProjects }: { featuredProjects: P
         <div className="w-full grid lg:grid-cols-12 gap-12 items-center">
           
           <div className="lg:col-span-8 xl:col-span-9 relative">
-            {/* Badge */}
+            {/* Badge / Primary H1 for the Projects Page */}
             <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-5 py-2 mb-8 backdrop-blur-md shadow-lg shadow-black/20">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-construction-red opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-construction-red"></span>
               </span>
-              <span className="text-[13px] text-white font-bold uppercase tracking-[0.2em]">
-                Featured Project Spotlight
-              </span>
+              <h1 className="text-[13px] text-white font-bold uppercase tracking-[0.2em] m-0 p-0 inline">
+                Featured Engineering Projects &amp; Portfolio
+              </h1>
             </div>
 
             {/* Dynamic Content Slider */}
@@ -85,9 +85,9 @@ export default function ProjectsHero({ featuredProjects }: { featuredProjects: P
                   <div className="flex items-center gap-2 text-construction-red font-bold text-sm uppercase tracking-widest mb-4">
                     <MapPin className="w-4 h-4" /> {project.location}
                   </div>
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display uppercase tracking-tight leading-[1.1] drop-shadow-2xl">
+                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display uppercase tracking-tight leading-[1.1] drop-shadow-2xl">
                     {project.title}
-                  </h1>
+                  </h2>
                   
                   <Link 
                     href={`/projects/${project.id}`}

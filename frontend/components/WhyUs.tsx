@@ -8,7 +8,7 @@ const features = [
   { icon: Award,        title: "Award-Winning Quality", desc: "Recognized for structural excellence, safety compliance, and innovation across India." },
 ];
 
-export default function WhyUs() {
+export default function WhyUs({ isH1 = false }: { isH1?: boolean }) {
   return (
     <section id="section-whyus" className="py-24 bg-slate-50 relative border-y border-slate-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,10 +59,17 @@ export default function WhyUs() {
               <span className="text-[11px] font-bold text-construction-navy uppercase tracking-wider">Why Hindustan Projects</span>
             </div>
             
-            <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight mb-6 leading-[1.1]">
-              Built On Trust &amp; <br className="hidden md:block" />
-              <span className="font-serif italic font-normal text-construction-red normal-case">Engineering Excellence</span>
-            </h2>
+            {isH1 ? (
+              <h1 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight mb-6 leading-[1.1]">
+                Why Choose <br className="hidden md:block" />
+                <span className="font-serif italic font-normal text-construction-red normal-case">Hindustan Projects?</span>
+              </h1>
+            ) : (
+              <h2 className="text-4xl md:text-5xl font-bold text-black font-display uppercase tracking-tight mb-6 leading-[1.1]">
+                Built On Trust &amp; <br className="hidden md:block" />
+                <span className="font-serif italic font-normal text-construction-red normal-case">Engineering Excellence</span>
+              </h2>
+            )}
             
             <p className="text-slate-600 text-base md:text-lg font-light leading-relaxed mb-10 border-l-2 border-slate-300 pl-4">
               We don&apos;t just construct buildings; we engineer landmark residential, commercial, and industrial infrastructure with uncompromising safety and precision.

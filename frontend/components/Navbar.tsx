@@ -23,6 +23,7 @@ const defaultNavLinks = [
     megaMenuCategories: [],
   },
   { href: "/projects", label: "Projects", isMegaMenu: false },
+  { href: "/cost-estimator", label: "Cost Estimator", isMegaMenu: false },
   { href: "/blogs", label: "Blog", isMegaMenu: false },
   { href: "/careers", label: "Careers", isMegaMenu: false },
 ];
@@ -68,6 +69,17 @@ export default function Navbar({
 
   // Remove "Contact" from nav links — the "Get a Quote" button already links to /contact
   navLinks = navLinks.filter((l: any) => !(l && l.href === "/contact"));
+
+  // Ensure Cost Estimator link is always present
+  if (!navLinks.some((l: any) => l && l.href === "/cost-estimator")) {
+    const insertIdx = navLinks.findIndex((l: any) => l && (l.href === "/blogs" || l.href === "/careers"));
+    const estimatorLink = { href: "/cost-estimator", label: "Cost Estimator", isMegaMenu: false };
+    if (insertIdx !== -1) {
+      navLinks.splice(insertIdx, 0, estimatorLink);
+    } else {
+      navLinks.push(estimatorLink);
+    }
+  }
 
   // Ensure Blog link is always present
   if (!navLinks.some((l: any) => l && l.href === "/blogs")) {
