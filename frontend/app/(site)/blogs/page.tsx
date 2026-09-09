@@ -28,8 +28,18 @@ export default async function BlogsPage({
   searchParams?: { category?: string };
 }) {
   const allBlogs = await findAll<BlogPost>("blogs");
+  const now = new Date();
   const blogs = allBlogs
-    .filter(b => b.active !== false)
+    .filter(b => {
+      if (!b || b.active === false) return false;
+      const status = (b.status || "published").toLowerCase();
+      if (status !== "published") return false;
+      if (b.publishDate) {
+        const pd = new Date(b.publishDate);
+        if (!isNaN(pd.getTime()) && pd > now) return false;
+      }
+      return true;
+    })
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
   const selectedCategory = searchParams?.category;
@@ -119,7 +129,7 @@ export default async function BlogsPage({
                     {post.image && (
                       <Image
                         src={post.image}
-                        alt={post.title}
+                        alt={post.imageAlt || post.title}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         unoptimized={!isOptimizableImage(post.image)}

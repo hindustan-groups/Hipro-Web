@@ -34,8 +34,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       findAll<Service>("services"),
     ]);
 
+    const now = new Date();
     const blogRoutes = blogs
-      .filter((b): b is BlogPost & { slug: string } => b.active !== false && typeof b.slug === "string" && b.slug.trim().length > 0)
+      .filter((b): b is BlogPost & { slug: string } => {
+        if (!b || typeof b.slug !== "string" || !b.slug.trim()) return false;
+        if (b.active === false) return false;
+        const status = (b.status || "published").toLowerCase();
+        if (status !== "published") return false;
+        if (b.publishDate) {
+          const pd = new Date(b.publishDate);
+          if (!isNaN(pd.getTime()) && pd > now) return false;
+        }
+        return true;
+      })
       .map((post) => {
         const cleanSlug = post.slug.trim().replace(/^\/+/, "");
         const rawDate = post.updatedAt || post.createdAt;

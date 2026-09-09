@@ -1,9 +1,7 @@
 import React from 'react';
+import type { BlogPost, FaqItem, InternalLink, BlogCtaConfig } from './types';
 
-export interface FaqItem {
-  question: string;
-  answer: string;
-}
+export type { FaqItem, InternalLink, BlogCtaConfig };
 
 export interface MarkdownBlock {
   type: 'h1' | 'h2' | 'h3' | 'paragraph' | 'ul' | 'ol' | 'blockquote' | 'table' | 'image';
@@ -11,6 +9,97 @@ export interface MarkdownBlock {
   items?: string[];
   headers?: string[];
   rows?: string[][];
+}
+
+/**
+ * Safely parses a JSON string with fallback, ensuring malformed JSON never crashes public pages.
+ */
+export function safeJsonParse<T>(raw: string | undefined | null, fallback: T): T {
+  if (!raw || typeof raw !== 'string') return fallback;
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+  try {
+    return JSON.parse(trimmed) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Resolves FAQ items for a blog post:
+ * 1. Prioritizes structured `post.faqs` JSON array if valid and non-empty.
+ * 2. Falls back to markdown regex extraction `extractFaqsFromMarkdown` if structured FAQs are missing.
+ * Never throws on malformed JSON.
+ */
+export function getFaqs(post: Partial<BlogPost> | null | undefined): FaqItem[] {
+  if (!post) return [];
+
+  // 1. Structured JSON FAQs
+  if (post.faqs) {
+    const parsed = safeJsonParse<any[]>(post.faqs, []);
+    if (Array.isArray(parsed)) {
+      const valid = parsed
+        .filter(item => item && typeof item === 'object' && typeof item.question === 'string' && typeof item.answer === 'string')
+        .map(item => ({
+          question: item.question.trim(),
+          answer: item.answer.trim(),
+        }))
+        .filter(item => item.question.length > 0 && item.answer.length > 0);
+      if (valid.length > 0) {
+        return valid;
+      }
+    }
+  }
+
+  // 2. Fallback to markdown extraction
+  return extractFaqsFromMarkdown(post.content || '');
+}
+
+/**
+ * Safely parses structured internal links for a post.
+ */
+export function getInternalLinks(post: Partial<BlogPost> | null | undefined): InternalLink[] {
+  if (!post || !post.internalLinks) return [];
+  const parsed = safeJsonParse<any[]>(post.internalLinks, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .filter(item => item && typeof item === 'object' && typeof item.label === 'string' && typeof item.url === 'string')
+    .map(item => ({
+      label: item.label.trim(),
+      url: item.url.trim(),
+    }))
+    .filter(item => item.label.length > 0 && item.url.length > 0);
+}
+
+/**
+ * Safely parses custom CTA config for a post.
+ */
+export function getCustomCta(post: Partial<BlogPost> | null | undefined): BlogCtaConfig | null {
+  if (!post || !post.customCta) return null;
+  const parsed = safeJsonParse<any>(post.customCta, null);
+  if (!parsed || typeof parsed !== 'object') return null;
+  if (!parsed.title || typeof parsed.title !== 'string') return null;
+  if (!parsed.buttonText || typeof parsed.buttonText !== 'string') return null;
+  if (!parsed.buttonUrl || typeof parsed.buttonUrl !== 'string') return null;
+
+  return {
+    title: parsed.title.trim(),
+    description: typeof parsed.description === 'string' ? parsed.description.trim() : undefined,
+    buttonText: parsed.buttonText.trim(),
+    buttonUrl: parsed.buttonUrl.trim(),
+  };
+}
+
+/**
+ * Safely parses curated related post IDs/slugs.
+ */
+export function getRelatedPostIds(post: Partial<BlogPost> | null | undefined): string[] {
+  if (!post || !post.relatedPostIds) return [];
+  const parsed = safeJsonParse<any[]>(post.relatedPostIds, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .filter(id => typeof id === 'string' && id.trim().length > 0)
+    .map(id => String(id).trim());
 }
 
 /**

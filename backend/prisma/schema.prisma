@@ -178,21 +178,43 @@ model JobPosting {
 }
 
 model BlogPost {
-  id              String   @id @default(cuid())
-  slug            String   @unique
-  title           String
-  excerpt         String
-  content         String
-  image           String
-  date            String
-  author          String
-  category        String
-  active          Boolean  @default(true)
-  metaTitle       String?
-  metaDescription String?
-  keywords        String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  title             String
+  excerpt           String
+  content           String
+  image             String
+  date              String
+  author            String
+  category          String
+  active            Boolean   @default(true)
+  metaTitle         String?
+  metaDescription   String?
+  keywords          String?
+
+  // Media
+  imageAlt          String?
+  imageCaption      String?
+
+  // Publishing
+  status            String    @default("published") // "draft", "published", "unpublished"
+  publishDate       DateTime?
+
+  // SEO & GEO metadata
+  primaryKeyword    String?
+  secondaryKeywords String?
+  geoKeywords       String?
+  targetLocation    String?
+  searchIntent      String?   // "informational", "commercial", "transactional", "navigational"
+
+  // Structured Content & Linking (JSON stringified)
+  faqs              String?   // JSON array: [{ question, answer }]
+  internalLinks     String?   // JSON array: [{ label, url }]
+  relatedPostIds    String?   // JSON array of slugs or IDs
+  customCta         String?   // JSON object: { title, description, buttonText, buttonUrl }
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model AdminUser {
