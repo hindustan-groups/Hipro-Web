@@ -175,6 +175,26 @@ export interface JobPosting {
   updatedAt?: string;
 }
 
+export type BlogStatus = "draft" | "published" | "unpublished";
+export type SearchIntent = "informational" | "commercial" | "transactional" | "navigational";
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface InternalLink {
+  label: string;
+  url: string;
+}
+
+export interface BlogCtaConfig {
+  title: string;
+  description?: string;
+  buttonText: string;
+  buttonUrl: string;
+}
+
 export interface BlogPost {
   id?: string;
   slug?: string;
@@ -189,8 +209,30 @@ export interface BlogPost {
   metaTitle?: string;
   metaDescription?: string;
   keywords?: string;
-  createdAt?: string;
-  updatedAt?: string;
+
+  // Media
+  imageAlt?: string;
+  imageCaption?: string;
+
+  // Publishing
+  status?: BlogStatus;
+  publishDate?: string | Date | null;
+
+  // SEO & GEO metadata
+  primaryKeyword?: string;
+  secondaryKeywords?: string;
+  geoKeywords?: string;
+  targetLocation?: string;
+  searchIntent?: SearchIntent;
+
+  // Structured Content & Linking (JSON strings)
+  faqs?: string;
+  internalLinks?: string;
+  relatedPostIds?: string;
+  customCta?: string;
+
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface AdminUser {

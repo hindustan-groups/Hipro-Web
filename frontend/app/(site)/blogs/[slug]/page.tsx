@@ -1,13 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock } from "lucide-react";
+import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle } from "lucide-react";
 import { findAll, findBySlug } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
 import { generateBreadcrumbSchema, generateFaqSchema } from "@/lib/schema";
-import { enrichBlogContent, parseMarkdownBlocks, extractFaqsFromMarkdown, renderFormattedText } from "@/lib/blogUtils";
+import {
+  enrichBlogContent,
+  parseMarkdownBlocks,
+  renderFormattedText,
+  getFaqs,
+  getCustomCta,
+  getRelatedPostIds,
+} from "@/lib/blogUtils";
 
 export const revalidate = 60;
 
@@ -24,10 +31,23 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const metaTitle = post.metaTitle || post.title;
   const metaDesc = post.metaDescription || post.excerpt;
 
+  // Aggregate keywords
+  const keywordList: string[] = [];
+  if (post.primaryKeyword) keywordList.push(post.primaryKeyword.trim());
+  if (post.secondaryKeywords) {
+    keywordList.push(...post.secondaryKeywords.split(',').map(k => k.trim()).filter(Boolean));
+  }
+  if (post.geoKeywords) {
+    keywordList.push(...post.geoKeywords.split(',').map(k => k.trim()).filter(Boolean));
+  }
+  if (post.keywords) {
+    keywordList.push(...post.keywords.split(',').map(k => k.trim()).filter(Boolean));
+  }
+
   return {
     title: metaTitle,
     description: metaDesc,
-    keywords: post.keywords ? post.keywords.split(',').map(k => k.trim()) : undefined,
+    keywords: keywordList.length > 0 ? Array.from(new Set(keywordList)) : undefined,
     alternates: {
       canonical: `/blogs/${decodedSlug}`,
     },
@@ -36,7 +56,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: metaDesc,
       images: [post.image],
       type: "article",
-      publishedTime: post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
+      publishedTime: post.publishDate ? new Date(post.publishDate).toISOString() : post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
       modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
       authors: [post.author || "Hindustan Projects"],
       section: post.category || "Construction & Engineering",
@@ -57,14 +77,36 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   if (!post) notFound();
 
   const allBlogs = await findAll<BlogPost>("blogs");
-  const relatedBlogs = allBlogs
-    .filter(p => p.id !== post.id && p.slug !== post.slug && p.active !== false)
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-    .slice(0, 3);
+
+  // Curated related articles with fallback to latest published
+  const curatedIds = getRelatedPostIds(post);
+  let relatedBlogs: BlogPost[] = [];
+  if (curatedIds.length > 0) {
+    relatedBlogs = allBlogs.filter(p =>
+      (curatedIds.includes(p.id || "") || curatedIds.includes(p.slug || "")) &&
+      p.id !== post.id &&
+      p.slug !== post.slug &&
+      p.active !== false &&
+      (p.status || "published").toLowerCase() === "published"
+    );
+  }
+  if (relatedBlogs.length === 0) {
+    relatedBlogs = allBlogs
+      .filter(p => p.id !== post.id && p.slug !== post.slug && p.active !== false && (p.status || "published").toLowerCase() === "published")
+      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+      .slice(0, 3);
+  }
 
   // Enrich content with clean markdown (no duplicate H1) and verified natural contextual internal links
   const enrichedContent = enrichBlogContent(decodedSlug, post.content || "");
   const blocks = parseMarkdownBlocks(enrichedContent);
+
+  // Structured FAQs (prioritizes structured JSON, falls back to markdown extraction)
+  const faqs = getFaqs(post);
+  const faqJsonLd = faqs.length > 0 ? generateFaqSchema(faqs) : null;
+
+  // Custom CTA config
+  const customCta = getCustomCta(post);
 
   // Calculate read time based on enriched text
   const wordCount = enrichedContent.split(/\s+/).length;
@@ -73,8 +115,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const canonicalUrl = `https://www.hindustanprojects.in/blogs/${decodedSlug}`;
 
   // Regional relevance check for factual geo tags
-  const isLocalBhilwara = /bhilwara/i.test(`${post.title} ${post.excerpt} ${post.keywords || ""}`);
-  const isLocalRajasthan = /rajasthan/i.test(`${post.title} ${post.excerpt} ${post.keywords || ""}`);
+  const isLocalBhilwara = /bhilwara/i.test(`${post.title} ${post.excerpt} ${post.targetLocation || ""} ${post.geoKeywords || ""} ${post.keywords || ""}`);
+  const isLocalRajasthan = /rajasthan/i.test(`${post.title} ${post.excerpt} ${post.targetLocation || ""} ${post.geoKeywords || ""} ${post.keywords || ""}`);
 
   // Schema.org BlogPosting structured data
   const jsonLd: Record<string, any> = {
@@ -87,8 +129,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     "headline": post.metaTitle || post.title,
     "description": post.metaDescription || post.excerpt,
     "image": post.image,
-    "datePublished": post.createdAt,
-    "dateModified": post.updatedAt,
+    "datePublished": post.publishDate ? new Date(post.publishDate).toISOString() : post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
+    "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
     "author": { "@type": "Person", "name": post.author || "Hindustan Projects" },
     "publisher": {
       "@type": "Organization",
@@ -98,10 +140,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     }
   };
 
-  if (isLocalBhilwara || isLocalRajasthan) {
+  if (post.targetLocation || isLocalBhilwara || isLocalRajasthan) {
+    const locName = post.targetLocation || (isLocalBhilwara ? "Bhilwara, Rajasthan, India" : "Rajasthan, India");
     jsonLd.contentLocation = {
       "@type": "Place",
-      "name": isLocalBhilwara ? "Bhilwara, Rajasthan, India" : "Rajasthan, India",
+      "name": locName,
       "address": {
         "@type": "PostalAddress",
         "addressLocality": isLocalBhilwara ? "Bhilwara" : "Jaipur",
@@ -116,10 +159,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     { name: "Blogs", url: "https://www.hindustanprojects.in/blogs" },
     { name: post.title, url: canonicalUrl },
   ]);
-
-  // Extract FAQ schema dynamically if FAQ section exists in visible content
-  const faqs = extractFaqsFromMarkdown(enrichedContent);
-  const faqJsonLd = faqs.length > 0 ? generateFaqSchema(faqs) : null;
 
   return (
     <>
@@ -139,7 +178,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             {post.image && (
               <Image 
                 src={post.image} 
-                alt={post.title} 
+                alt={post.imageAlt || post.title}
                 fill
                 priority
                 sizes="100vw"
@@ -162,6 +201,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <span className="inline-block bg-construction-red text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] px-4 py-1.5 shadow-xl">
                 {post.category}
               </span>
+              {post.targetLocation && (
+                <span className="inline-block bg-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 backdrop-blur-sm">
+                  {post.targetLocation}
+                </span>
+              )}
             </div>
 
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 font-display uppercase tracking-tighter leading-[1.1] max-w-4xl drop-shadow-lg">
@@ -175,13 +219,21 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               </div>
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-4 h-4 text-construction-red" />
-                <time itemProp="datePublished" dateTime={post.createdAt}>{post.date}</time>
+                <time itemProp="datePublished" dateTime={post.publishDate ? new Date(post.publishDate).toISOString() : post.createdAt ? new Date(post.createdAt).toISOString() : undefined}>
+                  {post.date}
+                </time>
               </div>
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-construction-red" />
                 <span>{readTime} min read</span>
               </div>
             </div>
+
+            {post.imageCaption && (
+              <p className="text-xs text-white/70 italic mt-4 drop-shadow-md">
+                Cover: {post.imageCaption}
+              </p>
+            )}
           </div>
         </header>
 
@@ -308,11 +360,43 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               </div>
 
             </div>
+
+            {/* Structured FAQ Section */}
+            {faqs.length > 0 && (
+              <div className="mt-14 pt-8 border-t border-slate-200">
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="p-1.5 bg-construction-red/10 text-construction-red">
+                    <HelpCircle className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 font-display uppercase tracking-tight">
+                    Frequently Asked Questions
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {faqs.map((faq, fIdx) => (
+                    <details
+                      key={fIdx}
+                      className="group bg-slate-50 border border-slate-200 p-4 md:p-5 rounded-none open:bg-white open:shadow-sm transition-all"
+                    >
+                      <summary className="font-bold text-slate-900 cursor-pointer list-none flex items-center justify-between text-sm md:text-base select-none">
+                        <span>{faq.question}</span>
+                        <span className="text-construction-red font-bold text-lg transition-transform group-open:rotate-45 ml-4 shrink-0">
+                          +
+                        </span>
+                      </summary>
+                      <p className="mt-3 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
+                        {faq.answer}
+                      </p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            )}
             
             {/* Tags / Keywords block for UI SEO density */}
             {post.keywords && (
-              <div className="mt-16 pt-8 border-t border-slate-200">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Tags</h4>
+              <div className="mt-14 pt-8 border-t border-slate-200">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Topic Tags</h4>
                 <div className="flex flex-wrap gap-2">
                   {post.keywords.split(',').map((k, i) => (
                     <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-medium uppercase tracking-wider rounded-none hover:bg-slate-200 transition-colors cursor-default">
@@ -362,26 +446,32 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 </div>
               </div>
 
-              {/* Planning a Project CTA Widget */}
+              {/* Planning a Project CTA Widget (supports custom per-article CTA) */}
               <div className="bg-slate-900 p-8 text-white border border-slate-800">
-                <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-2">Project Planning</h4>
-                <h5 className="text-xl font-bold font-display uppercase tracking-tight mb-3">Planning a build in Rajasthan?</h5>
+                <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-2">
+                  {customCta ? "Featured Action" : "Project Planning"}
+                </h4>
+                <h5 className="text-xl font-bold font-display uppercase tracking-tight mb-3">
+                  {customCta?.title || "Planning a build in Rajasthan?"}
+                </h5>
                 <p className="text-xs text-slate-300 font-light leading-relaxed mb-6">
-                  Estimate realistic residential construction costs in Bhilwara, Jaipur, and Rajasthan with our free calculator.
+                  {customCta?.description || "Estimate realistic residential construction costs in Bhilwara, Jaipur, and Rajasthan with our free calculator."}
                 </p>
                 <div className="flex flex-col gap-3">
                   <Link
-                    href="/cost-estimator"
+                    href={customCta?.buttonUrl || "/cost-estimator"}
                     className="w-full bg-construction-red hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs py-3 text-center transition-colors shadow-md"
                   >
-                    Calculate Cost
+                    {customCta?.buttonText || "Calculate Cost"}
                   </Link>
-                  <Link
-                    href="/services"
-                    className="w-full bg-white/10 hover:bg-white/20 text-white font-bold uppercase tracking-widest text-xs py-3 text-center transition-colors border border-white/20"
-                  >
-                    Explore Services
-                  </Link>
+                  {!customCta && (
+                    <Link
+                      href="/services"
+                      className="w-full bg-white/10 hover:bg-white/20 text-white font-bold uppercase tracking-widest text-xs py-3 text-center transition-colors border border-white/20"
+                    >
+                      Explore Services
+                    </Link>
+                  )}
                 </div>
               </div>
 
