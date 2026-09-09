@@ -35,13 +35,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     const blogRoutes = blogs
-      .filter(b => b.active !== false && b.slug)
-      .map((post) => ({
-        url: `${baseUrl}/blogs/${post.slug}`,
-        lastModified: new Date(post.updatedAt || post.createdAt || new Date()),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      }));
+      .filter((b): b is BlogPost & { slug: string } => b.active !== false && typeof b.slug === "string" && b.slug.trim().length > 0)
+      .map((post) => {
+        const cleanSlug = post.slug.trim().replace(/^\/+/, "");
+        const rawDate = post.updatedAt || post.createdAt;
+        const parsedDate = rawDate ? new Date(rawDate) : new Date();
+        const validDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+        return {
+          url: `${baseUrl}/blogs/${cleanSlug}`,
+          lastModified: validDate,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        };
+      });
 
     const projectRoutes = projects
       .filter(p => p.status !== "archived")
