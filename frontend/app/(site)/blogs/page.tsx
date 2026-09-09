@@ -22,11 +22,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function BlogsPage() {
+export default async function BlogsPage({
+  searchParams,
+}: {
+  searchParams?: { category?: string };
+}) {
   const allBlogs = await findAll<BlogPost>("blogs");
   const blogs = allBlogs
     .filter(b => b.active !== false)
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+  const selectedCategory = searchParams?.category;
+  const categories = Array.from(new Set(blogs.map(b => b.category).filter(Boolean)));
+
+  const displayBlogs = selectedCategory
+    ? blogs.filter(b => b.category && b.category.toLowerCase() === selectedCategory.toLowerCase())
+    : blogs;
 
   return (
     <>
@@ -49,25 +60,55 @@ export default async function BlogsPage() {
       {/* Grid */}
       <section className="py-16 bg-slate-50 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Category Filter Pills (Minimal & Reusable) */}
+          {/* Category Filter Pills (Functional Query Links) */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-            <span className="bg-construction-navy text-white text-xs font-bold uppercase tracking-wider px-4 py-2 border border-construction-navy shadow-sm">
+            <Link
+              href="/blogs"
+              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 border shadow-sm transition-colors ${
+                !selectedCategory
+                  ? "bg-construction-navy text-white border-construction-navy"
+                  : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
+              }`}
+            >
               All Articles
-            </span>
-            {Array.from(new Set(blogs.map(b => b.category).filter(Boolean))).map((cat, ci) => (
-              <span key={ci} className="bg-white hover:bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider px-4 py-2 border border-slate-200 transition-colors cursor-default">
-                {cat}
-              </span>
-            ))}
+            </Link>
+            {categories.map((cat, ci) => {
+              const isSelected = selectedCategory?.toLowerCase() === cat.toLowerCase();
+              return (
+                <Link
+                  key={ci}
+                  href={`/blogs?category=${encodeURIComponent(cat)}`}
+                  className={`text-xs font-bold uppercase tracking-wider px-4 py-2 border transition-colors ${
+                    isSelected
+                      ? "bg-construction-navy text-white border-construction-navy shadow-sm"
+                      : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
+                  }`}
+                >
+                  {cat}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogs.length === 0 ? (
+            {displayBlogs.length === 0 ? (
               <div className="col-span-full py-20 text-center text-slate-500">
-                No blog posts available at the moment. Please check back later.
+                {selectedCategory ? (
+                  <div>
+                    <p className="mb-4">No blog posts found in category &quot;{selectedCategory}&quot;.</p>
+                    <Link
+                      href="/blogs"
+                      className="inline-block bg-construction-navy text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5"
+                    >
+                      View All Articles
+                    </Link>
+                  </div>
+                ) : (
+                  "No blog posts available at the moment. Please check back later."
+                )}
               </div>
             ) : (
-              blogs.map((post) => (
+              displayBlogs.map((post) => (
                 <Link
                   key={post.id}
                   href={`/blogs/${post.slug}`}
@@ -107,7 +148,7 @@ export default async function BlogsPage() {
                           {post.author}
                         </div>
                       </div>
-                      <h3 className="text-xl font-bold text-black mb-3 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors">
+                      <h3 className="text-xl font-bold text-black mb-3 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors line-clamp-2">
                         {post.title}
                       </h3>
                       <p className="text-sm text-slate-500 font-medium mb-4 line-clamp-3">{post.excerpt}</p>

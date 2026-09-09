@@ -10,10 +10,15 @@ export default function BackButton() {
   // Don't show on home page
   if (pathname === "/") return null;
 
+  // On blog detail pages, mobile users have inline header back navigation; hide floating button on mobile
+  const isBlogDetail = pathname.startsWith("/blogs/") && pathname !== "/blogs";
+
   return (
     <button
       onClick={() => router.back()}
-      className="fixed top-20 left-4 sm:left-6 lg:left-8 z-40 flex items-center gap-2 px-3 py-2 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-md hover:shadow-lg text-slate-700 hover:text-construction-red transition-all duration-200 group"
+      className={`top-20 left-4 sm:left-6 lg:left-8 z-40 items-center gap-2 px-3 py-2 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-md hover:shadow-lg text-slate-700 hover:text-construction-red transition-all duration-200 group ${
+        isBlogDetail ? "hidden sm:flex fixed" : "fixed flex"
+      }`}
       aria-label="Go back"
     >
       <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
