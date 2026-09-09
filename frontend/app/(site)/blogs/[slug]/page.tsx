@@ -246,6 +246,22 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                           </table>
                         </div>
                       );
+                    case 'image':
+                      return (
+                        <figure key={index} className="my-8">
+                          <img
+                            src={block.content}
+                            alt={block.items?.[0] || post.title}
+                            loading="lazy"
+                            className="w-full max-h-[550px] object-cover rounded-none border border-slate-200 shadow-md"
+                          />
+                          {block.items?.[0] && (
+                            <figcaption className="text-xs text-slate-500 mt-2.5 text-center italic">
+                              {block.items[0]}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
                     case 'paragraph':
                     default:
                       return (
