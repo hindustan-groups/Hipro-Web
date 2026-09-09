@@ -147,7 +147,7 @@ export default function AdminBlogs() {
     };
     setForm(editData);
     setOriginalForm(editData);
-    setEditingId(b.id);
+    setEditingId(b.id || null);
     setPreviewMode("write");
     setIsFullscreen(false);
     setError("");
