@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock } from "lucide-react";
-import { findAll } from "@/lib/db";
+import { findAll, findBySlug } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
@@ -11,36 +11,52 @@ import { enrichBlogContent, parseMarkdownBlocks, extractFaqsFromMarkdown, render
 
 export const revalidate = 60;
 
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const decodedSlug = decodeURIComponent(params.slug);
-  const allBlogs = await findAll<BlogPost>("blogs");
-  const post = allBlogs.find((p) => p.slug === decodedSlug && p.active !== false);
+  const post = await findBySlug<BlogPost>("blogs", decodedSlug);
 
   if (!post) return { title: "Blog Not Found" };
 
+  const metaTitle = post.metaTitle || post.title;
+  const metaDesc = post.metaDescription || post.excerpt;
+
   return {
-    title: post.metaTitle || post.title,
-    description: post.metaDescription || post.excerpt,
+    title: metaTitle,
+    description: metaDesc,
     keywords: post.keywords ? post.keywords.split(',').map(k => k.trim()) : undefined,
     alternates: {
       canonical: `/blogs/${decodedSlug}`,
     },
     openGraph: {
-      title: post.metaTitle || post.title,
-      description: post.metaDescription || post.excerpt,
+      title: metaTitle,
+      description: metaDesc,
       images: [post.image],
       type: "article",
+      publishedTime: post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
+      modifiedTime: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+      authors: [post.author || "Hindustan Projects"],
+      section: post.category || "Construction & Engineering",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metaTitle,
+      description: metaDesc,
+      images: [post.image],
     },
   };
 }
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const decodedSlug = decodeURIComponent(params.slug);
-  const allBlogs = await findAll<BlogPost>("blogs");
-  const post = allBlogs.find(p => (p.slug === decodedSlug || p.id === decodedSlug) && p.active !== false);
+  const post = await findBySlug<BlogPost>("blogs", decodedSlug);
 
   if (!post) notFound();
 
+  const allBlogs = await findAll<BlogPost>("blogs");
   const relatedBlogs = allBlogs
     .filter(p => p.id !== post.id && p.slug !== post.slug && p.active !== false)
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
@@ -56,8 +72,12 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   const canonicalUrl = `https://www.hindustanprojects.in/blogs/${decodedSlug}`;
 
+  // Regional relevance check for factual geo tags
+  const isLocalBhilwara = /bhilwara/i.test(`${post.title} ${post.excerpt} ${post.keywords || ""}`);
+  const isLocalRajasthan = /rajasthan/i.test(`${post.title} ${post.excerpt} ${post.keywords || ""}`);
+
   // Schema.org BlogPosting structured data
-  const jsonLd = {
+  const jsonLd: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "mainEntityOfPage": {
@@ -69,7 +89,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     "image": post.image,
     "datePublished": post.createdAt,
     "dateModified": post.updatedAt,
-    "author": { "@type": "Person", "name": post.author || "Admin" },
+    "author": { "@type": "Person", "name": post.author || "Hindustan Projects" },
     "publisher": {
       "@type": "Organization",
       "name": "Hindustan Projects",
@@ -77,6 +97,19 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       "logo": { "@type": "ImageObject", "url": "https://www.hindustanprojects.in/logo.jpg" }
     }
   };
+
+  if (isLocalBhilwara || isLocalRajasthan) {
+    jsonLd.contentLocation = {
+      "@type": "Place",
+      "name": isLocalBhilwara ? "Bhilwara, Rajasthan, India" : "Rajasthan, India",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": isLocalBhilwara ? "Bhilwara" : "Jaipur",
+        "addressRegion": "Rajasthan",
+        "addressCountry": "IN"
+      }
+    };
+  }
 
   const breadcrumbJsonLd = generateBreadcrumbSchema([
     { name: "Home", url: "https://www.hindustanprojects.in" },
@@ -90,11 +123,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   return (
     <>
-      {/* Schema.org JSON-LD */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      {/* Schema.org JSON-LD (Safely serialized) */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       {faqJsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       )}
 
       <article className="min-h-screen bg-[#FDFDFD]">
@@ -245,6 +278,23 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                             )}
                           </table>
                         </div>
+                      );
+                    case 'image':
+                      return (
+                        <figure key={index} className="my-8">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={block.content}
+                            alt={block.items?.[0] || post.title}
+                            loading="lazy"
+                            className="w-full max-h-[550px] object-cover rounded-none border border-slate-200 shadow-md"
+                          />
+                          {block.items?.[0] && (
+                            <figcaption className="text-xs text-slate-500 mt-2.5 text-center italic">
+                              {block.items[0]}
+                            </figcaption>
+                          )}
+                        </figure>
                       );
                     case 'paragraph':
                     default:

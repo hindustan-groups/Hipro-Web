@@ -188,7 +188,7 @@ export default function Navbar({
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-8 h-full">
+          <div className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8 h-full">
             {navLinks.filter(Boolean).map((link) => {
               const isCurrentActive = pathname
                 ? (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")))
@@ -322,7 +322,7 @@ export default function Navbar({
           })}
             <Link 
               href="/contact" 
-              className={`relative overflow-hidden group ml-3 px-6 py-2.5 rounded-none font-semibold uppercase tracking-wider text-sm transition-all duration-300 flex items-center gap-2 backdrop-blur-xl ${
+              className={`relative overflow-hidden group ml-2 lg:ml-3 px-5 lg:px-6 py-2.5 rounded-none font-semibold uppercase tracking-wider text-sm transition-all duration-300 flex items-center gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
                 isDarkNavbar
                   ? "bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.15)]"
                   : "bg-construction-navy/95 hover:bg-construction-navy text-white border border-blue-900/40 shadow-md shadow-blue-900/20"

@@ -6,7 +6,7 @@ export interface FaqItem {
 }
 
 export interface MarkdownBlock {
-  type: 'h1' | 'h2' | 'h3' | 'paragraph' | 'ul' | 'ol' | 'blockquote' | 'table';
+  type: 'h1' | 'h2' | 'h3' | 'paragraph' | 'ul' | 'ol' | 'blockquote' | 'table' | 'image';
   content?: string;
   items?: string[];
   headers?: string[];
@@ -15,7 +15,7 @@ export interface MarkdownBlock {
 
 /**
  * Strips leading '# Title' if present (to avoid duplicate H1 when Hero already displays H1)
- * and enriches known pillar posts with natural, high-value contextual internal links.
+ * and conservatively adds at most 1-2 natural, highly contextual service links where appropriate.
  */
 export function enrichBlogContent(slug: string, rawContent: string): string {
   if (!rawContent) return "";
@@ -23,47 +23,59 @@ export function enrichBlogContent(slug: string, rawContent: string): string {
   // 1. Remove duplicate leading H1 markdown (# Title)
   let content = rawContent.replace(/^#\s+[^\n]+\n+/, '');
 
-  // 2. Add natural contextual internal links to the existing guide if not already linked
+  // Count existing internal links
+  const existingInternalLinks = (content.match(/\]\(\/(services|cost-estimator|contact|projects)/g) || []).length;
+  if (existingInternalLinks >= 2) {
+    // Already has 2 or more contextual links, do not add more
+    return content;
+  }
+
+  let linksAdded = existingInternalLinks;
+
+  // Backward-compatibility: preserve existing high-value anchors on the foundational Rajasthan guide
   if (slug === 'house-construction-cost-in-rajasthan-a-complete-guide-for-2026') {
-    // Contextual link for Architectural Planning
-    if (!content.includes('/services/architecture-planning')) {
+    if (linksAdded < 2 && !content.includes('/services/architecture-planning')) {
       content = content.replace(
         'A well-designed house can help you use your available space efficiently while avoiding unnecessary construction costs.',
         'A well-designed house can help you use your available space efficiently while avoiding unnecessary construction costs. Coordinating comprehensive [architectural planning and structural engineering](/services/architecture-planning) ensures drawings account for circulation, regional climate, and structural integrity.'
       );
+      linksAdded++;
     }
 
-    // Contextual link for Cost Estimator
-    if (!content.includes('/cost-estimator')) {
+    if (linksAdded < 2 && !content.includes('/cost-estimator')) {
       content = content.replace(
         'A useful way to begin estimating your budget is:',
         'A convenient way to begin estimating your budget is using an online [construction cost estimator](/cost-estimator) or applying the standard area calculation:'
       );
+      linksAdded++;
     }
 
-    // Contextual link for Surveying
-    if (!content.includes('/services/surveying-site-measurements')) {
-      content = content.replace(
-        'A professional site survey can help determine:',
-        'High-precision [land surveying and site measurement](/services/surveying-site-measurements) helps determine:'
-      );
-    }
+    return content;
+  }
 
-    // Contextual link for Turnkey Construction & PMC
-    if (!content.includes('/services/professional-construction-services')) {
-      content = content.replace(
-        'A professional construction company can help coordinate areas such as:',
-        'Engaging a dependable [turnkey construction contractor](/services/professional-construction-services) or independent [project management consultancy (PMC)](/services/project-management-consultancy) helps coordinate key stages including:'
-      );
-    }
+  // Conservative, non-intrusive contextual linking for other articles (maximum 1-2 total)
+  if (linksAdded < 2 && !content.includes('/services/architecture-planning') && /architectural planning|floor plan design/i.test(content)) {
+    content = content.replace(
+      /(architectural planning|floor plan design)/i,
+      '[$1](/services/architecture-planning)'
+    );
+    linksAdded++;
+  }
 
-    // Contextual link in Call to Action
-    if (!content.includes('/cost-estimator), explore our [professional construction services]')) {
-      content = content.replace(
-        '**Planning to build your home? Contact Hindustan Projects to discuss your construction requirements and get a project-specific estimate.**',
-        '**Planning to build your home in Rajasthan? Use our [online cost estimator](/cost-estimator), explore our [professional construction services](/services/professional-construction-services), or contact Hindustan Projects to discuss your project requirements.**'
-      );
-    }
+  if (linksAdded < 2 && !content.includes('/services/professional-construction-services') && /turnkey construction|civil construction/i.test(content)) {
+    content = content.replace(
+      /(turnkey construction|civil construction)/i,
+      '[$1](/services/professional-construction-services)'
+    );
+    linksAdded++;
+  }
+
+  if (linksAdded < 2 && !content.includes('/cost-estimator') && /cost estimator|construction cost calculator/i.test(content)) {
+    content = content.replace(
+      /(cost estimator|construction cost calculator)/i,
+      '[$1](/cost-estimator)'
+    );
+    linksAdded++;
   }
 
   return content;
@@ -100,13 +112,21 @@ export function extractFaqsFromMarkdown(content: string): FaqItem[] {
   return faqs;
 }
 
+function parseTableRow(line: string): string[] {
+  let trimmed = line.trim();
+  if (trimmed.startsWith('|')) trimmed = trimmed.slice(1);
+  if (trimmed.endsWith('|')) trimmed = trimmed.slice(0, -1);
+  return trimmed.split('|').map(c => c.trim());
+}
+
 /**
  * Robust markdown block parser that cleanly separates:
  * - H1, H2, H3
+ * - Standalone Images (![alt](url))
  * - Bulleted (unordered) lists
  * - Numbered (ordered) lists
  * - Blockquotes
- * - Tables
+ * - Tables (preserving empty cells)
  * - Standard paragraphs
  */
 export function parseMarkdownBlocks(content: string): MarkdownBlock[] {
@@ -118,6 +138,17 @@ export function parseMarkdownBlocks(content: string): MarkdownBlock[] {
   for (const rawBlock of rawBlocks) {
     const trimmed = rawBlock.trim();
     if (!trimmed) continue;
+
+    // Check Standalone Image: ![alt](url)
+    const imgMatch = trimmed.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s\)]+|\/[^\s\)]+)\)$/);
+    if (imgMatch) {
+      blocks.push({
+        type: 'image',
+        content: imgMatch[2].trim(),
+        items: [imgMatch[1].trim()]
+      });
+      continue;
+    }
 
     // Check H1
     if (trimmed.startsWith('# ')) {
@@ -177,11 +208,11 @@ export function parseMarkdownBlocks(content: string): MarkdownBlock[] {
       continue;
     }
 
-    // Check Table
+    // Check Table (preserving empty cells)
     const isTable = lines.length >= 2 && lines[0].includes('|') && lines[1].includes('|') && lines[1].includes('-');
     if (isTable) {
-      const headers = lines[0].split('|').map(c => c.trim()).filter(Boolean);
-      const rows = lines.slice(2).map(r => r.split('|').map(c => c.trim()).filter(Boolean));
+      const headers = parseTableRow(lines[0]);
+      const rows = lines.slice(2).map(parseTableRow);
       blocks.push({
         type: 'table',
         headers,
@@ -202,33 +233,69 @@ export function parseMarkdownBlocks(content: string): MarkdownBlock[] {
 
 /**
  * Safely renders inline markdown formatting:
- * - [Link Text](/path) -> Next.js <Link> or <a>
- * - **Bold Text** -> <strong>
+ * - ![Image Alt](url) -> <img> with responsive styles and alt text
+ * - [Link Text](/path) -> Next.js <a> with nested formatting support
+ * - **Bold Text** -> <strong> with nested formatting support
+ * - *Italic Text* or _Italic Text_ -> <em>
+ * - `code` -> <code>
  * Zero dangerouslySetInnerHTML used.
  */
 export function renderFormattedText(text: string): React.ReactNode[] {
   if (!text) return [];
 
-  // Match either markdown link [label](url) or bold **text**
-  // Using ([^\]]+) and ([^\)]+) avoids greedy captures and mishandled parentheses
-  const regex = /(\[[^\]]+\]\([^\)]+\))|(\*\*[^*]+\*\*)/g;
+  // Match:
+  // 1. Markdown image: ![alt](url)
+  // 2. Markdown link: [label](url)
+  // 3. Bold: **text**
+  // 4. Italic: *text* or _text_
+  // 5. Inline code: `code`
+  const regex = /(!\[[^\]]*\]\([^\)]+\))|(\[[^\]]+\]\([^\)]+\))|(\*\*[^*]+\*\*)|(\*[^*]+\*)|(_[^_]+_)|(`[^`]+`)/g;
   const parts = text.split(regex).filter(Boolean);
 
   return parts.map((part, i) => {
-    // Markdown link: [label](href)
+    // 1. Markdown image: ![alt](url)
+    const imgMatch = part.match(/^!\[([^\]]*)\]\(([^\)]+)\)$/);
+    if (imgMatch) {
+      const [, altText, rawSrc] = imgMatch;
+      const cleanSrc = rawSrc.trim();
+      const lowerSrc = cleanSrc.toLowerCase();
+
+      // Validate URL protocol
+      const isValidSrc = lowerSrc.startsWith("https://") || lowerSrc.startsWith("http://") || lowerSrc.startsWith("/");
+      if (!isValidSrc) {
+        return React.createElement(React.Fragment, { key: i }, altText || "");
+      }
+
+      return React.createElement(
+        "figure",
+        { key: i, className: "my-6 inline-block max-w-full" },
+        React.createElement("img", {
+          src: cleanSrc,
+          alt: altText || "Article image",
+          loading: "lazy",
+          className: "w-full max-h-[500px] object-cover rounded-none border border-slate-200 shadow-sm"
+        }),
+        altText ? React.createElement("figcaption", { className: "text-xs text-slate-500 mt-2 text-center italic" }, altText) : null
+      );
+    }
+
+    // 2. Markdown link: [label](href)
     const linkMatch = part.match(/^\[([^\]]+)\]\(([^\)]+)\)$/);
     if (linkMatch) {
       const [, label, rawHref] = linkMatch;
       const cleanHref = rawHref.trim();
       const lowerHref = cleanHref.toLowerCase();
 
-      // Security check: reject unsafe protocols like javascript:, data:, vbscript:
+      // Security check: reject unsafe protocols
       const isUnsafe = lowerHref.startsWith("javascript:") || lowerHref.startsWith("data:") || lowerHref.startsWith("vbscript:");
       if (isUnsafe) {
         return React.createElement(React.Fragment, { key: i }, label);
       }
 
       const isInternal = cleanHref.startsWith('/') || cleanHref.startsWith('#');
+      // Format nested label (e.g. [**Bold Link**](/url))
+      const formattedLabel = renderFormattedText(label);
+
       if (isInternal) {
         return React.createElement(
           "a",
@@ -237,7 +304,7 @@ export function renderFormattedText(text: string): React.ReactNode[] {
             href: cleanHref,
             className: "text-construction-navy font-bold underline decoration-construction-red/60 hover:decoration-construction-red hover:text-construction-red transition-colors"
           },
-          label
+          formattedLabel
         );
       }
 
@@ -253,15 +320,14 @@ export function renderFormattedText(text: string): React.ReactNode[] {
             rel: "noopener noreferrer",
             className: "text-construction-navy font-bold underline decoration-construction-red/60 hover:decoration-construction-red hover:text-construction-red transition-colors"
           },
-          label
+          formattedLabel
         );
       }
 
-      // Fallback for non-http unrecognized protocol: render safe text
-      return React.createElement(React.Fragment, { key: i }, label);
+      return React.createElement(React.Fragment, { key: i }, formattedLabel);
     }
 
-    // Bold text: **label**
+    // 3. Bold text: **label** (supports nested formatting)
     const boldMatch = part.match(/^\*\*(.*?)\*\*$/);
     if (boldMatch) {
       return React.createElement(
@@ -270,11 +336,36 @@ export function renderFormattedText(text: string): React.ReactNode[] {
           key: i,
           className: "text-slate-900 font-bold"
         },
-        boldMatch[1]
+        renderFormattedText(boldMatch[1])
+      );
+    }
+
+    // 4. Italic text: *label* or _label_
+    const italicMatch = part.match(/^(\*|_)(.*?)\1$/);
+    if (italicMatch) {
+      return React.createElement(
+        "em",
+        {
+          key: i,
+          className: "italic text-slate-800"
+        },
+        renderFormattedText(italicMatch[2])
+      );
+    }
+
+    // 5. Inline code: `code`
+    const codeMatch = part.match(/^`(.*?)`$/);
+    if (codeMatch) {
+      return React.createElement(
+        "code",
+        {
+          key: i,
+          className: "px-1.5 py-0.5 bg-slate-100 text-construction-navy text-[0.9em] font-mono border border-slate-200"
+        },
+        codeMatch[1]
       );
     }
 
     return React.createElement(React.Fragment, { key: i }, part);
   });
 }
-

@@ -63,6 +63,8 @@ const PRIVATE_COLLECTIONS = new Set([
   "newsletter",
 ]);
 
+const DEFAULT_TIMEOUT_MS = 12000;
+
 const _cachedFindAll = cache(async (collection: string): Promise<any[]> => {
   const endpoint = getEndpoint(collection);
   const isPrivate = PRIVATE_COLLECTIONS.has(collection);
@@ -71,11 +73,11 @@ const _cachedFindAll = cache(async (collection: string): Promise<any[]> => {
     const fetchOptions: RequestInit = isPrivate
       ? {
           cache: "no-store",
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
         }
       : {
           next: { revalidate: 60, tags: [collection] },
-          signal: AbortSignal.timeout(4000),
+          signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
         };
 
     const res = await fetch(`${BACKEND_URL}/api/${endpoint}`, fetchOptions);
@@ -106,6 +108,25 @@ export async function findAll<T>(collection: string): Promise<T[]> {
 export async function findById<T>(collection: string, id: string): Promise<T | null> {
   const items = await findAll<any>(collection);
   return items.find((item: any) => item.id === id) || null;
+}
+
+export async function findBySlug<T>(collection: string, slug: string): Promise<T | null> {
+  if (collection === "blogs") {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/blogs/${encodeURIComponent(slug)}`, {
+        next: { revalidate: 60, tags: ["blogs", `blog-${slug}`] },
+        signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) return json.data as T;
+      }
+    } catch (err) {
+      console.warn(`Direct slug fetch failed for ${slug}, falling back to findAll:`, err);
+    }
+  }
+  const items = await findAll<any>(collection);
+  return items.find((item: any) => (item.slug === slug || item.id === slug) && item.active !== false) || null;
 }
 
 export async function updateOne<T>(collection: string, id: string, updates: any): Promise<T | null> {
