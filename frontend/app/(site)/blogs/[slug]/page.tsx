@@ -171,9 +171,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
       <article className="min-h-screen bg-[#FDFDFD]">
         
-        {/* Dynamic Hero Section */}
-        <header className="relative w-full h-[60vh] md:h-[75vh] flex items-end pb-16 md:pb-24 pt-32">
-          {/* Background Image with Parallax illusion */}
+        {/* Dynamic Hero Section - Content-driven responsive layout with safe navbar clearance */}
+        <header className="relative w-full min-h-[520px] sm:min-h-[560px] md:min-h-[620px] lg:min-h-[660px] flex flex-col justify-end pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-12 sm:pb-16 md:pb-20 overflow-hidden">
+          {/* Background Image with optimized framing */}
           <div className="absolute inset-0 w-full h-full">
             {post.image && (
               <Image 
@@ -183,54 +183,56 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 priority
                 sizes="100vw"
                 unoptimized={!isOptimizableImage(post.image)}
-                className="object-cover" 
+                className="object-cover object-[center_35%] md:object-[center_30%]"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+            {/* Base dark tint + directional gradient for reliable text contrast across all viewports */}
+            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/35" />
           </div>
 
-          <div className="relative z-10 w-full max-w-5xl mx-auto px-4 md:px-8">
+          <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
             <Link 
               href="/blogs" 
-              className="inline-flex items-center gap-2 text-xs font-bold text-white/70 hover:text-white transition-colors uppercase tracking-widest mb-8 md:mb-12 group"
+              className="inline-flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white transition-colors uppercase tracking-widest mb-6 sm:mb-8 md:mb-10 group"
             >
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Insights
+              <ArrowLeft className="w-4 h-4 text-construction-red group-hover:-translate-x-1 transition-transform" /> Back to Insights
             </Link>
 
-            <div className="flex flex-wrap gap-3 mb-6">
-              <span className="inline-block bg-construction-red text-white text-[10px] md:text-xs font-black uppercase tracking-[0.2em] px-4 py-1.5 shadow-xl">
+            <div className="flex flex-wrap gap-2.5 sm:gap-3 mb-4 sm:mb-6">
+              <span className="inline-block bg-construction-red text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.18em] px-3.5 sm:px-4 py-1.5 shadow-xl">
                 {post.category}
               </span>
               {post.targetLocation && (
-                <span className="inline-block bg-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-wider px-3 py-1.5 backdrop-blur-sm">
+                <span className="inline-block bg-white/20 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1.5 backdrop-blur-sm">
                   {post.targetLocation}
                 </span>
               )}
             </div>
 
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 font-display uppercase tracking-tighter leading-[1.1] max-w-4xl drop-shadow-lg">
+            <h1 className="text-[clamp(1.65rem,4.2vw+0.2rem,4rem)] font-black text-white mb-5 sm:mb-6 font-display uppercase tracking-tight sm:tracking-tighter leading-[1.14] sm:leading-[1.1] max-w-4xl drop-shadow-lg break-words">
               {post.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-6 text-xs md:text-sm text-white/80 font-semibold uppercase tracking-wider">
-              <div className="flex items-center gap-2.5">
-                <User className="w-4 h-4 text-construction-red" />
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-white/90 font-medium sm:font-semibold uppercase tracking-wider">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-construction-red shrink-0" />
                 <span itemProp="author">{post.author}</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Calendar className="w-4 h-4 text-construction-red" />
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-construction-red shrink-0" />
                 <time itemProp="datePublished" dateTime={post.publishDate ? new Date(post.publishDate).toISOString() : post.createdAt ? new Date(post.createdAt).toISOString() : undefined}>
                   {post.date}
                 </time>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-construction-red" />
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-construction-red shrink-0" />
                 <span>{readTime} min read</span>
               </div>
             </div>
 
             {post.imageCaption && (
-              <p className="text-xs text-white/70 italic mt-4 drop-shadow-md">
+              <p className="text-xs text-white/75 italic mt-3 sm:mt-4 max-w-2xl leading-relaxed drop-shadow">
                 Cover: {post.imageCaption}
               </p>
             )}
