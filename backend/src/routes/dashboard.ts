@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { readDB } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
-import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testimonial, ApiResponse } from "../lib/types";
+import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testimonial, BlogPost, ApiResponse } from "../lib/types";
 
 const router = Router();
 
@@ -16,6 +16,7 @@ router.get("/", async (req: Request, res: Response) => {
     const subscribers  = await readDB<NewsletterSubscriber>("newsletter");
     const projects     = await readDB<Project>("projects");
     const testimonials = await readDB<Testimonial>("testimonials");
+    const blogs        = await readDB<BlogPost>("blogs");
 
     const summary = {
       contacts: {
@@ -44,8 +45,14 @@ router.get("/", async (req: Request, res: Response) => {
         pending:  testimonials.filter((t) => !t.approved).length,
         approved: testimonials.filter((t) => t.approved).length,
       },
+      blogs: {
+        total:     blogs.length,
+        published: blogs.filter((b) => (b.status || "published").toLowerCase() === "published" && b.active !== false).length,
+        drafts:    blogs.filter((b) => (b.status || "").toLowerCase() === "draft" || b.active === false).length,
+      },
       recentContacts:  contacts.slice(-5).reverse(),
       recentQuotes:    quotes.slice(-5).reverse(),
+      recentBlogs:     blogs.slice(-5).reverse(),
     };
 
     return res.json({ success: true, data: summary } as ApiResponse);
