@@ -156,3 +156,165 @@ export function getServiceSlug(title: string = ""): string {
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-");
 }
+
+/**
+ * STRUCTURED ABOUT PAGE DATA FOR HINDUSTAN PROJECTS (HiPRO)
+ * Source of truth for About page redesign.
+ * Grounded strictly in verified facts. Zero unsupported claims.
+ */
+export const ABOUT_PAGE_DATA = {
+  hero: {
+    badge: "Engineering · Construction · Infrastructure · Est. 2019",
+    headingPrefix: "Engineering",
+    headingAccent: "Precision.",
+    headingSuffix: "Built for Execution.",
+    description: "Hindustan Projects (HiPRO) is an engineering, construction, and infrastructure firm headquartered in Bhilwara, Rajasthan. We deliver integrated architectural planning, digital surveying, turnkey civil construction, and project management designed around structural stability, disciplined coordination, and long-term value.",
+    operationalHighlights: [
+      { label: "Established", value: "2019" },
+      { label: "Headquarters", value: "Bhilwara, Rajasthan" },
+      { label: "Core Focus", value: "Engineering · Construction · Infrastructure" },
+      { label: "Disciplines", value: "6 Verified Practice Areas" },
+    ],
+  },
+  executiveStatement: {
+    leaderName: "Yogesh Kharol",
+    leaderRole: "Founder & Director",
+    company: "Hindustan Projects (HiPRO)",
+    badge: "Executive Leadership",
+    title: "Committed to Engineering Discipline & Responsible Site Execution",
+    statement: [
+      "At Hindustan Projects, our work begins with the understanding that every structure represents a long-term commitment to safety, capital responsibility, and client trust.",
+      "From our headquarters in Bhilwara, we prioritize transparent coordination, disciplined on-site supervision, and close alignment between architectural planning and field construction.",
+      "By integrating land surveying, structural coordination, civil execution, and project consultancy under one cohesive team, we ensure projects proceed with clarity from initial assessment to milestone handover."
+    ],
+  },
+  companyAtAGlance: [
+    { label: "Legal / Brand Name", value: "Hindustan Projects (HiPRO)" },
+    { label: "Year Established", value: "2019" },
+    { label: "Corporate Headquarters", value: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001" },
+    { label: "Primary Operating Region", value: "Bhilwara, Mewar Region & Rajasthan" },
+    { label: "Core Industry Focus", value: "Civil Engineering, Turnkey Construction & Infrastructure" },
+    { label: "Core Engineering Disciplines", value: "6 Verified Practice Areas (Planning, Civil, Surveying, Interiors, ETP/STP, PMC)" },
+    { label: "Project Delivery Model", value: "Turnkey Civil Execution, Architectural Planning & Project Management Consultancy" },
+    { label: "Corporate Ecosystem", value: "Hindustan Projects, Hindustan Empanelment, HiPro IT Services, HiPro Marketing" },
+  ],
+  missionVision: {
+    mission: {
+      tag: "Corporate Mission",
+      title: "Engineered For Durability",
+      description: "To deliver structurally sound, meticulously planned, and enduring construction and infrastructure projects through disciplined engineering, practical site coordination, and transparent client communication."
+    },
+    vision: {
+      tag: "Corporate Vision",
+      title: "Trusted Regional Partner",
+      description: "To serve as Rajasthan's premier, dependable engineering and turnkey construction partner, recognized for uncompromising structural reliability, professional ethics, and execution excellence."
+    },
+    principles: [
+      {
+        title: "Engineering-Led Planning",
+        desc: "Every project is grounded in rigorous spatial assessment and structural analysis before groundwork commences."
+      },
+      {
+        title: "Quality-Conscious Construction",
+        desc: "Maintaining systematic site supervision, strict material evaluation, and structural discipline at every construction phase."
+      },
+      {
+        title: "Transparent Coordination",
+        desc: "Clear documentation, milestone-based communication, and open operational tracking throughout project lifecycles."
+      },
+      {
+        title: "Practical Project Planning",
+        desc: "Designing buildable, realistic architectural and civil solutions tailored to local site conditions and regional requirements."
+      },
+      {
+        title: "Responsible Site Execution",
+        desc: "Prioritizing on-site responsibility, structured team coordination, and dedicated supervisory attention."
+      },
+      {
+        title: "Long-Term Structural Value",
+        desc: "Constructing residential, commercial, and industrial structures engineered for durability and enduring performance."
+      }
+    ]
+  },
+  executionStages: [
+    {
+      step: "01",
+      title: "Survey & Site Measurements",
+      desc: "Topographic assessment, precise boundary demarcations, contour mapping, and site level evaluations.",
+      serviceName: "Surveying & Site Measurements",
+      serviceSlug: "surveying-site-measurements"
+    },
+    {
+      step: "02",
+      title: "Architecture & Engineering Coordination",
+      desc: "Detailed spatial layouts, 3D architectural perspectives, structural load coordination, and municipal sanction drawings.",
+      serviceName: "Architecture & Planning",
+      serviceSlug: "architecture-planning"
+    },
+    {
+      step: "03",
+      title: "Construction & Project Execution",
+      desc: "Heavy RCC framework execution, brickwork, civil masonry, structural fabrication, and milestone-tracked site works.",
+      serviceName: "Professional Construction Services",
+      serviceSlug: "professional-construction-services"
+    },
+    {
+      step: "04",
+      title: "Finishing, Coordination & Handover",
+      desc: "Facade treatments, interior fit-outs, MEP integration, quality inspections, and milestone handover.",
+      serviceName: "Interior & Exterior Design",
+      serviceSlug: "interior-exterior-design"
+    }
+  ],
+  capabilitiesAndSectors: [
+    {
+      sector: "Commercial Developments",
+      description: "Corporate office spaces, multi-storey commercial complexes, and retail developments built for functional flow and durability.",
+      services: ["Architecture & Planning", "Professional Construction Services"],
+      primarySlug: "professional-construction-services"
+    },
+    {
+      sector: "Industrial & Water Infrastructure",
+      description: "Factory floor layouts, industrial warehousing sheds, and specialized civil structures for effluent and sewage water treatment plants (ETP/STP).",
+      services: ["Water Treatment Plant Construction", "Professional Construction Services"],
+      primarySlug: "water-treatment-plant-construction"
+    },
+    {
+      sector: "Residential Construction",
+      description: "Turnkey residential bungalows, independent villas, and luxury residential interior/exterior finishing engineered for modern living.",
+      services: ["Architecture & Planning", "Interior & Exterior Design"],
+      primarySlug: "interior-exterior-design"
+    },
+    {
+      sector: "Engineering Consultancy & Surveying",
+      description: "Precision digital land surveying, contour mapping, project management consultancy (PMC), cost estimation, and technical advisory.",
+      services: ["Surveying & Site Measurements", "Project Management & Consultancy"],
+      primarySlug: "surveying-site-measurements"
+    }
+  ],
+  qualityCommitment: [
+    {
+      title: "Planned Execution",
+      desc: "Structured scheduling and phase-wise coordination ensure predictable milestone delivery without haphazard site shortcuts."
+    },
+    {
+      title: "Supervised Quality",
+      desc: "Dedicated on-site supervision oversees material handling, structural reinforcement, and concrete placement standards."
+    },
+    {
+      title: "Systematic Material Verification",
+      desc: "Checking steel grades, cement freshness, aggregate quality, and mix proportions at every execution phase."
+    },
+    {
+      title: "Accountable Communication",
+      desc: "Regular status reporting and transparent site coordination keep project owners informed from groundwork to handover."
+    }
+  ],
+  regionalFocus: {
+    city: "Bhilwara",
+    region: "Mewar Region & Rajasthan",
+    state: "Rajasthan",
+    address: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India",
+    description: "Headquartered in the vibrant industrial center of Bhilwara, Hindustan Projects brings deep familiarity with Rajasthan's soil variations, local building bylaws, and regional material supply chains. Our central location enables responsive on-site coordination and close project supervision across the Mewar region and surrounding districts.",
+  }
+};

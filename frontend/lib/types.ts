@@ -234,3 +234,106 @@ export interface BlogPost {
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
+
+export interface AboutHighlightItem {
+  label: string;
+  value: string;
+}
+
+export interface AboutFactItem {
+  label: string;
+  value: string;
+}
+
+export interface AboutPrincipleItem {
+  title: string;
+  desc: string;
+}
+
+export interface AboutStageItem {
+  step: string;
+  title: string;
+  desc: string;
+  serviceName: string;
+  serviceSlug: string;
+}
+
+export interface AboutSectorItem {
+  sector: string;
+  description: string;
+  services: string[];
+  primarySlug: string;
+}
+
+export interface AboutQualityItem {
+  title: string;
+  desc: string;
+}
+
+export interface AboutPageContent {
+  id?: string;
+  status?: "draft" | "published" | "unpublished";
+  publishedAt?: string | Date | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+
+  // Hero
+  heroBadge?: string;
+  heroHeadingPrefix?: string;
+  heroHeadingAccent?: string;
+  heroHeadingSuffix?: string;
+  heroDescription?: string;
+  heroHighlights?: string | AboutHighlightItem[];
+  heroPrimaryCtaText?: string;
+  heroSecondaryCtaText?: string;
+
+  // Executive
+  executiveBadge?: string;
+  executiveTitle?: string;
+  executiveStatement?: string | string[];
+  founderImage?: string | null;
+  founderImageAlt?: string | null;
+
+  // Profile / Facts
+  companyFacts?: string | AboutFactItem[];
+
+  // Mission & Vision
+  missionTag?: string;
+  missionTitle?: string;
+  missionDescription?: string;
+  visionTag?: string;
+  visionTitle?: string;
+  visionDescription?: string;
+
+  // Principles
+  engineeringPrinciples?: string | AboutPrincipleItem[];
+
+  // Execution Stages
+  executionStages?: string | AboutStageItem[];
+
+  // Capabilities & Sectors
+  capabilitiesSectors?: string | AboutSectorItem[];
+
+  // Quality & Commitments
+  qualityHeading?: string;
+  qualitySubtitle?: string;
+  qualityCommitments?: string | AboutQualityItem[];
+
+  // Regional Focus
+  regionalHeading?: string;
+  regionalDescription?: string;
+  regionalBullets?: string | string[];
+
+  // SEO & Social
+  metaTitle?: string;
+  metaDescription?: string;
+  canonicalUrl?: string;
+  targetLocation?: string;
+  geoKeywords?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+}
