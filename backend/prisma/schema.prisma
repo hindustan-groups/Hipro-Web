@@ -233,3 +233,71 @@ model AdminSession {
   expiresAt DateTime
 }
 
+model AboutPageContent {
+  id                    String    @id @default("singleton")
+  status                String    @default("published") // "draft", "published", "unpublished"
+  publishedAt           DateTime? @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Hero
+  heroBadge             String    @default("Engineering · Construction · Infrastructure · Est. 2019")
+  heroHeadingPrefix     String    @default("Engineering")
+  heroHeadingAccent     String    @default("Precision.")
+  heroHeadingSuffix     String    @default("Built for Execution.")
+  heroDescription       String    @db.Text
+  heroHighlights        String    @db.Text // JSON: Array<{ label: string, value: string }>
+  heroPrimaryCtaText    String    @default("Explore Capabilities")
+  heroSecondaryCtaText  String    @default("Estimate Build Cost")
+
+  // Executive
+  executiveBadge        String    @default("Executive Leadership")
+  executiveTitle        String    @default("Committed to Engineering Discipline & Responsible Site Execution")
+  executiveStatement    String    @db.Text // JSON: string[] (paragraphs)
+  founderImage          String?
+  founderImageAlt       String?   @default("Yogesh Kharol, Founder & Director")
+
+  // Profile / Facts
+  companyFacts          String    @db.Text // JSON: Array<{ label: string, value: string }>
+
+  // Mission & Vision
+  missionTag            String    @default("Corporate Mission")
+  missionTitle          String    @default("Engineered For Durability")
+  missionDescription    String    @db.Text
+  visionTag             String    @default("Corporate Vision")
+  visionTitle           String    @default("Trusted Regional Partner")
+  visionDescription     String    @db.Text
+
+  // Principles
+  engineeringPrinciples String    @db.Text // JSON: Array<{ title: string, desc: string }>
+
+  // Execution Stages
+  executionStages       String    @db.Text // JSON: Array<{ step: string, title: string, desc: string, serviceName: string, serviceSlug: string }>
+
+  // Capabilities & Sectors
+  capabilitiesSectors   String    @db.Text // JSON: Array<{ sector: string, description: string, services: string[], primarySlug: string }>
+
+  // Quality & Commitments
+  qualityHeading        String    @default("Committed to Quality & Responsible Engineering")
+  qualitySubtitle       String    @db.Text
+  qualityCommitments    String    @db.Text // JSON: Array<{ title: string, desc: string }>
+
+  // Regional Focus
+  regionalHeading       String    @default("Headquartered in Bhilwara. Serving Rajasthan.")
+  regionalDescription   String    @db.Text
+  regionalBullets       String    @db.Text // JSON: string[]
+
+  // SEO & Social Meta
+  metaTitle             String?
+  metaDescription       String?   @db.Text
+  canonicalUrl          String?   @default("/about")
+  targetLocation        String?   @default("Bhilwara, Rajasthan")
+  geoKeywords           String?
+  ogTitle               String?
+  ogDescription         String?   @db.Text
+  ogImage               String?
+  twitterTitle          String?
+  twitterDescription    String?   @db.Text
+  twitterImage          String?
+}
+
