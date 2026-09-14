@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import {
+  ArrowRight,
+  ArrowDown,
+  Building2,
+  Calculator,
+  Compass,
+  Layers,
+  ShieldCheck,
+} from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Service } from "@/lib/types";
-import * as Icons from "lucide-react";
 import DynamicIcon from "@/components/DynamicIcon";
 import { cleanServiceTitle, getServiceSlug } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -24,30 +32,126 @@ export default async function ServicesPage() {
 
   return (
     <>
-      {/* Premium Light Hero Header */}
-      <section className="relative pt-36 pb-20 bg-slate-50 border-b border-slate-200 overflow-hidden">
-        {/* Subtle Architectural Grid Pattern */}
-        <div className="absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, black 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-200/50 to-transparent z-0"></div>
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 1 — HERO: Authoritative Engineering & Execution
+          ───────────────────────────────────────────────────────────── */}
+      <section className="relative bg-white pt-28 sm:pt-32 md:pt-36 pb-12 md:pb-16 px-4 border-b border-slate-200/80 overflow-hidden">
+        {/* Subtle Architectural Blueprint Grid */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, #0F2C59 1px, transparent 0)",
+            backgroundSize: "28px 28px",
+          }}
+          aria-hidden="true"
+        />
+        {/* Subtle Ambient Lighting Accents */}
+        <div
+          className="absolute -top-24 right-0 w-96 h-96 bg-slate-100/70 rounded-full blur-3xl pointer-events-none -z-0"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-24 left-0 w-80 h-80 bg-red-50/40 rounded-full blur-3xl pointer-events-none -z-0"
+          aria-hidden="true"
+        />
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-none bg-white border border-slate-200 text-slate-700 mb-6 shadow-sm">
-            <span className="w-2 h-2 rounded-none bg-construction-red animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider">End-To-End Engineering & Construction</span>
+        <div className="relative z-10 max-w-6xl mx-auto text-center">
+          {/* Eyebrow Tagline Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-none bg-slate-50 border border-slate-200 text-construction-navy mb-4 sm:mb-5 shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-construction-red" />
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+              Engineering · Construction · Infrastructure
+            </span>
           </div>
-          
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 font-display uppercase tracking-tight">
-            Our <span className="font-serif italic font-normal text-construction-red normal-case">Capabilities</span>
+
+          {/* Primary H1 */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 font-display uppercase tracking-tight leading-[1.15]">
+            Engineering Services Built for{" "}
+            <span className="font-serif italic font-normal text-construction-red normal-case tracking-normal">
+              Real-World Execution
+            </span>
           </h1>
-          
-          <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto font-light leading-relaxed mb-8">
-            Turnkey civil engineering, structural design, architecture, and construction solutions across residential, commercial, and industrial sectors.
+
+          {/* Supporting Lead Description */}
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-3xl mx-auto font-light leading-relaxed mb-6 sm:mb-8">
+            Integrated engineering, construction, architectural and project management services for residential, commercial and infrastructure projects.
           </p>
+
+          {/* 3 Technical Domain Anchors / Proof Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl mx-auto mb-6 sm:mb-8 text-left">
+            <div className="p-3.5 sm:p-4 bg-slate-50/80 border border-slate-200/90 shadow-xs relative overflow-hidden group hover:border-slate-300 transition-colors">
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-6 h-6 rounded-none bg-white border border-slate-200 flex items-center justify-center text-construction-navy shadow-xs">
+                  <Compass className="w-3.5 h-3.5 text-construction-red" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 font-display">
+                  Engineering &amp; Planning
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
+                Architectural planning, structural engineering and technical design support.
+              </p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 bg-slate-50/80 border border-slate-200/90 shadow-xs relative overflow-hidden group hover:border-slate-300 transition-colors">
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-6 h-6 rounded-none bg-white border border-slate-200 flex items-center justify-center text-construction-navy shadow-xs">
+                  <Building2 className="w-3.5 h-3.5 text-construction-red" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 font-display">
+                  Construction &amp; Execution
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
+                Disciplined site execution with coordinated construction and project management.
+              </p>
+            </div>
+
+            <div className="p-3.5 sm:p-4 bg-slate-50/80 border border-slate-200/90 shadow-xs relative overflow-hidden group hover:border-slate-300 transition-colors">
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-6 h-6 rounded-none bg-white border border-slate-200 flex items-center justify-center text-construction-navy shadow-xs">
+                  <Layers className="w-3.5 h-3.5 text-construction-red" />
+                </div>
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-900 font-display">
+                  Infrastructure &amp; Support
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
+                Practical engineering support for infrastructure and development requirements.
+              </p>
+            </div>
+          </div>
+
+          {/* Concise Action CTA Area */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 max-w-md sm:max-w-none mx-auto">
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-5 py-3 rounded-none text-xs sm:text-sm uppercase tracking-wider transition-all shadow-sm group"
+            >
+              <span>Consult Technical Team</span>
+              <ArrowRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+            <Link
+              href="/cost-estimator"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-none border border-slate-300 text-xs sm:text-sm uppercase tracking-wider transition-all shadow-xs"
+            >
+              <Calculator className="w-4 h-4 text-construction-red" />
+              <span>Estimate Project Cost</span>
+            </Link>
+            <a
+              href="#services-list"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1 text-slate-600 hover:text-construction-navy px-3 py-3 rounded-none text-xs sm:text-sm font-semibold uppercase tracking-wider transition-colors"
+            >
+              <span>Explore All Services</span>
+              <ArrowDown className="w-3.5 h-3.5 text-slate-400" />
+            </a>
+          </div>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="py-24 bg-white">
+      <section id="services-list" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {services.map((s, i) => {
