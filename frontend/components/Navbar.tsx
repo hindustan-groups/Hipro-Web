@@ -333,13 +333,13 @@ export default function Navbar({
                 {hasMega && (
                   <div className="fixed top-[70px] md:top-[85px] left-0 w-full pt-1 opacity-0 invisible -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100]">
                     <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex flex-col mx-auto overflow-hidden">
-                      <div className="max-w-[1400px] mx-auto w-full flex">
+                      <div className="max-w-[1520px] mx-auto w-full flex">
                         
                         {/* 3 Balanced Columns Container */}
-                        <div className="flex-1 p-8 lg:p-10 grid grid-cols-3 gap-6 lg:gap-8">
+                        <div className="flex-1 p-7 lg:p-8 grid grid-cols-3 gap-6 lg:gap-8">
                           {link.megaMenuCategories?.map((category: any, idx: number) => (
-                            <div key={idx} className="flex flex-col gap-4">
-                              <div className="border-b border-slate-200 pb-2.5">
+                            <div key={idx} className="flex flex-col gap-3">
+                              <div className="border-b border-slate-200 pb-2">
                                 <div className="flex items-center justify-between">
                                   <h3 className="text-construction-navy font-display font-bold uppercase tracking-wider text-[13px] sm:text-[14px]">
                                     {category.title}
@@ -356,7 +356,7 @@ export default function Navbar({
                               </div>
 
                               {/* Service Item Cards */}
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col gap-1.5">
                                 {category.links.map((sub: any, itemIdx: number) => {
                                   const ItemIcon = sub.icon || HardHat;
                                   const isExternal = Boolean(sub.isExternal);
@@ -367,14 +367,14 @@ export default function Navbar({
                                       href={sub.href}
                                       target={isExternal ? "_blank" : undefined}
                                       rel={isExternal ? "noopener noreferrer" : undefined}
-                                      className="group/item flex items-start gap-3 p-2.5 -mx-2.5 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200/60"
+                                      className="group/item flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200/60"
                                     >
-                                      <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover/item:bg-construction-red group-hover/item:text-white transition-all duration-200 shadow-sm">
+                                      <div className="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover/item:bg-construction-red group-hover/item:text-white transition-all duration-200 shadow-sm mt-0.5">
                                         <ItemIcon className="w-4 h-4 transition-transform group-hover/item:scale-110" />
                                       </div>
                                       <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-[13px] font-bold text-slate-800 group-hover/item:text-construction-red transition-colors truncate">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                          <span className="text-[13px] font-bold text-slate-800 group-hover/item:text-construction-red transition-colors leading-tight">
                                             {sub.label}
                                           </span>
                                           {sub.badge && (
@@ -403,7 +403,7 @@ export default function Navbar({
 
                         {/* Featured Showcase Card (Right Side) */}
                         {link.megaMenuImage && (
-                          <div className="w-[360px] xl:w-[400px] shrink-0 bg-slate-900 border-l border-slate-200 p-7 flex flex-col justify-between relative overflow-hidden group/feature">
+                          <div className="w-[330px] xl:w-[360px] shrink-0 bg-slate-900 border-l border-slate-200 p-6 flex flex-col justify-between relative overflow-hidden group/feature">
                             <Image 
                               src={link.megaMenuImage} 
                               alt={link.megaMenuTitle || "Services Feature"} 
