@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -73,6 +73,7 @@ export default function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileDropdowns, setOpenMobileDropdowns] = useState<{[key: string]: boolean}>({});
   const [activeDesktopDropdown, setActiveDesktopDropdown] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -83,7 +84,18 @@ export default function Navbar({
 
   useEffect(() => {
     setActiveDesktopDropdown(null);
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
   }, [pathname]);
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
@@ -95,6 +107,32 @@ export default function Navbar({
     window.addEventListener("click", handleGlobalClick);
     return () => window.removeEventListener("click", handleGlobalClick);
   }, []);
+
+  const handleMouseEnterDropdown = (href: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setActiveDesktopDropdown(href);
+  };
+
+  const handleMouseLeaveDropdown = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveDesktopDropdown(null);
+    }, 280);
+  };
+
+  const handleToggleDesktopDropdown = (href: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setActiveDesktopDropdown((prev) => (prev === href ? null : href));
+  };
 
   const toggleMobileDropdown = (href: string) => {
     setOpenMobileDropdowns(prev => ({
@@ -304,17 +342,23 @@ export default function Navbar({
               return (
               <div 
                 key={link.href} 
-                className="relative group h-full flex items-center"
+                className={`${link.isMegaMenu ? "" : "relative"} group h-full flex items-center`}
                 onMouseEnter={() => {
-                  if (hasDropdown) setActiveDesktopDropdown(link.href);
+                  if (hasDropdown) handleMouseEnterDropdown(link.href);
                 }}
                 onMouseLeave={() => {
-                  if (hasDropdown) setActiveDesktopDropdown(null);
+                  if (hasDropdown) handleMouseLeaveDropdown();
                 }}
               >
                 <div className="flex items-center h-full">
                   <Link
                     href={link.href}
+                    onClick={(e) => {
+                      if (hasMega && activeDesktopDropdown !== link.href) {
+                        e.preventDefault();
+                        handleMouseEnterDropdown(link.href);
+                      }
+                    }}
                     className={`relative flex items-center text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
                       isCurrentActive
                         ? (isDarkNavbar 
@@ -339,11 +383,8 @@ export default function Navbar({
                     <button
                       type="button"
                       aria-label={`Toggle ${link.label} menu`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveDesktopDropdown(prev => prev === link.href ? null : link.href);
-                      }}
-                      className="p-1 -mr-1 focus:outline-none cursor-pointer"
+                      onClick={(e) => handleToggleDesktopDropdown(link.href, e)}
+                      className="p-1.5 -mr-1 focus:outline-none cursor-pointer"
                     >
                       <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : "group-hover:rotate-180"} ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
                     </button>
@@ -352,11 +393,15 @@ export default function Navbar({
                 
                 {/* Standard Dropdown Menu Desktop */}
                 {link.subLinks && !link.isMegaMenu && (
-                  <div className={`absolute top-full left-0 w-48 pt-2 transition-all duration-200 z-50 ${
-                    isOpenDesktop 
-                      ? "opacity-100 visible translate-y-0 pointer-events-auto" 
-                      : "opacity-0 invisible translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
-                  }`}>
+                  <div 
+                    className={`absolute top-full left-0 w-48 pt-2 transition-all duration-200 z-50 ${
+                      isOpenDesktop 
+                        ? "opacity-100 visible translate-y-0 pointer-events-auto" 
+                        : "opacity-0 invisible translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
+                    }`}
+                    onMouseEnter={() => handleMouseEnterDropdown(link.href)}
+                    onMouseLeave={handleMouseLeaveDropdown}
+                  >
                     <div className="bg-white shadow-xl flex flex-col py-2 rounded-b-md border border-slate-100">
                       {link.subLinks.map((sub: { label: string; href: string }) => (
                         <Link 
@@ -374,16 +419,16 @@ export default function Navbar({
                 {/* Mega Menu Dropdown */}
                 {hasMega && (
                   <div 
-                    className={`fixed top-full left-0 w-full pt-2 transition-all duration-200 z-[100] ${
+                    className={`absolute top-full left-0 right-0 w-full transition-all duration-200 z-[100] ${
                       isOpenDesktop 
                         ? "opacity-100 visible translate-y-0 pointer-events-auto" 
                         : "opacity-0 invisible -translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
                     }`}
-                    onMouseEnter={() => setActiveDesktopDropdown(link.href)}
-                    onMouseLeave={() => setActiveDesktopDropdown(null)}
+                    onMouseEnter={() => handleMouseEnterDropdown(link.href)}
+                    onMouseLeave={handleMouseLeaveDropdown}
                   >
-                    {/* Invisible hover bridge buffer to ensure mouse doesn't drop during fast motion */}
-                    <div className="absolute -top-4 left-0 w-full h-4 pointer-events-auto" />
+                    {/* Seamless hover bridge padding so mouse never loses contact */}
+                    <div className="absolute -top-6 left-0 w-full h-6 bg-transparent pointer-events-auto" />
                     <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex flex-col mx-auto overflow-hidden">
                       <div className="max-w-[1520px] mx-auto w-full flex">
                         
@@ -528,7 +573,7 @@ export default function Navbar({
 
                       {/* Mega Menu Bottom Corporate Utility Bar */}
                       <div className="bg-slate-50 border-t border-slate-200/80 px-8 py-3">
-                        <div className="max-w-[1400px] mx-auto flex items-center justify-between text-xs">
+                        <div className="max-w-[1520px] mx-auto flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3 text-slate-600">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                             <span className="font-semibold text-slate-800">Direct Consultation:</span>
