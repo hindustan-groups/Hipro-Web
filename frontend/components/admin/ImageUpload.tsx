@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   UploadCloud,
   Image as ImageIcon,
@@ -11,7 +11,6 @@ import {
   Copy,
   ExternalLink
 } from "lucide-react";
-import type { Settings } from "@/lib/types";
 
 interface ImageUploadProps {
   value: string;
@@ -19,69 +18,40 @@ interface ImageUploadProps {
 }
 
 export default function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [settings, setSettings] = useState<Settings | null>(null);
   const [error, setError] = useState("");
   const [activeMode, setActiveMode] = useState<"upload" | "url">("upload");
   const [urlInput, setUrlInput] = useState("");
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) setSettings(data.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const cloudName =
-      settings?.cloudinaryCloudName ||
-      process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
-      "fczoredh";
-    const uploadPreset =
-      settings?.cloudinaryUploadPreset ||
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
-      "ml_default";
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File size exceeds 5MB maximum limit. Please choose a smaller image.");
+      return;
+    }
 
     setUploading(true);
     setError("");
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
 
     try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
       const data = await res.json();
 
-      if (data.secure_url) {
-        onChange(data.secure_url);
+      if (data.success && data.url) {
+        onChange(data.url);
         setUrlInput("");
       } else {
-        const msg = data.error?.message || "Upload failed";
-        if (
-          msg.toLowerCase().includes("unsigned") ||
-          msg.toLowerCase().includes("whitelist")
-        ) {
-          setError(
-            `Upload preset '${uploadPreset}' must be set to 'Unsigned' in Cloudinary. Alternatively, paste the image URL directly using the 'Direct URL' tab.`
-          );
-        } else {
-          setError(`${msg} (You can also paste an image URL directly)`);
-        }
+        setError(data.error || "Upload failed. (You can also paste an image URL directly)");
       }
     } catch {
       setError(
@@ -106,14 +76,6 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  if (loading) {
-    return (
-      <div className="h-28 bg-slate-50 flex items-center justify-center border border-slate-200 animate-pulse text-xs text-slate-400">
-        Loading upload provider...
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-3">

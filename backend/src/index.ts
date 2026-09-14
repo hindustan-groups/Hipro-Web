@@ -22,6 +22,7 @@ import testimonialsRouter from "./routes/testimonials";
 import applicationsRouter from "./routes/applications";
 import locationsRouter from "./routes/locations";
 import aboutRouter from "./routes/about";
+import uploadRouter from "./routes/upload";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -74,6 +75,7 @@ app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/applications", applicationsRouter);
 app.use("/api/locations", locationsRouter);
 app.use("/api/about", aboutRouter);
+app.use("/api/upload", uploadRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {
