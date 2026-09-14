@@ -4,10 +4,42 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { HardHat, X, Menu, ChevronDown, ArrowRight } from "lucide-react";
+import { 
+  HardHat, X, Menu, ChevronDown, ArrowRight, Compass, Ruler, 
+  Paintbrush, Droplets, Briefcase, ExternalLink, Calculator, 
+  Sparkles, CheckCircle2, ShieldCheck, FileCheck2, Globe2
+} from "lucide-react";
 import type { Service } from "@/lib/types";
 import { cleanServiceTitle } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
+
+// Metadata mapping for rich visual mega menu items
+const serviceMetaMap: Record<string, { icon: any; tagline: string }> = {
+  "Architecture & Planning": {
+    icon: Compass,
+    tagline: "3D BIM, structural blueprints & municipal plans",
+  },
+  "Professional Construction Services": {
+    icon: HardHat,
+    tagline: "Turnkey civil RCC, structural & commercial builds",
+  },
+  "Surveying & Site Measurements": {
+    icon: Ruler,
+    tagline: "Digital total station & contour topographic surveys",
+  },
+  "Interior & Exterior Design": {
+    icon: Paintbrush,
+    tagline: "Turnkey luxury interiors, facades & elevation styling",
+  },
+  "Water Treatment Plant Construction": {
+    icon: Droplets,
+    tagline: "Industrial ETP, STP, hydraulic tanks & piping plants",
+  },
+  "Project Management & Consultancy": {
+    icon: Briefcase,
+    tagline: "PMC audit, cost estimation & on-site quality control",
+  },
+};
 
 const defaultNavLinks = [
   { href: "/", label: "Home", isMegaMenu: false },
@@ -101,49 +133,103 @@ export default function Navbar({
 
   const servicesLink = navLinks.find((l: any) => l && l.href === "/services");
   if (servicesLink) {
-    if (services && Array.isArray(services) && services.length > 0) {
-      const activeServices = services.filter((s) => s && s.active !== false);
-      if (activeServices.length > 0) {
-        const categoriesMap: { [key: string]: any[] } = {};
+    // Default fallback services if none passed or empty
+    const sourceServices = (services && Array.isArray(services) && services.length > 0)
+      ? services.filter((s) => s && s.active !== false)
+      : [
+          { title: "Architecture & Planning", category: "Design & Planning", order: 1 },
+          { title: "Interior & Exterior Design", category: "Design & Planning", order: 2 },
+          { title: "Surveying & Site Measurements", category: "Design & Planning", order: 3 },
+          { title: "Professional Construction Services", category: "Civil & Infrastructure", order: 4 },
+          { title: "Water Treatment Plant Construction", category: "Civil & Infrastructure", order: 5 },
+          { title: "Project Management & Consultancy", category: "Civil & Infrastructure", order: 6 },
+        ];
 
-        activeServices.forEach((s) => {
-          if (!s || !s.title) return;
-          const category = s.category || "Our Capabilities";
-          if (!categoriesMap[category]) {
-            categoriesMap[category] = [];
-          }
-          
-          const cleanTitle = cleanServiceTitle(s.title);
-          const slug = String(cleanTitle)
-            .toLowerCase()
-            .replace(/ & /g, "-")
-            .replace(/\s+/g, "-");
+    const designPlanningLinks: any[] = [];
+    const civilExecutionLinks: any[] = [];
 
-          categoriesMap[category].push({
-            href: `/services/${slug}`,
-            label: cleanTitle,
-            order: s.order ?? 99,
-          });
-        });
+    sourceServices.forEach((s) => {
+      if (!s || !s.title) return;
+      const cleanTitle = cleanServiceTitle(s.title);
+      const slug = String(cleanTitle)
+        .toLowerCase()
+        .replace(/ & /g, "-")
+        .replace(/\s+/g, "-");
 
-        const categoryOrder = ["Design & Planning", "Construction & Execution", "Management & Specialized"];
-        const sortedCategories = Object.keys(categoriesMap).sort((a, b) => {
-          const idxA = categoryOrder.indexOf(a);
-          const idxB = categoryOrder.indexOf(b);
-          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-          if (idxA !== -1) return -1;
-          if (idxB !== -1) return 1;
-          return a.localeCompare(b);
-        });
+      const meta = serviceMetaMap[cleanTitle] || {
+        icon: HardHat,
+        tagline: ("description" in s && s.description) || "Turnkey engineering and quality execution",
+      };
 
-        servicesLink.megaMenuCategories = sortedCategories.map((title) => ({
-          title,
-          links: (categoriesMap[title] || [])
-            .sort((a, b) => (a.order || 0) - (b.order || 0))
-            .map(({ href, label }) => ({ href, label })),
-        }));
+      const item = {
+        href: `/services/${slug}`,
+        label: cleanTitle,
+        tagline: meta.tagline,
+        icon: meta.icon,
+        order: s.order ?? 99,
+        isExternal: false,
+      };
+
+      const lower = cleanTitle.toLowerCase();
+      if (
+        lower.includes("architecture") ||
+        lower.includes("interior") ||
+        lower.includes("surveying")
+      ) {
+        designPlanningLinks.push(item);
+      } else {
+        civilExecutionLinks.push(item);
       }
-    }
+    });
+
+    designPlanningLinks.sort((a, b) => a.order - b.order);
+    civilExecutionLinks.sort((a, b) => a.order - b.order);
+
+    // 3rd Pillar: Specialized Portals & Interactive Utilities
+    const ecosystemLinks = [
+      {
+        href: "https://empanelment.hindustanprojects.in/",
+        label: "Hindustan Empanelment",
+        tagline: "Govt, vendor & contractor empanelment gateway",
+        icon: FileCheck2,
+        isExternal: true,
+        badge: "Live Portal",
+      },
+      {
+        href: "https://www.itservices.hindustanprojects.in/",
+        label: "HiPro IT Services",
+        tagline: "Software, web platforms & digital engineering",
+        icon: Globe2,
+        isExternal: true,
+        badge: "Live Portal",
+      },
+      {
+        href: "/cost-estimator",
+        label: "Instant Cost Estimator",
+        tagline: "Calculate construction budgets in under 60 seconds",
+        icon: Calculator,
+        isExternal: false,
+        badge: "Free Tool",
+      },
+    ];
+
+    servicesLink.megaMenuCategories = [
+      {
+        title: "Design & Planning",
+        description: "Visionary Architecture & Surveys",
+        links: designPlanningLinks,
+      },
+      {
+        title: "Civil & Infrastructure",
+        description: "Turnkey Execution & Treatment Plants",
+        links: civilExecutionLinks,
+      },
+      {
+        title: "Portals & Ecosystem",
+        description: "Empanelment, IT & Smart Tools",
+        links: ecosystemLinks,
+      },
+    ];
   }
 
   useEffect(() => {
@@ -246,74 +332,168 @@ export default function Navbar({
                 {/* Mega Menu Dropdown */}
                 {hasMega && (
                   <div className="fixed top-[70px] md:top-[85px] left-0 w-full pt-1 opacity-0 invisible -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100]">
-                    <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex mx-auto">
+                    <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex flex-col mx-auto overflow-hidden">
                       <div className="max-w-[1400px] mx-auto w-full flex">
                         
-                        {/* Columns Container */}
-                        <div className="flex-1 p-10 grid grid-cols-3 gap-10">
+                        {/* 3 Balanced Columns Container */}
+                        <div className="flex-1 p-8 lg:p-10 grid grid-cols-3 gap-6 lg:gap-8">
                           {link.megaMenuCategories?.map((category: any, idx: number) => (
-                            <div key={idx} className="flex flex-col gap-5">
-                              <h3 className="text-construction-navy font-display font-bold uppercase tracking-widest text-[15px] mb-1 border-b border-slate-200 pb-3">
-                                {category.title}
-                              </h3>
-                              <div className="flex flex-col gap-3">
-                                {category.links.map((sub: any) => (
-                                  <Link 
-                                    key={sub.href} 
-                                    href={sub.href}
-                                    className="text-sm font-semibold uppercase tracking-wider text-slate-600 hover:text-construction-red transition-colors py-1.5"
-                                  >
-                                    {sub.label}
-                                  </Link>
-                                ))}
+                            <div key={idx} className="flex flex-col gap-4">
+                              <div className="border-b border-slate-200 pb-2.5">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="text-construction-navy font-display font-bold uppercase tracking-wider text-[13px] sm:text-[14px]">
+                                    {category.title}
+                                  </h3>
+                                  <span className="text-[10px] font-bold text-slate-400 font-mono">
+                                    0{idx + 1}
+                                  </span>
+                                </div>
+                                {category.description && (
+                                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                    {category.description}
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Service Item Cards */}
+                              <div className="flex flex-col gap-2">
+                                {category.links.map((sub: any, itemIdx: number) => {
+                                  const ItemIcon = sub.icon || HardHat;
+                                  const isExternal = Boolean(sub.isExternal);
+
+                                  return (
+                                    <Link 
+                                      key={itemIdx} 
+                                      href={sub.href}
+                                      target={isExternal ? "_blank" : undefined}
+                                      rel={isExternal ? "noopener noreferrer" : undefined}
+                                      className="group/item flex items-start gap-3 p-2.5 -mx-2.5 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200/60"
+                                    >
+                                      <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover/item:bg-construction-red group-hover/item:text-white transition-all duration-200 shadow-sm">
+                                        <ItemIcon className="w-4 h-4 transition-transform group-hover/item:scale-110" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[13px] font-bold text-slate-800 group-hover/item:text-construction-red transition-colors truncate">
+                                            {sub.label}
+                                          </span>
+                                          {sub.badge && (
+                                            <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60 shrink-0">
+                                              {sub.badge}
+                                            </span>
+                                          )}
+                                          {isExternal && (
+                                            <ExternalLink className="w-3 h-3 text-slate-400 group-hover/item:text-construction-red shrink-0" />
+                                          )}
+                                        </div>
+                                        {sub.tagline && (
+                                          <p className="text-[11px] text-slate-500 leading-snug line-clamp-1 mt-0.5 group-hover/item:text-slate-600">
+                                            {sub.tagline}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <ArrowRight className="w-3.5 h-3.5 text-slate-300 opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 group-hover/item:text-construction-red transition-all duration-200 shrink-0 mt-1" />
+                                    </Link>
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
                         </div>
 
-                        {/* Featured Image Block (Right Side) */}
+                        {/* Featured Showcase Card (Right Side) */}
                         {link.megaMenuImage && (
-                          <Link 
-                            href={link.megaMenuLink || "/services"}
-                            className="w-[420px] shrink-0 bg-slate-100 border-l border-slate-200 p-8 flex flex-col justify-between group/feature cursor-pointer relative overflow-hidden"
-                          >
+                          <div className="w-[360px] xl:w-[400px] shrink-0 bg-slate-900 border-l border-slate-200 p-7 flex flex-col justify-between relative overflow-hidden group/feature">
                             <Image 
                               src={link.megaMenuImage} 
                               alt={link.megaMenuTitle || "Services Feature"} 
                               fill
-                              sizes="420px"
+                              sizes="400px"
                               unoptimized={!isOptimizableImage(link.megaMenuImage)}
-                              className="object-cover group-hover/feature:scale-105 transition-all duration-700"
+                              className="object-cover opacity-45 group-hover/feature:scale-105 group-hover/feature:opacity-55 transition-all duration-700"
                             />
                             
-                            {(link.megaMenuTitle || link.megaMenuSubtitle) && (
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-                            )}
+                            {/* Rich Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/80 to-transparent pointer-events-none" />
                             
+                            {/* Top Badge */}
                             <div className="relative z-10">
-                              <div className="flex items-center gap-2 text-construction-red font-bold text-xs uppercase tracking-widest mb-3 drop-shadow">
-                                <span className="w-8 h-[2px] bg-construction-red"></span> Featured Capabilities
+                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-construction-red/20 border border-construction-red/40 text-construction-red text-[11px] font-bold uppercase tracking-wider mb-4">
+                                <Sparkles className="w-3 h-3" />
+                                <span>Turnkey Capabilities</span>
                               </div>
-                              {link.megaMenuTitle && (
-                                <h3 className="text-2xl font-bold text-white font-display uppercase tracking-tight mb-2 leading-tight drop-shadow-md">
-                                  {link.megaMenuTitle}
-                                </h3>
-                              )}
-                              {link.megaMenuSubtitle && (
-                                <p className="text-slate-100 font-normal text-xs leading-relaxed drop-shadow">
-                                  {link.megaMenuSubtitle}
-                                </p>
-                              )}
+
+                              <h3 className="text-xl xl:text-2xl font-bold text-white font-display uppercase tracking-tight mb-2 leading-tight drop-shadow-md">
+                                {link.megaMenuTitle || "Turnkey Construction & Engineering"}
+                              </h3>
+
+                              <p className="text-slate-300 font-normal text-xs leading-relaxed drop-shadow line-clamp-3 mb-4">
+                                {link.megaMenuSubtitle || "Delivering visionary architectural blueprints, BIM modeling, and master infrastructure execution across India."}
+                              </p>
+
+                              {/* Highlight Pills */}
+                              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-[11px] text-slate-300">
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-construction-red shrink-0" />
+                                  <span>BIM 3D Modeling</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-construction-red shrink-0" />
+                                  <span>Turnkey RCC Build</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-construction-red shrink-0" />
+                                  <span>Contour Surveys</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-construction-red shrink-0" />
+                                  <span>Industrial ETP/STP</span>
+                                </div>
+                              </div>
                             </div>
                             
-                            <div className="relative z-10 mt-8 pt-4 border-t border-white/20 flex items-center justify-between text-white text-xs font-bold uppercase tracking-wider group-hover/feature:text-construction-red transition-colors drop-shadow">
-                              <span>Explore All Services</span>
-                              <ArrowRight className="w-4 h-4 group-hover/feature:translate-x-2 transition-transform text-construction-red" />
+                            {/* Actions footer */}
+                            <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex items-center justify-between gap-3">
+                              <Link 
+                                href={link.megaMenuLink || "/services"}
+                                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-construction-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+                              >
+                                <span>All Services</span>
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                              <Link 
+                                href="/cost-estimator"
+                                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider transition-colors border border-white/20"
+                              >
+                                <Calculator className="w-3.5 h-3.5 text-construction-red" />
+                                <span>Estimate</span>
+                              </Link>
                             </div>
-                          </Link>
+                          </div>
                         )}
 
                       </div>
+
+                      {/* Mega Menu Bottom Corporate Utility Bar */}
+                      <div className="bg-slate-50 border-t border-slate-200/80 px-8 py-3">
+                        <div className="max-w-[1400px] mx-auto flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span className="font-semibold text-slate-800">Direct Consultation:</span>
+                            <span className="hidden sm:inline">Have a commercial or residential blueprint in mind? Talk with our senior project engineers.</span>
+                          </div>
+                          <div className="flex items-center gap-4 shrink-0">
+                            <Link 
+                              href="/contact"
+                              className="font-bold text-construction-navy hover:text-construction-red flex items-center gap-1 transition-colors uppercase tracking-wider"
+                            >
+                              <span>Request Engineering Consultation</span>
+                              <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 )}
