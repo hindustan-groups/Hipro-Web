@@ -13,7 +13,10 @@ import {
   Clock, 
   ShieldCheck, 
   Building2, 
-  Compass 
+  Compass,
+  Laptop,
+  FileCheck,
+  Megaphone
 } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
@@ -69,11 +72,11 @@ export default async function Footer() {
       })
     : [
         { label: "Architecture & Planning", href: "/services/architecture-planning" },
-        { label: "Professional Construction Services", href: "/services/professional-construction-services" },
+        { label: "Professional Construction", href: "/services/professional-construction-services" },
         { label: "Surveying & Site Measurements", href: "/services/surveying-site-measurements" },
         { label: "Interior & Exterior Design", href: "/services/interior-exterior-design" },
-        { label: "Water Treatment Plant Construction", href: "/services/water-treatment-plant-construction" },
-        { label: "Project Management & Consultancy", href: "/services/project-management-consultancy" }
+        { label: "Water Treatment Plant Execution", href: "/services/water-treatment-plant-construction" },
+        { label: "Project Management & PMC", href: "/services/project-management-consultancy" }
       ];
 
   const socialLinks = [
@@ -134,12 +137,12 @@ export default async function Footer() {
         </div>
       </div>
 
-      {/* 2. MAIN FOOTER CONTENT COLUMNS */}
+      {/* 2. MAIN FOOTER CONTENT COLUMNS (5 COLUMNS) */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8 mb-16">
 
-          {/* COLUMN 1: BRAND IDENTITY & CREDENTIALS (4 cols on lg) */}
-          <div className="lg:col-span-4 flex flex-col justify-between">
+          {/* COLUMN 1: BRAND IDENTITY & CREDENTIALS (3 cols on lg) */}
+          <div className="lg:col-span-3 flex flex-col justify-between">
             <div>
               {/* Brand Logo Container */}
               <Link href="/" className="inline-flex items-center gap-3 bg-white px-5 py-2.5 rounded-xl mb-6 shadow-md shadow-black/40 hover:opacity-95 transition-opacity">
@@ -161,7 +164,7 @@ export default async function Footer() {
                 </div>
               </Link>
 
-              <p className="text-xs sm:text-sm text-slate-300 font-light leading-relaxed mb-6 max-w-sm">
+              <p className="text-xs text-slate-300 font-light leading-relaxed mb-6 max-w-sm">
                 Engineering landmarks and turnkey civil solutions across residential, commercial, and industrial developments in Rajasthan since 2019.
               </p>
 
@@ -204,7 +207,7 @@ export default async function Footer() {
             </div>
           </div>
 
-          {/* COLUMN 2: COMPANY & INSIGHTS (2.5 cols on lg) */}
+          {/* COLUMN 2: COMPANY (2 cols on lg) */}
           <div className="lg:col-span-2">
             <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
               <span className="w-2 h-0.5 bg-construction-red" />
@@ -233,8 +236,8 @@ export default async function Footer() {
             </ul>
           </div>
 
-          {/* COLUMN 3: ENGINEERING CAPABILITIES (2.5 cols on lg) */}
-          <div className="lg:col-span-3">
+          {/* COLUMN 3: CAPABILITIES (2 cols on lg) */}
+          <div className="lg:col-span-2">
             <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
               <span className="w-2 h-0.5 bg-construction-red" />
               Capabilities
@@ -256,21 +259,90 @@ export default async function Footer() {
                   href="/services"
                   className="text-construction-red hover:text-red-400 font-bold uppercase tracking-wider text-[11px] inline-flex items-center gap-1 group"
                 >
-                  Explore All Capabilities
+                  All Capabilities
                   <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* COLUMN 4: HEADQUARTERS & CONTACT (3 cols on lg) */}
+          {/* COLUMN 4: GROUP ECOSYSTEM (IT, EMPANELMENT & MARKETING) (2 cols on lg) */}
+          <div className="lg:col-span-2">
+            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
+              <span className="w-2 h-0.5 bg-construction-red" />
+              Ecosystem
+            </h3>
+            <div className="space-y-3 text-xs">
+              {/* Empanelment Portal */}
+              <a
+                href="https://empanelment.hindustanprojects.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block p-3 bg-white/5 border border-white/10 hover:border-construction-red/70 hover:bg-white/10 transition-all rounded-none"
+              >
+                <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <FileCheck className="w-3.5 h-3.5 text-construction-red" />
+                    Empanelment
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </div>
+                <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
+                  Vendor, contractor &amp; institutional registration portal.
+                </p>
+                <span className="inline-block mt-2 text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider">
+                  Live Portal ↗
+                </span>
+              </a>
+
+              {/* IT Services Portal */}
+              <a
+                href="https://www.itservices.hindustanprojects.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block p-3 bg-white/5 border border-white/10 hover:border-blue-500/70 hover:bg-white/10 transition-all rounded-none"
+              >
+                <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
+                  <span className="flex items-center gap-1.5 text-white">
+                    <Laptop className="w-3.5 h-3.5 text-blue-400" />
+                    HiPro IT Services
+                  </span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </div>
+                <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
+                  Enterprise software, web development &amp; digital solutions.
+                </p>
+                <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-950/60 border border-blue-500/30 px-2 py-0.5 uppercase tracking-wider">
+                  Live Portal ↗
+                </span>
+              </a>
+
+              {/* HiPro Marketing */}
+              <div className="p-3 bg-white/5 border border-white/10 rounded-none opacity-85">
+                <div className="flex items-center justify-between text-slate-300 font-bold text-[11px] uppercase tracking-wider mb-1">
+                  <span className="flex items-center gap-1.5">
+                    <Megaphone className="w-3.5 h-3.5 text-yellow-500" />
+                    HiPro Marketing
+                  </span>
+                  <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 font-bold uppercase tracking-wider">
+                    Upcoming
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 font-light leading-relaxed">
+                  Brand strategy &amp; commercial solutions.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* COLUMN 5: HEADQUARTERS & CONTACT (3 cols on lg) */}
           <div className="lg:col-span-3">
             <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
               <span className="w-2 h-0.5 bg-construction-red" />
               Headquarters
             </h3>
             
-            <ul className="space-y-3.5 text-xs">
+            <ul className="space-y-3 text-xs">
               {/* Address with Google Maps link */}
               <li className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
