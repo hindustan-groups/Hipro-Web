@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Phone } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 export default function PhoneCaptureModal({ 
   isOpen, 
@@ -46,6 +47,11 @@ export default function PhoneCaptureModal({
           budget: "Not provided",
           description: "User entered their phone number to access the Cost Estimator.",
         }),
+      });
+
+      trackEvent("generate_lead", {
+        form_id: "cost_estimator_phone_capture",
+        service_category: "Cost Estimator",
       });
 
       // Set a cookie so the user can access the page

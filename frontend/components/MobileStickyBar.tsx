@@ -2,6 +2,7 @@
 
 import { Phone, MessageSquare } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { trackEvent } from "@/lib/analytics";
 
 export default function MobileStickyBar() {
   const phone = COMPANY_INFO.phone;
@@ -18,6 +19,7 @@ export default function MobileStickyBar() {
     >
       <a
         href={`tel:${phone}`}
+        onClick={() => trackEvent("contact_phone_click", { location: "mobile_sticky_bar" })}
         className="flex-1 inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-blue-900 active:bg-blue-950 text-white font-bold py-3 px-3 rounded-none text-xs uppercase tracking-wider shadow-md transition-colors"
         aria-label="Call Hindustan Projects"
       >
@@ -28,6 +30,7 @@ export default function MobileStickyBar() {
         href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackEvent("contact_whatsapp_click", { location: "mobile_sticky_bar" })}
         className="flex-1 inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba59] active:bg-[#1da850] text-white font-bold py-3 px-3 rounded-none text-xs uppercase tracking-wider shadow-md transition-colors"
         aria-label="Chat with Hindustan Projects on WhatsApp"
       >

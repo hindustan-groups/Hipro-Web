@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 export default function ContactForm({ services = [] }: { services?: { title: string }[] }) {
   const [formData, setFormData] = useState({
@@ -24,6 +25,10 @@ export default function ContactForm({ services = [] }: { services?: { title: str
       const data = await res.json();
       
       if (data.success) {
+        trackEvent("generate_lead", {
+          form_id: "contact_page",
+          service_category: formData.service || "General Inquiry",
+        });
         setSubmitted(true);
         setTimeout(() => {
           setSubmitted(false);

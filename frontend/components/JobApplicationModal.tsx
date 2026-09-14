@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Send, CheckCircle2, Loader2 } from "lucide-react";
 import FileUpload from "@/components/FileUpload";
+import { trackEvent } from "@/lib/analytics";
 
 interface JobApplicationModalProps {
   isOpen: boolean;
@@ -41,6 +42,9 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
       const data = await res.json();
       
       if (data.success) {
+        trackEvent("submit_application", {
+          job_role: roleTitle,
+        });
         setStatus("success");
       } else {
         setStatus("error");

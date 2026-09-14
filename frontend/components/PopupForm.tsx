@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 const defaultIndianStates = [
   "Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Gujarat", 
@@ -126,6 +127,11 @@ export default function PopupForm() {
       
       const data = await res.json();
       if (data.success) {
+        trackEvent("generate_lead", {
+          form_id: "consultation_popup",
+          state: selectedState || undefined,
+          district: selectedDistrict || undefined,
+        });
         setSuccess(true);
         setTimeout(() => {
           handleClose();

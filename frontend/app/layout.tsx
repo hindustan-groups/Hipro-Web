@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Montserrat, Playfair_Display } from "next/font/google";
+import AnalyticsLinkTracker from "@/components/AnalyticsLinkTracker";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -65,6 +67,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   other: {
     "geo.region": "IN-RJ",
@@ -142,6 +147,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
@@ -155,6 +162,29 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans" suppressHydrationWarning>
+        {gaId ? (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script
+              id="google-analytics-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        ) : null}
+        <AnalyticsLinkTracker />
         {children}
       </body>
     </html>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PhoneCaptureModal from "@/components/PhoneCaptureModal";
+import { trackEvent } from "@/lib/analytics";
 
 export default function CostEstimatorPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -21,13 +22,21 @@ export default function CostEstimatorPage() {
     }
   }, []);
 
+  const triggerCalculate = () => {
+    trackEvent("calculate_cost_estimate", {
+      project_type: "Residential Construction",
+      construction_tier: "Indicative Rates",
+    });
+    setSubmitted(true);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isUnlocked) {
       setShowModal(true);
       return;
     }
-    setSubmitted(true);
+    triggerCalculate();
   };
 
   return (
@@ -38,7 +47,7 @@ export default function CostEstimatorPage() {
         onSuccess={() => {
            setShowModal(false);
            setIsUnlocked(true);
-           setSubmitted(true);
+           triggerCalculate();
         }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
