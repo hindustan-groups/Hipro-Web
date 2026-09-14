@@ -317,17 +317,17 @@ export default function Navbar({
         }`
       }
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" suppressHydrationWarning>
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 xl:px-8" suppressHydrationWarning>
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 transition-transform hover:scale-[1.02] group">
-            <Image src="/logo.jpg" alt="HiPRO Logo" width={48} height={48} className="h-10 md:h-12 w-auto object-contain mix-blend-multiply" />
-            <div className="w-[1px] h-9 bg-slate-200/50"></div>
+          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 transition-transform hover:scale-[1.02] group">
+            <Image src="/logo.jpg" alt="HiPRO Logo" width={48} height={48} className="h-9 sm:h-10 md:h-11 xl:h-12 w-auto object-contain mix-blend-multiply" />
+            <div className="w-[1px] h-8 sm:h-9 bg-slate-200/50"></div>
             <div className="flex flex-col justify-center">
-              <span className="font-bold text-[14px] sm:text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
+              <span className="font-bold text-[13px] sm:text-[15px] xl:text-[17px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
                 Hindustan
               </span>
-              <span className={`font-bold text-[10px] sm:text-[13px] leading-tight tracking-[0.1em] font-display uppercase transition-colors ${
+              <span className={`font-bold text-[9px] sm:text-[11px] xl:text-[13px] leading-tight tracking-[0.1em] font-display uppercase transition-colors ${
                 isDarkNavbar ? "text-white" : "text-construction-navy"
               }`}>
                 Projects
@@ -336,7 +336,7 @@ export default function Navbar({
           </Link>
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8 h-full">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-5 2xl:gap-8 h-full">
             {navLinks.filter(Boolean).map((link) => {
               const isCurrentActive = pathname
                 ? (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")))
@@ -369,7 +369,7 @@ export default function Navbar({
                         handleMouseEnterDropdown(link.href);
                       }
                     }}
-                    className={`relative flex items-center gap-1.5 text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
+                    className={`relative flex items-center gap-1 xl:gap-1.5 text-[13px] xl:text-[14px] 2xl:text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
                       isCurrentActive
                         ? (isDarkNavbar 
                             ? "text-white font-bold" 
@@ -446,7 +446,7 @@ export default function Navbar({
                       <div className="max-w-[1520px] mx-auto w-full flex">
                         
                         {/* 3 Balanced Columns Container */}
-                        <div className="flex-1 p-7 lg:p-8 grid grid-cols-3 gap-6 lg:gap-8">
+                        <div className="flex-1 p-5 xl:p-8 grid grid-cols-3 gap-4 xl:gap-8">
                           {link.megaMenuCategories?.map((category: any, idx: number) => (
                             <div key={idx} className="flex flex-col gap-3">
                               <div className="border-b border-slate-200 pb-2">
@@ -513,7 +513,7 @@ export default function Navbar({
 
                         {/* Featured Showcase Card (Right Side) */}
                         {link.megaMenuImage && (
-                          <div className="w-[330px] xl:w-[360px] shrink-0 bg-slate-900 border-l border-slate-200 p-6 flex flex-col justify-between relative overflow-hidden group/feature">
+                          <div className="w-[280px] xl:w-[340px] 2xl:w-[360px] shrink-0 bg-slate-900 border-l border-slate-200 p-5 xl:p-6 flex flex-col justify-between relative overflow-hidden group/feature">
                             <Image 
                               src={link.megaMenuImage} 
                               alt={link.megaMenuTitle || "Services Feature"} 
@@ -542,7 +542,7 @@ export default function Navbar({
                               </p>
 
                               {/* Highlight Pills */}
-                              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10 text-[11px] text-slate-300">
+                              <div className="grid grid-cols-2 gap-1.5 xl:gap-2 pt-2 border-t border-white/10 text-[10px] xl:text-[11px] text-slate-300">
                                 <div className="flex items-center gap-1.5">
                                   <CheckCircle2 className="w-3.5 h-3.5 text-construction-red shrink-0" />
                                   <span>BIM 3D Modeling</span>
@@ -612,7 +612,7 @@ export default function Navbar({
           })}
             <Link 
               href="/contact" 
-              className={`relative overflow-hidden group ml-2 lg:ml-3 px-5 lg:px-6 py-2.5 rounded-none font-semibold uppercase tracking-wider text-sm transition-all duration-300 flex items-center gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
+              className={`relative overflow-hidden group ml-1.5 xl:ml-3 px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 rounded-none font-semibold uppercase tracking-wider text-xs xl:text-sm transition-all duration-300 flex items-center gap-1.5 xl:gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
                 isDarkNavbar
                   ? "bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.15)]"
                   : "bg-construction-navy/95 hover:bg-construction-navy text-white border border-blue-900/40 shadow-md shadow-blue-900/20"
@@ -622,17 +622,19 @@ export default function Navbar({
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               
               <span className="relative z-10">Get a Quote</span>
-              <ArrowRight className="w-4 h-4 relative z-10 text-construction-red transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-3.5 xl:w-4 h-3.5 xl:h-4 relative z-10 text-construction-red transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
 
           {/* Mobile toggle button with smooth rotate transition */}
           <button
-            className={`md:hidden flex items-center justify-center p-2 transition-all duration-300 ${
+            className={`lg:hidden flex items-center justify-center p-2 transition-all duration-300 ${
               isDarkNavbar ? "text-white hover:text-gray-200" : "text-slate-700 hover:text-black"
             } ${mobileOpen ? "rotate-90 text-construction-red" : "rotate-0"}`}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-menu"
           >
             {mobileOpen ? <X className="w-7 h-7 transition-transform duration-300" /> : <Menu className="w-7 h-7 transition-transform duration-300" />}
           </button>
@@ -640,7 +642,8 @@ export default function Navbar({
 
         {/* Mobile Menu with Smooth Open/Close Animation */}
         <div 
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          id="mobile-nav-menu"
+          className={`lg:hidden overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             mobileOpen 
               ? "max-h-[85vh] opacity-100 translate-y-0 pt-4 pb-2 border-t border-gray-100 shadow-2xl pointer-events-auto" 
               : "max-h-0 opacity-0 -translate-y-2 pointer-events-none border-transparent py-0"
