@@ -8,6 +8,7 @@ const router = Router();
 // Allowed fields whitelist for PUT / PATCH mutations
 const ALLOWED_FIELDS = new Set([
   "status",
+  "publishedAt",
   "heroBadge",
   "heroHeadingPrefix",
   "heroHeadingAccent",
@@ -242,10 +243,20 @@ const handleMutation = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Invalid request body" });
     }
 
+    // System / metadata fields that can be safely ignored if sent by client
+    const SYSTEM_METADATA_FIELDS = new Set([
+      "id",
+      "_id",
+      "publishedAt",
+      "createdAt",
+      "updatedAt",
+      "isFallback",
+    ]);
+
     // Strict field whitelist: Reject unexpected fields
     const unknownKeys: string[] = [];
     for (const key of Object.keys(body)) {
-      if (!ALLOWED_FIELDS.has(key) && key !== "id") {
+      if (!ALLOWED_FIELDS.has(key) && !SYSTEM_METADATA_FIELDS.has(key)) {
         unknownKeys.push(key);
       }
     }
@@ -296,6 +307,8 @@ const handleMutation = async (req: Request, res: Response) => {
       "regionalBullets",
     ];
 
+    const imageFields = new Set(["founderImage", "ogImage", "twitterImage"]);
+
     const sanitizedData: Record<string, any> = {};
 
     for (const key of Object.keys(body)) {
@@ -315,6 +328,17 @@ const handleMutation = async (req: Request, res: Response) => {
           }
           // Ensure it is stored as a clean JSON string
           sanitizedData[key] = typeof val === "string" ? val : JSON.stringify(val);
+        } else if (imageFields.has(key)) {
+          // Normalize image fields: non-empty string or null
+          sanitizedData[key] = (typeof val === "string" && val.trim().length > 0) ? val.trim() : null;
+        } else if (key === "publishedAt") {
+          if (val) {
+            try {
+              sanitizedData.publishedAt = new Date(val);
+            } catch {
+              /* ignore invalid date parse */
+            }
+          }
         } else {
           // Plain text field sanitization (prevent arbitrary HTML script injections)
           if (typeof val === "string") {

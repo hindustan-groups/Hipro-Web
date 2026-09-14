@@ -178,18 +178,30 @@ export default function AdminAboutPage() {
 
     const newStatus = targetStatus || form.status || "published";
 
+    // Omit server-managed metadata fields so backend validation is clean and pure
+    const {
+      id: _id,
+      publishedAt: _publishedAt,
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+      isFallback: _isFallback,
+      reason: _reason,
+      isPreview: _isPreview,
+      ...contentFields
+    } = form as any;
+
     // Prepare payload with properly serialized JSON arrays
     const payload = {
-      ...form,
+      ...contentFields,
       status: newStatus,
-      heroHighlights: JSON.stringify(form.heroHighlights),
-      executiveStatement: JSON.stringify(form.executiveStatement),
-      companyFacts: JSON.stringify(form.companyFacts),
-      engineeringPrinciples: JSON.stringify(form.engineeringPrinciples),
-      executionStages: JSON.stringify(form.executionStages),
-      capabilitiesSectors: JSON.stringify(form.capabilitiesSectors),
-      qualityCommitments: JSON.stringify(form.qualityCommitments),
-      regionalBullets: JSON.stringify(form.regionalBullets),
+      heroHighlights: JSON.stringify(form.heroHighlights || []),
+      executiveStatement: JSON.stringify(form.executiveStatement || []),
+      companyFacts: JSON.stringify(form.companyFacts || []),
+      engineeringPrinciples: JSON.stringify(form.engineeringPrinciples || []),
+      executionStages: JSON.stringify(form.executionStages || []),
+      capabilitiesSectors: JSON.stringify(form.capabilitiesSectors || []),
+      qualityCommitments: JSON.stringify(form.qualityCommitments || []),
+      regionalBullets: JSON.stringify(form.regionalBullets || []),
     };
 
     try {
@@ -561,44 +573,30 @@ export default function AdminAboutPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Founder Portrait Photo
                 </label>
-                {form.founderImage ? (
-                  <div className="relative mb-3">
-                    <div className="relative w-full h-64 border border-slate-300 overflow-hidden">
-                      <Image
-                        src={form.founderImage}
-                        alt={form.founderImageAlt || "Yogesh Kharol"}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => updateField("founderImage", null)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1.5 shadow-md hover:bg-red-700 transition-colors"
-                      title="Remove image"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-44 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 p-4 mb-3 text-center">
-                    <Building2 className="w-8 h-8 mb-2 text-slate-300" />
-                    <span className="text-xs font-medium text-slate-500">No portrait photo uploaded</span>
-                    <span className="text-[10px] text-slate-400 mt-1">Monogram crest active as fallback</span>
+                <div className="mb-3">
+                  <ImageUpload
+                    value={form.founderImage || ""}
+                    onChange={(url) => updateField("founderImage", url || null)}
+                  />
+                </div>
+                {!form.founderImage && (
+                  <div className="p-2.5 bg-amber-50/70 border border-amber-200/80 mb-3 text-[11px] text-amber-800 flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                    <span>No portrait photo uploaded. Architectural monogram crest is active as fallback on the public site.</span>
                   </div>
                 )}
-                <ImageUpload
-                  value={form.founderImage || ""}
-                  onChange={(url) => updateField("founderImage", url)}
-                />
-                <input
-                  type="text"
-                  placeholder="Image Alt Text"
-                  value={form.founderImageAlt || ""}
-                  onChange={(e) => updateField("founderImageAlt", e.target.value)}
-                  className="w-full text-xs px-3 py-1.5 mt-2 border border-slate-300"
-                />
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Image Alt Text
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Image Alt Text (e.g. Yogesh Kharol, Founder & Director)"
+                    value={form.founderImageAlt || ""}
+                    onChange={(e) => updateField("founderImageAlt", e.target.value)}
+                    className="w-full text-xs px-3 py-2 border border-slate-300 focus:outline-none focus:border-construction-navy"
+                  />
+                </div>
               </div>
 
               {/* Leadership Copy Column */}
@@ -1310,36 +1308,11 @@ export default function AdminAboutPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
                   Social Share Image (1200 x 630px)
                 </label>
-                {form.ogImage ? (
-                  <div className="relative mb-3">
-                    <div className="relative w-full h-36 border border-slate-300 overflow-hidden">
-                      <Image
-                        src={form.ogImage}
-                        alt="Social Share Preview"
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => updateField("ogImage", "/logo.jpg")}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 text-xs"
-                      title="Reset to default logo"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="h-28 border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-xs mb-3">
-                    No custom OG image
-                  </div>
-                )}
                 <ImageUpload
                   value={form.ogImage || ""}
                   onChange={(url) => {
-                    updateField("ogImage", url);
-                    updateField("twitterImage", url);
+                    updateField("ogImage", url || "/logo.jpg");
+                    updateField("twitterImage", url || "/logo.jpg");
                   }}
                 />
               </div>

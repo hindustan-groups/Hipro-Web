@@ -213,7 +213,11 @@ export default async function AboutPage({
     content?.executiveStatement,
     fallback.executiveStatement.statement
   );
-  const founderImage = content?.founderImage || founderInDb?.img || null;
+  const founderImage =
+    content?.founderImage ||
+    founderInDb?.img ||
+    pageContent?.aboutImage ||
+    null;
   const founderImageAlt =
     content?.founderImageAlt ||
     founderInDb?.name ||
