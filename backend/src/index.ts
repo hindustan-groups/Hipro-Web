@@ -23,9 +23,12 @@ import applicationsRouter from "./routes/applications";
 import locationsRouter from "./routes/locations";
 import aboutRouter from "./routes/about";
 import uploadRouter from "./routes/upload";
+import { securityHeaders } from "./middleware/securityHeaders";
 
 const app = express();
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
+app.use(securityHeaders);
 const PORT = process.env.PORT || 5000;
 
 // CORS configuration with explicit allowlist
