@@ -1,11 +1,12 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
 import { hashPassword, verifyPassword, createSession, logout, getSessionUser } from "../lib/auth";
+import { authLoginLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
-// POST /api/auth/login
-router.post("/login", async (req: Request, res: Response) => {
+// POST /api/auth/login — Protected with brute-force rate limiter
+router.post("/login", authLoginLimiter, async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const normalizedEmail = (email || "").trim().toLowerCase();

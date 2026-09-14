@@ -2,12 +2,13 @@ import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
 import { validateEmail, validateRequired } from "../lib/validate";
 import { authGuard } from "../middleware/authGuard";
+import { contactLimiter } from "../middleware/rateLimiter";
 import type { ContactMessage, ApiResponse } from "../lib/types";
 
 const router = Router();
 
-// POST /api/contact — submit contact form (Public)
-router.post("/", async (req: Request, res: Response) => {
+// POST /api/contact — submit contact form (Public, Rate-Limited)
+router.post("/", contactLimiter, async (req: Request, res: Response) => {
   try {
     const { name, email, phone, service, message } = req.body;
 

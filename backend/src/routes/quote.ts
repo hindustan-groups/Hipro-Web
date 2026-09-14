@@ -2,12 +2,13 @@ import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
 import { validateEmail, validatePhone, validateRequired } from "../lib/validate";
 import { authGuard } from "../middleware/authGuard";
+import { quoteLimiter } from "../middleware/rateLimiter";
 import type { QuoteRequest, ApiResponse } from "../lib/types";
 
 const router = Router();
 
-// POST /api/quote
-router.post("/", async (req: Request, res: Response) => {
+// POST /api/quote — submit quote request (Public, Rate-Limited)
+router.post("/", quoteLimiter, async (req: Request, res: Response) => {
   try {
     let { name, email, phone, projectType, budget, location, description, timeline } = req.body;
 
