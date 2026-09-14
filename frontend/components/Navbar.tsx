@@ -55,7 +55,7 @@ const defaultNavLinks = [
     megaMenuCategories: [],
   },
   { href: "/projects", label: "Projects", isMegaMenu: false },
-  { href: "/cost-estimator", label: "Cost Estimator", isMegaMenu: false },
+  { href: "https://empanelment.hindustanprojects.in/", label: "Vendor Panel", isMegaMenu: false, isExternal: true },
   { href: "/blogs", label: "Blog", isMegaMenu: false },
   { href: "/careers", label: "Careers", isMegaMenu: false },
 ];
@@ -156,14 +156,22 @@ export default function Navbar({
   // Remove "Contact" from nav links — the "Get a Quote" button already links to /contact
   navLinks = navLinks.filter((l: any) => !(l && l.href === "/contact"));
 
-  // Ensure Cost Estimator link is always present
-  if (!navLinks.some((l: any) => l && l.href === "/cost-estimator")) {
+  // Remove "Cost Estimator" from top-level navbar (it is housed under Services mega menu)
+  navLinks = navLinks.filter((l: any) => !(l && (l.href === "/cost-estimator" || l.label === "Cost Estimator")));
+
+  // Ensure Vendor Panel (Empanelment) link is always present
+  if (!navLinks.some((l: any) => l && (l.href === "https://empanelment.hindustanprojects.in/" || l.label === "Vendor Panel"))) {
     const insertIdx = navLinks.findIndex((l: any) => l && (l.href === "/blogs" || l.href === "/careers"));
-    const estimatorLink = { href: "/cost-estimator", label: "Cost Estimator", isMegaMenu: false };
+    const vendorPanelLink = { 
+      href: "https://empanelment.hindustanprojects.in/", 
+      label: "Vendor Panel", 
+      isMegaMenu: false, 
+      isExternal: true 
+    };
     if (insertIdx !== -1) {
-      navLinks.splice(insertIdx, 0, estimatorLink);
+      navLinks.splice(insertIdx, 0, vendorPanelLink);
     } else {
-      navLinks.push(estimatorLink);
+      navLinks.push(vendorPanelLink);
     }
   }
 
@@ -242,6 +250,14 @@ export default function Navbar({
     // 3rd Pillar: Specialized Portals & Interactive Utilities
     const ecosystemLinks = [
       {
+        href: "/cost-estimator",
+        label: "Instant Cost Estimator",
+        tagline: "Calculate construction budgets in under 60 seconds",
+        icon: Calculator,
+        isExternal: false,
+        badge: "Free Tool",
+      },
+      {
         href: "https://empanelment.hindustanprojects.in/",
         label: "Hindustan Empanelment",
         tagline: "Govt, vendor & contractor empanelment gateway",
@@ -256,14 +272,6 @@ export default function Navbar({
         icon: Globe2,
         isExternal: true,
         badge: "Live Portal",
-      },
-      {
-        href: "/cost-estimator",
-        label: "Instant Cost Estimator",
-        tagline: "Calculate construction budgets in under 60 seconds",
-        icon: Calculator,
-        isExternal: false,
-        badge: "Free Tool",
       },
     ];
 
@@ -353,13 +361,15 @@ export default function Navbar({
                 <div className="flex items-center h-full">
                   <Link
                     href={link.href}
+                    target={link.isExternal ? "_blank" : undefined}
+                    rel={link.isExternal ? "noopener noreferrer" : undefined}
                     onClick={(e) => {
                       if (hasMega && activeDesktopDropdown !== link.href) {
                         e.preventDefault();
                         handleMouseEnterDropdown(link.href);
                       }
                     }}
-                    className={`relative flex items-center text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
+                    className={`relative flex items-center gap-1.5 text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
                       isCurrentActive
                         ? (isDarkNavbar 
                             ? "text-white font-bold" 
@@ -370,6 +380,9 @@ export default function Navbar({
                     }`}
                   >
                     <span>{link.label}</span>
+                    {link.isExternal && (
+                      <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-construction-red shrink-0" />
+                    )}
                     {/* Animated Bottom Border with Smooth Transition */}
                     <span 
                       className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
@@ -642,14 +655,19 @@ export default function Navbar({
                 <div className="flex items-center justify-between w-full">
                   <Link
                     href={link.href}
+                    target={link.isExternal ? "_blank" : undefined}
+                    rel={link.isExternal ? "noopener noreferrer" : undefined}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex-1 px-4 py-3 text-base font-semibold uppercase tracking-wider transition-colors ${
+                    className={`flex-1 px-4 py-3 text-base font-semibold uppercase tracking-wider transition-colors flex items-center justify-between ${
                       pathname === link.href
                         ? "text-construction-navy font-bold"
                         : "text-slate-600 hover:text-black"
                     }`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.isExternal && (
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-400 mr-2" />
+                    )}
                   </Link>
                   {hasDropdown && (
                     <button
@@ -706,14 +724,21 @@ export default function Navbar({
                                 <Link
                                   key={sub.href}
                                   href={sub.href}
+                                  target={sub.isExternal ? "_blank" : undefined}
+                                  rel={sub.isExternal ? "noopener noreferrer" : undefined}
                                   onClick={() => setMobileOpen(false)}
                                   className={`px-4 py-2 text-sm font-semibold transition-colors ${
                                     pathname === sub.href
                                       ? "text-construction-red font-bold"
                                       : "text-slate-600 hover:text-construction-red"
-                                  } border-l-2 border-slate-200 ml-4`}
+                                  } border-l-2 border-slate-200 ml-4 flex items-center justify-between`}
                                 >
-                                  {sub.label}
+                                  <span>{sub.label}</span>
+                                  {sub.badge && (
+                                    <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60 shrink-0 ml-2">
+                                      {sub.badge}
+                                    </span>
+                                  )}
                                 </Link>
                               ))}
                             </div>
