@@ -79,68 +79,82 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": ["Organization", "LocalBusiness"],
-  name: "Hindustan Projects (HiPRO)",
-  legalName: "Hindustan Projects",
-  url: "https://www.hindustanprojects.in/",
-  logo: "https://www.hindustanprojects.in/logo.jpg",
-  image: "https://www.hindustanprojects.in/logo.jpg",
-  description: "Engineering · Construction · Infrastructure firm based in Bhilwara, Rajasthan. Specializing in turnkey civil engineering, architectural planning, and infrastructure development.",
-  foundingDate: "2019",
-  founder: {
-    "@type": "Person",
-    name: "Yogesh Kharol",
-    jobTitle: "Founder & Director",
-  },
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
-    addressLocality: "Bhilwara",
-    addressRegion: "Rajasthan",
-    postalCode: "311001",
-    addressCountry: "IN",
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: 25.3510922,
-    longitude: 74.6330429,
-  },
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ],
-      opens: "09:00",
-      closes: "19:00",
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.hindustanprojects.in/#website",
+    url: "https://www.hindustanprojects.in/",
+    name: "Hindustan Projects (HiPRO)",
+    description: "Engineering · Construction · Infrastructure firm based in Bhilwara, Rajasthan.",
+    publisher: {
+      "@id": "https://www.hindustanprojects.in/#organization",
     },
-  ],
-  areaServed: [
-    {
-      "@type": "AdministrativeArea",
-      name: "Bhilwara",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": ["Organization", "LocalBusiness"],
+    "@id": "https://www.hindustanprojects.in/#organization",
+    name: "Hindustan Projects (HiPRO)",
+    legalName: "Hindustan Projects",
+    url: "https://www.hindustanprojects.in/",
+    logo: "https://www.hindustanprojects.in/logo.jpg",
+    image: "https://www.hindustanprojects.in/logo.jpg",
+    description: "Engineering · Construction · Infrastructure firm based in Bhilwara, Rajasthan. Specializing in turnkey civil engineering, architectural planning, and infrastructure development.",
+    foundingDate: "2019",
+    founder: {
+      "@type": "Person",
+      name: "Yogesh Kharol",
+      jobTitle: "Founder & Director",
     },
-    {
-      "@type": "AdministrativeArea",
-      name: "Rajasthan",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
+      addressLocality: "Bhilwara",
+      addressRegion: "Rajasthan",
+      postalCode: "311001",
+      addressCountry: "IN",
     },
-  ],
-  telephone: "+917597000601",
-  email: "info@hindustanprojects.in",
-  sameAs: [
-    "https://www.instagram.com/hindustan_projects/",
-    "https://www.facebook.com/people/Hindustan-Projects",
-    "https://linkedin.com/company/hindustanprojects",
-    "https://pin.it/5OlMWwi2w",
-  ],
-};
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 25.3510922,
+      longitude: 74.6330429,
+    },
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ],
+        opens: "09:00",
+        closes: "19:00",
+      },
+    ],
+    areaServed: [
+      {
+        "@type": "AdministrativeArea",
+        name: "Bhilwara",
+      },
+      {
+        "@type": "AdministrativeArea",
+        name: "Rajasthan",
+      },
+    ],
+    telephone: "+917597000601",
+    email: "info@hindustanprojects.in",
+    sameAs: [
+      "https://www.instagram.com/hindustan_projects/",
+      "https://www.facebook.com/people/Hindustan-Projects",
+      "https://linkedin.com/company/hindustanprojects",
+      "https://pin.it/5OlMWwi2w",
+    ],
+  },
+];
 
 export default function RootLayout({
   children,

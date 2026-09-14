@@ -22,7 +22,7 @@ const fallbackHeroImages = [
 const defaultSlides: HeroSlide[] = [
   {
     id: "default-1",
-    title: "ENGINEERING LANDMARKS. DELIVERING EXCELLENCE.",
+    title: "Hindustan Projects (HiPRO) — Engineering, Construction & Infrastructure in Rajasthan",
     subtitle: "Turnkey Civil Engineering, Structural Design, and Modern Construction Infrastructure across Rajasthan.",
     tagline: "Hindustan Projects (HiPRO) · Est. 2019",
     image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1400&q=75",
@@ -70,6 +70,8 @@ const verifiedStatsMap: Record<string, string> = {
 function cleanHeroText(text: string = ""): string {
   if (!text) return "";
   return text
+    .replace(/you think it we create it/gi, "Hindustan Projects (HiPRO) — Engineering, Construction & Infrastructure in Rajasthan")
+    .replace(/Building Infrastructure\.\s*Enabling Innovation\./gi, "Hindustan Projects (HiPRO) — Engineering, Construction & Infrastructure in Rajasthan")
     .replace(/IDEA TO EXCUTION/gi, "IDEA TO EXECUTION")
     .replace(/EXCUTION/gi, "EXECUTION")
     .replace(/all services provide by us/gi, "Engineering · Construction · Infrastructure")

@@ -103,7 +103,7 @@ export default function AdminAboutPage() {
       "Active coordination with local municipal sanction processes and statutory setback guidelines.",
       "Direct access to regional stone, masonry, cement, and steel supply chains for predictable project procurement.",
     ],
-    metaTitle: "About Us | Hindustan Projects (HiPRO) — Engineering & Construction",
+    metaTitle: "About Us — Engineering & Construction Firm",
     metaDescription: "Hindustan Projects (HiPRO) is an engineering, turnkey construction, and infrastructure firm headquartered in Bhilwara, Rajasthan. Delivering disciplined civil execution, architectural planning, and precision surveying since 2019.",
     canonicalUrl: "/about",
     targetLocation: "Bhilwara, Rajasthan",

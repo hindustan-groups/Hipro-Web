@@ -109,9 +109,10 @@ async function getAboutContent(previewRequested?: boolean): Promise<{
 
 export async function generateMetadata(): Promise<Metadata> {
   const { content } = await getAboutContent();
-  const title =
-    content?.metaTitle ||
-    "About Us | Hindustan Projects (HiPRO) — Engineering & Construction";
+  let title = content?.metaTitle || "About Us — Engineering & Construction Firm";
+  if (title.includes(" | Hindustan Projects (HiPRO)")) {
+    title = title.replace(/\s*\|\s*Hindustan Projects \(HiPRO\).*/i, "").trim();
+  }
   const description =
     content?.metaDescription ||
     "Hindustan Projects (HiPRO) is an engineering, turnkey construction, and infrastructure firm headquartered in Bhilwara, Rajasthan. Delivering disciplined civil execution, architectural planning, and precision surveying since 2019.";
