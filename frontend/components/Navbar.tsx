@@ -72,6 +72,7 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileDropdowns, setOpenMobileDropdowns] = useState<{[key: string]: boolean}>({});
+  const [activeDesktopDropdown, setActiveDesktopDropdown] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -79,6 +80,21 @@ export default function Navbar({
       setOpenMobileDropdowns({});
     }
   }, [mobileOpen]);
+
+  useEffect(() => {
+    setActiveDesktopDropdown(null);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest("header")) {
+        setActiveDesktopDropdown(null);
+      }
+    };
+    window.addEventListener("click", handleGlobalClick);
+    return () => window.removeEventListener("click", handleGlobalClick);
+  }, []);
 
   const toggleMobileDropdown = (href: string) => {
     setOpenMobileDropdowns(prev => ({
@@ -283,38 +299,64 @@ export default function Navbar({
               const hasMega = link.isMegaMenu && ((link.megaMenuCategories && link.megaMenuCategories.length > 0) || Boolean(link.megaMenuImage));
               const hasDropdown = (link.subLinks && link.subLinks.length > 0) || hasMega;
 
-              return (
-              <div key={link.href} className="relative group h-full flex items-center">
-                <Link
-                  href={link.href}
-                  className={`relative flex items-center text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
-                    isCurrentActive
-                      ? (isDarkNavbar 
-                          ? "text-white font-bold" 
-                          : "text-construction-red font-bold")
-                      : (isDarkNavbar 
-                          ? "text-slate-200 hover:text-white" 
-                          : "text-slate-700 hover:text-construction-red")
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {hasDropdown && (
-                    <ChevronDown className={`w-4 h-4 ml-1.5 transition-transform duration-300 ease-out group-hover:rotate-180 ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
-                  )}
+              const isOpenDesktop = activeDesktopDropdown === link.href;
 
-                  {/* Animated Bottom Border with Smooth Transition */}
-                  <span 
-                    className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              return (
+              <div 
+                key={link.href} 
+                className="relative group h-full flex items-center"
+                onMouseEnter={() => {
+                  if (hasDropdown) setActiveDesktopDropdown(link.href);
+                }}
+                onMouseLeave={() => {
+                  if (hasDropdown) setActiveDesktopDropdown(null);
+                }}
+              >
+                <div className="flex items-center h-full">
+                  <Link
+                    href={link.href}
+                    className={`relative flex items-center text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
                       isCurrentActive
-                        ? `w-full ${isDarkNavbar ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]" : "bg-construction-red shadow-[0_0_8px_rgba(220,38,38,0.4)]"}`
-                        : `w-0 group-hover:w-full ${isDarkNavbar ? "bg-white/80" : "bg-construction-red"}`
-                    }`} 
-                  />
-                </Link>
+                        ? (isDarkNavbar 
+                            ? "text-white font-bold" 
+                            : "text-construction-red font-bold")
+                        : (isDarkNavbar 
+                            ? "text-slate-200 hover:text-white" 
+                            : "text-slate-700 hover:text-construction-red")
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    {/* Animated Bottom Border with Smooth Transition */}
+                    <span 
+                      className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                        isCurrentActive
+                          ? `w-full ${isDarkNavbar ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]" : "bg-construction-red shadow-[0_0_8px_rgba(220,38,38,0.4)]"}`
+                          : `w-0 group-hover:w-full ${isDarkNavbar ? "bg-white/80" : "bg-construction-red"}`
+                      }`} 
+                    />
+                  </Link>
+                  {hasDropdown && (
+                    <button
+                      type="button"
+                      aria-label={`Toggle ${link.label} menu`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveDesktopDropdown(prev => prev === link.href ? null : link.href);
+                      }}
+                      className="p-1 -mr-1 focus:outline-none cursor-pointer"
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : "group-hover:rotate-180"} ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
+                    </button>
+                  )}
+                </div>
                 
                 {/* Standard Dropdown Menu Desktop */}
                 {link.subLinks && !link.isMegaMenu && (
-                  <div className="absolute top-[100%] left-0 w-48 pt-1 opacity-0 invisible translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-50">
+                  <div className={`absolute top-full left-0 w-48 pt-2 transition-all duration-200 z-50 ${
+                    isOpenDesktop 
+                      ? "opacity-100 visible translate-y-0 pointer-events-auto" 
+                      : "opacity-0 invisible translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
+                  }`}>
                     <div className="bg-white shadow-xl flex flex-col py-2 rounded-b-md border border-slate-100">
                       {link.subLinks.map((sub: { label: string; href: string }) => (
                         <Link 
@@ -331,7 +373,17 @@ export default function Navbar({
 
                 {/* Mega Menu Dropdown */}
                 {hasMega && (
-                  <div className="fixed top-[70px] md:top-[85px] left-0 w-full pt-1 opacity-0 invisible -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100]">
+                  <div 
+                    className={`fixed top-full left-0 w-full pt-2 transition-all duration-200 z-[100] ${
+                      isOpenDesktop 
+                        ? "opacity-100 visible translate-y-0 pointer-events-auto" 
+                        : "opacity-0 invisible -translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
+                    }`}
+                    onMouseEnter={() => setActiveDesktopDropdown(link.href)}
+                    onMouseLeave={() => setActiveDesktopDropdown(null)}
+                  >
+                    {/* Invisible hover bridge buffer to ensure mouse doesn't drop during fast motion */}
+                    <div className="absolute -top-4 left-0 w-full h-4 pointer-events-auto" />
                     <div className="w-full bg-white shadow-2xl border-t border-slate-200 flex flex-col mx-auto overflow-hidden">
                       <div className="max-w-[1520px] mx-auto w-full flex">
                         
