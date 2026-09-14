@@ -52,9 +52,20 @@ export default async function Home() {
       !/^(avinash|piyush|test)/i.test(t.name?.trim() || "") &&
       !/services of compan/i.test(t.text || "")
   );
+  const now = new Date();
   const blogsData = blogs
-    .filter(b => b.active !== false)
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    .filter(b => {
+      if (!b || b.active === false) return false;
+      const status = (b.status || "published").toLowerCase();
+      if (status !== "published") return false;
+      if (b.publishDate) {
+        const pd = new Date(b.publishDate);
+        if (!isNaN(pd.getTime()) && pd > now) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 3);
   const guaranteesData = guarantees
     .filter(g => g.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99));
