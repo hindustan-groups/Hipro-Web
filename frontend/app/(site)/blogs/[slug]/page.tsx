@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle } from "lucide-react";
+import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle, ExternalLink } from "lucide-react";
 import { findAll, findBySlug } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -135,10 +135,16 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         "@type": "Person",
         "@id": "https://www.hindustanprojects.in/#founder",
         "name": rawAuthor,
+        "jobTitle": post.authorRole || "Founder & Director",
+        ...(post.authorImage ? { "image": post.authorImage } : {}),
+        "url": post.authorProfileUrl || "https://www.hindustanprojects.in/about#leadership",
       }
     : {
         "@type": "Person",
         "name": rawAuthor,
+        ...(post.authorRole ? { "jobTitle": post.authorRole } : {}),
+        ...(post.authorImage ? { "image": post.authorImage } : {}),
+        ...(post.authorProfileUrl ? { "url": post.authorProfileUrl } : {}),
       };
 
   // Schema.org BlogPosting structured data
@@ -241,7 +247,17 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-white/90 font-medium sm:font-semibold uppercase tracking-wider">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-construction-red shrink-0" />
-                <span itemProp="author">{post.author}</span>
+                {post.authorProfileUrl ? (
+                  <Link
+                    href={post.authorProfileUrl}
+                    className="hover:text-white transition-colors underline decoration-white/40 underline-offset-2"
+                    itemProp="author"
+                  >
+                    {post.author}
+                  </Link>
+                ) : (
+                  <span itemProp="author">{post.author}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-construction-red shrink-0" />
@@ -249,6 +265,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   {post.date}
                 </time>
               </div>
+              {post.updatedAt && post.publishDate && new Date(post.updatedAt).getTime() - new Date(post.publishDate).getTime() > 86400000 && (
+                <div className="flex items-center gap-2 text-white/75">
+                  <span>(Updated: <time itemProp="dateModified" dateTime={new Date(post.updatedAt).toISOString()}>{new Date(post.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>)</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-construction-red shrink-0" />
                 <span>{readTime} min read</span>
@@ -438,21 +459,57 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <div className="w-full lg:w-1/3">
             <div className="sticky top-32 space-y-10">
               
-              {/* Author Card */}
+              {/* Dynamic Author Card */}
               <div className="bg-white p-8 border border-slate-200 shadow-xl shadow-slate-100/50">
-                <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-6">About the Author</h4>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-slate-900 rounded-none flex items-center justify-center text-white text-2xl font-display font-bold">
-                    {(post.author || "A").charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-bold text-slate-900 text-lg">{post.author || "Author"}</div>
-                    <div className="text-slate-500 text-sm">Industry Expert</div>
+                <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-6">
+                  About the Author
+                </h4>
+                <div className="flex items-start gap-4 mb-4">
+                  {post.authorImage ? (
+                    <div className="relative w-16 h-16 rounded-none overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                      <Image
+                        src={post.authorImage}
+                        alt={post.author || "Author"}
+                        fill
+                        sizes="64px"
+                        unoptimized={!isOptimizableImage(post.authorImage)}
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 bg-slate-900 rounded-none flex items-center justify-center text-white text-2xl font-display font-bold shrink-0">
+                      {(post.author || "H").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-slate-900 text-lg leading-tight break-words">
+                      {post.author || "Hindustan Projects"}
+                    </div>
+                    {post.authorRole && (
+                      <div className="text-slate-600 text-sm mt-1 font-medium leading-snug">
+                        {post.authorRole}
+                      </div>
+                    )}
                   </div>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed font-light">
-                  Delivering cutting edge insights on construction, engineering, and architectural innovations.
-                </p>
+
+                {post.authorBio && (
+                  <p className="text-sm text-slate-600 leading-relaxed font-light mb-4">
+                    {post.authorBio}
+                  </p>
+                )}
+
+                {post.authorProfileUrl && (
+                  <div className="pt-3 border-t border-slate-100">
+                    <Link
+                      href={post.authorProfileUrl}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red transition-colors group"
+                    >
+                      <span>View Profile</span>
+                      <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {/* Share Card */}

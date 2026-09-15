@@ -204,6 +204,10 @@ export interface BlogPost {
   image: string;
   date: string;
   author: string;
+  authorRole?: string;
+  authorBio?: string;
+  authorImage?: string;
+  authorProfileUrl?: string;
   category: string;
   active?: boolean;
   metaTitle?: string;

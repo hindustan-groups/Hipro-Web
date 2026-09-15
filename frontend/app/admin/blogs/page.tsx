@@ -27,6 +27,7 @@ import {
   Globe,
   Layers,
   Compass,
+  User,
 } from "lucide-react";
 import type { BlogPost, FaqItem, InternalLink, BlogCtaConfig, BlogStatus, SearchIntent } from "@/lib/types";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -43,6 +44,10 @@ interface BlogFormData {
   slug: string;
   category: string;
   author: string;
+  authorRole: string;
+  authorBio: string;
+  authorImage: string;
+  authorProfileUrl: string;
   image: string;
   imageAlt: string;
   imageCaption: string;
@@ -90,7 +95,11 @@ const EMPTY_FORM: BlogFormData = {
   title: "",
   slug: "",
   category: "Construction & Engineering",
-  author: "Hindustan Projects",
+  author: "",
+  authorRole: "",
+  authorBio: "",
+  authorImage: "",
+  authorProfileUrl: "",
   image: "",
   imageAlt: "",
   imageCaption: "",
@@ -237,7 +246,11 @@ export default function AdminBlogs() {
       title: b.title || "",
       slug: b.slug || "",
       category: b.category || "Construction & Engineering",
-      author: b.author || "Hindustan Projects",
+      author: b.author || "",
+      authorRole: b.authorRole || "",
+      authorBio: b.authorBio || "",
+      authorImage: b.authorImage || "",
+      authorProfileUrl: b.authorProfileUrl || "",
       image: b.image || "",
       imageAlt: b.imageAlt || "",
       imageCaption: b.imageCaption || "",
@@ -441,6 +454,10 @@ export default function AdminBlogs() {
       slug: form.slug.trim(),
       category: form.category.trim(),
       author: form.author.trim() || "Hindustan Projects",
+      authorRole: form.authorRole.trim() || null,
+      authorBio: form.authorBio.trim() || null,
+      authorImage: form.authorImage.trim() || null,
+      authorProfileUrl: form.authorProfileUrl.trim() || null,
       image: form.image.trim(),
       imageAlt: form.imageAlt.trim() || form.title.trim(),
       imageCaption: form.imageCaption.trim() || null,
@@ -1719,17 +1736,98 @@ export default function AdminBlogs() {
                   </span>
                 </div>
 
-                {/* Author Name */}
-                <div>
-                  <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
-                    Author Name
-                  </label>
-                  <input
-                    value={form.author}
-                    onChange={(e) => setForm((p) => ({ ...p, author: e.target.value }))}
-                    placeholder="Hindustan Projects"
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:border-construction-navy"
-                  />
+                {/* Author Details Section */}
+                <div className="md:col-span-2 pt-6 border-t border-slate-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <User className="w-4 h-4 text-construction-red" />
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                      Author Details
+                    </h4>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-4 font-light">
+                    Manage the article author information. Displays dynamically on the blog page and in Schema.org structured data.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-slate-50/70 p-5 border border-slate-200">
+                    {/* Author Name */}
+                    <div>
+                      <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                        Author Name
+                      </label>
+                      <input
+                        value={form.author}
+                        onChange={(e) => setForm((p) => ({ ...p, author: e.target.value }))}
+                        placeholder="e.g. Hindustan Projects or Yogesh Kharol"
+                        className="w-full bg-white border border-slate-200 text-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:border-construction-navy"
+                      />
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Main author name displayed in header, sidebar card, and schema.
+                      </span>
+                    </div>
+
+                    {/* Author Designation / Role */}
+                    <div>
+                      <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                        Author Designation / Role
+                      </label>
+                      <input
+                        value={form.authorRole}
+                        onChange={(e) => setForm((p) => ({ ...p, authorRole: e.target.value }))}
+                        placeholder="e.g. Founder & Director"
+                        className="w-full bg-white border border-slate-200 text-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:border-construction-navy"
+                      />
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Optional. Displays below author name. Leave blank to omit.
+                      </span>
+                    </div>
+
+                    {/* Author Profile URL */}
+                    <div className="md:col-span-2">
+                      <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                        Author Profile URL
+                      </label>
+                      <input
+                        value={form.authorProfileUrl}
+                        onChange={(e) => setForm((p) => ({ ...p, authorProfileUrl: e.target.value }))}
+                        placeholder="e.g. /about#leadership or https://linkedin.com/in/..."
+                        className="w-full bg-white border border-slate-200 text-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:border-construction-navy"
+                      />
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Optional. Adds an accessible &quot;View Profile&quot; link. Leave blank if none.
+                      </span>
+                    </div>
+
+                    {/* Author Bio */}
+                    <div className="md:col-span-2">
+                      <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                        Author Bio
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={form.authorBio}
+                        onChange={(e) => setForm((p) => ({ ...p, authorBio: e.target.value }))}
+                        placeholder="Professional summary describing construction/engineering experience..."
+                        className="w-full bg-white border border-slate-200 text-slate-900 px-4 py-2.5 text-sm focus:outline-none focus:border-construction-navy resize-y"
+                      />
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Optional. Displays in the author card on the article page. Leave blank to omit.
+                      </span>
+                    </div>
+
+                    {/* Author Profile Image */}
+                    <div className="md:col-span-2">
+                      <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                        Author Profile Image
+                      </label>
+                      <ImageUpload
+                        value={form.authorImage}
+                        onChange={(url) => setForm((p) => ({ ...p, authorImage: url }))}
+                      />
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Optional. Upload author headshot photo. If omitted, initial monogram is used.
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

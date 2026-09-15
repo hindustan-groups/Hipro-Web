@@ -186,6 +186,10 @@ model BlogPost {
   image             String
   date              String
   author            String
+  authorRole        String?
+  authorBio         String?
+  authorImage       String?
+  authorProfileUrl  String?
   category          String
   active            Boolean   @default(true)
   metaTitle         String?

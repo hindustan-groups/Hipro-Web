@@ -16,6 +16,10 @@ const LISTING_SELECT = {
   imageAlt: true,
   date: true,
   author: true,
+  authorRole: true,
+  authorBio: true,
+  authorImage: true,
+  authorProfileUrl: true,
   category: true,
   active: true,
   status: true,
@@ -37,6 +41,10 @@ const ALLOWED_UPDATE_FIELDS = new Set([
   "imageCaption",
   "date",
   "author",
+  "authorRole",
+  "authorBio",
+  "authorImage",
+  "authorProfileUrl",
   "category",
   "active",
   "status",
@@ -88,6 +96,12 @@ function normalizeJsonField(raw: any, fieldName: string): { value: string | null
     }
   }
   return { value: null, error: `${fieldName} must be a string or JSON object` };
+}
+
+function cleanOptionalString(val: any): string | null {
+  if (val === undefined || val === null) return null;
+  const s = String(val).trim();
+  return s.length > 0 ? s : null;
 }
 
 // GET /api/blogs (Public listing, lightweight payload without content)
@@ -200,6 +214,10 @@ router.post("/", adminGuard, async (req: Request, res: Response) => {
       imageCaption,
       date,
       author,
+      authorRole,
+      authorBio,
+      authorImage,
+      authorProfileUrl,
       category,
       slug,
       metaTitle,
@@ -309,6 +327,10 @@ router.post("/", adminGuard, async (req: Request, res: Response) => {
           year: "numeric",
         }),
         author: (author || "Hindustan Projects").trim(),
+        authorRole: cleanOptionalString(authorRole),
+        authorBio: cleanOptionalString(authorBio),
+        authorImage: cleanOptionalString(authorImage),
+        authorProfileUrl: cleanOptionalString(authorProfileUrl),
         category: category.trim(),
         active: finalActive,
         status: finalStatus,
@@ -368,6 +390,10 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
       "imageCaption",
       "date",
       "author",
+      "authorRole",
+      "authorBio",
+      "authorImage",
+      "authorProfileUrl",
       "category",
       "metaTitle",
       "metaDescription",
@@ -380,6 +406,27 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
     for (const field of stringFields) {
       if (field in safeUpdates) {
         safeUpdates[field] = typeof safeUpdates[field] === "string" ? safeUpdates[field].trim() : safeUpdates[field];
+      }
+    }
+
+    const optionalNullableFields = [
+      "authorRole",
+      "authorBio",
+      "authorImage",
+      "authorProfileUrl",
+      "imageAlt",
+      "imageCaption",
+      "metaTitle",
+      "metaDescription",
+      "keywords",
+      "primaryKeyword",
+      "secondaryKeywords",
+      "geoKeywords",
+      "targetLocation",
+    ];
+    for (const field of optionalNullableFields) {
+      if (field in safeUpdates && safeUpdates[field] === "") {
+        safeUpdates[field] = null;
       }
     }
 
