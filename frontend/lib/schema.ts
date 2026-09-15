@@ -42,17 +42,8 @@ export function generateServiceSchema({
     ...(image ? { "image": image } : {}),
     "provider": {
       "@type": "LocalBusiness",
-      "name": "Hindustan Projects (HiPRO)",
-      "url": "https://www.hindustanprojects.in/",
-      "telephone": "+917597000601",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
-        "addressLocality": "Bhilwara",
-        "addressRegion": "Rajasthan",
-        "postalCode": "311001",
-        "addressCountry": "IN",
-      },
+      "@id": "https://www.hindustanprojects.in/#organization",
+      "name": "Hindustan Projects",
     },
     "areaServed": [
       {

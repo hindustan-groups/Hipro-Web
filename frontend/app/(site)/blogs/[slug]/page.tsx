@@ -118,6 +118,29 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const isLocalBhilwara = /bhilwara/i.test(`${post.title} ${post.excerpt} ${post.targetLocation || ""} ${post.geoKeywords || ""} ${post.keywords || ""}`);
   const isLocalRajasthan = /rajasthan/i.test(`${post.title} ${post.excerpt} ${post.targetLocation || ""} ${post.geoKeywords || ""} ${post.keywords || ""}`);
 
+  // Determine author entity: if author represents company (or is missing/generic), type as Organization referencing #organization
+  const rawAuthor = post.author?.trim();
+  const isCompanyAuthor =
+    !rawAuthor ||
+    /^(hindustan\s+projects(\s+team)?|hipro|admin)$/i.test(rawAuthor);
+
+  const authorSchema = isCompanyAuthor
+    ? {
+        "@type": "Organization",
+        "@id": "https://www.hindustanprojects.in/#organization",
+        "name": "Hindustan Projects",
+      }
+    : /^(yogesh\s+kharol)$/i.test(rawAuthor)
+    ? {
+        "@type": "Person",
+        "@id": "https://www.hindustanprojects.in/#founder",
+        "name": rawAuthor,
+      }
+    : {
+        "@type": "Person",
+        "name": rawAuthor,
+      };
+
   // Schema.org BlogPosting structured data
   const jsonLd: Record<string, any> = {
     "@context": "https://schema.org",
@@ -131,9 +154,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     "image": post.image,
     "datePublished": post.publishDate ? new Date(post.publishDate).toISOString() : post.createdAt ? new Date(post.createdAt).toISOString() : undefined,
     "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
-    "author": { "@type": "Person", "name": post.author || "Hindustan Projects" },
+    "author": authorSchema,
     "publisher": {
       "@type": "Organization",
+      "@id": "https://www.hindustanprojects.in/#organization",
       "name": "Hindustan Projects",
       "url": "https://www.hindustanprojects.in",
       "logo": { "@type": "ImageObject", "url": "https://www.hindustanprojects.in/logo.jpg" }

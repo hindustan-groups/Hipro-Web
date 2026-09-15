@@ -340,13 +340,12 @@ export default async function AboutPage({
     {
       "@context": "https://schema.org",
       "@type": "Person",
+      "@id": "https://www.hindustanprojects.in/#founder",
       name: "Yogesh Kharol",
       jobTitle: "Founder & Director",
       ...(founderImage ? { image: founderImage } : {}),
       worksFor: {
-        "@type": "Organization",
-        name: "Hindustan Projects (HiPRO)",
-        url: "https://www.hindustanprojects.in/",
+        "@id": "https://www.hindustanprojects.in/#organization",
       },
     },
   ];
