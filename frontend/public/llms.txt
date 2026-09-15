@@ -1,22 +1,31 @@
-# Hindustan Projects
-> India's premier turnkey construction, civil engineering, and infrastructure firm.
+# Hindustan Projects (HiPRO)
+> Engineering, Turnkey Construction, and Infrastructure firm based in Bhilwara, Rajasthan, India. Founded in 2019.
 
 ## Overview
-Hindustan Projects (HiPRO) is an engineering and infrastructure company specializing in residential construction, high-rise commercial complexes, industrial facilities, and master turnkey project execution across India.
+Hindustan Projects (HiPRO) is an engineering, civil construction, and infrastructure firm headquartered in Bhilwara, Rajasthan. Established in 2019 under the leadership of Founder & Director Yogesh Kharol, the firm delivers architectural planning, disciplined turnkey civil execution, precision surveying, interior design, industrial water treatment plant construction, and project management consultancy.
 
-## Key Services
-- Civil & Structural Engineering: RCC design, heavy foundation engineering, seismic damping, and high-load structural frameworks.
-- Commercial Development: Corporate headquarters, IT tech parks, retail shopping malls, and hospitality centers.
-- Residential Construction: Turnkey luxury villas, multi-storey apartment complexes, and gated community townships.
-- Industrial Infrastructure: Modern warehouses, manufacturing facilities, pre-engineered steel buildings (PEB), and industrial estates.
-- Turnkey Design & Build: Architectural planning, 3D BIM modeling, sanction approvals, and interior fit-outs.
+## Leadership & Organization
+- Brand Name: Hindustan Projects (HiPRO)
+- Legal Name: Hindustan Projects
+- Founder: Yogesh Kharol — Founder & Director
+- Founded: 2019
+- Headquarters: Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India
 
-## Key Tools & Features
-- Cost Estimator: Package-based calculator providing accurate construction cost estimates per square foot across Indian cities.
-- Project Portfolio: Verified case studies detailing executed square footage, location, timelines, and architectural specifications.
-- Quality & Safety Assurance: Multi-tier quality checkpoints, milestone-based payments, and verified engineering standards.
+## Canonical Practice Areas & Services
+- Architecture & Planning: Master planning, 2D/3D architectural drafting, elevation design, structural drawings, and municipal sanction coordination.
+- Professional Construction Services: Turnkey residential, commercial, and industrial civil construction with disciplined quality control and milestone execution.
+- Surveying & Site Measurements: Topographical surveys, boundary demarcation, contour mapping, and digital site measurements using Total Station and modern surveying instruments.
+- Interior & Exterior Design: Spatial planning, bespoke residential and commercial interior fit-outs, material curation, and facade design.
+- Water Treatment Plant Construction: Civil construction and engineering for industrial Effluent Treatment Plants (ETP), Sewage Treatment Plants (STP), and water treatment infrastructure.
+- Project Management & Consultancy: Site supervision, project scheduling, quality auditing, contractor coordination, and construction consultancy.
+
+## Tools & Resources
+- Instant Cost Estimator: Free interactive construction cost estimator providing package-based estimates for residential construction in Rajasthan (https://www.hindustanprojects.in/cost-estimator).
+- Insights & Knowledge Base: Practical engineering and construction guides covering construction costs, architectural planning, and local bylaws in Rajasthan (https://www.hindustanprojects.in/blogs).
 
 ## Contact Information
-- Website: https://www.hindustanprojects.in
-- Headquarters: Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India
-- Inquiries: contact@hindustanprojects.com
+- Website: https://www.hindustanprojects.in/
+- Email: info@hindustanprojects.in
+- Phone: +91 75970 00601
+- WhatsApp: +91 75970 00601
+- Address: Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India
