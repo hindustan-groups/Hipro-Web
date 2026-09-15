@@ -39,6 +39,13 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
           role: roleTitle,
         }),
       });
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage("Failed to submit application");
+        return;
+      }
+
       const data = await res.json();
       
       if (data.success) {

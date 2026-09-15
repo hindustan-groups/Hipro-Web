@@ -27,7 +27,7 @@ export default function ContactForm({ services = [] }: { services?: { title: str
       if (data.success) {
         trackEvent("generate_lead", {
           form_id: "contact_page",
-          service_category: formData.service || "General Inquiry",
+          service_category: formData.service || undefined,
         });
         setSubmitted(true);
         setTimeout(() => {

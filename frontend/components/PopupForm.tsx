@@ -124,6 +124,11 @@ export default function PopupForm() {
           description: "Requested a free consultation via website popup.",
         }),
       });
+
+      if (!res.ok) {
+        setError("Failed to submit request");
+        return;
+      }
       
       const data = await res.json();
       if (data.success) {

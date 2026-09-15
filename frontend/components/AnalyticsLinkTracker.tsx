@@ -10,21 +10,31 @@ import { trackEvent } from "@/lib/analytics";
 export default function AnalyticsLinkTracker() {
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
+      // Do not track outbound links clicked within internal admin dashboard
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+        return;
+      }
+
       const target = (e.target as HTMLElement)?.closest("a");
       if (!target || !target.href) return;
 
       const href = target.href.toLowerCase();
+      const explicitLocation =
+        target.getAttribute("data-analytics-location") ||
+        target.closest("[data-analytics-location]")?.getAttribute("data-analytics-location") ||
+        undefined;
 
       // WhatsApp links (wa.me or api.whatsapp.com)
       if (href.includes("wa.me") || href.includes("whatsapp.com")) {
         const location =
-          target.closest("footer")
+          explicitLocation ||
+          (target.closest("footer")
             ? "footer"
             : target.closest("[role='region']")
             ? "mobile_sticky_bar"
             : target.closest("#section-cta")
             ? "cta_section"
-            : "body";
+            : "body");
 
         trackEvent("contact_whatsapp_click", { location });
         return;
@@ -33,7 +43,8 @@ export default function AnalyticsLinkTracker() {
       // Phone calls (tel:)
       if (href.startsWith("tel:")) {
         const location =
-          target.closest("footer")
+          explicitLocation ||
+          (target.closest("footer")
             ? "footer"
             : target.closest("[role='region']")
             ? "mobile_sticky_bar"
@@ -41,7 +52,7 @@ export default function AnalyticsLinkTracker() {
             ? "cta_section"
             : target.closest("header") || target.closest("nav")
             ? "header"
-            : "body";
+            : "body");
 
         trackEvent("contact_phone_click", { location });
         return;
@@ -49,7 +60,9 @@ export default function AnalyticsLinkTracker() {
 
       // Email links (mailto:)
       if (href.startsWith("mailto:")) {
-        const location = target.closest("footer") ? "footer" : "body";
+        const location =
+          explicitLocation ||
+          (target.closest("footer") ? "footer" : "body");
 
         trackEvent("contact_email_click", { location });
         return;

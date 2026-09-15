@@ -35,7 +35,7 @@ export default function PhoneCaptureModal({
     try {
       // Send the captured phone number to the admin panel via the Quote API
       const cleanPhone = phone.replace(/\D/g, '');
-      await fetch("/api/quote", {
+      const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -49,9 +49,19 @@ export default function PhoneCaptureModal({
         }),
       });
 
+      if (!res.ok) {
+        setError("Something went wrong. Please try again.");
+        return;
+      }
+
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.error || "Failed to submit phone number");
+        return;
+      }
+
       trackEvent("generate_lead", {
-        form_id: "cost_estimator_phone_capture",
-        service_category: "Cost Estimator",
+        form_id: "estimator_lead",
       });
 
       // Set a cookie so the user can access the page

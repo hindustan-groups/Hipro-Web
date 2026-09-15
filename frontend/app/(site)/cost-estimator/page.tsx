@@ -11,6 +11,8 @@ export default function CostEstimatorPage() {
   const [submitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(true);
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [selectedTier, setSelectedTier] = useState("Classic");
+  const [pendingSubmit, setPendingSubmit] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,10 +24,10 @@ export default function CostEstimatorPage() {
     }
   }, []);
 
-  const triggerCalculate = () => {
+  const triggerCalculate = (tier?: string) => {
     trackEvent("calculate_cost_estimate", {
       project_type: "Residential Construction",
-      construction_tier: "Indicative Rates",
+      construction_tier: tier || selectedTier || "Classic",
     });
     setSubmitted(true);
   };
@@ -33,6 +35,7 @@ export default function CostEstimatorPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isUnlocked) {
+      setPendingSubmit(true);
       setShowModal(true);
       return;
     }
@@ -43,11 +46,17 @@ export default function CostEstimatorPage() {
     <div className="pt-24 pb-20 bg-white min-h-screen relative">
       <PhoneCaptureModal 
         isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
+        onClose={() => {
+          setShowModal(false);
+          setPendingSubmit(false);
+        }} 
         onSuccess={() => {
            setShowModal(false);
            setIsUnlocked(true);
-           triggerCalculate();
+           if (pendingSubmit) {
+             setPendingSubmit(false);
+             triggerCalculate();
+           }
         }}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,29 +99,66 @@ export default function CostEstimatorPage() {
 
             {/* Indicative Rates Widget */}
             <div className="bg-white border border-gray-100 rounded-none p-6 shadow-sm mb-12">
-              <h3 className="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-5">
-                Indicative Rates Per Sqft
-              </h3>
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
+                  Indicative Rates Per Sqft (Select Tier)
+                </h3>
+                <span className="text-xs text-construction-red font-bold uppercase tracking-wider">
+                  Active: {selectedTier}
+                </span>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                <button
+                  type="button"
+                  onClick={() => setSelectedTier("Basic")}
+                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
+                    selectedTier === "Basic"
+                      ? "border-construction-red bg-orange-50/50 shadow-sm"
+                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
+                  }`}
+                >
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Basic</div>
                   <div className="text-construction-red font-bold">₹1,680</div>
-                </div>
-                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTier("Classic")}
+                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
+                    selectedTier === "Classic"
+                      ? "border-construction-red bg-orange-50/50 shadow-sm"
+                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
+                  }`}
+                >
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Classic</div>
                   <div className="text-construction-red font-bold">₹1,840</div>
-                </div>
-                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTier("Premium")}
+                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
+                    selectedTier === "Premium"
+                      ? "border-construction-red bg-orange-50/50 shadow-sm"
+                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
+                  }`}
+                >
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Premium</div>
                   <div className="text-construction-red font-bold">₹2,110</div>
-                </div>
-                <div className="border border-gray-100 rounded-none p-4 text-center hover:border-orange-200 transition-colors cursor-pointer bg-gray-50/50 hover:bg-orange-50/30">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTier("Royale")}
+                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
+                    selectedTier === "Royale"
+                      ? "border-construction-red bg-orange-50/50 shadow-sm"
+                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
+                  }`}
+                >
                   <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Royale</div>
                   <div className="text-construction-red font-bold">₹2,270</div>
-                </div>
+                </button>
               </div>
               <p className="text-xs text-gray-400 mt-5">
-                Rates vary by city and site conditions.
+                Rates vary by city and site conditions. Click a tier to set your desired package.
               </p>
             </div>
             
@@ -203,6 +249,7 @@ export default function CostEstimatorPage() {
 
                   <div className="flex justify-between items-center px-1 mb-2">
                     <span className="text-[10px] text-gray-400">Indicative rates: ₹1,680 - ₹2,270/sqft</span>
+                    <span className="text-[10px] font-semibold text-slate-500">Tier: <strong className="text-construction-red">{selectedTier}</strong></span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
