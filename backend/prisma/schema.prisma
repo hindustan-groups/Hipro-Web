@@ -50,17 +50,37 @@ model Project {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  category    String   @default("Design & Planning")
-  icon        String
-  features    String   // Storing JSON stringified array of features
-  image       String
-  order       Int      @default(0)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                     String    @id @default(cuid())
+  title                  String
+  description            String
+  category               String    @default("Design & Planning")
+  icon                   String
+  features               String    // Storing JSON stringified array of features
+  image                  String
+  order                  Int       @default(0)
+  active                 Boolean   @default(true)
+
+  // Rich Content & Detail Sections
+  badge                  String?
+  tagline                String?
+  metaTitle              String?
+  metaDescription        String?
+  overviewHeading        String?
+  overviewParagraphs     String?   // JSON array of strings
+  detailedCapabilities   String?   // JSON array: [{ title, description, points: string[] }]
+  applicationsHeading    String?
+  applications           String?   // JSON array: [{ title, description }]
+  stagesHeading          String?
+  stages                 String?   // JSON array: [{ step, title, description }]
+  deliverablesHeading    String?
+  deliverables           String?   // JSON array of strings
+  whyChooseHeading       String?
+  whyChoosePoints        String?   // JSON array: [{ title, description }]
+  faqs                   String?   // JSON array: [{ question, answer }]
+  indicativeRatesNotice  String?   // JSON object: { heading, description, tiers }
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 model Testimonial {

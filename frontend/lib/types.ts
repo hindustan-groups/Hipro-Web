@@ -40,6 +40,34 @@ export interface Project {
   updatedAt?: string;
 }
 
+export interface ServiceFeatureDetail {
+  title: string;
+  description: string;
+  points?: string[];
+}
+
+export interface ServiceApplication {
+  title: string;
+  description: string;
+}
+
+export interface ServiceStage {
+  step: string;
+  title: string;
+  description: string;
+}
+
+export interface ServiceFaq {
+  question: string;
+  answer: string;
+}
+
+export interface ServiceIndicativeRates {
+  heading: string;
+  description: string;
+  tiers: { name: string; rate: string; highlight: string }[];
+}
+
 export interface Service {
   id?: string;
   title: string;
@@ -50,6 +78,26 @@ export interface Service {
   image: string;
   order?: number;
   active?: boolean;
+
+  // Rich Content & Detail Sections (can be stringified JSON from API or parsed objects)
+  badge?: string | null;
+  tagline?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  overviewHeading?: string | null;
+  overviewParagraphs?: string | string[] | null;
+  detailedCapabilities?: string | ServiceFeatureDetail[] | null;
+  applicationsHeading?: string | null;
+  applications?: string | ServiceApplication[] | null;
+  stagesHeading?: string | null;
+  stages?: string | ServiceStage[] | null;
+  deliverablesHeading?: string | null;
+  deliverables?: string | string[] | null;
+  whyChooseHeading?: string | null;
+  whyChoosePoints?: string | { title: string; description: string }[] | null;
+  faqs?: string | ServiceFaq[] | null;
+  indicativeRatesNotice?: string | ServiceIndicativeRates | null;
+
   createdAt?: string;
   updatedAt?: string;
 }

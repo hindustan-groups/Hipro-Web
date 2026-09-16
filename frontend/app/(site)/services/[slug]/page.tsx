@@ -9,7 +9,7 @@ import DynamicIcon from "@/components/DynamicIcon";
 import { cleanServiceTitle, cleanContentTypos, getServiceSlug } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { generateBreadcrumbSchema, generateServiceSchema, generateFaqSchema } from "@/lib/schema";
-import { getServiceDetailContent } from "@/lib/serviceContentData";
+import { getServiceDetailContent, resolveServiceDetail } from "@/lib/serviceContentData";
 
 export const revalidate = 60;
 
@@ -128,7 +128,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const cleanTitle = cleanServiceTitle(service.title);
   const cleanDesc = cleanContentTypos(service.description);
   const canonicalSlug = getServiceSlug(cleanTitle);
-  const richContent = getServiceDetailContent(canonicalSlug) || getServiceDetailContent(paramSlug) || getServiceDetailContent(cleanTitle);
+  const richContent = resolveServiceDetail(service, canonicalSlug) || resolveServiceDetail(service, paramSlug);
 
   const title = richContent ? richContent.metaTitle : `${cleanTitle} | Hindustan Projects (HiPRO)`;
   const description = richContent ? richContent.metaDescription : cleanDesc;
@@ -185,7 +185,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
 
   const serviceSlug = getServiceSlug(displayTitle);
   const canonicalUrl = `https://www.hindustanprojects.in/services/${serviceSlug}`;
-  const richContent = getServiceDetailContent(serviceSlug) || getServiceDetailContent(paramSlug) || getServiceDetailContent(displayTitle);
+  const richContent = resolveServiceDetail(service, serviceSlug) || resolveServiceDetail(service, paramSlug);
 
   const supplementaryImages = [
     service.image,

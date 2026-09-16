@@ -5,6 +5,9 @@
  * Absolutely NO unverified software, equipment, concrete/steel brands, certifications, or guarantees.
  */
 
+import { safeJsonParse } from "./blogUtils";
+import type { Service } from "./types";
+
 export interface ServiceFeatureDetail {
   title: string;
   description: string;
@@ -858,3 +861,45 @@ export function getServiceDetailContent(slugOrTitle: string = ""): ServiceDetail
 
   return null;
 }
+
+/**
+ * Merges a database service record with static fallback definitions, prioritizing database CMS edits.
+ */
+export function resolveServiceDetail(service: Partial<Service> | null | undefined, paramSlug: string = ""): ServiceDetailContent | null {
+  if (!service) return null;
+  const cleanTitle = service.title || "";
+  const staticRich = getServiceDetailContent(paramSlug) || getServiceDetailContent(cleanTitle);
+
+  const parsedOverviewParagraphs = safeJsonParse<string[]>(service.overviewParagraphs, staticRich?.overviewParagraphs || []);
+  const parsedCapabilities = safeJsonParse<ServiceFeatureDetail[]>(service.detailedCapabilities, staticRich?.detailedCapabilities || []);
+  const parsedApplications = safeJsonParse<ServiceApplication[]>(service.applications, staticRich?.applications || []);
+  const parsedStages = safeJsonParse<ServiceStage[]>(service.stages, staticRich?.stages || []);
+  const parsedDeliverables = safeJsonParse<string[]>(service.deliverables, staticRich?.deliverables || []);
+  const parsedWhyChoose = safeJsonParse<{ title: string; description: string }[]>(service.whyChoosePoints, staticRich?.whyChoosePoints || []);
+  const parsedFaqs = safeJsonParse<ServiceFaq[]>(service.faqs, staticRich?.faqs || []);
+  const parsedRates = safeJsonParse<any>(service.indicativeRatesNotice, staticRich?.indicativeRatesNotice || undefined);
+
+  return {
+    canonicalSlug: staticRich?.canonicalSlug || paramSlug || "",
+    aliases: staticRich?.aliases || [],
+    serviceTitle: cleanTitle || staticRich?.serviceTitle || "",
+    badge: service.badge || staticRich?.badge || "Engineering & Construction",
+    tagline: service.tagline || staticRich?.tagline || service.description || "",
+    metaTitle: service.metaTitle || staticRich?.metaTitle || `${cleanTitle} | Hindustan Projects (HiPRO)`,
+    metaDescription: service.metaDescription || staticRich?.metaDescription || service.description || "",
+    overviewHeading: service.overviewHeading || staticRich?.overviewHeading || "Engineering Overview & Technical Scope",
+    overviewParagraphs: parsedOverviewParagraphs.length > 0 ? parsedOverviewParagraphs : (service.description ? [service.description] : []),
+    detailedCapabilities: parsedCapabilities,
+    applicationsHeading: service.applicationsHeading || staticRich?.applicationsHeading || "Applications & Sectors",
+    applications: parsedApplications,
+    stagesHeading: service.stagesHeading || staticRich?.stagesHeading || "Workflow & Execution Stages",
+    stages: parsedStages,
+    deliverablesHeading: service.deliverablesHeading || staticRich?.deliverablesHeading || "Project Deliverables & Handover",
+    deliverables: parsedDeliverables,
+    whyChooseHeading: service.whyChooseHeading || staticRich?.whyChooseHeading || "Why Choose Hindustan Projects",
+    whyChoosePoints: parsedWhyChoose,
+    faqs: parsedFaqs,
+    indicativeRatesNotice: parsedRates,
+  };
+}
+
