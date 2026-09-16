@@ -14,6 +14,7 @@ const LISTING_SELECT = {
   excerpt: true,
   image: true,
   imageAlt: true,
+  imageTitle: true,
   date: true,
   author: true,
   authorRole: true,
@@ -38,6 +39,7 @@ const ALLOWED_UPDATE_FIELDS = new Set([
   "content",
   "image",
   "imageAlt",
+  "imageTitle",
   "imageCaption",
   "date",
   "author",
@@ -123,7 +125,7 @@ router.get("/", async (req: Request, res: Response) => {
       }
       const blogs = await prisma.blogPost.findMany({
         where: whereClause,
-        select: includeFull ? undefined : LISTING_SELECT,
+        select: (includeFull || includeAll) ? undefined : LISTING_SELECT,
         orderBy: { createdAt: "desc" },
       });
       return res.json({ success: true, data: blogs } as ApiResponse<any[]>);
@@ -211,6 +213,7 @@ router.post("/", adminGuard, async (req: Request, res: Response) => {
       content,
       image,
       imageAlt,
+      imageTitle,
       imageCaption,
       date,
       author,
@@ -313,43 +316,54 @@ router.post("/", adminGuard, async (req: Request, res: Response) => {
     const customCtaRes = normalizeJsonField(customCta, "customCta");
     if (customCtaRes.error) return res.status(400).json({ success: false, error: customCtaRes.error });
 
-    const doc = await prisma.blogPost.create({
-      data: {
-        title: title.trim(),
-        excerpt: (excerpt || "").trim(),
-        content: content.trim(),
-        image: (image || "").trim(),
-        imageAlt: imageAlt ? String(imageAlt).trim() : null,
-        imageCaption: imageCaption ? String(imageCaption).trim() : null,
-        date: (date || "").trim() || new Date().toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-        author: (author || "Hindustan Projects").trim(),
-        authorRole: cleanOptionalString(authorRole),
-        authorBio: cleanOptionalString(authorBio),
-        authorImage: cleanOptionalString(authorImage),
-        authorProfileUrl: cleanOptionalString(authorProfileUrl),
-        category: category.trim(),
-        active: finalActive,
-        status: finalStatus,
-        publishDate: parsedPublishDate,
-        slug: cleanSlug,
-        metaTitle: metaTitle ? String(metaTitle).trim() : null,
-        metaDescription: metaDescription ? String(metaDescription).trim() : null,
-        keywords: keywords ? String(keywords).trim() : null,
-        primaryKeyword: primaryKeyword ? String(primaryKeyword).trim() : null,
-        secondaryKeywords: secondaryKeywords ? String(secondaryKeywords).trim() : null,
-        geoKeywords: geoKeywords ? String(geoKeywords).trim() : null,
-        targetLocation: targetLocation ? String(targetLocation).trim() : null,
-        searchIntent: finalSearchIntent,
-        faqs: faqsRes.value,
-        internalLinks: internalLinksRes.value,
-        relatedPostIds: relatedPostIdsRes.value,
-        customCta: customCtaRes.value,
-      },
-    });
+    const createPayload: any = {
+      title: title.trim(),
+      excerpt: (excerpt || "").trim(),
+      content: content.trim(),
+      image: (image || "").trim(),
+      imageAlt: imageAlt ? String(imageAlt).trim() : null,
+      imageTitle: imageTitle ? String(imageTitle).trim() : null,
+      imageCaption: imageCaption ? String(imageCaption).trim() : null,
+      date: (date || "").trim() || new Date().toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      }),
+      author: (author || "Hindustan Projects").trim(),
+      authorRole: cleanOptionalString(authorRole),
+      authorBio: cleanOptionalString(authorBio),
+      authorImage: cleanOptionalString(authorImage),
+      authorProfileUrl: cleanOptionalString(authorProfileUrl),
+      category: category.trim(),
+      active: finalActive,
+      status: finalStatus,
+      publishDate: parsedPublishDate,
+      slug: cleanSlug,
+      metaTitle: metaTitle ? String(metaTitle).trim() : null,
+      metaDescription: metaDescription ? String(metaDescription).trim() : null,
+      keywords: keywords ? String(keywords).trim() : null,
+      primaryKeyword: primaryKeyword ? String(primaryKeyword).trim() : null,
+      secondaryKeywords: secondaryKeywords ? String(secondaryKeywords).trim() : null,
+      geoKeywords: geoKeywords ? String(geoKeywords).trim() : null,
+      targetLocation: targetLocation ? String(targetLocation).trim() : null,
+      searchIntent: finalSearchIntent,
+      faqs: faqsRes.value,
+      internalLinks: internalLinksRes.value,
+      relatedPostIds: relatedPostIdsRes.value,
+      customCta: customCtaRes.value,
+    };
+
+    let doc;
+    try {
+      doc = await prisma.blogPost.create({ data: createPayload });
+    } catch (createErr: any) {
+      if (createErr?.message?.includes("imageTitle") || createErr?.code === "P2021" || createErr?.code === "P2022") {
+        delete createPayload.imageTitle;
+        doc = await prisma.blogPost.create({ data: createPayload });
+      } else {
+        throw createErr;
+      }
+    }
 
     return res.status(201).json({ success: true, data: doc });
   } catch (err: any) {
@@ -387,6 +401,7 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
       "content",
       "image",
       "imageAlt",
+      "imageTitle",
       "imageCaption",
       "date",
       "author",
@@ -415,6 +430,7 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
       "authorImage",
       "authorProfileUrl",
       "imageAlt",
+      "imageTitle",
       "imageCaption",
       "metaTitle",
       "metaDescription",
@@ -505,10 +521,23 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
       }
     }
 
-    const updated = await prisma.blogPost.update({
-      where: { id },
-      data: safeUpdates,
-    });
+    let updated;
+    try {
+      updated = await prisma.blogPost.update({
+        where: { id },
+        data: safeUpdates,
+      });
+    } catch (updateErr: any) {
+      if ((updateErr?.message?.includes("imageTitle") || updateErr?.code === "P2021" || updateErr?.code === "P2022") && "imageTitle" in safeUpdates) {
+        delete safeUpdates.imageTitle;
+        updated = await prisma.blogPost.update({
+          where: { id },
+          data: safeUpdates,
+        });
+      } else {
+        throw updateErr;
+      }
+    }
 
     return res.json({ success: true, data: updated });
   } catch (err: any) {

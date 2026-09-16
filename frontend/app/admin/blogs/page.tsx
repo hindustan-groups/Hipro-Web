@@ -50,6 +50,7 @@ interface BlogFormData {
   authorProfileUrl: string;
   image: string;
   imageAlt: string;
+  imageTitle: string;
   imageCaption: string;
   excerpt: string;
   content: string;
@@ -102,6 +103,7 @@ const EMPTY_FORM: BlogFormData = {
   authorProfileUrl: "",
   image: "",
   imageAlt: "",
+  imageTitle: "",
   imageCaption: "",
   excerpt: "",
   content: "",
@@ -140,6 +142,7 @@ export default function AdminBlogs() {
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loadingEditId, setLoadingEditId] = useState<string | null>(null);
   const [form, setForm] = useState<BlogFormData>(EMPTY_FORM);
   const [originalForm, setOriginalForm] = useState<BlogFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -153,7 +156,10 @@ export default function AdminBlogs() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/blogs?all=true");
+      const res = await fetch("/api/blogs?all=true&full=true", {
+        credentials: "include",
+        cache: "no-store",
+      });
       const json = await res.json();
       if (json.success) {
         setBlogs(json.data || []);
@@ -208,85 +214,112 @@ export default function AdminBlogs() {
     setShowForm(true);
   };
 
-  const startEdit = (b: BlogPost) => {
-    // Parse structured arrays safely
-    const parsedFaqs = safeJsonParse<FaqItem[]>(b.faqs, []);
-    const parsedLinks = safeJsonParse<InternalLink[]>(b.internalLinks, []);
-    const parsedRelated = safeJsonParse<string[]>(b.relatedPostIds, []);
-    const parsedCta = safeJsonParse<BlogCtaConfig>(b.customCta, {
-      title: "",
-      description: "",
-      buttonText: "",
-      buttonUrl: "",
-    });
-
-    // Determine status
-    let initialStatus: BlogStatus = "published";
-    if (b.status && ["draft", "published", "unpublished"].includes(b.status.toLowerCase())) {
-      initialStatus = b.status.toLowerCase() as BlogStatus;
-    } else if (b.active === false) {
-      initialStatus = "draft";
-    }
-
-    let pDate = "";
-    if (b.publishDate) {
-      try {
-        const d = new Date(b.publishDate);
-        if (!isNaN(d.getTime())) {
-          const offset = d.getTimezoneOffset() * 60000;
-          pDate = new Date(d.getTime() - offset).toISOString().slice(0, 16);
-        }
-      } catch {
-        pDate = "";
-      }
-    }
-
-    const editData: BlogFormData = {
-      id: b.id,
-      title: b.title || "",
-      slug: b.slug || "",
-      category: b.category || "Construction & Engineering",
-      author: b.author || "",
-      authorRole: b.authorRole || "",
-      authorBio: b.authorBio || "",
-      authorImage: b.authorImage || "",
-      authorProfileUrl: b.authorProfileUrl || "",
-      image: b.image || "",
-      imageAlt: b.imageAlt || "",
-      imageCaption: b.imageCaption || "",
-      excerpt: b.excerpt || "",
-      content: b.content || "",
-      date: b.date || getTodayFormatted(),
-
-      status: initialStatus,
-      publishDate: pDate,
-      active: initialStatus === "published",
-
-      metaTitle: b.metaTitle || "",
-      metaDescription: b.metaDescription || "",
-      primaryKeyword: b.primaryKeyword || "",
-      secondaryKeywords: b.secondaryKeywords || "",
-      geoKeywords: b.geoKeywords || "",
-      targetLocation: b.targetLocation || "Bhilwara, Rajasthan",
-      searchIntent: (b.searchIntent as SearchIntent) || "informational",
-      keywords: b.keywords || "",
-
-      faqs: Array.isArray(parsedFaqs) ? parsedFaqs : [],
-      internalLinks: Array.isArray(parsedLinks) ? parsedLinks : [],
-      relatedPostIds: Array.isArray(parsedRelated) ? parsedRelated : [],
-      customCta: parsedCta && typeof parsedCta === "object" ? parsedCta : EMPTY_FORM.customCta,
-    };
-
-    setForm(editData);
-    setOriginalForm(editData);
-    setEditingId(b.id || null);
-    setActiveTab("content");
-    setPreviewMode("write");
-    setIsFullscreen(false);
+  const startEdit = async (b: BlogPost) => {
+    const editTargetId = b.id || b.slug || "";
+    setLoadingEditId(editTargetId);
     setError("");
     setSuccess("");
-    setShowForm(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    try {
+      let fullBlog: BlogPost = { ...b };
+      const fetchId = b.id || b.slug;
+      if (fetchId) {
+        try {
+          const res = await fetch(`/api/blogs/${encodeURIComponent(fetchId)}?t=${Date.now()}`, {
+            credentials: "include",
+            cache: "no-store",
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              fullBlog = { ...fullBlog, ...json.data };
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch full blog details, falling back to local object:", err);
+        }
+      }
+
+      // Parse structured arrays safely
+      const parsedFaqs = safeJsonParse<FaqItem[]>(fullBlog.faqs, []);
+      const parsedLinks = safeJsonParse<InternalLink[]>(fullBlog.internalLinks, []);
+      const parsedRelated = safeJsonParse<string[]>(fullBlog.relatedPostIds, []);
+      const parsedCta = safeJsonParse<BlogCtaConfig>(fullBlog.customCta, {
+        title: "",
+        description: "",
+        buttonText: "",
+        buttonUrl: "",
+      });
+
+      // Determine status
+      let initialStatus: BlogStatus = "published";
+      if (fullBlog.status && ["draft", "published", "unpublished"].includes(fullBlog.status.toLowerCase())) {
+        initialStatus = fullBlog.status.toLowerCase() as BlogStatus;
+      } else if (fullBlog.active === false) {
+        initialStatus = "draft";
+      }
+
+      let pDate = "";
+      if (fullBlog.publishDate) {
+        try {
+          const d = new Date(fullBlog.publishDate);
+          if (!isNaN(d.getTime())) {
+            const offset = d.getTimezoneOffset() * 60000;
+            pDate = new Date(d.getTime() - offset).toISOString().slice(0, 16);
+          }
+        } catch {
+          pDate = "";
+        }
+      }
+
+      const editData: BlogFormData = {
+        id: fullBlog.id,
+        title: fullBlog.title || "",
+        slug: fullBlog.slug || "",
+        category: fullBlog.category || "Construction & Engineering",
+        author: fullBlog.author || "",
+        authorRole: fullBlog.authorRole || "",
+        authorBio: fullBlog.authorBio || "",
+        authorImage: fullBlog.authorImage || "",
+        authorProfileUrl: fullBlog.authorProfileUrl || "",
+        image: fullBlog.image || "",
+        imageAlt: fullBlog.imageAlt || "",
+        imageTitle: fullBlog.imageTitle || "",
+        imageCaption: fullBlog.imageCaption || "",
+        excerpt: fullBlog.excerpt || "",
+        content: fullBlog.content || "",
+        date: fullBlog.date || getTodayFormatted(),
+
+        status: initialStatus,
+        publishDate: pDate,
+        active: initialStatus === "published",
+
+        metaTitle: fullBlog.metaTitle || "",
+        metaDescription: fullBlog.metaDescription || "",
+        primaryKeyword: fullBlog.primaryKeyword || "",
+        secondaryKeywords: fullBlog.secondaryKeywords || "",
+        geoKeywords: fullBlog.geoKeywords || "",
+        targetLocation: fullBlog.targetLocation || "Bhilwara, Rajasthan",
+        searchIntent: (fullBlog.searchIntent as SearchIntent) || "informational",
+        keywords: fullBlog.keywords || "",
+
+        faqs: Array.isArray(parsedFaqs) ? parsedFaqs : [],
+        internalLinks: Array.isArray(parsedLinks) ? parsedLinks : [],
+        relatedPostIds: Array.isArray(parsedRelated) ? parsedRelated : [],
+        customCta: parsedCta && typeof parsedCta === "object" ? parsedCta : EMPTY_FORM.customCta,
+      };
+
+      setForm(editData);
+      setOriginalForm(editData);
+      setEditingId(fullBlog.id || b.id || null);
+      setActiveTab("content");
+      setPreviewMode("write");
+      setIsFullscreen(false);
+      setShowForm(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setLoadingEditId(null);
+    }
   };
 
   const isFormDirty = () => {
@@ -460,6 +493,7 @@ export default function AdminBlogs() {
       authorProfileUrl: form.authorProfileUrl.trim() || null,
       image: form.image.trim(),
       imageAlt: form.imageAlt.trim() || form.title.trim(),
+      imageTitle: form.imageTitle.trim() || null,
       imageCaption: form.imageCaption.trim() || null,
       excerpt: form.excerpt.trim(),
       content: form.content.trim(),
@@ -492,6 +526,7 @@ export default function AdminBlogs() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -530,6 +565,7 @@ export default function AdminBlogs() {
       const res = await fetch("/api/blogs", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ id }),
       });
       const json = await res.json();
@@ -798,6 +834,21 @@ export default function AdminBlogs() {
                     />
                     <span className="text-[11px] text-slate-400 mt-1 block">
                       Defaults to article title if left blank.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-700 text-xs uppercase tracking-wider block mb-1.5 font-bold">
+                      Image Title (HTML Title Attribute &amp; Hover Tooltip SEO)
+                    </label>
+                    <input
+                      value={form.imageTitle}
+                      onChange={(e) => setForm((p) => ({ ...p, imageTitle: e.target.value }))}
+                      placeholder="e.g. Architectural Planning &amp; Modern House Construction in Bhilwara"
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all"
+                    />
+                    <span className="text-[11px] text-slate-400 mt-1 block">
+                      Image title attribute displayed on mouse hover &amp; media search engine metadata.
                     </span>
                   </div>
 
@@ -2043,10 +2094,15 @@ export default function AdminBlogs() {
                           </Link>
                           <button
                             onClick={() => startEdit(b)}
+                            disabled={loadingEditId === (b.id || b.slug)}
                             title="Edit article"
-                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 flex items-center justify-center transition-all shadow-sm"
+                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 flex items-center justify-center transition-all shadow-sm disabled:opacity-50"
                           >
-                            <Pencil className="w-3.5 h-3.5" />
+                            {loadingEditId === (b.id || b.slug) ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                            ) : (
+                              <Pencil className="w-3.5 h-3.5" />
+                            )}
                           </button>
                           <button
                             onClick={() => deleteBlog(b.id, b.title)}

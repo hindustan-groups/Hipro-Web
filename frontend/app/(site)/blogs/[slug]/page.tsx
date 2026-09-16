@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle, ExternalLink } from "lucide-react";
+import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle, ExternalLink, Compass, ArrowUpRight } from "lucide-react";
 import { findAll, findBySlug } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -12,6 +12,7 @@ import {
   parseMarkdownBlocks,
   renderFormattedText,
   getFaqs,
+  getInternalLinks,
   getCustomCta,
   getRelatedPostIds,
 } from "@/lib/blogUtils";
@@ -107,6 +108,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   // Custom CTA config
   const customCta = getCustomCta(post);
+
+  // Structured Internal Links
+  const internalLinks = getInternalLinks(post);
 
   // Calculate read time based on enriched text
   const wordCount = enrichedContent.split(/\s+/).length;
@@ -209,6 +213,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <Image 
                 src={post.image} 
                 alt={post.imageAlt || post.title}
+                title={post.imageTitle || post.imageCaption || post.imageAlt || post.title}
                 fill
                 priority
                 sizes="100vw"
@@ -408,6 +413,41 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
             </div>
 
+            {/* Structured Internal Links / Related Services & Guides */}
+            {internalLinks.length > 0 && (
+              <section aria-label="Related resources and internal links" className="mt-14 pt-8 border-t border-slate-200">
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="p-1.5 bg-construction-red/10 text-construction-red">
+                    <Compass className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 font-display uppercase tracking-tight">
+                    Related Services &amp; Recommended Guides
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {internalLinks.map((link, idx) => (
+                    <Link
+                      key={idx}
+                      href={link.url}
+                      className="group flex items-center justify-between p-4 bg-slate-50 hover:bg-white border border-slate-200 hover:border-construction-red hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="min-w-0 pr-3">
+                        <span className="block text-sm md:text-base font-bold text-slate-900 group-hover:text-construction-red transition-colors leading-snug capitalize">
+                          {link.label}
+                        </span>
+                        <span className="block text-[11px] text-slate-400 font-mono truncate mt-0.5">
+                          {link.url}
+                        </span>
+                      </div>
+                      <span className="w-8 h-8 rounded-none bg-white group-hover:bg-construction-red border border-slate-200 group-hover:border-construction-red flex items-center justify-center text-slate-600 group-hover:text-white transition-all shrink-0">
+                        <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Structured FAQ Section */}
             {faqs.length > 0 && (
               <div className="mt-14 pt-8 border-t border-slate-200">
@@ -557,6 +597,29 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   )}
                 </div>
               </div>
+
+              {/* Contextual Internal Links Widget in Sidebar */}
+              {internalLinks.length > 0 && (
+                <div className="bg-white p-8 border border-slate-200 shadow-xl shadow-slate-100/50">
+                  <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
+                    <Compass className="w-3.5 h-3.5 text-construction-red" />
+                    <span>Quick Links &amp; Services</span>
+                  </h4>
+                  <ul className="space-y-3">
+                    {internalLinks.map((link, idx) => (
+                      <li key={idx}>
+                        <Link
+                          href={link.url}
+                          className="group flex items-start justify-between gap-3 text-xs font-bold text-slate-800 hover:text-construction-red transition-colors pb-2.5 border-b border-slate-100 last:border-0 last:pb-0"
+                        >
+                          <span className="capitalize leading-relaxed">{link.label}</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 mt-0.5" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Newsletter / CTA */}
               <div className="bg-slate-50 p-8 border border-slate-200">

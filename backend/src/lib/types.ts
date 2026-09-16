@@ -212,6 +212,7 @@ export interface BlogPost {
 
   // Media
   imageAlt?: string;
+  imageTitle?: string;
   imageCaption?: string;
 
   // Publishing

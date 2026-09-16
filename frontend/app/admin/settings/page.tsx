@@ -153,6 +153,23 @@ export default function AdminSettings() {
       if (settings.pageContent) currentParsed = JSON.parse(settings.pageContent);
     } catch { /* silent */ }
 
+    // Cleanse deprecated legacy dummy keys that contained old 1999 / demo content
+    const deprecatedKeys = [
+      "aboutStory",
+      "aboutChecklist",
+      "aboutHero",
+      "aboutHeritageTag",
+      "aboutStoryTitle",
+      "aboutBadge1Label",
+      "aboutBadge1Value",
+      "aboutBadge2Label",
+      "aboutBadge2Value",
+      "valuesSubtitle",
+      "valuesTitle",
+      "valuesTag"
+    ];
+    deprecatedKeys.forEach((k) => delete (currentParsed as any)[k]);
+
     const updatedPageContent = {
       ...currentParsed,
       projectsHeader,

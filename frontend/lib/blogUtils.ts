@@ -14,8 +14,10 @@ export interface MarkdownBlock {
 /**
  * Safely parses a JSON string with fallback, ensuring malformed JSON never crashes public pages.
  */
-export function safeJsonParse<T>(raw: string | undefined | null, fallback: T): T {
-  if (!raw || typeof raw !== 'string') return fallback;
+export function safeJsonParse<T>(raw: any, fallback: T): T {
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  if (typeof raw === "object") return raw as T;
+  if (typeof raw !== "string") return fallback;
   const trimmed = raw.trim();
   if (!trimmed) return fallback;
   try {
@@ -56,7 +58,7 @@ export function getFaqs(post: Partial<BlogPost> | null | undefined): FaqItem[] {
 }
 
 /**
- * Safely parses structured internal links for a post.
+ * Safely parses structured internal links for a post with resilient URL normalization.
  */
 export function getInternalLinks(post: Partial<BlogPost> | null | undefined): InternalLink[] {
   if (!post || !post.internalLinks) return [];
@@ -64,12 +66,43 @@ export function getInternalLinks(post: Partial<BlogPost> | null | undefined): In
   if (!Array.isArray(parsed)) return [];
   return parsed
     .filter(item => item && typeof item === 'object' && typeof item.label === 'string' && typeof item.url === 'string')
-    .map(item => ({
-      label: item.label.trim(),
-      url: item.url.trim(),
-    }))
+    .map(item => {
+      let url = item.url.trim();
+      let label = item.label.trim();
+
+      // Normalize known typos like missing 's' in 'services/'
+      if (url.startsWith('ervices/')) {
+        url = 'services/' + url.slice('ervices/'.length);
+      } else if (url.startsWith('/ervices/')) {
+        url = '/services/' + url.slice('/ervices/'.length);
+      }
+
+      // Fix known truncated slug in database
+      if (url.includes('house-construction-in-bhilwara-complete-') && !url.includes('complete-guide')) {
+        url = url.replace('house-construction-in-bhilwara-complete-', 'house-construction-in-bhilwara-complete-guide');
+      }
+
+      // Ensure leading slash for internal paths so Next.js does not treat them as relative to the current blog slug
+      if (
+        !url.startsWith('http://') &&
+        !url.startsWith('https://') &&
+        !url.startsWith('/') &&
+        !url.startsWith('#')
+      ) {
+        url = '/' + url;
+      }
+
+      // Clean trailing arrows from labels if user typed them in CMS (arrow is handled by UI icon)
+      const cleanLabel = label.replace(/\s*(?:→|->|›|>)\s*$/, '').trim();
+
+      return {
+        label: cleanLabel || label,
+        url,
+      };
+    })
     .filter(item => item.label.length > 0 && item.url.length > 0);
 }
+
 
 /**
  * Safely parses custom CTA config for a post.

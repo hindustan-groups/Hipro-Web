@@ -96,7 +96,7 @@ export default function ContactForm({ services = [] }: { services?: { title: str
           <input
             id="contact-phone"
             type="tel" name="phone" value={formData.phone} onChange={handleChange}
-            placeholder="+91 98765 43210"
+            placeholder="+91 75970 00601"
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           />
         </div>

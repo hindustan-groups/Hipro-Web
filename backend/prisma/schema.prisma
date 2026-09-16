@@ -198,6 +198,7 @@ model BlogPost {
 
   // Media
   imageAlt          String?
+  imageTitle        String?
   imageCaption      String?
 
   // Publishing
