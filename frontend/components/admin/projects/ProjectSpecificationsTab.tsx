@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { MapPin, Globe, Calendar, Building, User, Ruler, Wrench, Plus, X, Tag } from "lucide-react";
+import { MapPin, Calendar, Building, Wrench, Plus, X, Tag, ExternalLink, Globe } from "lucide-react";
 
 interface ProjectSpecificationsTabProps {
   formData: {
@@ -64,146 +64,32 @@ export default function ProjectSpecificationsTab({
     }
   };
 
+  const formattedGeoSummary = [
+    formData.city,
+    formData.district,
+    formData.state,
+    formData.country,
+    formData.postalCode ? `PIN: ${formData.postalCode}` : "",
+  ].filter(Boolean).join(", ");
+
   return (
     <div className="space-y-6">
-      {/* Client, Owner & Scale */}
+      {/* 1. Dates & Timeline (Contains Required Date field) */}
       <div>
         <h4 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-          <Building className="w-4 h-4 text-construction-navy" /> Client & Scale Specifications
+          <Calendar className="w-4 h-4 text-construction-navy" /> Project Timeline &amp; Dates
         </h4>
         <p className="text-xs text-slate-500 mb-4">
-          Key stakeholder and scale metrics. All optional fields remain empty unless verified.
-        </p>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Client Name
-            </label>
-            <input
-              type="text"
-              value={formData.client}
-              onChange={(e) => onChange({ client: e.target.value })}
-              placeholder="e.g. Sangam Group Ltd"
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Owner / Developer
-            </label>
-            <input
-              type="text"
-              value={formData.owner}
-              onChange={(e) => onChange({ owner: e.target.value })}
-              placeholder="e.g. Hindustan Projects Infra Pvt Ltd"
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Built-up Area / Scale
-            </label>
-            <input
-              type="text"
-              value={formData.area}
-              onChange={(e) => onChange({ area: e.target.value })}
-              placeholder="e.g. 120,000 sq.ft / 4.5 Acres"
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Services Involved */}
-      <div className="pt-4 border-t border-slate-100">
-        <h4 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-          <Wrench className="w-4 h-4 text-construction-navy" /> Engineering & Construction Services
-        </h4>
-        <p className="text-xs text-slate-500 mb-3">
-          Select or add services executed on this project for AEO & service cross-linking.
-        </p>
-
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={serviceInput}
-              onChange={(e) => setServiceInput(e.target.value)}
-              onKeyDown={handleServiceKeyDown}
-              placeholder="Type custom service and press Enter..."
-              className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
-            />
-            <button
-              type="button"
-              onClick={() => handleAddService(serviceInput)}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-slate-300 transition-colors flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Service
-            </button>
-          </div>
-
-          {/* Quick Select Pill Buttons */}
-          <div className="flex flex-wrap gap-1.5 pt-1">
-            <span className="text-xs text-slate-400 py-0.5">Suggestions:</span>
-            {COMMON_SERVICES.map((s) => {
-              const active = formData.services.includes(s);
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => (active ? handleRemoveService(s) : handleAddService(s))}
-                  className={`text-xs px-2.5 py-0.5 border rounded-none transition-colors ${
-                    active
-                      ? "bg-blue-600 text-white border-blue-600 font-medium"
-                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
-                  }`}
-                >
-                  {active ? `✓ ${s}` : `+ ${s}`}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Active Tag Pills */}
-          {formData.services.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-2">
-              {formData.services.map((svc) => (
-                <span
-                  key={svc}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 text-construction-navy text-xs font-semibold"
-                >
-                  <Tag className="w-3 h-3 text-blue-600" />
-                  {svc}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveService(svc)}
-                    className="text-slate-400 hover:text-red-600 transition-colors ml-1 cursor-pointer"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Dates & Timeline */}
-      <div className="pt-4 border-t border-slate-100">
-        <h4 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
-          <Calendar className="w-4 h-4 text-construction-navy" /> Project Timeline
-        </h4>
-        <p className="text-xs text-slate-500 mb-3">
-          Timeline representation displayed in project header and meta summaries.
+          Timeline representation displayed in project header and portfolio card summaries.
         </p>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Project Date / Timeline Display <span className="text-red-500">*</span>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+              <span>
+                Project Date / Timeline Display <span className="text-red-500 font-bold">*</span>
+              </span>
+              <span className="text-[10px] text-red-500 font-normal uppercase">Required</span>
             </label>
             <input
               type="text"
@@ -214,13 +100,14 @@ export default function ProjectSpecificationsTab({
               className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
             />
             <p className="text-[11px] text-slate-500">
-              Legacy and display string used on project cards and filters.
+              Display string used on project cards, filters, and header badge.
             </p>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Official Completion Date (Optional)
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+              <span>Official Completion Date</span>
+              <span className="text-[10px] text-slate-400 font-normal uppercase">Optional</span>
             </label>
             <input
               type="text"
@@ -230,17 +117,17 @@ export default function ProjectSpecificationsTab({
               className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
             />
             <p className="text-[11px] text-slate-500">
-              Structured date string for Schema.org and AEO facts.
+              Structured completion timestamp for Schema.org and executive facts.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Geographic Data (Zero Defaults) */}
+      {/* 2. Location & Geographic Precision (Contains Required Location field) */}
       <div className="pt-4 border-t border-slate-100">
         <div className="mb-3">
           <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <MapPin className="w-4 h-4 text-construction-navy" /> Location & Geographic Precision
+            <MapPin className="w-4 h-4 text-construction-navy" /> Location &amp; Geographic Precision
           </h4>
           <p className="text-xs text-slate-500">
             Enter verified geographic details. Zero defaults applied — enter only what is verified.
@@ -249,8 +136,11 @@ export default function ProjectSpecificationsTab({
 
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-3 space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              General Location Display <span className="text-red-500">*</span>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+              <span>
+                General Location Display <span className="text-red-500 font-bold">*</span>
+              </span>
+              <span className="text-[10px] text-red-500 font-normal uppercase">Required</span>
             </label>
             <input
               type="text"
@@ -260,6 +150,9 @@ export default function ProjectSpecificationsTab({
               placeholder="e.g. RIICO Industrial Area, Bhilwara"
               className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
             />
+            <p className="text-[11px] text-slate-500">
+              Primary location label visible on the portfolio card and project header.
+            </p>
           </div>
 
           <div className="space-y-1">
@@ -369,9 +262,22 @@ export default function ProjectSpecificationsTab({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Google Maps URL
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                Google Maps URL
+              </label>
+              {formData.googleMapsUrl && (
+                <a
+                  href={formData.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-0.5"
+                >
+                  <span>Test Link</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              )}
+            </div>
             <input
               type="url"
               value={formData.googleMapsUrl}
@@ -380,6 +286,140 @@ export default function ProjectSpecificationsTab({
               className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
             />
           </div>
+        </div>
+
+        {/* Formatted Geo Address Preview */}
+        {formattedGeoSummary && (
+          <div className="mt-3 bg-slate-50 border border-slate-200 px-3.5 py-2 text-xs flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5 text-construction-navy shrink-0" />
+            <span className="text-slate-500 font-medium">Resolved Geographic Address:</span>
+            <span className="text-slate-800 font-semibold">{formattedGeoSummary}</span>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Client, Owner & Scale */}
+      <div className="pt-4 border-t border-slate-100">
+        <h4 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <Building className="w-4 h-4 text-construction-navy" /> Client &amp; Scale Specifications
+        </h4>
+        <p className="text-xs text-slate-500 mb-4">
+          Key stakeholder and scale metrics. All optional fields remain empty unless verified.
+        </p>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+              Client Name
+            </label>
+            <input
+              type="text"
+              value={formData.client}
+              onChange={(e) => onChange({ client: e.target.value })}
+              placeholder="e.g. Sangam Group Ltd"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+              Owner / Developer
+            </label>
+            <input
+              type="text"
+              value={formData.owner}
+              onChange={(e) => onChange({ owner: e.target.value })}
+              placeholder="e.g. Hindustan Projects Infra Pvt Ltd"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+              Built-up Area / Scale
+            </label>
+            <input
+              type="text"
+              value={formData.area}
+              onChange={(e) => onChange({ area: e.target.value })}
+              placeholder="e.g. 120,000 sq.ft / 4.5 Acres"
+              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Services Involved */}
+      <div className="pt-4 border-t border-slate-100">
+        <h4 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <Wrench className="w-4 h-4 text-construction-navy" /> Engineering &amp; Construction Services
+        </h4>
+        <p className="text-xs text-slate-500 mb-3">
+          Select or add services executed on this project for AEO &amp; service cross-linking.
+        </p>
+
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={serviceInput}
+              onChange={(e) => setServiceInput(e.target.value)}
+              onKeyDown={handleServiceKeyDown}
+              placeholder="Type custom service and press Enter..."
+              className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+            />
+            <button
+              type="button"
+              onClick={() => handleAddService(serviceInput)}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Service
+            </button>
+          </div>
+
+          {/* Quick Select Pill Buttons */}
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            <span className="text-xs text-slate-400 py-0.5">Suggestions:</span>
+            {COMMON_SERVICES.map((s) => {
+              const active = formData.services.includes(s);
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => (active ? handleRemoveService(s) : handleAddService(s))}
+                  className={`text-xs px-2.5 py-0.5 border rounded-none transition-colors cursor-pointer ${
+                    active
+                      ? "bg-blue-600 text-white border-blue-600 font-medium"
+                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                  }`}
+                >
+                  {active ? `✓ ${s}` : `+ ${s}`}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Tag Pills */}
+          {formData.services.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-2">
+              {formData.services.map((svc) => (
+                <span
+                  key={svc}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 text-construction-navy text-xs font-semibold"
+                >
+                  <Tag className="w-3 h-3 text-blue-600" />
+                  {svc}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveService(svc)}
+                    className="text-slate-400 hover:text-red-600 transition-colors ml-1 cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

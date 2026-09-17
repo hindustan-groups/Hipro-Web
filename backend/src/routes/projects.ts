@@ -306,23 +306,52 @@ router.post("/", authGuard, async (req: Request, res: Response) => {
   try {
     const body = req.body || {};
 
-    // 1. Validate required legacy & core fields
-    const missing = validateRequired({
-      title: body.title,
-      category: body.category,
-      location: body.location,
-      date: body.date,
-      description: body.description,
-    });
-
-    if (missing.length > 0) {
+    // 1. Validate publishing and operational statuses
+    const publishStatus = (body.publishStatus || "draft").toLowerCase().trim();
+    if (!VALID_PUBLISH_STATUSES.has(publishStatus)) {
       return res.status(400).json({
         success: false,
-        error: `Missing required fields: ${missing.join(", ")}`,
+        error: "Invalid publishStatus. Allowed values: draft, published, archived",
       } as ApiResponse);
     }
 
-    // 2. Validate URLs
+    const operationalStatus = (body.status || "active").toLowerCase().trim();
+    if (!VALID_OPERATIONAL_STATUSES.has(operationalStatus)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid status. Allowed values: active, completed, ongoing, archived",
+      } as ApiResponse);
+    }
+
+    // 2. Minimum structural validation: title and location required for all records (including drafts)
+    const baseMissing = validateRequired({
+      title: body.title,
+      location: body.location,
+    });
+
+    if (baseMissing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Missing required fields: ${baseMissing.join(", ")}`,
+      } as ApiResponse);
+    }
+
+    // 3. Strict Live Publishing Gate: date and description required before publishing
+    if (publishStatus === "published") {
+      const publishMissing = validateRequired({
+        date: body.date,
+        description: body.description,
+      });
+
+      if (publishMissing.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot publish without required fields: ${publishMissing.join(", ")}`,
+        } as ApiResponse);
+      }
+    }
+
+    // 4. Validate URLs
     if (body.image && typeof body.image === "string" && !isValidHttpUrl(body.image)) {
       return res.status(400).json({ success: false, error: "Invalid cover image URL" } as ApiResponse);
     }
@@ -339,29 +368,12 @@ router.post("/", authGuard, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Invalid canonicalUrl" } as ApiResponse);
     }
 
-    // 3. Validate videoType
+    // 5. Validate videoType
     const videoType = (body.videoType || "none").toLowerCase().trim();
     if (!VALID_VIDEO_TYPES.has(videoType)) {
       return res.status(400).json({
         success: false,
         error: "Invalid videoType. Allowed values: youtube, vimeo, direct, none",
-      } as ApiResponse);
-    }
-
-    // 4. Validate publishing and operational statuses
-    const publishStatus = (body.publishStatus || "draft").toLowerCase().trim();
-    if (!VALID_PUBLISH_STATUSES.has(publishStatus)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid publishStatus. Allowed values: draft, published, archived",
-      } as ApiResponse);
-    }
-
-    const operationalStatus = (body.status || "active").toLowerCase().trim();
-    if (!VALID_OPERATIONAL_STATUSES.has(operationalStatus)) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid status. Allowed values: active, completed, ongoing, archived",
       } as ApiResponse);
     }
 
@@ -438,15 +450,15 @@ router.post("/", authGuard, async (req: Request, res: Response) => {
         title: body.title.trim(),
         slug: finalSlug,
         shortDescription: body.shortDescription ? body.shortDescription.trim() : null,
-        description: body.description.trim(),
-        category: body.category.trim(),
+        description: body.description && typeof body.description === "string" ? body.description.trim() : "",
+        category: body.category && typeof body.category === "string" ? body.category.trim() : "",
         subCategories: subCategoriesNorm.value,
         client: body.client ? body.client.trim() : null,
         owner: body.owner ? body.owner.trim() : null,
         area: body.area ? body.area.trim() : null,
         services: servicesNorm.value,
         location: body.location.trim(),
-        date: body.date.trim(),
+        date: body.date && typeof body.date === "string" ? body.date.trim() : "",
         completionDate: body.completionDate ? body.completionDate.trim() : null,
         highlights: highlightsNorm.value,
         city: body.city ? body.city.trim() : null,
@@ -578,6 +590,40 @@ const handlePatch = async (req: Request, res: Response) => {
         } as ApiResponse);
       }
       updates.status = os;
+    }
+
+    // Safely normalize string fields on update (Prisma non-nullable strings)
+    if (updates.category !== undefined) {
+      updates.category = updates.category && typeof updates.category === "string" ? updates.category.trim() : "";
+    }
+    if (updates.date !== undefined) {
+      updates.date = updates.date && typeof updates.date === "string" ? updates.date.trim() : "";
+    }
+    if (updates.description !== undefined) {
+      updates.description = updates.description && typeof updates.description === "string" ? updates.description.trim() : "";
+    }
+
+    // Strict Live Publishing Gate: If publishing, verify the 4 hard-required fields
+    const effectivePublishStatus = updates.publishStatus || existing.publishStatus;
+    if (effectivePublishStatus === "published") {
+      const targetTitle = updates.title !== undefined ? updates.title : existing.title;
+      const targetLocation = updates.location !== undefined ? updates.location : existing.location;
+      const targetDate = updates.date !== undefined ? updates.date : existing.date;
+      const targetDescription = updates.description !== undefined ? updates.description : existing.description;
+
+      const publishMissing = validateRequired({
+        title: targetTitle,
+        location: targetLocation,
+        date: targetDate,
+        description: targetDescription,
+      });
+
+      if (publishMissing.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot publish without required fields: ${publishMissing.join(", ")}`,
+        } as ApiResponse);
+      }
     }
 
     // 5. Validate and normalize JSON fields if updating

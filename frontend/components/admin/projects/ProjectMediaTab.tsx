@@ -9,9 +9,13 @@ import {
   ArrowUp,
   ArrowDown,
   Star,
-  ExternalLink,
   Layers,
   CheckCircle2,
+  AlertTriangle,
+  Maximize2,
+  X,
+  Play,
+  ExternalLink,
 } from "lucide-react";
 import ImageUpload from "@/components/admin/ImageUpload";
 import MultiImageUpload from "@/components/admin/MultiImageUpload";
@@ -38,6 +42,7 @@ export default function ProjectMediaTab({
   onChange,
 }: ProjectMediaTabProps) {
   const [manualGalleryUrl, setManualGalleryUrl] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   // Gallery Helpers
   const handleAddMultiUpload = (urls: string[]) => {
@@ -93,6 +98,7 @@ export default function ProjectMediaTab({
     });
   };
 
+  // Reorder while preserving all item metadata (alt, caption, url)
   const handleMoveGalleryItem = (index: number, direction: "up" | "down") => {
     const target = direction === "up" ? index - 1 : index + 1;
     if (target < 0 || target >= formData.galleryDetails.length) return;
@@ -132,32 +138,98 @@ export default function ProjectMediaTab({
     onChange(updates);
   };
 
+  // Video embed url helpers
+  const getYoutubeEmbedUrl = (url: string) => {
+    if (!url) return null;
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    return match ? `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0` : null;
+  };
+
+  const getVimeoEmbedUrl = (url: string) => {
+    if (!url) return null;
+    const match = url.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)/);
+    return match ? `https://player.vimeo.com/video/${match[1]}` : null;
+  };
+
+  const youtubeEmbedUrl = formData.videoUrl ? getYoutubeEmbedUrl(formData.videoUrl) : null;
+  const vimeoEmbedUrl = formData.videoUrl ? getVimeoEmbedUrl(formData.videoUrl) : null;
+
   return (
     <div className="space-y-8">
       {/* 1. Main Cover Image */}
       <div>
         <div className="mb-3">
-          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <ImageIcon className="w-4 h-4 text-construction-navy" /> Main Cover / Hero Image <span className="text-red-500">*</span>
-          </h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-construction-navy" /> Main Cover / Hero Image
+            </h4>
+            <span className="text-[10px] text-blue-600 uppercase font-semibold">Recommended</span>
+          </div>
           <p className="text-xs text-slate-500">
             Primary landscape photograph displayed on portfolio cards, project detail hero, and social shares.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 items-start">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 space-y-2">
             <ImageUpload
               value={formData.image}
               onChange={(url) => onChange({ image: url })}
             />
+
+            {/* Cover Image Large Preview Card */}
+            {formData.image && (
+              <div className="bg-slate-900 p-2 border border-slate-800 relative group">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-950">
+                  <img
+                    src={formData.image}
+                    alt={formData.imageAlt || "Cover Preview"}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setLightboxUrl(formData.image)}
+                      className="bg-black/70 hover:bg-black text-white p-1.5 rounded-none text-xs flex items-center gap-1 cursor-pointer"
+                      title="Enlarge Cover"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ image: "", imageAlt: "", imageCaption: "" })}
+                      className="bg-red-600/80 hover:bg-red-600 text-white p-1.5 rounded-none text-xs flex items-center gap-1 cursor-pointer"
+                      title="Remove Cover Image"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {formData.imageCaption && (
+                    <div className="absolute bottom-0 inset-x-0 bg-black/80 text-[11px] text-slate-200 p-2 truncate">
+                      {formData.imageCaption}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3 bg-slate-50 p-4 border border-slate-200">
             <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                Cover Image Alt Text
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+                  Cover Alt Text
+                </label>
+                {formData.imageAlt ? (
+                  <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5">
+                    <CheckCircle2 className="w-3 h-3" /> Set
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">
+                    <AlertTriangle className="w-3 h-3" /> Missing
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 value={formData.imageAlt}
@@ -165,12 +237,12 @@ export default function ProjectMediaTab({
                 placeholder="e.g. Modern logistics warehouse exterior facade"
                 className="w-full bg-white border border-slate-200 text-slate-900 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />
-              <p className="text-[10px] text-slate-400">Essential for SEO and accessibility.</p>
+              <p className="text-[10px] text-slate-400">Essential for Google Image search and accessibility.</p>
             </div>
 
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-                Cover Image Caption
+                Cover Caption
               </label>
               <input
                 type="text"
@@ -207,7 +279,7 @@ export default function ProjectMediaTab({
             <button
               type="button"
               onClick={handleAddManualUrl}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-300 transition-colors flex items-center gap-1"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Add
             </button>
@@ -239,11 +311,15 @@ export default function ProjectMediaTab({
                   >
                     {/* Thumbnail & Reorder controls */}
                     <div className="flex flex-col items-center gap-1.5 shrink-0">
-                      <div className="relative w-16 h-16 bg-slate-100 border border-slate-200 overflow-hidden">
+                      <div
+                        onClick={() => setLightboxUrl(item.url)}
+                        className="relative w-16 h-16 bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer group"
+                        title="Click to zoom"
+                      >
                         <img
                           src={item.url}
                           alt={item.alt || "Gallery"}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                         {isCurrentCover && (
                           <span
@@ -253,6 +329,9 @@ export default function ProjectMediaTab({
                             COVER
                           </span>
                         )}
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                          <Maximize2 className="w-3.5 h-3.5 text-white" />
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-1 text-slate-400">
@@ -283,15 +362,15 @@ export default function ProjectMediaTab({
                     {/* Metadata Inputs */}
                     <div className="flex-1 space-y-1.5 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-mono text-slate-400 truncate max-w-[200px]">
+                        <p className="text-[11px] font-mono text-slate-400 truncate max-w-[180px]">
                           {item.url}
                         </p>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                           {!isCurrentCover && (
                             <button
                               type="button"
                               onClick={() => handleSetCover(item)}
-                              className="text-[10px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                              className="text-[10px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-0.5 cursor-pointer"
                               title="Set as Main Cover Image"
                             >
                               <Star className="w-3 h-3" /> Set Cover
@@ -300,7 +379,7 @@ export default function ProjectMediaTab({
                           <button
                             type="button"
                             onClick={() => handleRemoveGalleryItem(idx)}
-                            className="text-slate-400 hover:text-red-600 p-1 cursor-pointer"
+                            className="text-slate-400 hover:text-red-600 p-0.5 cursor-pointer"
                             title="Remove image from gallery"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -391,7 +470,7 @@ export default function ProjectMediaTab({
 
           <div className="space-y-1">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Custom Video Poster / Thumbnail URL (Optional)
+              Custom Video Poster URL (Optional)
             </label>
             <input
               type="url"
@@ -415,7 +494,67 @@ export default function ProjectMediaTab({
             />
           </div>
         </div>
+
+        {/* Live Video Embed Preview */}
+        {formData.videoUrl && formData.videoType !== "none" && (
+          <div className="mt-4 p-4 bg-slate-900 border border-slate-800">
+            <div className="flex items-center gap-2 text-xs font-mono text-amber-400 font-bold uppercase tracking-wider mb-2">
+              <Play className="w-3.5 h-3.5" />
+              <span>Live Video Player Preview:</span>
+            </div>
+            <div className="relative aspect-video max-w-lg bg-black border border-slate-800 overflow-hidden">
+              {youtubeEmbedUrl ? (
+                <iframe
+                  src={youtubeEmbedUrl}
+                  title="YouTube Preview"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full border-0"
+                />
+              ) : vimeoEmbedUrl ? (
+                <iframe
+                  src={vimeoEmbedUrl}
+                  title="Vimeo Preview"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full border-0"
+                />
+              ) : (
+                <video
+                  controls
+                  poster={formData.videoPoster || undefined}
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                >
+                  <source src={formData.videoUrl} />
+                  Your browser does not support the video tag.
+                </video>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Lightbox Modal */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute top-4 right-4 bg-slate-800 text-white p-2 hover:bg-slate-700 cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Preview"
+            className="max-h-[90vh] max-w-[90vw] object-contain border border-slate-800"
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -24,6 +24,8 @@ import {
   Building,
   ArrowRight,
   ShieldAlert,
+  Sparkles,
+  Upload,
 } from "lucide-react";
 import type { Project, ProjectHighlight, ProjectFaq, ProjectGalleryItem } from "@/lib/types";
 import ProjectGeneralTab from "@/components/admin/projects/ProjectGeneralTab";
@@ -31,6 +33,9 @@ import ProjectSpecificationsTab from "@/components/admin/projects/ProjectSpecifi
 import ProjectNarrativeTab from "@/components/admin/projects/ProjectNarrativeTab";
 import ProjectMediaTab from "@/components/admin/projects/ProjectMediaTab";
 import ProjectSeoTab from "@/components/admin/projects/ProjectSeoTab";
+import ProjectPreviewModal from "@/components/admin/projects/ProjectPreviewModal";
+import PublishReviewModal from "@/components/admin/projects/PublishReviewModal";
+import ProjectSuccessPanel from "@/components/admin/projects/ProjectSuccessPanel";
 
 type EditorTab = "general" | "specifications" | "narrative" | "media" | "seo";
 
@@ -89,7 +94,7 @@ interface FormState {
 const DEFAULT_FORM: FormState = {
   title: "",
   slug: "",
-  category: "Commercial",
+  category: "",
   subCategories: [],
   status: "ongoing",
   publishStatus: "draft",
@@ -146,6 +151,119 @@ function generateSlug(text: string): string {
     .replace(/(^-|-$)+/g, "");
 }
 
+// Convert API Project object to FormState
+function projectToFormState(p: Project): FormState {
+  let subCats: string[] = [];
+  if (p.subCategories) {
+    try {
+      subCats = Array.isArray(p.subCategories) ? p.subCategories : JSON.parse(p.subCategories);
+    } catch {
+      subCats = String(p.subCategories).split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
+  let svcs: string[] = [];
+  if (p.services) {
+    try {
+      svcs = Array.isArray(p.services) ? p.services : JSON.parse(p.services);
+    } catch {
+      svcs = String(p.services).split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
+  let hls: ProjectHighlight[] = [];
+  if (p.highlights) {
+    try {
+      hls = Array.isArray(p.highlights) ? p.highlights : JSON.parse(p.highlights);
+    } catch {
+      hls = [];
+    }
+  }
+
+  let fqs: ProjectFaq[] = [];
+  if (p.faqs) {
+    try {
+      fqs = Array.isArray(p.faqs) ? p.faqs : JSON.parse(p.faqs);
+    } catch {
+      fqs = [];
+    }
+  }
+
+  let gDetails: ProjectGalleryItem[] = [];
+  if (p.galleryDetails) {
+    try {
+      gDetails = Array.isArray(p.galleryDetails) ? p.galleryDetails : JSON.parse(p.galleryDetails);
+    } catch {
+      gDetails = [];
+    }
+  } else if (p.images) {
+    try {
+      const urls = typeof p.images === "string" && p.images.trim().startsWith("[")
+        ? JSON.parse(p.images)
+        : p.images.split("\n").map((s) => s.trim()).filter(Boolean);
+      gDetails = urls.map((u: string, idx: number) => ({
+        url: u,
+        alt: `${p.title} photo ${idx + 1}`,
+        order: idx + 1,
+      }));
+    } catch {
+      gDetails = [];
+    }
+  }
+
+  return {
+    title: p.title || "",
+    slug: p.slug || generateSlug(p.title || ""),
+    category: p.category || "",
+    subCategories: subCats,
+    status: (p.status as any) || "ongoing",
+    publishStatus: (p.publishStatus as any) || "draft",
+    featured: p.featured ?? false,
+    order: p.order ?? 0,
+
+    client: p.client || "",
+    owner: p.owner || "",
+    area: p.area || "",
+    services: svcs,
+    location: p.location || "",
+    city: p.city || "",
+    district: p.district || "",
+    state: p.state || "",
+    country: p.country || "",
+    postalCode: p.postalCode || "",
+    targetLocation: p.targetLocation || "",
+    latitude: p.latitude ?? "",
+    longitude: p.longitude ?? "",
+    googleMapsUrl: p.googleMapsUrl || "",
+    date: p.date || "",
+    completionDate: p.completionDate || "",
+
+    shortDescription: p.shortDescription || "",
+    description: p.description || "",
+    highlights: hls,
+    faqs: fqs,
+
+    image: p.image || "",
+    imageAlt: p.imageAlt || "",
+    imageCaption: p.imageCaption || "",
+    galleryDetails: gDetails,
+    videoUrl: p.videoUrl || "",
+    videoType: (p.videoType as any) || "none",
+    videoTitle: p.videoTitle || "",
+    videoDescription: p.videoDescription || "",
+    videoPoster: p.videoPoster || "",
+
+    metaTitle: p.metaTitle || "",
+    metaDescription: p.metaDescription || "",
+    focusKeywords: p.focusKeywords || "",
+    secondaryKeywords: p.secondaryKeywords || "",
+    canonicalUrl: p.canonicalUrl || "",
+    ogImage: p.ogImage || "",
+    noIndex: p.noIndex ?? false,
+    noFollow: p.noFollow ?? false,
+  };
+}
+
 export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,6 +279,18 @@ export default function AdminProjects() {
   const [saving, setSaving] = useState(false);
   const [slugError, setSlugError] = useState("");
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+  // New Modals & Dialogs
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewProjectData, setPreviewProjectData] = useState<FormState | null>(null);
+  const [showPublishReviewModal, setShowPublishReviewModal] = useState(false);
+  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
+  const [successPanelData, setSuccessPanelData] = useState<{
+    title: string;
+    slug: string;
+    publishStatus: "draft" | "published" | "archived";
+  } | null>(null);
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
 
   // Filters & Sorting in List View
   const [searchQuery, setSearchQuery] = useState("");
@@ -219,160 +349,103 @@ export default function AdminProjects() {
     setEditingProject(p);
     setIsSlugManuallyEdited(true);
     setSlugError("");
-
-    // Safely parse JSON or array fields
-    let subCats: string[] = [];
-    if (p.subCategories) {
-      try {
-        subCats = Array.isArray(p.subCategories) ? p.subCategories : JSON.parse(p.subCategories);
-      } catch {
-        subCats = String(p.subCategories).split(",").map((s) => s.trim()).filter(Boolean);
-      }
-    }
-
-    let svcs: string[] = [];
-    if (p.services) {
-      try {
-        svcs = Array.isArray(p.services) ? p.services : JSON.parse(p.services);
-      } catch {
-        svcs = String(p.services).split(",").map((s) => s.trim()).filter(Boolean);
-      }
-    }
-
-    let hls: ProjectHighlight[] = [];
-    if (p.highlights) {
-      try {
-        hls = Array.isArray(p.highlights) ? p.highlights : JSON.parse(p.highlights);
-      } catch {
-        hls = [];
-      }
-    }
-
-    let fqs: ProjectFaq[] = [];
-    if (p.faqs) {
-      try {
-        fqs = Array.isArray(p.faqs) ? p.faqs : JSON.parse(p.faqs);
-      } catch {
-        fqs = [];
-      }
-    }
-
-    let gDetails: ProjectGalleryItem[] = [];
-    if (p.galleryDetails) {
-      try {
-        gDetails = Array.isArray(p.galleryDetails) ? p.galleryDetails : JSON.parse(p.galleryDetails);
-      } catch {
-        gDetails = [];
-      }
-    } else if (p.images) {
-      try {
-        const urls = typeof p.images === "string" && p.images.trim().startsWith("[")
-          ? JSON.parse(p.images)
-          : p.images.split("\n").map((s) => s.trim()).filter(Boolean);
-        gDetails = urls.map((u: string, idx: number) => ({
-          url: u,
-          alt: `${p.title} photo ${idx + 1}`,
-          order: idx + 1,
-        }));
-      } catch {
-        gDetails = [];
-      }
-    }
-
-    setForm({
-      title: p.title || "",
-      slug: p.slug || generateSlug(p.title || ""),
-      category: p.category || "Commercial",
-      subCategories: subCats,
-      status: (p.status as any) || "ongoing",
-      publishStatus: (p.publishStatus as any) || "draft",
-      featured: p.featured ?? false,
-      order: p.order ?? 0,
-
-      client: p.client || "",
-      owner: p.owner || "",
-      area: p.area || "",
-      services: svcs,
-      location: p.location || "",
-      city: p.city || "",
-      district: p.district || "",
-      state: p.state || "",
-      country: p.country || "",
-      postalCode: p.postalCode || "",
-      targetLocation: p.targetLocation || "",
-      latitude: p.latitude ?? "",
-      longitude: p.longitude ?? "",
-      googleMapsUrl: p.googleMapsUrl || "",
-      date: p.date || "",
-      completionDate: p.completionDate || "",
-
-      shortDescription: p.shortDescription || "",
-      description: p.description || "",
-      highlights: hls,
-      faqs: fqs,
-
-      image: p.image || "",
-      imageAlt: p.imageAlt || "",
-      imageCaption: p.imageCaption || "",
-      galleryDetails: gDetails,
-      videoUrl: p.videoUrl || "",
-      videoType: p.videoType || "none",
-      videoTitle: p.videoTitle || "",
-      videoDescription: p.videoDescription || "",
-      videoPoster: p.videoPoster || "",
-
-      metaTitle: p.metaTitle || "",
-      metaDescription: p.metaDescription || "",
-      focusKeywords: p.focusKeywords || "",
-      secondaryKeywords: p.secondaryKeywords || "",
-      canonicalUrl: p.canonicalUrl || "",
-      ogImage: p.ogImage || "",
-      noIndex: p.noIndex ?? false,
-      noFollow: p.noFollow ?? false,
-    });
-
+    setForm(projectToFormState(p));
     setActiveTab("general");
     setIsDirty(false);
     setShowEditor(true);
   };
 
+  // Open Draft-Safe Preview for a row project without editing
+  const handleRowPreview = (p: Project) => {
+    setPreviewProjectData(projectToFormState(p));
+    setShowPreviewModal(true);
+  };
+
+  // Open Draft-Safe Preview for active editor form
+  const handleActiveFormPreview = () => {
+    setPreviewProjectData(form);
+    setShowPreviewModal(true);
+  };
+
   // Close Editor safely
-  const handleCloseEditor = () => {
-    if (isDirty && !confirm("You have unsaved changes. Discard and close editor?")) {
+  const handleRequestCloseEditor = () => {
+    if (isDirty) {
+      setShowUnsavedConfirm(true);
       return;
     }
+    forceCloseEditor();
+  };
+
+  const forceCloseEditor = () => {
     setShowEditor(false);
     setEditingProject(null);
     setForm(DEFAULT_FORM);
     setIsDirty(false);
     setSlugError("");
+    setShowUnsavedConfirm(false);
+  };
+
+  // Minimum structural validation required to save a draft
+  const validateDraftFields = (): boolean => {
+    if (!form.title.trim()) {
+      setActiveTab("general");
+      setError("Project Title is a required field to save a draft.");
+      return false;
+    }
+    if (!form.location.trim()) {
+      setActiveTab("specifications");
+      setError("General Location Display is a required field to save a draft.");
+      return false;
+    }
+    return true;
+  };
+
+  // Strict validation for live publishing (All 4 hard-required fields)
+  const validatePublishRequiredFields = (): boolean => {
+    if (!form.title.trim()) {
+      setActiveTab("general");
+      setError("Project Title is a required field before publishing.");
+      return false;
+    }
+    if (!form.location.trim()) {
+      setActiveTab("specifications");
+      setError("General Location Display is a required field before publishing.");
+      return false;
+    }
+    if (!form.date.trim()) {
+      setActiveTab("specifications");
+      setError("Project Date / Timeline Display is a required field before publishing.");
+      return false;
+    }
+    if (!form.description.trim()) {
+      setActiveTab("narrative");
+      setError("Full Project Case Study Narrative is a required field before publishing.");
+      return false;
+    }
+    return true;
+  };
+
+  // Triggered when user clicks "Publish Project" button in editor header
+  const handleStartPublishFlow = () => {
+    setError("");
+    // Open Pre-Publish Review Modal so user can review the 4 required and 12 recommended items
+    setShowPublishReviewModal(true);
   };
 
   // Submit Handler (Supports Draft, Published, or Explicit Status)
   const handleSave = async (overridePublishStatus?: "draft" | "published" | "archived") => {
-    // Basic client-side validation
-    if (!form.title.trim()) {
-      setActiveTab("general");
-      setError("Project Title is required");
-      return;
-    }
-    if (!form.location.trim()) {
-      setActiveTab("specifications");
-      setError("Location is required");
-      return;
-    }
-    if (!form.date.trim()) {
-      setActiveTab("specifications");
-      setError("Project Date / Timeline is required");
-      return;
-    }
-    if (!form.description.trim()) {
-      setActiveTab("narrative");
-      setError("Full Description is required");
-      return;
-    }
-
     const targetPublishStatus = overridePublishStatus || form.publishStatus;
+
+    if (targetPublishStatus === "published") {
+      if (!validatePublishRequiredFields()) {
+        setShowPublishReviewModal(true);
+        return;
+      }
+    } else {
+      if (!validateDraftFields()) {
+        return;
+      }
+    }
 
     setSaving(true);
     setError("");
@@ -462,17 +535,17 @@ export default function AdminProjects() {
         return;
       }
 
-      // Success!
-      setSuccessMessage(
-        isEdit
-          ? `✓ Project "${form.title}" updated successfully (${targetPublishStatus})`
-          : `✓ Project "${form.title}" created successfully (${targetPublishStatus})`
-      );
-      setTimeout(() => setSuccessMessage(""), 5000);
+      // Close Publish Review modal if open
+      setShowPublishReviewModal(false);
 
-      setShowEditor(false);
-      setEditingProject(null);
-      setForm(DEFAULT_FORM);
+      // Open Success Panel
+      setSuccessPanelData({
+        title: form.title.trim(),
+        slug: payload.slug,
+        publishStatus: targetPublishStatus,
+      });
+      setShowSuccessPanel(true);
+
       setIsDirty(false);
       fetchProjects();
     } catch {
@@ -633,6 +706,41 @@ export default function AdminProjects() {
   const ongoingCount = projects.filter((p) => p.status === "ongoing" || p.status === "active").length;
   const completedCount = projects.filter((p) => p.status === "completed").length;
 
+  // ─────────────────────────────────────────────────────────────
+  // TAB COMPLETION & READINESS CALCULATIONS (Strictly Informational)
+  // ─────────────────────────────────────────────────────────────
+  const isTab1Valid = Boolean(form.title && form.title.trim());
+  const isTab2Valid = Boolean(form.location && form.location.trim() && form.date && form.date.trim());
+  const isTab3Valid = Boolean(form.description && form.description.trim());
+  const hasCoverImage = Boolean(form.image && form.image.trim());
+
+  const requiredCount = [
+    Boolean(form.title.trim()),
+    Boolean(form.location.trim()),
+    Boolean(form.date.trim()),
+    Boolean(form.description.trim()),
+  ].filter(Boolean).length;
+
+  const recommendedCount = [
+    Boolean(form.category.trim()),
+    hasCoverImage,
+    Boolean(form.imageAlt.trim()),
+    Boolean(form.shortDescription.trim()),
+    form.highlights.length > 0,
+    form.galleryDetails.length > 0,
+    form.faqs.length > 0,
+    Boolean(form.metaTitle.trim()),
+    Boolean(form.metaDescription.trim()),
+    Boolean(form.focusKeywords.trim()),
+    Boolean(form.city && form.state),
+    Boolean(form.googleMapsUrl || (form.latitude && form.longitude)),
+  ].filter(Boolean).length;
+
+  const completenessPercent = Math.min(
+    100,
+    Math.round(requiredCount * 15 + recommendedCount * (40 / 12))
+  );
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Notifications */}
@@ -642,7 +750,7 @@ export default function AdminProjects() {
             <Check className="w-4 h-4 text-emerald-600" />
             <span>{successMessage}</span>
           </div>
-          <button onClick={() => setSuccessMessage("")} className="text-emerald-600 hover:text-emerald-900">
+          <button onClick={() => setSuccessMessage("")} className="text-emerald-600 hover:text-emerald-900 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -654,7 +762,7 @@ export default function AdminProjects() {
             <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError("")} className="text-red-600 hover:text-red-900">
+          <button onClick={() => setError("")} className="text-red-600 hover:text-red-900 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -702,28 +810,39 @@ export default function AdminProjects() {
 
             {/* Quick Action Buttons in Header */}
             <div className="flex items-center gap-2.5">
+              {/* Preview Button */}
+              <button
+                type="button"
+                onClick={handleActiveFormPreview}
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 hover:text-amber-300 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                title="Preview project using active form state"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Preview Project</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleSave("draft")}
                 disabled={saving}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Save Draft
               </button>
 
               <button
                 type="button"
-                onClick={() => handleSave("published")}
+                onClick={handleStartPublishFlow}
                 disabled={saving}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
-                <Check className="w-3.5 h-3.5" />
-                {saving ? "Saving..." : "Publish Project"}
+                <Upload className="w-3.5 h-3.5" />
+                <span>Publish Project</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleCloseEditor}
+                onClick={handleRequestCloseEditor}
                 className="text-slate-400 hover:text-white p-1 ml-1 cursor-pointer"
                 title="Close Editor"
               >
@@ -732,66 +851,120 @@ export default function AdminProjects() {
             </div>
           </div>
 
-          {/* 5-Tab Navigation Bar */}
+          {/* Completeness & Readiness Info Strip */}
+          <div className="bg-slate-800/90 text-slate-300 px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-700">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1 text-slate-200">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-semibold">Project Readiness:</span>
+                <span className="font-mono font-bold text-white">{completenessPercent}%</span>
+              </span>
+              <span className="text-slate-500">•</span>
+              <span>
+                Required:{" "}
+                <span
+                  className={`font-mono font-bold ${
+                    requiredCount === 4 ? "text-emerald-400" : "text-amber-400"
+                  }`}
+                >
+                  {requiredCount}/4 {requiredCount === 4 ? "✓" : "⚠"}
+                </span>
+              </span>
+              <span className="text-slate-500">•</span>
+              <span>
+                Recommended: <span className="font-mono font-bold text-slate-200">{recommendedCount}/12</span>
+              </span>
+            </div>
+
+            <div className="text-[11px] text-slate-400">
+              Only 4 fields required to save/publish. Recommended fields enrich search and conversions.
+            </div>
+          </div>
+
+          {/* 5-Tab Navigation Bar with Completion Indicators */}
           <div className="flex items-center border-b border-slate-200 bg-slate-50 px-6 overflow-x-auto">
+            {/* Tab 1: General */}
             <button
               type="button"
               onClick={() => setActiveTab("general")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "general"
                   ? "border-construction-navy text-construction-navy bg-white"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              1. General
+              <span>1. General</span>
+              {isTab1Valid ? (
+                <CheckCircle className="w-3 h-3 text-emerald-600" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Title required" />
+              )}
             </button>
 
+            {/* Tab 2: Specifications */}
             <button
               type="button"
               onClick={() => setActiveTab("specifications")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "specifications"
                   ? "border-construction-navy text-construction-navy bg-white"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              2. Specifications
+              <span>2. Specifications</span>
+              {isTab2Valid ? (
+                <CheckCircle className="w-3 h-3 text-emerald-600" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Location & Date required" />
+              )}
             </button>
 
+            {/* Tab 3: Narrative */}
             <button
               type="button"
               onClick={() => setActiveTab("narrative")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "narrative"
                   ? "border-construction-navy text-construction-navy bg-white"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              3. Narrative
+              <span>3. Narrative</span>
+              {isTab3Valid ? (
+                <CheckCircle className="w-3 h-3 text-emerald-600" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Description required" />
+              )}
             </button>
 
+            {/* Tab 4: Media */}
             <button
               type="button"
               onClick={() => setActiveTab("media")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "media"
                   ? "border-construction-navy text-construction-navy bg-white"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              4. Media ({form.galleryDetails.length + (form.image ? 1 : 0)})
+              <span>4. Media ({form.galleryDetails.length + (form.image ? 1 : 0)})</span>
+              {hasCoverImage && <CheckCircle className="w-3 h-3 text-blue-600" />}
             </button>
 
+            {/* Tab 5: SEO / AEO / GEO */}
             <button
               type="button"
               onClick={() => setActiveTab("seo")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "seo"
                   ? "border-construction-navy text-construction-navy bg-white"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              5. SEO / AEO / GEO
+              <span>5. SEO / AEO / GEO</span>
+              {form.metaTitle && form.metaDescription && (
+                <CheckCircle className="w-3 h-3 text-emerald-600" />
+              )}
             </button>
           </div>
 
@@ -892,8 +1065,13 @@ export default function AdminProjects() {
                   district: form.district,
                   state: form.state,
                   country: form.country,
+                  postalCode: form.postalCode,
+                  targetLocation: form.targetLocation,
+                  latitude: form.latitude,
+                  longitude: form.longitude,
                   googleMapsUrl: form.googleMapsUrl,
                   client: form.client,
+                  image: form.image,
                 }}
                 onChange={handleFormChange}
               />
@@ -917,33 +1095,38 @@ export default function AdminProjects() {
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
               <button
                 type="button"
-                onClick={handleCloseEditor}
-                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors"
+                onClick={handleRequestCloseEditor}
+                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 type="button"
+                onClick={handleActiveFormPreview}
+                className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5 text-slate-600" />
+                <span>Preview</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => handleSave("draft")}
                 disabled={saving}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+                className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Save as Draft
               </button>
 
               <button
                 type="button"
-                onClick={() => handleSave(editingProject ? form.publishStatus : "published")}
+                onClick={handleStartPublishFlow}
                 disabled={saving}
-                className="bg-construction-navy hover:bg-blue-800 text-white px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-md disabled:opacity-50 flex items-center gap-1.5"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-md disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
-                <Check className="w-4 h-4" />
-                {saving
-                  ? "Saving..."
-                  : editingProject
-                  ? `Update Project (${form.publishStatus.toUpperCase()})`
-                  : "Publish Live Project"}
+                <Upload className="w-3.5 h-3.5" />
+                <span>Publish Project</span>
               </button>
             </div>
           </div>
@@ -970,13 +1153,13 @@ export default function AdminProjects() {
               <button
                 onClick={fetchProjects}
                 disabled={loading}
-                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-medium disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
               </button>
               <button
                 onClick={handleStartAdd}
-                className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 text-sm font-semibold transition-colors shadow-md"
+                className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 text-sm font-semibold transition-colors shadow-md cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Add New Project
               </button>
@@ -1256,7 +1439,7 @@ export default function AdminProjects() {
                             <button
                               onClick={() => handleToggleFeatured(p)}
                               title="Toggle Featured on Homepage"
-                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors ${
+                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors cursor-pointer ${
                                 p.featured
                                   ? "bg-yellow-100 text-yellow-600 border border-yellow-200"
                                   : "bg-slate-50 border border-slate-200 text-slate-300 hover:text-yellow-500"
@@ -1269,10 +1452,20 @@ export default function AdminProjects() {
                           {/* Actions */}
                           <td className="px-4 py-3.5 whitespace-nowrap text-right">
                             <div className="inline-flex items-center gap-1.5">
+                              {/* Row Preview Button */}
+                              <button
+                                onClick={() => handleRowPreview(p)}
+                                title="Draft-Safe Full Preview"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-amber-500 hover:text-amber-700 text-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Preview</span>
+                              </button>
+
                               <button
                                 onClick={() => handleStartEdit(p)}
                                 title="Edit full project specifications"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold transition-all shadow-sm"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
                               >
                                 <Pencil className="w-3.5 h-3.5" /> Edit
                               </button>
@@ -1280,7 +1473,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleDeleteProject(p, false)}
                                 title="Safe Archive Project (Unpublishes safely)"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm cursor-pointer"
                               >
                                 <Archive className="w-3.5 h-3.5" />
                               </button>
@@ -1288,7 +1481,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleDeleteProject(p, true)}
                                 title="Permanently Delete Project from Database"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -1312,6 +1505,112 @@ export default function AdminProjects() {
                 <span className="text-amber-700 font-semibold">{draftCount} Drafts</span>
                 <span className="text-blue-700 font-semibold">{ongoingCount} Ongoing</span>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* MODAL 1: DRAFT-SAFE FULL PROJECT PREVIEW MODAL                */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showPreviewModal && previewProjectData && (
+        <ProjectPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setPreviewProjectData(null);
+          }}
+          project={previewProjectData}
+        />
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* MODAL 2: PRE-PUBLISH REVIEW MODAL                             */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showPublishReviewModal && (
+        <PublishReviewModal
+          isOpen={showPublishReviewModal}
+          onClose={() => setShowPublishReviewModal(false)}
+          onConfirmPublish={() => handleSave("published")}
+          onJumpToTab={(tabIdx) => {
+            const tabs: EditorTab[] = ["general", "specifications", "narrative", "media", "seo"];
+            if (tabs[tabIdx]) {
+              setActiveTab(tabs[tabIdx]);
+            }
+          }}
+          isPublishing={saving}
+          project={form}
+        />
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* MODAL 3: POST-SAVE / PUBLISH SUCCESS PANEL                    */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showSuccessPanel && successPanelData && (
+        <ProjectSuccessPanel
+          isOpen={showSuccessPanel}
+          onClose={() => {
+            setShowSuccessPanel(false);
+            setSuccessPanelData(null);
+            setShowEditor(false);
+            setEditingProject(null);
+            setForm(DEFAULT_FORM);
+          }}
+          onContinueEditing={() => {
+            setShowSuccessPanel(false);
+            setSuccessPanelData(null);
+          }}
+          title={successPanelData.title}
+          slug={successPanelData.slug}
+          publishStatus={successPanelData.publishStatus}
+        />
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* MODAL 4: UNSAVED CHANGES CONFIRMATION DIALOG                  */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showUnsavedConfirm && (
+        <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-300 w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Unsaved Changes</h3>
+                <p className="text-xs text-slate-500">
+                  You have unsaved edits in this project. What would you like to do?
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUnsavedConfirm(false);
+                  handleSave("draft");
+                }}
+                className="w-full py-2 bg-construction-navy hover:bg-blue-800 text-white font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
+              >
+                Save as Draft
+              </button>
+
+              <button
+                type="button"
+                onClick={forceCloseEditor}
+                className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
+              >
+                Discard Changes &amp; Close
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowUnsavedConfirm(false)}
+                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
+              >
+                Keep Editing
+              </button>
             </div>
           </div>
         </div>
