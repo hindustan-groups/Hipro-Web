@@ -60,14 +60,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       });
 
+    const seenProjectUrls = new Set<string>();
     const projectRoutes = projects
-      .filter(p => p.status !== "archived")
-      .map((project) => ({
-        url: `${baseUrl}/projects/${project.id}`,
-        lastModified: new Date(project.updatedAt || project.createdAt || new Date()),
-        changeFrequency: 'monthly' as const,
-        priority: 0.7,
-      }));
+      .filter((p): p is Project & { slug: string } => {
+        if (!p) return false;
+        // Public indexing condition: must be published, not archived, and not noIndex
+        if (p.publishStatus !== "published") return false;
+        if (p.status === "archived") return false;
+        if (p.noIndex === true) return false;
+        if (!p.slug || typeof p.slug !== "string" || !p.slug.trim()) return false;
+        return true;
+      })
+      .map((project) => {
+        const cleanSlug = project.slug.trim().replace(/^\/+/, "");
+        const projectUrl = `${baseUrl}/projects/${cleanSlug}`;
+
+        // Deduplication
+        if (seenProjectUrls.has(projectUrl)) return null;
+        seenProjectUrls.add(projectUrl);
+
+        const rawDate = project.updatedAt || project.createdAt;
+        const parsedDate = rawDate ? new Date(rawDate) : new Date();
+        const validDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+        return {
+          url: projectUrl,
+          lastModified: validDate,
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
     // Use active database services or fall back to verified company services
     const activeDbServices = services.filter(s => s.active !== false && s.title);

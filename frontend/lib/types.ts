@@ -25,19 +25,88 @@ export interface QuoteRequest {
   updatedAt?: string;
 }
 
+export interface ProjectGalleryItem {
+  url: string;
+  alt?: string;
+  caption?: string;
+  order?: number;
+  isCover?: boolean;
+}
+
+export interface ProjectHighlight {
+  label: string;
+  value: string;
+}
+
+export interface ProjectFaq {
+  question: string;
+  answer: string;
+}
+
 export interface Project {
   id?: string;
+  slug?: string | null;
   title: string;
+  shortDescription?: string | null;
+  description: string;
   category: string;
+  subCategories?: string | string[] | null;
+
+  // Specifications
+  client?: string | null;
+  owner?: string | null;
+  area?: string | null;
+  services?: string | string[] | null;
   location: string;
   date: string;
+  completionDate?: string | null;
+  highlights?: string | ProjectHighlight[] | null;
+
+  // Geographic (Zero defaults, strictly optional)
+  city?: string | null;
+  district?: string | null;
+  state?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  targetLocation?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
+
+  // Media
   image: string;
-  images?: string;
-  description: string;
-  featured?: boolean;
+  imageAlt?: string | null;
+  imageCaption?: string | null;
+  images?: string | null;
+  galleryDetails?: string | ProjectGalleryItem[] | null;
+  videoUrl?: string | null;
+  videoType?: "youtube" | "vimeo" | "direct" | "none" | null;
+  videoTitle?: string | null;
+  videoDescription?: string | null;
+  videoPoster?: string | null;
+
+  // Q&A
+  faqs?: string | ProjectFaq[] | null;
+
+  // Status & Publishing
   status?: "active" | "archived" | "completed" | "ongoing";
-  createdAt?: string;
-  updatedAt?: string;
+  publishStatus?: "draft" | "published" | "archived";
+  publishedAt?: string | Date | null;
+  featured?: boolean;
+  order?: number;
+
+  // SEO & Directives
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  focusKeywords?: string | null;
+  secondaryKeywords?: string | null;
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
+  noIndex?: boolean;
+  noFollow?: boolean;
+
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface ServiceFeatureDetail {

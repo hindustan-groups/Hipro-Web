@@ -35,18 +35,75 @@ model QuoteRequest {
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  category    String
-  location    String
-  date        String
-  image       String
-  images      String?
-  description String
-  featured    Boolean  @default(false)
-  status      String   @default("active") // "active", "archived"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Primary Identification & SEO Routing
+  id                String    @id @default(cuid())
+  slug              String?   @unique
+  title             String
+  shortDescription  String?   @db.Text
+  description       String    @db.Text
+  category          String
+  subCategories     String?
+
+  // Commercial, Stakeholder & Technical Specifications (AEO Entities)
+  client            String?
+  owner             String?
+  area              String?
+  services          String?
+  location          String
+  date              String
+  completionDate    String?
+  highlights        String?   @db.Text
+
+  // Geographic Grounding & Local Discovery (GEO Attributes — Zero Defaults)
+  city              String?
+  district          String?
+  state             String?
+  country           String?
+  postalCode        String?
+  targetLocation    String?
+  latitude          Float?
+  longitude         Float?
+  googleMapsUrl     String?
+
+  // Visual Media & Video Engine (Media SEO)
+  image             String
+  imageAlt          String?
+  imageCaption      String?
+  images            String?   @db.Text
+  galleryDetails    String?   @db.Text
+  videoUrl          String?
+  videoType         String?   @default("none")
+  videoTitle        String?
+  videoDescription  String?   @db.Text
+  videoPoster       String?
+
+  // Structured Q&A (AEO Verified FAQ Section)
+  faqs              String?   @db.Text
+
+  // Operational Status & Publishing Workflow (New projects default to draft)
+  status            String    @default("active")
+  publishStatus     String    @default("draft")
+  publishedAt       DateTime?
+  featured          Boolean   @default(false)
+  order             Int       @default(0)
+
+  // SEO, Crawling Directives & Social Graph Controls
+  metaTitle         String?
+  metaDescription   String?   @db.Text
+  focusKeywords     String?
+  secondaryKeywords String?
+  canonicalUrl      String?
+  ogImage           String?
+  noIndex           Boolean   @default(false)
+  noFollow          Boolean   @default(false)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([category])
+  @@index([status])
+  @@index([publishStatus])
+  @@index([city])
 }
 
 model Service {

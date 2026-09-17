@@ -1,524 +1,1321 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RefreshCw, Plus, Trash2, Star, CheckCircle, Clock, Filter, Pencil, ImageIcon, Search, ArrowUpDown } from "lucide-react";
-import ImageUpload from "@/components/admin/ImageUpload";
-import MultiImageUpload from "@/components/admin/MultiImageUpload";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  RefreshCw,
+  Plus,
+  Trash2,
+  Star,
+  CheckCircle,
+  Clock,
+  Filter,
+  Pencil,
+  ImageIcon,
+  Search,
+  ArrowUpDown,
+  Archive,
+  Eye,
+  AlertTriangle,
+  X,
+  Check,
+  Globe,
+  Sliders,
+  FileText,
+  Building,
+  ArrowRight,
+  ShieldAlert,
+} from "lucide-react";
+import type { Project, ProjectHighlight, ProjectFaq, ProjectGalleryItem } from "@/lib/types";
+import ProjectGeneralTab from "@/components/admin/projects/ProjectGeneralTab";
+import ProjectSpecificationsTab from "@/components/admin/projects/ProjectSpecificationsTab";
+import ProjectNarrativeTab from "@/components/admin/projects/ProjectNarrativeTab";
+import ProjectMediaTab from "@/components/admin/projects/ProjectMediaTab";
+import ProjectSeoTab from "@/components/admin/projects/ProjectSeoTab";
 
-interface Project {
-  id: string; 
-  title: string; 
-  category: string; 
+type EditorTab = "general" | "specifications" | "narrative" | "media" | "seo";
+
+interface FormState {
+  title: string;
+  slug: string;
+  category: string;
+  subCategories: string[];
+  status: "active" | "ongoing" | "completed" | "archived";
+  publishStatus: "draft" | "published" | "archived";
+  featured: boolean;
+  order: number;
+
+  client: string;
+  owner: string;
+  area: string;
+  services: string[];
   location: string;
-  date: string; 
-  image: string; 
-  images?: string;
+  city: string;
+  district: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  targetLocation: string;
+  latitude: string | number;
+  longitude: string | number;
+  googleMapsUrl: string;
+  date: string;
+  completionDate: string;
+
+  shortDescription: string;
   description: string;
-  featured: boolean; 
-  status: string; // "completed", "archived", "ongoing", "active"
-  createdAt: string;
+  highlights: ProjectHighlight[];
+  faqs: ProjectFaq[];
+
+  image: string;
+  imageAlt: string;
+  imageCaption: string;
+  galleryDetails: ProjectGalleryItem[];
+  videoUrl: string;
+  videoType: "youtube" | "vimeo" | "direct" | "none";
+  videoTitle: string;
+  videoDescription: string;
+  videoPoster: string;
+
+  metaTitle: string;
+  metaDescription: string;
+  focusKeywords: string;
+  secondaryKeywords: string;
+  canonicalUrl: string;
+  ogImage: string;
+  noIndex: boolean;
+  noFollow: boolean;
 }
 
-const EMPTY: Omit<Project, "id" | "createdAt"> = {
-  title: "", 
-  category: "Commercial", 
-  location: "", 
+const DEFAULT_FORM: FormState = {
+  title: "",
+  slug: "",
+  category: "Commercial",
+  subCategories: [],
+  status: "ongoing",
+  publishStatus: "draft",
+  featured: false,
+  order: 0,
+
+  client: "",
+  owner: "",
+  area: "",
+  services: [],
+  location: "",
+  city: "",
+  district: "",
+  state: "",
+  country: "",
+  postalCode: "",
+  targetLocation: "",
+  latitude: "",
+  longitude: "",
+  googleMapsUrl: "",
   date: "",
-  image: "", 
-  images: "",
-  description: "", 
-  featured: false, 
-  status: "active", // active/ongoing by default
+  completionDate: "",
+
+  shortDescription: "",
+  description: "",
+  highlights: [],
+  faqs: [],
+
+  image: "",
+  imageAlt: "",
+  imageCaption: "",
+  galleryDetails: [],
+  videoUrl: "",
+  videoType: "none",
+  videoTitle: "",
+  videoDescription: "",
+  videoPoster: "",
+
+  metaTitle: "",
+  metaDescription: "",
+  focusKeywords: "",
+  secondaryKeywords: "",
+  canonicalUrl: "",
+  ogImage: "",
+  noIndex: false,
+  noFollow: false,
 };
+
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
 
 export default function AdminProjects() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [form, setForm]         = useState<typeof EMPTY>(EMPTY);
-  const [saving, setSaving]     = useState(false);
-  
-  // Tab filter: "all", "completed", "ongoing"
-  const [statusTab, setStatusTab]           = useState<"all" | "completed" | "ongoing">("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("All");
-  const [searchQuery, setSearchQuery]       = useState<string>("");
-  const [sortBy, setSortBy]                 = useState<"newest" | "oldest" | "title">("newest");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
+  // Editor states
+  const [showEditor, setShowEditor] = useState(false);
+  const [activeTab, setActiveTab] = useState<EditorTab>("general");
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [isDirty, setIsDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [slugError, setSlugError] = useState("");
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+  // Filters & Sorting in List View
+  const [searchQuery, setSearchQuery] = useState("");
+  const [publishStatusFilter, setPublishStatusFilter] = useState<string>("all");
+  const [operationalStatusFilter, setOperationalStatusFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"order" | "newest" | "oldest" | "title">("order");
+
+  // Fetch Projects from API (with ?all=true for full admin visibility)
   const fetchProjects = async () => {
-    setLoading(true); setError("");
+    setLoading(true);
+    setError("");
     try {
-      const res  = await fetch("/api/projects?category=All");
+      const res = await fetch("/api/projects?all=true", {
+        credentials: "include",
+      });
       const json = await res.json();
-      if (json.success) setProjects(json.data);
-      else setError(json.error || "Failed to load projects");
-    } catch { setError("Network error"); }
-    setLoading(false);
+      if (json.success) {
+        setProjects(json.data || []);
+      } else {
+        setError(json.error || "Failed to load projects");
+      }
+    } catch {
+      setError("Network error while communicating with projects backend");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
+  // Update form state helper
+  const handleFormChange = (updates: Partial<FormState>) => {
+    setForm((prev) => ({ ...prev, ...updates }));
+    setIsDirty(true);
+    if ("slug" in updates) {
+      setSlugError("");
+    }
+  };
+
+  // Open New Project Editor
   const handleStartAdd = () => {
     setEditingProject(null);
-    setForm(EMPTY);
-    setShowForm(true);
+    setForm(DEFAULT_FORM);
+    setActiveTab("general");
+    setIsSlugManuallyEdited(false);
+    setSlugError("");
+    setIsDirty(false);
+    setShowEditor(true);
   };
 
+  // Open Edit Existing Project
   const handleStartEdit = (p: Project) => {
     setEditingProject(p);
+    setIsSlugManuallyEdited(true);
+    setSlugError("");
+
+    // Safely parse JSON or array fields
+    let subCats: string[] = [];
+    if (p.subCategories) {
+      try {
+        subCats = Array.isArray(p.subCategories) ? p.subCategories : JSON.parse(p.subCategories);
+      } catch {
+        subCats = String(p.subCategories).split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    let svcs: string[] = [];
+    if (p.services) {
+      try {
+        svcs = Array.isArray(p.services) ? p.services : JSON.parse(p.services);
+      } catch {
+        svcs = String(p.services).split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
+    let hls: ProjectHighlight[] = [];
+    if (p.highlights) {
+      try {
+        hls = Array.isArray(p.highlights) ? p.highlights : JSON.parse(p.highlights);
+      } catch {
+        hls = [];
+      }
+    }
+
+    let fqs: ProjectFaq[] = [];
+    if (p.faqs) {
+      try {
+        fqs = Array.isArray(p.faqs) ? p.faqs : JSON.parse(p.faqs);
+      } catch {
+        fqs = [];
+      }
+    }
+
+    let gDetails: ProjectGalleryItem[] = [];
+    if (p.galleryDetails) {
+      try {
+        gDetails = Array.isArray(p.galleryDetails) ? p.galleryDetails : JSON.parse(p.galleryDetails);
+      } catch {
+        gDetails = [];
+      }
+    } else if (p.images) {
+      try {
+        const urls = typeof p.images === "string" && p.images.trim().startsWith("[")
+          ? JSON.parse(p.images)
+          : p.images.split("\n").map((s) => s.trim()).filter(Boolean);
+        gDetails = urls.map((u: string, idx: number) => ({
+          url: u,
+          alt: `${p.title} photo ${idx + 1}`,
+          order: idx + 1,
+        }));
+      } catch {
+        gDetails = [];
+      }
+    }
+
     setForm({
       title: p.title || "",
+      slug: p.slug || generateSlug(p.title || ""),
       category: p.category || "Commercial",
-      location: p.location || "",
-      date: p.date || "",
-      image: p.image || "",
-      images: p.images || "",
-      description: p.description || "",
+      subCategories: subCats,
+      status: (p.status as any) || "ongoing",
+      publishStatus: (p.publishStatus as any) || "draft",
       featured: p.featured ?? false,
-      status: p.status || "active",
+      order: p.order ?? 0,
+
+      client: p.client || "",
+      owner: p.owner || "",
+      area: p.area || "",
+      services: svcs,
+      location: p.location || "",
+      city: p.city || "",
+      district: p.district || "",
+      state: p.state || "",
+      country: p.country || "",
+      postalCode: p.postalCode || "",
+      targetLocation: p.targetLocation || "",
+      latitude: p.latitude ?? "",
+      longitude: p.longitude ?? "",
+      googleMapsUrl: p.googleMapsUrl || "",
+      date: p.date || "",
+      completionDate: p.completionDate || "",
+
+      shortDescription: p.shortDescription || "",
+      description: p.description || "",
+      highlights: hls,
+      faqs: fqs,
+
+      image: p.image || "",
+      imageAlt: p.imageAlt || "",
+      imageCaption: p.imageCaption || "",
+      galleryDetails: gDetails,
+      videoUrl: p.videoUrl || "",
+      videoType: p.videoType || "none",
+      videoTitle: p.videoTitle || "",
+      videoDescription: p.videoDescription || "",
+      videoPoster: p.videoPoster || "",
+
+      metaTitle: p.metaTitle || "",
+      metaDescription: p.metaDescription || "",
+      focusKeywords: p.focusKeywords || "",
+      secondaryKeywords: p.secondaryKeywords || "",
+      canonicalUrl: p.canonicalUrl || "",
+      ogImage: p.ogImage || "",
+      noIndex: p.noIndex ?? false,
+      noFollow: p.noFollow ?? false,
     });
-    setShowForm(true);
+
+    setActiveTab("general");
+    setIsDirty(false);
+    setShowEditor(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setSaving(true);
+  // Close Editor safely
+  const handleCloseEditor = () => {
+    if (isDirty && !confirm("You have unsaved changes. Discard and close editor?")) {
+      return;
+    }
+    setShowEditor(false);
+    setEditingProject(null);
+    setForm(DEFAULT_FORM);
+    setIsDirty(false);
+    setSlugError("");
+  };
+
+  // Submit Handler (Supports Draft, Published, or Explicit Status)
+  const handleSave = async (overridePublishStatus?: "draft" | "published" | "archived") => {
+    // Basic client-side validation
+    if (!form.title.trim()) {
+      setActiveTab("general");
+      setError("Project Title is required");
+      return;
+    }
+    if (!form.location.trim()) {
+      setActiveTab("specifications");
+      setError("Location is required");
+      return;
+    }
+    if (!form.date.trim()) {
+      setActiveTab("specifications");
+      setError("Project Date / Timeline is required");
+      return;
+    }
+    if (!form.description.trim()) {
+      setActiveTab("narrative");
+      setError("Full Description is required");
+      return;
+    }
+
+    const targetPublishStatus = overridePublishStatus || form.publishStatus;
+
+    setSaving(true);
+    setError("");
+    setSlugError("");
+
     try {
       const isEdit = !!editingProject;
-      const url = "/api/projects";
+      const url = isEdit ? `/api/projects/${editingProject.id}` : "/api/projects";
       const method = isEdit ? "PATCH" : "POST";
-      const body = isEdit ? { id: editingProject.id, ...form } : form;
 
-      const res  = await fetch(url, {
+      const payload: any = {
+        title: form.title.trim(),
+        slug: form.slug.trim().toLowerCase() || generateSlug(form.title),
+        category: form.category.trim(),
+        subCategories: form.subCategories.length > 0 ? JSON.stringify(form.subCategories) : null,
+        status: form.status,
+        publishStatus: targetPublishStatus,
+        featured: form.featured,
+        order: Number(form.order) || 0,
+
+        client: form.client.trim() || null,
+        owner: form.owner.trim() || null,
+        area: form.area.trim() || null,
+        services: form.services.length > 0 ? JSON.stringify(form.services) : null,
+        location: form.location.trim(),
+        city: form.city.trim() || null,
+        district: form.district.trim() || null,
+        state: form.state.trim() || null,
+        country: form.country.trim() || null,
+        postalCode: form.postalCode.trim() || null,
+        targetLocation: form.targetLocation.trim() || null,
+        latitude: form.latitude !== "" && !isNaN(Number(form.latitude)) ? Number(form.latitude) : null,
+        longitude: form.longitude !== "" && !isNaN(Number(form.longitude)) ? Number(form.longitude) : null,
+        googleMapsUrl: form.googleMapsUrl.trim() || null,
+        date: form.date.trim(),
+        completionDate: form.completionDate.trim() || null,
+
+        shortDescription: form.shortDescription.trim() || null,
+        description: form.description.trim(),
+        highlights: form.highlights.length > 0 ? JSON.stringify(form.highlights) : null,
+        faqs: form.faqs.length > 0 ? JSON.stringify(form.faqs) : null,
+
+        image: form.image.trim(),
+        imageAlt: form.imageAlt.trim() || null,
+        imageCaption: form.imageCaption.trim() || null,
+        galleryDetails: form.galleryDetails.length > 0 ? JSON.stringify(form.galleryDetails) : null,
+        videoUrl: form.videoUrl.trim() || null,
+        videoType: form.videoType,
+        videoTitle: form.videoTitle.trim() || null,
+        videoDescription: form.videoDescription.trim() || null,
+        videoPoster: form.videoPoster.trim() || null,
+
+        metaTitle: form.metaTitle.trim() || null,
+        metaDescription: form.metaDescription.trim() || null,
+        focusKeywords: form.focusKeywords.trim() || null,
+        secondaryKeywords: form.secondaryKeywords.trim() || null,
+        canonicalUrl: form.canonicalUrl.trim() || null,
+        ogImage: form.ogImage.trim() || null,
+        noIndex: form.noIndex,
+        noFollow: form.noFollow,
+      };
+
+      if (isEdit) {
+        payload.id = editingProject.id;
+      }
+
+      const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+
+      if (res.status === 409) {
+        setActiveTab("general");
+        setSlugError(json.error || "Slug already in use. Please enter a unique slug.");
+        setError("Duplicate slug detected. Please resolve on the General tab.");
+        setSaving(false);
+        return;
+      }
+
+      if (!res.ok || !json.success) {
+        setError(json.error || `Failed to save project (Error ${res.status})`);
+        setSaving(false);
+        return;
+      }
+
+      // Success!
+      setSuccessMessage(
+        isEdit
+          ? `✓ Project "${form.title}" updated successfully (${targetPublishStatus})`
+          : `✓ Project "${form.title}" created successfully (${targetPublishStatus})`
+      );
+      setTimeout(() => setSuccessMessage(""), 5000);
+
+      setShowEditor(false);
+      setEditingProject(null);
+      setForm(DEFAULT_FORM);
+      setIsDirty(false);
+      fetchProjects();
+    } catch {
+      setError("Network error while saving project");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Delete Action: Safe Archive by default, or Permanent with double confirmation
+  const handleDeleteProject = async (p: Project, permanent = false) => {
+    const confirmText = permanent
+      ? `PERMANENTLY DELETE "${p.title}"?\n\nThis will destroy the database record and cannot be undone.`
+      : `Archive "${p.title}"?\n\nThis unpublishes the project from the public website and preserves it safely in the archive.`;
+
+    if (!confirm(confirmText)) return;
+
+    try {
+      const url = `/api/projects/${p.id}${permanent ? "?permanent=true" : ""}`;
+      const res = await fetch(url, {
+        method: "DELETE",
+        credentials: "include",
       });
       const json = await res.json();
-      if (json.success) { 
-        setShowForm(false); 
-        setEditingProject(null);
-        setForm(EMPTY); 
-        fetchProjects(); 
+      if (json.success) {
+        setSuccessMessage(permanent ? `Project permanently deleted` : `Project safely archived`);
+        setTimeout(() => setSuccessMessage(""), 4000);
+        fetchProjects();
+      } else {
+        alert(json.error || "Failed to delete project");
       }
-      else setError(json.error || "Failed to save project");
-    } catch { setError("Network error"); }
-    setSaving(false);
+    } catch {
+      alert("Network error during delete operation");
+    }
   };
 
-  const deleteProject = async (id: string) => {
-    if (!confirm("Delete this project?")) return;
+  // Quick 1-Click Toggle Featured
+  const handleToggleFeatured = async (p: Project) => {
     try {
-      await fetch("/api/projects", {
-        method: "DELETE",
+      const res = await fetch(`/api/projects/${p.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        credentials: "include",
+        body: JSON.stringify({ id: p.id, featured: !p.featured }),
       });
-      fetchProjects();
-    } catch { /* silent */ }
+      const json = await res.json();
+      if (json.success) {
+        fetchProjects();
+      }
+    } catch {
+      /* silent */
+    }
   };
 
-  const toggleFeatured = async (p: Project) => {
-    await fetch("/api/projects", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: p.id, featured: !p.featured }),
-    });
-    fetchProjects();
+  // Quick 1-Click Toggle Operational Status (Ongoing vs Completed)
+  const handleToggleOperationalStatus = async (p: Project) => {
+    const nextStatus = p.status === "completed" ? "ongoing" : "completed";
+    try {
+      const res = await fetch(`/api/projects/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: p.id, status: nextStatus }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchProjects();
+      }
+    } catch {
+      /* silent */
+    }
   };
 
-  const toggleStatus = async (p: Project) => {
-    const isCompleted = p.status === "completed" || p.status === "archived";
-    const nextStatus = isCompleted ? "active" : "completed";
-    await fetch("/api/projects", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: p.id, status: nextStatus }),
-    });
-    fetchProjects();
+  // Quick 1-Click Toggle Publication Status (Draft vs Published)
+  const handleTogglePublishStatus = async (p: Project) => {
+    const nextStatus = p.publishStatus === "published" ? "draft" : "published";
+    const promptMsg =
+      nextStatus === "published"
+        ? `Make "${p.title}" publicly visible on the live website?`
+        : `Unpublish "${p.title}" and return it to Draft? (It will be hidden from public view)`;
+
+    if (!confirm(promptMsg)) return;
+
+    try {
+      const res = await fetch(`/api/projects/${p.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: p.id, publishStatus: nextStatus }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        fetchProjects();
+      }
+    } catch {
+      /* silent */
+    }
   };
 
-  // Filter & Sort logic
-  const completedProjects = projects.filter(p => p.status === "completed" || p.status === "archived");
-  const ongoingProjects   = projects.filter(p => p.status === "active" || p.status === "ongoing");
+  // Filter and sort calculation
+  const filteredProjects = useMemo(() => {
+    return projects
+      .filter((p) => {
+        // Search Filter
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const match =
+            p.title.toLowerCase().includes(q) ||
+            p.location.toLowerCase().includes(q) ||
+            (p.client && p.client.toLowerCase().includes(q)) ||
+            (p.category && p.category.toLowerCase().includes(q)) ||
+            (p.slug && p.slug.toLowerCase().includes(q));
+          if (!match) return false;
+        }
 
-  let filteredProjects = statusTab === "completed" 
-    ? completedProjects 
-    : statusTab === "ongoing" 
-    ? ongoingProjects 
-    : projects;
+        // Publication Status Filter
+        if (publishStatusFilter !== "all") {
+          if ((p.publishStatus || "draft") !== publishStatusFilter) return false;
+        }
 
-  if (categoryFilter !== "All") {
-    filteredProjects = filteredProjects.filter(p => p.category.toLowerCase() === categoryFilter.toLowerCase());
-  }
+        // Operational Status Filter
+        if (operationalStatusFilter !== "all") {
+          if (operationalStatusFilter === "ongoing") {
+            if (p.status !== "ongoing" && p.status !== "active") return false;
+          } else if (p.status !== operationalStatusFilter) {
+            return false;
+          }
+        }
 
-  if (searchQuery.trim()) {
-    const q = searchQuery.toLowerCase();
-    filteredProjects = filteredProjects.filter(p => 
-      p.title.toLowerCase().includes(q) || 
-      p.location.toLowerCase().includes(q) || 
-      p.description.toLowerCase().includes(q)
-    );
-  }
+        // Category Filter
+        if (categoryFilter !== "all") {
+          if (p.category.toLowerCase() !== categoryFilter.toLowerCase()) return false;
+        }
 
-  filteredProjects = [...filteredProjects].sort((a, b) => {
-    if (sortBy === "newest") {
-      return (new Date(b.date).getTime() || 0) - (new Date(a.date).getTime() || 0);
-    }
-    if (sortBy === "oldest") {
-      return (new Date(a.date).getTime() || 0) - (new Date(b.date).getTime() || 0);
-    }
-    if (sortBy === "title") {
-      return a.title.localeCompare(b.title);
-    }
-    return 0;
-  });
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === "order") {
+          return (a.order ?? 0) - (b.order ?? 0);
+        }
+        if (sortBy === "newest") {
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        }
+        if (sortBy === "oldest") {
+          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        }
+        if (sortBy === "title") {
+          return a.title.localeCompare(b.title);
+        }
+        return 0;
+      });
+  }, [projects, searchQuery, publishStatusFilter, operationalStatusFilter, categoryFilter, sortBy]);
+
+  // Counts for quick metric badges
+  const publishedCount = projects.filter((p) => p.publishStatus === "published").length;
+  const draftCount = projects.filter((p) => (p.publishStatus || "draft") === "draft").length;
+  const archivedCount = projects.filter((p) => p.publishStatus === "archived").length;
+  const ongoingCount = projects.filter((p) => p.status === "ongoing" || p.status === "active").length;
+  const completedCount = projects.filter((p) => p.status === "completed").length;
 
   return (
-    <div className="space-y-6">
-      
-      {/* Page Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Projects Portfolio</h1>
-          <p className="text-slate-500 text-sm">Manage ongoing and completed construction projects and their image galleries.</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button onClick={fetchProjects} disabled={loading}
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 rounded-none-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
-          </button>
-          <button onClick={handleStartAdd}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 rounded-none-none text-sm font-semibold transition-colors shadow-md shadow-blue-900/20">
-            <Plus className="w-4 h-4" /> Add New Project
+    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+      {/* Notifications */}
+      {successMessage && (
+        <div className="p-3.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{successMessage}</span>
+          </div>
+          <button onClick={() => setSuccessMessage("")} className="text-emerald-600 hover:text-emerald-900">
+            <X className="w-4 h-4" />
           </button>
         </div>
-      </div>
-
-      {/* Filter & Sort Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-3">
-        {/* Status Tabs (All / Completed / Ongoing) */}
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <button
-            onClick={() => setStatusTab("all")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
-              statusTab === "all"
-                ? "border-construction-navy text-construction-navy bg-blue-50/50"
-                : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <Filter className="w-3.5 h-3.5" />
-            All ({projects.length})
-          </button>
-
-          <button
-            onClick={() => setStatusTab("ongoing")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
-              statusTab === "ongoing"
-                ? "border-amber-500 text-amber-700 bg-amber-50/50"
-                : "border-transparent text-slate-500 hover:text-amber-600"
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
-            Ongoing ({ongoingProjects.length})
-          </button>
-
-          <button
-            onClick={() => setStatusTab("completed")}
-            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
-              statusTab === "completed"
-                ? "border-emerald-600 text-emerald-700 bg-emerald-50/50"
-                : "border-transparent text-slate-500 hover:text-emerald-600"
-            }`}
-          >
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-            Completed ({completedProjects.length})
-          </button>
-        </div>
-
-        {/* Search, Category & Sorting Controls */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects..."
-              className="bg-white border border-slate-200 text-slate-900 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy w-44"
-            />
-          </div>
-
-          {/* Category Dropdown */}
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-white border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
-          >
-            <option value="All">All Categories</option>
-            <option value="Commercial">Commercial</option>
-            <option value="Residential">Residential</option>
-            <option value="Industrial">Industrial</option>
-          </select>
-
-          {/* Sort By Dropdown */}
-          <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none cursor-pointer"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="title">Title (A-Z)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {error && <div className="p-4 rounded-none-none bg-red-50 border border-red-100 text-red-600 text-sm">{error}</div>}
-
-      {/* Add / Edit Project Form */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white border-2 border-construction-navy shadow-lg rounded-none-none p-6 space-y-5">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-slate-900 font-bold text-lg">
-              {editingProject ? `Edit Project & Images: "${editingProject.title}"` : "New Construction Project"}
-            </h3>
-            <button
-              type="button"
-              onClick={() => { setShowForm(false); setEditingProject(null); }}
-              className="text-slate-400 hover:text-slate-700 text-xs font-bold uppercase"
-            >
-              Close
-            </button>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {(["title", "location", "date"] as const).map((field) => (
-              <div key={field}>
-                <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">{field}</label>
-                <input required value={form[field]} onChange={(e) => setForm((p) => ({ ...p, [field]: e.target.value }))}
-                  placeholder={`e.g. ${field === "title" ? "Cyber Tower Phase 2" : field === "location" ? "New Delhi" : "2024 - 2026"}`}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" />
-              </div>
-            ))}
-
-            {/* Category */}
-            <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Category</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all">
-                <option>Commercial</option>
-                <option>Residential</option>
-                <option>Industrial</option>
-              </select>
-            </div>
-
-            {/* Project Status */}
-            <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Project Status</label>
-              <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-semibold">
-                <option value="active">Ongoing (In Progress)</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            {/* Main Cover Image */}
-            <div className="md:col-span-2">
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Main Cover Image</label>
-              <ImageUpload value={form.image} onChange={(url) => setForm((p) => ({ ...p, image: url }))} />
-            </div>
-
-            {/* Additional Project Gallery Images */}
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-slate-500 text-xs uppercase tracking-wider block font-medium">
-                Gallery Photos for Existing Project (Upload or add multiple photos)
-              </label>
-              <MultiImageUpload
-                value={
-                  form.images 
-                    ? (form.images.trim().startsWith("[") 
-                        ? (() => { try { return JSON.parse(form.images); } catch { return []; } })()
-                        : form.images.split("\n").map(s => s.trim()).filter(Boolean))
-                    : []
-                }
-                onChange={(urls) => setForm((p) => ({ ...p, images: JSON.stringify(urls) }))}
-              />
-              <p className="text-slate-400 text-xs mt-1">Upload multiple photos or paste image links. All photos will display in this project&apos;s photo gallery.</p>
-            </div>
-
-            {/* Featured Checkbox */}
-            <div className="flex items-center gap-3 pt-2">
-              <input type="checkbox" id="featured" checked={form.featured}
-                onChange={(e) => setForm((p) => ({ ...p, featured: e.target.checked }))}
-                className="w-4 h-4 accent-construction-navy" />
-              <label htmlFor="featured" className="text-slate-700 text-sm font-medium cursor-pointer">Featured Project (Display on Homepage)</label>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1 font-medium">Description</label>
-            <textarea required rows={3} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Provide key details about structural scope, square footage, engineering highlights..."
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none transition-all" />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={saving}
-              className="bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20">
-              {saving ? "Saving..." : editingProject ? "Update Project & Photos" : "Save New Project"}
-            </button>
-            <button type="button" onClick={() => { setShowForm(false); setEditingProject(null); }}
-              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-6 py-2.5 rounded-none-none text-sm font-semibold transition-colors">
-              Cancel
-            </button>
-          </div>
-        </form>
       )}
 
-      {/* Projects Table */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-none-none overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                <th className="text-left px-5 py-3.5 font-semibold">Project</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Status</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Category</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Location</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Date</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Featured</th>
-                <th className="text-left px-5 py-3.5 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                [...Array(4)].map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    {[...Array(7)].map((_, j) => (
-                      <td key={j} className="px-5 py-4"><div className="h-4 bg-slate-100 rounded-none-none" /></td>
-                    ))}
-                  </tr>
-                ))
-              ) : filteredProjects.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center text-slate-500 py-16">
-                    No projects found for this filter tab.
-                  </td>
-                </tr>
-              ) : (
-                filteredProjects.map((p) => {
-                  const isDone = p.status === "completed" || p.status === "archived";
-                  let galleryCount = 0;
-                  if (p.images) {
-                    try {
-                      galleryCount = p.images.trim().startsWith("[") 
-                        ? JSON.parse(p.images).length 
-                        : p.images.split("\n").filter(Boolean).length;
-                    } catch { galleryCount = 0; }
-                  }
-
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          {p.image && (
-                            <img src={p.image} alt={p.title} className="w-10 h-10 object-cover rounded-none-none border border-slate-200 shrink-0" />
-                          )}
-                          <div>
-                            <p className="text-slate-900 font-semibold">{p.title}</p>
-                            <p className="text-slate-500 text-xs mt-0.5 truncate max-w-xs">{p.description}</p>
-                            {galleryCount > 0 && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-construction-navy bg-blue-50 px-1.5 py-0.5 border border-blue-100 mt-1">
-                                <ImageIcon className="w-3 h-3" /> {galleryCount} Gallery Photos
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Status Column with 1-click Toggle */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => toggleStatus(p)}
-                          title="Click to toggle status between Ongoing and Completed"
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-none-none border transition-all cursor-pointer ${
-                            isDone 
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
-                              : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                          }`}
-                        >
-                          {isDone ? (
-                            <>
-                              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Completed</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="w-2 h-2 rounded-none-full bg-amber-500 animate-pulse" />
-                              <span>Ongoing</span>
-                            </>
-                          )}
-                        </button>
-                      </td>
-
-                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
-                        <span className="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
-                          {p.category}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{p.location}</td>
-                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{p.date}</td>
-
-                      <td className="px-5 py-4">
-                        <button onClick={() => toggleFeatured(p)} className={`w-8 h-8 rounded-none-none flex items-center justify-center transition-colors ${p.featured ? "bg-yellow-100 text-yellow-600 border border-yellow-200" : "bg-slate-50 border border-slate-200 text-slate-400 hover:text-yellow-500"}`}>
-                          <Star className={`w-4 h-4 ${p.featured ? "fill-yellow-500 text-yellow-500" : ""}`} />
-                        </button>
-                      </td>
-
-                      {/* Edit & Delete Actions */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleStartEdit(p)}
-                            title="Edit Project Details & Add Images"
-                            className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-600 text-xs font-semibold rounded-none-none transition-all shadow-sm"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                            <span>Edit / Add Photos</span>
-                          </button>
-                          
-                          <button
-                            onClick={() => deleteProject(p.id)}
-                            title="Delete Project"
-                            className="w-8 h-8 rounded-none-none bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-400 flex items-center justify-center transition-all shadow-sm"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+      {error && (
+        <div className="p-3.5 bg-red-50 border border-red-300 text-red-800 text-xs font-semibold flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button onClick={() => setError("")} className="text-red-600 hover:text-red-900">
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium flex items-center justify-between">
-          <span>Showing {filteredProjects.length} of {projects.length} projects</span>
-          <div className="flex gap-4 text-xs font-medium">
-            <span className="text-amber-700 font-semibold">{ongoingProjects.length} Ongoing</span>
-            <span className="text-emerald-700 font-semibold">{completedProjects.length} Completed</span>
+      )}
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* SECTION 1: 5-TAB PROJECT EDITOR (MODAL / INLINE DRAWER)        */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showEditor && (
+        <div className="bg-white border-2 border-construction-navy shadow-xl">
+          {/* Editor Header Bar */}
+          <div className="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <span className="text-[10px] uppercase font-bold tracking-widest bg-blue-600 text-white px-2 py-0.5">
+                  {editingProject ? "Project Editor" : "New Portfolio Project"}
+                </span>
+                <span
+                  className={`text-[10px] font-bold uppercase px-2 py-0.5 ${
+                    form.publishStatus === "published"
+                      ? "bg-emerald-600 text-white"
+                      : form.publishStatus === "archived"
+                      ? "bg-purple-600 text-white"
+                      : "bg-amber-500 text-slate-900"
+                  }`}
+                >
+                  Publish State: {form.publishStatus.toUpperCase()}
+                </span>
+                <span
+                  className={`text-[10px] font-bold uppercase px-2 py-0.5 ${
+                    form.status === "completed"
+                      ? "bg-emerald-700 text-white"
+                      : form.status === "archived"
+                      ? "bg-slate-700 text-white"
+                      : "bg-blue-500 text-white"
+                  }`}
+                >
+                  Lifecycle: {form.status.toUpperCase()}
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-white mt-1 truncate max-w-xl">
+                {form.title.trim() || "Untitled Construction Project"}
+              </h2>
+            </div>
+
+            {/* Quick Action Buttons in Header */}
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleSave("draft")}
+                disabled={saving}
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                Save Draft
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSave("published")}
+                disabled={saving}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {saving ? "Saving..." : "Publish Project"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCloseEditor}
+                className="text-slate-400 hover:text-white p-1 ml-1 cursor-pointer"
+                title="Close Editor"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* 5-Tab Navigation Bar */}
+          <div className="flex items-center border-b border-slate-200 bg-slate-50 px-6 overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("general")}
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+                activeTab === "general"
+                  ? "border-construction-navy text-construction-navy bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              1. General
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("specifications")}
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+                activeTab === "specifications"
+                  ? "border-construction-navy text-construction-navy bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              2. Specifications
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("narrative")}
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+                activeTab === "narrative"
+                  ? "border-construction-navy text-construction-navy bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              3. Narrative
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("media")}
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+                activeTab === "media"
+                  ? "border-construction-navy text-construction-navy bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              4. Media ({form.galleryDetails.length + (form.image ? 1 : 0)})
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("seo")}
+              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap ${
+                activeTab === "seo"
+                  ? "border-construction-navy text-construction-navy bg-white"
+                  : "border-transparent text-slate-500 hover:text-slate-900"
+              }`}
+            >
+              5. SEO / AEO / GEO
+            </button>
+          </div>
+
+          {/* Active Tab Content Area */}
+          <div className="p-6 md:p-8">
+            {activeTab === "general" && (
+              <ProjectGeneralTab
+                formData={{
+                  title: form.title,
+                  slug: form.slug,
+                  category: form.category,
+                  subCategories: form.subCategories,
+                  status: form.status,
+                  publishStatus: form.publishStatus,
+                  featured: form.featured,
+                  order: form.order,
+                }}
+                onChange={handleFormChange}
+                slugError={slugError}
+                isSlugManuallyEdited={isSlugManuallyEdited}
+                setIsSlugManuallyEdited={setIsSlugManuallyEdited}
+                generateSlug={generateSlug}
+              />
+            )}
+
+            {activeTab === "specifications" && (
+              <ProjectSpecificationsTab
+                formData={{
+                  client: form.client,
+                  owner: form.owner,
+                  area: form.area,
+                  services: form.services,
+                  location: form.location,
+                  city: form.city,
+                  district: form.district,
+                  state: form.state,
+                  country: form.country,
+                  postalCode: form.postalCode,
+                  targetLocation: form.targetLocation,
+                  latitude: form.latitude,
+                  longitude: form.longitude,
+                  googleMapsUrl: form.googleMapsUrl,
+                  date: form.date,
+                  completionDate: form.completionDate,
+                }}
+                onChange={handleFormChange}
+              />
+            )}
+
+            {activeTab === "narrative" && (
+              <ProjectNarrativeTab
+                formData={{
+                  shortDescription: form.shortDescription,
+                  description: form.description,
+                  highlights: form.highlights,
+                  faqs: form.faqs,
+                }}
+                onChange={handleFormChange}
+              />
+            )}
+
+            {activeTab === "media" && (
+              <ProjectMediaTab
+                formData={{
+                  title: form.title,
+                  image: form.image,
+                  imageAlt: form.imageAlt,
+                  imageCaption: form.imageCaption,
+                  galleryDetails: form.galleryDetails,
+                  videoUrl: form.videoUrl,
+                  videoType: form.videoType,
+                  videoTitle: form.videoTitle,
+                  videoDescription: form.videoDescription,
+                  videoPoster: form.videoPoster,
+                }}
+                onChange={handleFormChange}
+              />
+            )}
+
+            {activeTab === "seo" && (
+              <ProjectSeoTab
+                formData={{
+                  title: form.title,
+                  slug: form.slug,
+                  metaTitle: form.metaTitle,
+                  metaDescription: form.metaDescription,
+                  focusKeywords: form.focusKeywords,
+                  secondaryKeywords: form.secondaryKeywords,
+                  canonicalUrl: form.canonicalUrl,
+                  ogImage: form.ogImage,
+                  noIndex: form.noIndex,
+                  noFollow: form.noFollow,
+
+                  shortDescription: form.shortDescription,
+                  highlights: form.highlights,
+                  faqs: form.faqs,
+                  city: form.city,
+                  district: form.district,
+                  state: form.state,
+                  country: form.country,
+                  googleMapsUrl: form.googleMapsUrl,
+                  client: form.client,
+                }}
+                onChange={handleFormChange}
+              />
+            )}
+          </div>
+
+          {/* Bottom Action Bar */}
+          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              {isDirty ? (
+                <span className="flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 border border-amber-200">
+                  <Clock className="w-3.5 h-3.5" /> Unsaved changes in form
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-slate-400">
+                  <Check className="w-3.5 h-3.5" /> All changes clean
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={handleCloseEditor}
+                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSave("draft")}
+                disabled={saving}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                Save as Draft
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSave(editingProject ? form.publishStatus : "published")}
+                disabled={saving}
+                className="bg-construction-navy hover:bg-blue-800 text-white px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-md disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                {saving
+                  ? "Saving..."
+                  : editingProject
+                  ? `Update Project (${form.publishStatus.toUpperCase()})`
+                  : "Publish Live Project"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* SECTION 2: PROJECTS PORTFOLIO LIST & FILTERS                   */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {!showEditor && (
+        <div className="space-y-6">
+          {/* Header & Quick Action */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 mb-1">
+                Projects Portfolio CMS
+              </h1>
+              <p className="text-slate-500 text-sm">
+                Manage ongoing and completed construction portfolios with SEO, AEO, GEO, and image galleries.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={fetchProjects}
+                disabled={loading}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+              </button>
+              <button
+                onClick={handleStartAdd}
+                className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 text-sm font-semibold transition-colors shadow-md"
+              >
+                <Plus className="w-4 h-4" /> Add New Project
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="bg-white border border-slate-200 p-3 shadow-sm">
+              <span className="text-[10px] font-bold uppercase text-slate-400 block">
+                Total Projects
+              </span>
+              <span className="text-xl font-bold text-slate-900">{projects.length}</span>
+            </div>
+
+            <div className="bg-white border border-emerald-200 p-3 shadow-sm bg-emerald-50/20">
+              <span className="text-[10px] font-bold uppercase text-emerald-700 block">
+                Published (Live)
+              </span>
+              <span className="text-xl font-bold text-emerald-700">{publishedCount}</span>
+            </div>
+
+            <div className="bg-white border border-amber-200 p-3 shadow-sm bg-amber-50/20">
+              <span className="text-[10px] font-bold uppercase text-amber-700 block">
+                Drafts (Hidden)
+              </span>
+              <span className="text-xl font-bold text-amber-700">{draftCount}</span>
+            </div>
+
+            <div className="bg-white border border-blue-200 p-3 shadow-sm bg-blue-50/20">
+              <span className="text-[10px] font-bold uppercase text-blue-700 block">
+                Ongoing Work
+              </span>
+              <span className="text-xl font-bold text-blue-700">{ongoingCount}</span>
+            </div>
+
+            <div className="bg-white border border-purple-200 p-3 shadow-sm bg-purple-50/20">
+              <span className="text-[10px] font-bold uppercase text-purple-700 block">
+                Archived
+              </span>
+              <span className="text-xl font-bold text-purple-700">{archivedCount}</span>
+            </div>
+          </div>
+
+          {/* Filter & Search Bar */}
+          <div className="bg-white border border-slate-200 p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* Search Box */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title, location, client..."
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy"
+              />
+            </div>
+
+            {/* Filter Dropdowns */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Publication Status Filter */}
+              <select
+                value={publishStatusFilter}
+                onChange={(e) => setPublishStatusFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+              >
+                <option value="all">Publish: All</option>
+                <option value="published">Publish: Published Only</option>
+                <option value="draft">Publish: Drafts Only</option>
+                <option value="archived">Publish: Archived Only</option>
+              </select>
+
+              {/* Operational Lifecycle Filter */}
+              <select
+                value={operationalStatusFilter}
+                onChange={(e) => setOperationalStatusFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+              >
+                <option value="all">Lifecycle: All</option>
+                <option value="ongoing">Lifecycle: Ongoing</option>
+                <option value="completed">Lifecycle: Completed</option>
+                <option value="archived">Lifecycle: Archived</option>
+              </select>
+
+              {/* Category Filter */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+              >
+                <option value="all">Category: All</option>
+                <option value="commercial">Commercial</option>
+                <option value="residential">Residential</option>
+                <option value="industrial">Industrial</option>
+                <option value="infrastructure">Infrastructure</option>
+                <option value="institutional">Institutional</option>
+              </select>
+
+              {/* Sort By Dropdown */}
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5">
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none cursor-pointer"
+                >
+                  <option value="order">Display Order</option>
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="title">Title (A-Z)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Projects Table */}
+          <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 font-semibold">Project</th>
+                    <th className="text-left px-3 py-3 font-semibold">Publish Status</th>
+                    <th className="text-left px-3 py-3 font-semibold">Lifecycle</th>
+                    <th className="text-left px-3 py-3 font-semibold">Category</th>
+                    <th className="text-left px-3 py-3 font-semibold">Location</th>
+                    <th className="text-left px-3 py-3 font-semibold">Client</th>
+                    <th className="text-center px-2 py-3 font-semibold">Featured</th>
+                    <th className="text-right px-4 py-3 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {loading ? (
+                    [...Array(4)].map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan={8} className="px-4 py-4">
+                          <div className="h-6 bg-slate-100" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : filteredProjects.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="text-center text-slate-500 py-16">
+                        No projects match the current filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredProjects.map((p) => {
+                      const isPublished = p.publishStatus === "published";
+                      const isCompleted = p.status === "completed";
+
+                      let galleryCount = 0;
+                      if (p.galleryDetails) {
+                        try {
+                          galleryCount = Array.isArray(p.galleryDetails)
+                            ? p.galleryDetails.length
+                            : JSON.parse(p.galleryDetails).length;
+                        } catch {
+                          galleryCount = 0;
+                        }
+                      } else if (p.images) {
+                        try {
+                          galleryCount = typeof p.images === "string" && p.images.trim().startsWith("[")
+                            ? JSON.parse(p.images).length
+                            : p.images.split("\n").filter(Boolean).length;
+                        } catch {
+                          galleryCount = 0;
+                        }
+                      }
+
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                          {/* Project Cover & Title */}
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-3">
+                              {p.image ? (
+                                <img
+                                  src={p.image}
+                                  alt={p.title}
+                                  className="w-11 h-11 object-cover border border-slate-200 shrink-0"
+                                />
+                              ) : (
+                                <div className="w-11 h-11 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                  <ImageIcon className="w-5 h-5" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-slate-900 font-bold leading-snug truncate max-w-xs">
+                                  {p.title}
+                                </p>
+                                <p className="text-[11px] font-mono text-slate-400 truncate max-w-xs">
+                                  /projects/{p.slug || p.id}
+                                </p>
+                                {galleryCount > 0 && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-construction-navy bg-blue-50 px-1.5 py-0.2 border border-blue-100 mt-1">
+                                    <ImageIcon className="w-3 h-3" /> {galleryCount} Photos
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Publishing Status Toggle */}
+                          <td className="px-3 py-3.5 whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePublishStatus(p)}
+                              title="Click to toggle between Draft and Published"
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                                isPublished
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                  : p.publishStatus === "archived"
+                                  ? "bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100"
+                                  : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                              }`}
+                            >
+                              {isPublished ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-600" /> Published
+                                </>
+                              ) : p.publishStatus === "archived" ? (
+                                <>
+                                  <Archive className="w-3 h-3 text-purple-600" /> Archived
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="w-3 h-3 text-amber-600" /> Draft
+                                </>
+                              )}
+                            </button>
+                          </td>
+
+                          {/* Operational Status Toggle */}
+                          <td className="px-3 py-3.5 whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleOperationalStatus(p)}
+                              title="Click to toggle between Ongoing and Completed"
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                                isCompleted
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                  : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                              }`}
+                            >
+                              {isCompleted ? (
+                                <>
+                                  <CheckCircle className="w-3 h-3 text-emerald-600" /> Completed
+                                </>
+                              ) : (
+                                <>
+                                  <span className="w-2 h-2 rounded-none-full bg-blue-500 animate-pulse" />{" "}
+                                  Ongoing
+                                </>
+                              )}
+                            </button>
+                          </td>
+
+                          {/* Category */}
+                          <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap">
+                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
+                              {p.category}
+                            </span>
+                          </td>
+
+                          {/* Location */}
+                          <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap max-w-[140px] truncate text-xs">
+                            {p.location}
+                          </td>
+
+                          {/* Client */}
+                          <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap max-w-[120px] truncate text-xs">
+                            {p.client || "—"}
+                          </td>
+
+                          {/* Featured */}
+                          <td className="px-2 py-3.5 text-center">
+                            <button
+                              onClick={() => handleToggleFeatured(p)}
+                              title="Toggle Featured on Homepage"
+                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors ${
+                                p.featured
+                                  ? "bg-yellow-100 text-yellow-600 border border-yellow-200"
+                                  : "bg-slate-50 border border-slate-200 text-slate-300 hover:text-yellow-500"
+                              }`}
+                            >
+                              <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                            </button>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-4 py-3.5 whitespace-nowrap text-right">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleStartEdit(p)}
+                                title="Edit full project specifications"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold transition-all shadow-sm"
+                              >
+                                <Pencil className="w-3.5 h-3.5" /> Edit
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteProject(p, false)}
+                                title="Safe Archive Project (Unpublishes safely)"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm"
+                              >
+                                <Archive className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteProject(p, true)}
+                                title="Permanently Delete Project from Database"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table Footer */}
+            <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium flex items-center justify-between">
+              <span>
+                Showing {filteredProjects.length} of {projects.length} portfolio records
+              </span>
+              <div className="flex gap-4 text-xs font-medium">
+                <span className="text-emerald-700 font-semibold">{publishedCount} Published</span>
+                <span className="text-amber-700 font-semibold">{draftCount} Drafts</span>
+                <span className="text-blue-700 font-semibold">{ongoingCount} Ongoing</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
