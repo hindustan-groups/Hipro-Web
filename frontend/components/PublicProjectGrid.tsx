@@ -6,19 +6,17 @@ import Image from "next/image";
 import {
   Search,
   X,
-  Filter,
   ArrowUpDown,
   MapPin,
   Calendar,
-  Building,
+  Building2,
   Ruler,
-  CheckCircle,
+  CheckCircle2,
   Clock,
   ArrowUpRight,
   Star,
-  Tag,
-  SlidersHorizontal,
   RotateCcw,
+  Briefcase,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -27,16 +25,31 @@ interface PublicProjectGridProps {
   projects?: Project[];
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Commercial: "text-blue-900 bg-blue-50 border-blue-200",
-  Industrial: "text-slate-900 bg-slate-100 border-slate-300",
-  Residential: "text-amber-900 bg-amber-50 border-amber-200",
-  Infrastructure: "text-emerald-900 bg-emerald-50 border-emerald-200",
-  Institutional: "text-purple-900 bg-purple-50 border-purple-200",
-};
+export function ProjectCardSkeleton() {
+  return (
+    <div className="bg-white border border-slate-200 flex flex-col overflow-hidden animate-pulse">
+      <div className="aspect-[16/10] w-full bg-slate-200" />
+      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
+        <div className="space-y-2.5">
+          <div className="h-5 bg-slate-200 w-3/4" />
+          <div className="h-3.5 bg-slate-100 w-full" />
+          <div className="h-3.5 bg-slate-100 w-5/6" />
+        </div>
+        <div className="pt-3 border-t border-slate-100 space-y-2">
+          <div className="h-3 bg-slate-100 w-1/2" />
+          <div className="h-3 bg-slate-100 w-2/3" />
+        </div>
+        <div className="pt-2 flex items-center justify-between">
+          <div className="h-4 bg-slate-200 w-28" />
+          <div className="w-4 h-4 bg-slate-200" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function PublicProjectGrid({ projects = [] }: PublicProjectGridProps) {
-  // 1. Strict Public Visibility Rule:
+  // 1. Strict Public Visibility Rule (Defense-in-depth):
   // Only published projects that are NOT operationally archived are eligible.
   const publicProjects = useMemo(() => {
     return (projects || []).filter((p) => {
@@ -51,8 +64,8 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "ongoing" | "completed">("all");
-  const [selectedCity, setSelectedCity] = useState("all");
-  const [sortBy, setSortBy] = useState<"featured" | "newest" | "oldest" | "order">("featured");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [sortBy, setSortBy] = useState<"featured" | "latest" | "oldest" | "name-asc" | "order">("featured");
 
   // Dynamically extract available categories from verified published projects
   const availableCategories = useMemo(() => {
@@ -62,29 +75,28 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
         set.add(p.category.trim());
       }
     });
-    const defaultList = ["Commercial", "Industrial", "Residential"];
-    defaultList.forEach((c) => set.add(c));
-    return ["All", ...Array.from(set)];
+    return ["All", ...Array.from(set).sort()];
   }, [publicProjects]);
 
-  // Dynamically extract available cities from verified published projects
-  const availableCities = useMemo(() => {
+  // Dynamically extract available locations/cities from verified published projects
+  const availableLocations = useMemo(() => {
     const set = new Set<string>();
     publicProjects.forEach((p) => {
-      if (p.city && p.city.trim()) {
-        set.add(p.city.trim());
+      const loc = (p.city || p.location || "").trim();
+      if (loc) {
+        set.add(loc);
       }
     });
     return Array.from(set).sort();
   }, [publicProjects]);
 
-  // Helper to parse services tags
+  // Helper to parse services tags safely
   const getServicesArray = (servicesField?: string | string[] | null): string[] => {
     if (!servicesField) return [];
-    if (Array.isArray(servicesField)) return servicesField;
+    if (Array.isArray(servicesField)) return servicesField.filter(Boolean);
     try {
       const parsed = JSON.parse(servicesField);
-      return Array.isArray(parsed) ? parsed : [];
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
     } catch {
       return String(servicesField)
         .split(",")
@@ -99,7 +111,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
 
     return publicProjects
       .filter((p) => {
-        // Search
+        // Search Matching
         if (q) {
           const titleMatch = (p.title || "").toLowerCase().includes(q);
           const locationMatch = (p.location || "").toLowerCase().includes(q);
@@ -125,14 +137,14 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
           }
         }
 
-        // Category
+        // Category Filtering
         if (selectedCategory !== "All") {
           if ((p.category || "").toLowerCase() !== selectedCategory.toLowerCase()) {
             return false;
           }
         }
 
-        // Operational Status
+        // Operational Status Filtering (Preserving exact data/API mapping: ongoing/active vs completed)
         if (selectedStatus !== "all") {
           if (selectedStatus === "ongoing") {
             if (p.status !== "ongoing" && p.status !== "active") return false;
@@ -141,9 +153,10 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
           }
         }
 
-        // City / Location
-        if (selectedCity !== "all") {
-          if ((p.city || "").toLowerCase() !== selectedCity.toLowerCase()) {
+        // Location / City Filtering
+        if (selectedLocation !== "all") {
+          const pLoc = (p.city || p.location || "").toLowerCase();
+          if (!pLoc.includes(selectedLocation.toLowerCase())) {
             return false;
           }
         }
@@ -156,20 +169,27 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
           if (!a.featured && b.featured) return 1;
           return (a.order ?? 0) - (b.order ?? 0);
         }
+        if (sortBy === "latest") {
+          const dateA = new Date(a.completionDate || a.date || a.createdAt || 0).getTime();
+          const dateB = new Date(b.completionDate || b.date || b.createdAt || 0).getTime();
+          return dateB - dateA;
+        }
+        if (sortBy === "oldest") {
+          const dateA = new Date(a.completionDate || a.date || a.createdAt || 0).getTime();
+          const dateB = new Date(b.completionDate || b.date || b.createdAt || 0).getTime();
+          return dateA - dateB;
+        }
+        if (sortBy === "name-asc") {
+          return (a.title || "").localeCompare(b.title || "");
+        }
         if (sortBy === "order") {
           return (a.order ?? 0) - (b.order ?? 0);
         }
-        if (sortBy === "newest") {
-          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-        }
-        if (sortBy === "oldest") {
-          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-        }
         return 0;
       });
-  }, [publicProjects, searchQuery, selectedCategory, selectedStatus, selectedCity, sortBy]);
+  }, [publicProjects, searchQuery, selectedCategory, selectedStatus, selectedLocation, sortBy]);
 
-  // Extract featured projects (ONLY published featured projects)
+  // Extract featured projects (ONLY real published projects marked as featured)
   const featuredProjects = useMemo(() => {
     return publicProjects.filter((p) => p.featured === true);
   }, [publicProjects]);
@@ -178,35 +198,35 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
     searchQuery.trim() !== "" ||
     selectedCategory !== "All" ||
     selectedStatus !== "all" ||
-    selectedCity !== "all";
+    selectedLocation !== "all";
 
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("All");
     setSelectedStatus("all");
-    setSelectedCity("all");
+    setSelectedLocation("all");
   };
 
-  // If entire public dataset is empty
+  // If entire public dataset is empty in database
   if (publicProjects.length === 0) {
     return (
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto text-center border border-slate-200 bg-slate-50/60 p-12 sm:p-16 shadow-xs">
-          <div className="w-14 h-14 bg-white border border-slate-200 mx-auto flex items-center justify-center text-construction-navy mb-5 shadow-xs">
-            <Building className="w-7 h-7 text-construction-navy" />
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-3xl mx-auto text-center border border-slate-200 bg-slate-50/80 p-10 sm:p-14 shadow-xs">
+          <div className="w-12 h-12 bg-white border border-slate-200 mx-auto flex items-center justify-center text-construction-navy mb-4 shadow-xs">
+            <Building2 className="w-6 h-6 text-construction-navy" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 font-display uppercase tracking-tight mb-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-display uppercase tracking-tight mb-2">
             Project Portfolio Updating
           </h2>
-          <p className="text-slate-600 text-sm sm:text-base font-light max-w-xl mx-auto leading-relaxed mb-6">
-            Our active construction portfolio and case studies are currently undergoing scheduled technical verification. Please contact our engineering team to request project credentials and engineering dossiers.
+          <p className="text-slate-600 text-xs sm:text-sm font-light max-w-lg mx-auto leading-relaxed mb-6">
+            Our active construction portfolio and case studies are currently undergoing scheduled technical documentation updates. Please contact our engineering team directly to request project credentials and engineering dossiers.
           </p>
           <Link
             href="/contact"
-            className="inline-flex items-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 text-xs uppercase tracking-widest transition-all shadow-sm"
+            className="inline-flex items-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
           >
             <span>Inquire About Recent Projects</span>
-            <ArrowUpRight className="w-4 h-4 text-construction-red" />
+            <ArrowUpRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
         </div>
       </section>
@@ -216,37 +236,38 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
   return (
     <div className="space-y-0">
       {/* ─────────────────────────────────────────────────────────────
-          1. FEATURED PROJECTS SHOWCASE (Only shown if featured exist)
+          1. FEATURED PROJECTS SHOWCASE (Strictly conditional: disappears if 0 featured)
           ───────────────────────────────────────────────────────────── */}
       {featuredProjects.length > 0 && !hasActiveFilters && (
-        <section className="py-12 md:py-16 bg-slate-50/70 border-b border-slate-200/80 px-4 sm:px-6 lg:px-8">
+        <section className="py-10 md:py-14 bg-slate-50/80 border-b border-slate-200/80 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-end justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 md:mb-8">
               <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-construction-navy mb-1.5">
-                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                  Flagship Landmarks
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-construction-navy font-mono mb-1.5">
+                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" aria-hidden="true" />
+                  FLAGSHIP LANDMARKS
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 font-display uppercase tracking-tight">
-                  Featured <span className="text-construction-red font-serif italic font-normal normal-case">Execution Highlights</span>
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-950 font-display uppercase tracking-tight">
+                  FEATURED <span className="text-construction-red font-serif italic font-normal normal-case">Execution Highlights</span>
                 </h2>
               </div>
-              <span className="text-xs font-mono text-slate-400 hidden sm:block">
+              <span className="text-xs font-mono text-slate-500 hidden sm:block">
                 {featuredProjects.length} Highlighted Build{featuredProjects.length > 1 ? "s" : ""}
               </span>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
               {featuredProjects.map((p) => {
                 const canonicalSlug = p.slug || p.id;
                 const isOngoing = p.status === "ongoing" || p.status === "active";
+                const isCompleted = p.status === "completed";
                 const services = getServicesArray(p.services);
 
                 return (
                   <Link
                     key={p.id}
                     href={`/projects/${canonicalSlug}`}
-                    className="group bg-white border border-slate-200/90 hover:border-construction-navy transition-all duration-300 shadow-sm hover:shadow-md flex flex-col overflow-hidden"
+                    className="group bg-white border border-slate-200 hover:border-construction-navy/70 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col overflow-hidden hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
                   >
                     {/* Image Box */}
                     <div className="relative aspect-[16/10] w-full bg-slate-900 overflow-hidden">
@@ -257,58 +278,62 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                           fill
                           sizes="(max-width: 768px) 100vw, 50vw"
                           unoptimized={!isOptimizableImage(p.image)}
-                          className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-95 group-hover:opacity-100"
+                          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out opacity-95 group-hover:opacity-100 motion-reduce:transform-none"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500">
-                          <Building className="w-12 h-12" />
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-900">
+                          <Building2 className="w-12 h-12 text-slate-600" />
                         </div>
                       )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
                       {/* Top Badges */}
-                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                        <span className="px-2.5 py-1 bg-white/95 backdrop-blur-xs text-construction-navy text-[10px] font-bold uppercase tracking-wider shadow-xs">
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                        <span className="px-2.5 py-1 bg-white/95 backdrop-blur-xs text-construction-navy text-[10px] font-bold uppercase tracking-widest shadow-xs border border-slate-200/80 font-mono">
                           {p.category}
                         </span>
 
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-xs ${
-                            isOngoing
-                              ? "bg-amber-500 text-white"
-                              : "bg-emerald-600 text-white"
-                          }`}
-                        >
-                          {isOngoing ? (
-                            <>
-                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Ongoing
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3 h-3" /> Completed
-                            </>
-                          )}
-                        </span>
+                        {(isOngoing || isCompleted) && (
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-xs font-mono ${
+                              isOngoing
+                                ? "bg-amber-500 text-white"
+                                : "bg-emerald-600 text-white"
+                            }`}
+                          >
+                            {isOngoing ? (
+                              <>
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                Ongoing Site
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-3 h-3" />
+                                Completed
+                              </>
+                            )}
+                          </span>
+                        )}
                       </div>
 
-                      {/* Bottom Title on Image */}
+                      {/* Bottom Title Overlay on Image */}
                       <div className="absolute bottom-4 left-4 right-4 text-white">
                         <h3 className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight leading-snug group-hover:text-amber-300 transition-colors">
                           {p.title}
                         </h3>
                         {p.location && (
-                          <p className="text-xs text-white/80 flex items-center gap-1 mt-1">
-                            <MapPin className="w-3 h-3 text-construction-red" />
-                            {p.location}
+                          <p className="text-xs text-slate-200/90 flex items-center gap-1 mt-1">
+                            <MapPin className="w-3.5 h-3.5 text-construction-red shrink-0" />
+                            <span className="truncate">{p.location}</span>
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Meta & Summary Section */}
-                    <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-light">
+                    {/* Metadata & Summary Section */}
+                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
+                      <p className="text-xs sm:text-sm text-slate-600 line-clamp-2 leading-relaxed font-light">
                         {p.shortDescription || p.description}
                       </p>
 
@@ -316,27 +341,41 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                       <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 text-xs">
                         {p.client && (
                           <div className="space-y-0.5">
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">Client</span>
-                            <span className="font-semibold text-slate-800 truncate block">{p.client}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
+                              Client
+                            </span>
+                            <span className="font-semibold text-slate-800 truncate block">
+                              {p.client}
+                            </span>
                           </div>
                         )}
                         {p.area && (
                           <div className="space-y-0.5">
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">Scale</span>
-                            <span className="font-semibold text-slate-800 truncate block">{p.area}</span>
-                          </div>
-                        )}
-                        {p.date && (
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">Timeline</span>
-                            <span className="font-semibold text-slate-800 truncate block">{p.date}</span>
-                          </div>
-                        )}
-                        {p.city && (
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] font-bold uppercase text-slate-400 block">Location</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
+                              Scale
+                            </span>
                             <span className="font-semibold text-slate-800 truncate block">
-                              {[p.city, p.state].filter(Boolean).join(", ")}
+                              {p.area}
+                            </span>
+                          </div>
+                        )}
+                        {(p.completionDate || p.date) && (
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
+                              Timeline
+                            </span>
+                            <span className="font-semibold text-slate-800 truncate block">
+                              {p.completionDate || p.date}
+                            </span>
+                          </div>
+                        )}
+                        {(p.city || p.location) && (
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block font-mono">
+                              Location
+                            </span>
+                            <span className="font-semibold text-slate-800 truncate block">
+                              {[p.city, p.state].filter(Boolean).join(", ") || p.location}
                             </span>
                           </div>
                         )}
@@ -361,8 +400,9 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                         </div>
                       )}
 
-                      <div className="pt-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-construction-navy group-hover:text-construction-red transition-colors">
-                        <span>View Full Case Study</span>
+                      {/* Action CTA */}
+                      <div className="pt-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-construction-navy group-hover:text-construction-red transition-colors border-t border-slate-100">
+                        <span>VIEW PROJECT</span>
                         <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                     </div>
@@ -375,23 +415,25 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          2. INTERACTIVE FILTER & SEARCH TOOLBAR (Sticky)
+          2. PROJECT DISCOVERY / FILTER TOOLBAR (Sticky, Horizontal & Responsive)
           ───────────────────────────────────────────────────────────── */}
-      <section className="sticky top-16 z-20 bg-white/95 backdrop-blur-md border-y border-slate-200/90 shadow-xs py-4 px-4 sm:px-6 lg:px-8">
+      <section className="sticky top-16 z-20 bg-white/95 backdrop-blur-md border-y border-slate-200/90 shadow-xs py-3.5 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-3">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none" role="tablist" aria-label="Project Categories">
               {availableCategories.map((cat) => {
                 const active = selectedCategory.toLowerCase() === cat.toLowerCase();
                 return (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                    role="tab"
+                    aria-selected={active}
+                    className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none ${
                       active
                         ? "bg-construction-navy text-white shadow-xs"
-                        : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80"
+                        : "bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-900 border border-slate-200"
                     }`}
                   >
                     {cat}
@@ -400,134 +442,147 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
               })}
             </div>
 
-            {/* Search Box & Controls */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
-              {/* Search input */}
-              <div className="relative flex-1 sm:w-64">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            {/* Discovery Controls: Search, Status, Location, Sort */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+              {/* Search Box */}
+              <div className="relative flex-1 sm:w-60 min-w-[180px]">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search projects, client, city..."
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-7 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy placeholder:text-slate-400"
+                  placeholder="Search projects..."
+                  aria-label="Search projects"
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-7 py-1.5 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy placeholder:text-slate-400"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                    aria-label="Clear search query"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-3 h-3" />
                   </button>
                 )}
               </div>
 
-              {/* Operational Status Filter */}
+              {/* Status Filter */}
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value as any)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                aria-label="Filter by project status"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
               >
                 <option value="all">Status: All</option>
                 <option value="ongoing">Status: Ongoing</option>
                 <option value="completed">Status: Completed</option>
               </select>
 
-              {/* Verified Location / City Filter (Only if verified cities exist) */}
-              {availableCities.length > 0 && (
+              {/* Location Filter (Populated dynamically from verified published data) */}
+              {availableLocations.length > 0 && (
                 <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  aria-label="Filter by project location"
+                  className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer max-w-[150px] truncate"
                 >
-                  <option value="all">City: All Locations</option>
-                  {availableCities.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
+                  <option value="all">Location: All</option>
+                  {availableLocations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
                     </option>
                   ))}
                 </select>
               )}
 
               {/* Sort Order */}
-              <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1.5 shrink-0">
-                <ArrowUpDown className="w-3 h-3 text-slate-400" />
+              <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2 py-1.5 shrink-0 rounded-none">
+                <ArrowUpDown className="w-3 h-3 text-slate-400" aria-hidden="true" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
+                  aria-label="Sort projects by"
                   className="bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 focus:outline-none cursor-pointer"
                 >
                   <option value="featured">Featured First</option>
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
+                  <option value="latest">Latest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="name-asc">Project Name (A–Z)</option>
                   <option value="order">Display Order</option>
                 </select>
               </div>
 
-              {/* Clear filters shortcut */}
+              {/* Clear Filters (Rendered ONLY when filters are active) */}
               {hasActiveFilters && (
                 <button
                   onClick={handleClearFilters}
                   title="Clear all active filters"
-                  className="bg-white border border-slate-300 hover:bg-red-50 hover:text-red-700 hover:border-red-300 text-slate-600 px-2 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                  className="bg-white border border-slate-300 hover:bg-red-50 hover:text-construction-red hover:border-red-300 text-slate-700 px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 shrink-0 rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
                 >
-                  <RotateCcw className="w-3 h-3" /> Clear
+                  <RotateCcw className="w-3 h-3" /> Clear Filters
                 </button>
               )}
             </div>
           </div>
 
-          {/* Active Filter Indicators Bar */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-            <span>
-              Showing <strong className="text-slate-900">{filteredProjects.length}</strong> of{" "}
-              <strong className="text-slate-900">{publicProjects.length}</strong> published projects
+          {/* Active Filter Result Counter */}
+          <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 font-mono">
+            <span className="text-slate-500">
+              RESULT:{" "}
+              <strong className="text-slate-950 font-bold">
+                {filteredProjects.length} {filteredProjects.length === 1 ? "PROJECT" : "PROJECTS"}
+              </strong>
             </span>
             {hasActiveFilters && (
-              <span className="text-amber-800 font-medium">Filtered results active</span>
+              <span className="text-amber-700 font-semibold text-[11px] uppercase tracking-wider">
+                Active Filter Applied
+              </span>
             )}
           </div>
         </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. MAIN PORTFOLIO GRID
+          3. MAIN PROJECT PORTFOLIO GRID
           ───────────────────────────────────────────────────────────── */}
-      <section className="py-12 md:py-16 bg-white px-4 sm:px-6 lg:px-8">
+      <section className="py-10 sm:py-12 md:py-16 bg-white px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {filteredProjects.length === 0 ? (
-            /* No matching results state */
-            <div className="bg-slate-50 border border-dashed border-slate-300 p-12 text-center max-w-xl mx-auto my-8">
-              <Search className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+            /* Empty Search / Filter Results State */
+            <div className="bg-slate-50 border border-dashed border-slate-300 p-10 sm:p-14 text-center max-w-lg mx-auto my-8">
+              <div className="w-12 h-12 bg-white border border-slate-200 mx-auto flex items-center justify-center text-slate-400 mb-3 shadow-xs">
+                <Search className="w-5 h-5 text-slate-400" aria-hidden="true" />
+              </div>
               <h3 className="text-lg font-bold text-slate-900 font-display uppercase tracking-tight mb-2">
-                No Projects Found
+                NO PROJECTS FOUND
               </h3>
-              <p className="text-xs text-slate-600 font-light leading-relaxed mb-5">
-                No published projects match your selected combination of category, location, or search keywords.
+              <p className="text-xs sm:text-sm text-slate-600 font-light leading-relaxed mb-6">
+                Try adjusting your search or filters.
               </p>
               <button
                 onClick={handleClearFilters}
-                className="inline-flex items-center gap-1.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-4 py-2 text-xs uppercase tracking-wider transition-all shadow-xs"
+                className="inline-flex items-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-5 py-2.5 text-xs uppercase tracking-widest transition-all shadow-xs rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Reset Filters
+                <RotateCcw className="w-3.5 h-3.5 text-construction-red" />
+                <span>CLEAR FILTERS</span>
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            /* Multi-Column Responsive Project Grid */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {filteredProjects.map((p) => {
                 const canonicalSlug = p.slug || p.id;
                 const isOngoing = p.status === "ongoing" || p.status === "active";
+                const isCompleted = p.status === "completed";
                 const services = getServicesArray(p.services);
-                const categoryClass =
-                  CATEGORY_COLORS[p.category] || "text-slate-800 bg-slate-100 border-slate-200";
 
                 return (
                   <Link
                     key={p.id}
                     href={`/projects/${canonicalSlug}`}
-                    className="group bg-white border border-slate-200/90 hover:border-construction-navy transition-all duration-300 shadow-sm hover:shadow-lg flex flex-col overflow-hidden hover:-translate-y-1"
+                    className="group bg-white border border-slate-200/90 hover:border-construction-navy/60 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col overflow-hidden hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
                   >
-                    {/* Cover Image Box */}
+                    {/* 16:10 Ratio Image Container */}
                     <div className="relative aspect-[16/10] w-full bg-slate-900 overflow-hidden">
                       {p.image ? (
                         <Image
@@ -536,95 +591,97 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           unoptimized={!isOptimizableImage(p.image)}
-                          className="object-cover group-hover:scale-105 transition-transform duration-700 opacity-95 group-hover:opacity-100"
+                          className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out opacity-95 group-hover:opacity-100 motion-reduce:transform-none"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-500">
-                          <Building className="w-10 h-10" />
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 bg-slate-900">
+                          <Building2 className="w-10 h-10 text-slate-600" />
                         </div>
                       )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                      {/* Top Badges */}
-                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                        <span
-                          className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border shadow-xs ${categoryClass}`}
-                        >
+                      {/* Top Corner Badges */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest bg-white/95 backdrop-blur-xs text-construction-navy border border-slate-200/80 shadow-xs font-mono">
                           {p.category}
                         </span>
 
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-xs ${
-                            isOngoing
-                              ? "bg-amber-500 text-white"
-                              : "bg-emerald-600 text-white"
-                          }`}
-                        >
-                          {isOngoing ? (
-                            <>
-                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Ongoing
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="w-3 h-3" /> Completed
-                            </>
-                          )}
-                        </span>
+                        {(isOngoing || isCompleted) && (
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shadow-xs font-mono ${
+                              isOngoing
+                                ? "bg-amber-500 text-white"
+                                : "bg-emerald-600 text-white"
+                            }`}
+                          >
+                            {isOngoing ? (
+                              <>
+                                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                Ongoing Site
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-3 h-3" />
+                                Completed
+                              </>
+                            )}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     {/* Card Content Body */}
-                    <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-3">
                       <div>
-                        <h3 className="text-lg font-bold text-slate-900 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors line-clamp-2 leading-snug">
+                        <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors line-clamp-2 leading-snug">
                           {p.title}
                         </h3>
 
-                        <p className="text-xs text-slate-600 font-light mt-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs sm:text-sm text-slate-600 font-light mt-2 line-clamp-2 leading-relaxed">
                           {p.shortDescription || p.description}
                         </p>
                       </div>
 
-                      {/* Specifications Summary (Zero fake values: only rendered if exist) */}
+                      {/* Specifications Summary (Strictly non-empty values) */}
                       <div className="space-y-2 pt-3 border-t border-slate-100 text-xs">
-                        <div className="flex items-center justify-between text-slate-500">
-                          {p.location && (
-                            <span className="flex items-center gap-1 truncate max-w-[60%]">
-                              <MapPin className="w-3.5 h-3.5 text-construction-red shrink-0" />
-                              <span className="truncate">{p.location}</span>
+                        <div className="flex items-center justify-between text-slate-500 gap-2">
+                          {(p.location || p.city) && (
+                            <span className="flex items-center gap-1 truncate max-w-[65%]">
+                              <MapPin className="w-3.5 h-3.5 text-construction-red shrink-0" aria-hidden="true" />
+                              <span className="truncate">{p.location || p.city}</span>
                             </span>
                           )}
-                          {p.date && (
-                            <span className="flex items-center gap-1 font-mono text-[11px] shrink-0">
-                              <Calendar className="w-3 h-3 text-slate-400" />
-                              {p.date}
+                          {(p.completionDate || p.date) && (
+                            <span className="flex items-center gap-1 font-mono text-[11px] shrink-0 text-slate-500 ml-auto">
+                              <Calendar className="w-3 h-3 text-slate-400" aria-hidden="true" />
+                              {p.completionDate || p.date}
                             </span>
                           )}
                         </div>
 
                         {(p.client || p.area) && (
-                          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1">
+                          <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 gap-2">
                             {p.client && (
-                              <span className="truncate max-w-[50%]">
+                              <span className="truncate max-w-[55%]">
                                 <strong className="text-slate-800 font-medium">Client:</strong> {p.client}
                               </span>
                             )}
                             {p.area && (
-                              <span className="shrink-0 text-slate-700 font-medium">
+                              <span className="shrink-0 text-slate-700 font-medium ml-auto">
                                 <strong className="text-slate-800 font-medium">Scale:</strong> {p.area}
                               </span>
                             )}
                           </div>
                         )}
 
-                        {/* Services preview (Max 2) */}
+                        {/* Services preview (Max 2 chips) */}
                         {services.length > 0 && (
                           <div className="flex flex-wrap gap-1 pt-1">
                             {services.slice(0, 2).map((s) => (
                               <span
                                 key={s}
-                                className="text-[9px] px-1.5 py-0.2 bg-slate-100 text-slate-600 font-medium"
+                                className="text-[9px] px-1.5 py-0.5 bg-slate-100 text-slate-600 font-medium"
                               >
                                 {s}
                               </span>
@@ -638,9 +695,9 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                         )}
                       </div>
 
-                      {/* CTA link */}
-                      <div className="pt-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-construction-navy group-hover:text-construction-red transition-colors">
-                        <span>View Project Case Study</span>
+                      {/* Card CTA Link */}
+                      <div className="pt-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-construction-navy group-hover:text-construction-red transition-colors border-t border-slate-100">
+                        <span>VIEW PROJECT</span>
                         <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                       </div>
                     </div>

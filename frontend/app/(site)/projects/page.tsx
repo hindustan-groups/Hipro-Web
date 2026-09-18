@@ -3,12 +3,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowDown,
-  Briefcase,
-  Building2,
-  CheckSquare,
-  Compass,
-  CheckCircle2,
-  Clock,
 } from "lucide-react";
 import PublicProjectGrid from "@/components/PublicProjectGrid";
 import { findAll } from "@/lib/db";
@@ -59,12 +53,6 @@ export default async function ProjectsPage() {
     return p && p.publishStatus === "published" && p.status !== "archived";
   });
 
-  const totalPublished = publicProjects.length;
-  const completedCount = publicProjects.filter((p) => p.status === "completed").length;
-  const ongoingCount = publicProjects.filter(
-    (p) => p.status === "ongoing" || p.status === "active"
-  ).length;
-
   const breadcrumbsJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -91,23 +79,23 @@ export default async function ProjectsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbsJsonLd) }}
       />
       {/* ─────────────────────────────────────────────────────────────
-          SECTION 1 — HERO: Authoritative Engineering Project Portfolio
+          SECTION 1 — HERO: Architectural Engineering Project Portfolio
           ───────────────────────────────────────────────────────────── */}
-      <section className="relative bg-white pt-28 sm:pt-32 md:pt-36 pb-12 md:pb-16 px-4 border-b border-slate-200/80 overflow-hidden">
-        {/* Subtle Architectural Drafting Grid Pattern */}
+      <section className="relative bg-white pt-28 sm:pt-32 md:pt-36 pb-10 sm:pb-12 md:pb-14 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 overflow-hidden">
+        {/* Architectural Drafting Blueprint Grid Pattern */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.025]"
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
           style={{
             backgroundImage:
               "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
+            backgroundSize: "36px 36px",
           }}
           aria-hidden="true"
         />
 
-        {/* Ambient Lighting Accents */}
+        {/* Ambient Subtle Accent Glows */}
         <div
-          className="absolute -top-24 right-0 w-96 h-96 bg-slate-100/70 rounded-full blur-3xl pointer-events-none -z-0"
+          className="absolute -top-20 right-0 w-96 h-96 bg-slate-100/80 rounded-full blur-3xl pointer-events-none -z-0"
           aria-hidden="true"
         />
         <div
@@ -115,124 +103,47 @@ export default async function ProjectsPage() {
           aria-hidden="true"
         />
 
-        <div className="relative z-10 max-w-6xl mx-auto text-center">
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
           {/* Eyebrow Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 border border-slate-200 text-construction-navy mb-4 sm:mb-5 shadow-xs">
-            <Briefcase className="w-3.5 h-3.5 text-construction-red" />
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider">
-              Project Portfolio · Engineering &amp; Construction
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-construction-navy mb-4 sm:mb-5 shadow-xs">
+            <span className="w-1.5 h-1.5 bg-construction-red" aria-hidden="true" />
+            <span className="text-[11px] font-bold uppercase tracking-widest font-mono">
+              OUR PROJECTS
             </span>
           </div>
 
-          {/* Primary H1 */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 font-display uppercase tracking-tight leading-[1.15]">
-            Projects That Turn{" "}
-            <span className="font-serif italic font-normal text-construction-red normal-case tracking-normal">
-              Engineering Into Execution
-            </span>
+          {/* Primary Semantic H1 */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-950 mb-4 font-display uppercase tracking-tight leading-[1.15]">
+            ENGINEERING PROJECTS THAT DELIVER
           </h1>
 
-          {/* Supporting Lead Description */}
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-3xl mx-auto font-light leading-relaxed mb-6 sm:mb-8">
-            Explore Hindustan Projects&apos; verified industrial, commercial, and turnkey construction portfolio — engineered with precision from technical planning through coordinated site execution.
+          {/* HiPRO Two-Tone Architectural Accent Bar */}
+          <div className="flex w-32 h-1 mx-auto mb-5" aria-hidden="true">
+            <div className="w-1/3 h-full bg-yellow-500" />
+            <div className="w-2/3 h-full bg-construction-navy" />
+          </div>
+
+          {/* Supporting Lead Description (Concise & Verified, Zero Invented Claims) */}
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed mb-6 sm:mb-8">
+            Explore verified industrial, commercial, and turnkey construction projects engineered with precision and delivered across Rajasthan and India.
           </p>
 
-          {/* Verified Statistics Bar (Only rendered if published projects exist — zero fabricated numbers) */}
-          {totalPublished > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/90 border border-slate-200/90 bg-slate-50/80 max-w-3xl mx-auto mb-6 sm:mb-8 text-center shadow-xs">
-              <div className="p-4 sm:p-5">
-                <span className="text-2xl sm:text-3xl font-bold text-slate-900 font-display block">
-                  {totalPublished}
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-500 block mt-1">
-                  Published Case Studies
-                </span>
-              </div>
-
-              <div className="p-4 sm:p-5">
-                <span className="text-2xl sm:text-3xl font-bold text-emerald-700 font-display block">
-                  {completedCount}
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-500 block mt-1">
-                  Commissioned Projects
-                </span>
-              </div>
-
-              <div className="p-4 sm:p-5">
-                <span className="text-2xl sm:text-3xl font-bold text-amber-700 font-display block">
-                  {ongoingCount}
-                </span>
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-500 block mt-1">
-                  Active Construction Sites
-                </span>
-              </div>
-            </div>
-          ) : (
-            /* Architectural Ledger Anchors when database is empty (Zero fake statistics) */
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-200/90 border border-slate-200/90 bg-slate-50/70 max-w-4xl mx-auto mb-6 sm:mb-8 text-left shadow-xs">
-              <div className="p-4 sm:p-5 group hover:bg-white transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400">
-                    01 / PLANNING
-                  </span>
-                  <Compass className="w-3.5 h-3.5 text-construction-red" />
-                </div>
-                <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 font-display mb-1">
-                  Engineering &amp; Planning
-                </h2>
-                <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
-                  Technical feasibility and structural design support
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5 group hover:bg-white transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400">
-                    02 / EXECUTION
-                  </span>
-                  <Building2 className="w-3.5 h-3.5 text-construction-red" />
-                </div>
-                <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 font-display mb-1">
-                  Construction &amp; Execution
-                </h2>
-                <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
-                  Coordinated site engineering and turnkey delivery
-                </p>
-              </div>
-
-              <div className="p-4 sm:p-5 group hover:bg-white transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-slate-400">
-                    03 / MANAGEMENT
-                  </span>
-                  <CheckSquare className="w-3.5 h-3.5 text-construction-red" />
-                </div>
-                <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-900 font-display mb-1">
-                  Quality &amp; Delivery
-                </h2>
-                <p className="text-[11px] sm:text-[12px] text-slate-600 font-normal leading-snug">
-                  Precision safety protocols and milestone handover
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 max-w-md sm:max-w-none mx-auto">
-            <Link
-              href="/contact"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-5 py-3 rounded-none text-xs sm:text-sm uppercase tracking-wider transition-all shadow-sm group"
-            >
-              <span>Discuss Your Project</span>
-              <ArrowRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+          {/* Action Navigation CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs sm:max-w-none mx-auto">
             <a
               href="#projects-list"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-none border border-slate-300 text-xs sm:text-sm uppercase tracking-wider transition-all shadow-xs"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
             >
               <span>Explore Portfolio</span>
-              <ArrowDown className="w-3.5 h-3.5 text-slate-400" />
+              <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
             </a>
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-xs group"
+            >
+              <span>Discuss Your Project</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
         </div>
       </section>
