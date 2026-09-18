@@ -2,6 +2,11 @@
 
 let rawBackendUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
 
+// Auto-heal old suspended Render domain
+if (rawBackendUrl.includes("hipro-web-1.onrender.com")) {
+  rawBackendUrl = "https://hipro-backend-749v.onrender.com";
+}
+
 // Auto-heal malformed protocols
 if (rawBackendUrl.startsWith("https:") && !rawBackendUrl.startsWith("https://")) {
   rawBackendUrl = rawBackendUrl.replace(/^https:?\/*/, "https://");
