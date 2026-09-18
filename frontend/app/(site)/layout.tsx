@@ -20,7 +20,11 @@ export default async function SiteLayout({
 
   return (
     <>
-      <Navbar navConfigString={settings?.navigationConfig || null} services={services} />
+      <Navbar 
+        navConfigString={settings?.navigationConfig || null} 
+        services={services} 
+        pageContent={settings?.pageContent || null} 
+      />
       <main className="min-h-screen">
         {children}
       </main>

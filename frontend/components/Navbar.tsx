@@ -63,11 +63,13 @@ const defaultNavLinks = [
 export default function Navbar({ 
   navConfigString,
   previewMode = false,
-  services = []
+  services = [],
+  pageContent,
 }: { 
   navConfigString?: string | null;
   previewMode?: boolean;
   services?: Service[];
+  pageContent?: any;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -248,31 +250,95 @@ export default function Navbar({
     civilExecutionLinks.sort((a, b) => a.order - b.order);
 
     // 3rd Pillar: Specialized Portals & Interactive Utilities
+    let resolvedPageContent: any = pageContent;
+    if (typeof pageContent === "string") {
+      try {
+        resolvedPageContent = JSON.parse(pageContent);
+      } catch {
+        resolvedPageContent = {};
+      }
+    }
+
+    const costEstimatorItem = {
+      href: "/cost-estimator",
+      label: "Instant Cost Estimator",
+      tagline: "Calculate construction budgets in under 60 seconds",
+      icon: Calculator,
+      isExternal: false,
+      badge: "Free Tool",
+    };
+
+    const isCurrentSite = (c: any) => {
+      const name = (c.name || "").toLowerCase().trim();
+      const url = (c.website || c.url || "").trim();
+      const status = (c.status || c.statusText || "").toLowerCase().trim();
+      return (
+        status === "flagship" ||
+        name === "hindustan projects" ||
+        url === "https://www.hindustanprojects.in" ||
+        url === "https://www.hindustanprojects.in/" ||
+        url === "/"
+      );
+    };
+
+    const rawGroupCompanies = resolvedPageContent?.groupCompanies;
+    let dynamicEcosystemLinks: any[] = [];
+
+    if (Array.isArray(rawGroupCompanies) && rawGroupCompanies.length > 0) {
+      dynamicEcosystemLinks = rawGroupCompanies
+        .filter((c) => c && c.active !== false && (c.website || c.url) && !isCurrentSite(c))
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((c) => {
+          const url = (c.website || c.url || "").trim();
+          const name = c.name || "Ecosystem Portal";
+          const category = c.category || "";
+          const combined = `${name} ${category}`.toLowerCase();
+
+          let Icon = Globe2;
+          if (combined.includes("empanel") || combined.includes("vendor") || combined.includes("contract")) {
+            Icon = FileCheck2;
+          } else if (combined.includes("it") || combined.includes("tech") || combined.includes("digital") || combined.includes("software")) {
+            Icon = Globe2;
+          } else if (combined.includes("market") || combined.includes("brand") || combined.includes("media")) {
+            Icon = Sparkles;
+          }
+
+          return {
+            href: url,
+            label: name,
+            tagline: c.description || category || "Group Company Portal",
+            icon: Icon,
+            isExternal: Boolean(url.startsWith("http")),
+            badge: c.status || c.statusText || "Live Portal",
+          };
+        });
+    }
+
+    // Default fallback if no active dynamic portals configured
+    if (dynamicEcosystemLinks.length === 0) {
+      dynamicEcosystemLinks = [
+        {
+          href: "https://empanelment.hindustanprojects.in/",
+          label: "Hindustan Empanelment",
+          tagline: "Govt, vendor & contractor empanelment gateway",
+          icon: FileCheck2,
+          isExternal: true,
+          badge: "Live Portal",
+        },
+        {
+          href: "https://www.itservices.hindustanprojects.in/",
+          label: "HiPro IT Services",
+          tagline: "Software, web platforms & digital engineering",
+          icon: Globe2,
+          isExternal: true,
+          badge: "Live Portal",
+        },
+      ];
+    }
+
     const ecosystemLinks = [
-      {
-        href: "/cost-estimator",
-        label: "Instant Cost Estimator",
-        tagline: "Calculate construction budgets in under 60 seconds",
-        icon: Calculator,
-        isExternal: false,
-        badge: "Free Tool",
-      },
-      {
-        href: "https://empanelment.hindustanprojects.in/",
-        label: "Hindustan Empanelment",
-        tagline: "Govt, vendor & contractor empanelment gateway",
-        icon: FileCheck2,
-        isExternal: true,
-        badge: "Live Portal",
-      },
-      {
-        href: "https://www.itservices.hindustanprojects.in/",
-        label: "HiPro IT Services",
-        tagline: "Software, web platforms & digital engineering",
-        icon: Globe2,
-        isExternal: true,
-        badge: "Live Portal",
-      },
+      costEstimatorItem,
+      ...dynamicEcosystemLinks,
     ];
 
     servicesLink.megaMenuCategories = [
