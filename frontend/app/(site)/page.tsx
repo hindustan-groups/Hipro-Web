@@ -41,7 +41,11 @@ export default async function Home() {
   const statsdata = stats.sort((a, b) => (a.order || 0) - (b.order || 0));
   let pageContent: any = {};
   try {
-    if (settings.pageContent) pageContent = JSON.parse(settings.pageContent);
+    if (settings.pageContent) {
+      pageContent = typeof settings.pageContent === "string"
+        ? JSON.parse(settings.pageContent)
+        : settings.pageContent;
+    }
   } catch { /* silent */ }
 
   const servicesData = services.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));

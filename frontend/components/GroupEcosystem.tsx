@@ -66,25 +66,54 @@ interface GroupEcosystemProps {
   pageContent?: {
     groupCompanies?: GroupCompanyItem[];
     [key: string]: any;
-  };
+  } | string;
 }
 
 export default function GroupEcosystem({ pageContent }: GroupEcosystemProps = {}) {
   let displayCompanies: GroupCompanyItem[] = defaultCompanies;
 
-  if (pageContent?.groupCompanies && Array.isArray(pageContent.groupCompanies) && pageContent.groupCompanies.length > 0) {
-    displayCompanies = pageContent.groupCompanies
-      .filter((c) => c.active !== false)
+  let resolvedContent: any = pageContent;
+  if (typeof pageContent === "string") {
+    try {
+      resolvedContent = JSON.parse(pageContent);
+    } catch {
+      resolvedContent = {};
+    }
+  }
+
+  const configuredCompanies = resolvedContent?.groupCompanies;
+  const hasValidConfig = Array.isArray(configuredCompanies) && configuredCompanies.length > 0;
+
+  if (hasValidConfig) {
+    displayCompanies = configuredCompanies
+      .filter((c) => c && c.active !== false)
       .sort((a, b) => (a.order || 0) - (b.order || 0))
       .map((c) => ({
         ...c,
-        category: c.category || (c.name.includes("Marketing") ? "Brand & Commercial Solutions" : c.name.includes("IT") ? "Digital & Technology" : c.name.includes("Empanelment") ? "Institutional Empanelment" : "Architecture & Infrastructure"),
-        url: c.website || c.url,
-        isExternal: (c.website || c.url)?.startsWith("http"),
-        statusText: c.status || c.statusText || (c.website || c.url ? "Live Portal" : "Coming Soon"),
+        category:
+          c.category ||
+          (c.name?.includes("Marketing")
+            ? "Brand & Commercial Solutions"
+            : c.name?.includes("IT")
+            ? "Digital & Technology"
+            : c.name?.includes("Empanelment")
+            ? "Institutional Empanelment"
+            : "Architecture & Infrastructure"),
+        url: c.website || c.url || "",
+        website: c.website || c.url || "",
+        isExternal: Boolean((c.website || c.url)?.startsWith("http")),
+        statusText:
+          c.status ||
+          c.statusText ||
+          (c.website || c.url ? "Live Portal" : "Coming Soon"),
         icon: c.icon || getIconForCompany(c.name, c.category),
       }));
   }
+
+  if (displayCompanies.length === 0) {
+    return null;
+  }
+
   return (
     <section id="section-group" className="py-24 bg-white relative border-t border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,8 +136,16 @@ export default function GroupEcosystem({ pageContent }: GroupEcosystemProps = {}
           </p>
         </div>
 
-        {/* 4 Cards Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Dynamic Cards Grid */}
+        <div className={`grid gap-6 ${
+          displayCompanies.length === 1
+            ? "max-w-md mx-auto"
+            : displayCompanies.length === 2
+            ? "sm:grid-cols-2 max-w-3xl mx-auto"
+            : displayCompanies.length === 3
+            ? "sm:grid-cols-2 lg:grid-cols-3"
+            : "sm:grid-cols-2 lg:grid-cols-4"
+        }`}>
           {displayCompanies.map((company, index) => {
             const Icon = company.icon || Building;
             const CardWrapper = company.url ? "a" : "div";

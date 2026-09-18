@@ -182,7 +182,11 @@ export default async function AboutPage({
   const settings = settingsData[0] || {};
   let pageContent: any = {};
   try {
-    if (settings.pageContent) pageContent = JSON.parse(settings.pageContent);
+    if (settings.pageContent) {
+      pageContent = typeof settings.pageContent === "string"
+        ? JSON.parse(settings.pageContent)
+        : settings.pageContent;
+    }
   } catch {
     /* silent */
   }

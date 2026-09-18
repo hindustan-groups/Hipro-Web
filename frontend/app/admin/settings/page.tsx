@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink } from "lucide-react";
+import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Settings } from "@/lib/types";
 
 interface GroupCompanyConfig {
   name: string;
+  category?: string;
   description: string;
   website: string;
   status: string;
@@ -124,7 +125,17 @@ export default function AdminSettings() {
               if (parsedContent.homeAboutBullet3Desc) setHomeAboutBullet3Desc(parsedContent.homeAboutBullet3Desc);
 
               if (parsedContent.groupCompanies && Array.isArray(parsedContent.groupCompanies) && parsedContent.groupCompanies.length > 0) {
-                setGroupCompanies(parsedContent.groupCompanies);
+                setGroupCompanies(
+                  parsedContent.groupCompanies.map((c: any, i: number) => ({
+                    name: c.name || "",
+                    category: c.category || (c.name?.includes("Marketing") ? "Brand & Commercial Solutions" : c.name?.includes("IT") ? "Digital & Technology" : c.name?.includes("Empanelment") ? "Institutional Empanelment" : "Architecture & Infrastructure"),
+                    description: c.description || "",
+                    website: c.website || c.url || "",
+                    status: c.status || c.statusText || (c.website || c.url ? "Live Portal" : "Coming Soon"),
+                    active: c.active !== false,
+                    order: typeof c.order === "number" ? c.order : i + 1,
+                  }))
+                );
               }
             } catch { /* silent fallback */ }
           }
@@ -142,6 +153,37 @@ export default function AdminSettings() {
     });
   };
 
+  const handleAddGroupCompany = () => {
+    setGroupCompanies((prev) => [
+      ...prev,
+      {
+        name: "",
+        category: "Architecture & Infrastructure",
+        description: "",
+        website: "",
+        status: "Live Portal",
+        active: true,
+        order: prev.length + 1,
+      },
+    ]);
+  };
+
+  const handleRemoveGroupCompany = (index: number) => {
+    setGroupCompanies((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveGroupCompany = (index: number, direction: "up" | "down") => {
+    setGroupCompanies((prev) => {
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[targetIndex];
+      updated[targetIndex] = temp;
+      return updated.map((item, i) => ({ ...item, order: i + 1 }));
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -150,7 +192,11 @@ export default function AdminSettings() {
     // Preserve existing pageContent keys when updating
     let currentParsed = {};
     try {
-      if (settings.pageContent) currentParsed = JSON.parse(settings.pageContent);
+      if (settings.pageContent) {
+        currentParsed = typeof settings.pageContent === "string"
+          ? JSON.parse(settings.pageContent)
+          : settings.pageContent;
+      }
     } catch { /* silent */ }
 
     // Cleanse deprecated legacy dummy keys that contained old 1999 / demo content
@@ -199,6 +245,15 @@ export default function AdminSettings() {
       });
       const data = await res.json();
       if (data.success) {
+        // Trigger on-demand cache revalidation for settings tag and affected public paths
+        try {
+          await fetch("/api/revalidate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: "settings", paths: ["/", "/about"] }),
+          });
+        } catch { /* silent */ }
+
         setMessage({ text: "Settings saved successfully!", type: "success" });
         setSettings((prev) => ({
           ...prev,
@@ -512,41 +567,94 @@ export default function AdminSettings() {
 
         {/* ── 6. Hindustan Group Companies ───────────────────────── */}
         <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/20">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-indigo-50 flex items-center justify-center border border-indigo-200">
-              <Layers className="w-5 h-5 text-indigo-700" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-none bg-indigo-50 flex items-center justify-center border border-indigo-200">
+                <Layers className="w-5 h-5 text-indigo-700" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Hindustan Group Ecosystem</h2>
+                <p className="text-slate-500 text-xs mt-0.5">Manage group companies, status badges, categories, and external portal URLs.</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Hindustan Group Ecosystem</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Manage group companies, status badges, and external portal URLs.</p>
-            </div>
+            <button
+              type="button"
+              onClick={handleAddGroupCompany}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-none shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Company</span>
+            </button>
           </div>
 
           <div className="space-y-4">
             {groupCompanies.map((company, index) => (
               <div key={index} className="p-4 bg-white border border-slate-200 rounded-none space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-construction-navy">
-                    Company #{index + 1}: {company.name}
-                  </span>
-                  <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer">
-                    <input 
-                      type="checkbox"
-                      checked={company.active !== false}
-                      onChange={(e) => handleGroupCompanyChange(index, "active", e.target.checked)}
-                      className="rounded-none text-construction-navy focus:ring-construction-navy"
-                    />
-                    Active on Homepage
-                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-construction-navy">
+                      Company #{index + 1}: {company.name || "Untitled Company"}
+                    </span>
+                    <div className="flex items-center gap-1 ml-2">
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        onClick={() => handleMoveGroupCompany(index, "up")}
+                        title="Move Up"
+                        className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === groupCompanies.length - 1}
+                        onClick={() => handleMoveGroupCompany(index, "down")}
+                        title="Move Down"
+                        className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer">
+                      <input 
+                        type="checkbox"
+                        checked={company.active !== false}
+                        onChange={(e) => handleGroupCompanyChange(index, "active", e.target.checked)}
+                        className="rounded-none text-construction-navy focus:ring-construction-navy"
+                      />
+                      Active on Homepage
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveGroupCompany(index)}
+                      title="Remove Company"
+                      className="text-slate-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid md:grid-cols-3 gap-3">
                   <div>
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Company Name</label>
                     <input 
                       type="text" 
                       value={company.name}
                       onChange={(e) => handleGroupCompanyChange(index, "name", e.target.value)}
+                      placeholder="e.g. HiPro IT Services"
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Category / Sector</label>
+                    <input 
+                      type="text" 
+                      value={company.category || ""}
+                      onChange={(e) => handleGroupCompanyChange(index, "category", e.target.value)}
+                      placeholder="e.g. Digital & Technology"
                       className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
                     />
                   </div>
@@ -581,11 +689,26 @@ export default function AdminSettings() {
                     rows={2}
                     value={company.description}
                     onChange={(e) => handleGroupCompanyChange(index, "description", e.target.value)}
+                    placeholder="Brief summary of company operations..."
                     className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
                   />
                 </div>
               </div>
             ))}
+
+            {groupCompanies.length === 0 && (
+              <div className="p-8 text-center border-2 border-dashed border-slate-200 bg-white">
+                <p className="text-xs text-slate-500 mb-3">No group companies configured yet.</p>
+                <button
+                  type="button"
+                  onClick={handleAddGroupCompany}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-none shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add First Company</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
