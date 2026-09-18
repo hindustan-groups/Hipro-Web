@@ -24,6 +24,10 @@ import {
   UserCheck,
   Ruler,
   CheckCircle,
+  Briefcase,
+  Compass,
+  Globe,
+  Share2,
 } from "lucide-react";
 import type { ProjectHighlight, ProjectFaq, ProjectGalleryItem } from "@/lib/types";
 
@@ -116,154 +120,185 @@ export default function ProjectPreviewModal({
   const hasVerifiedGeo = geoDetails.length > 0 || Boolean(project.googleMapsUrl);
 
   const containerWidthClass = {
-    desktop: "w-full max-w-7xl",
+    desktop: "w-full max-w-6xl",
     tablet: "w-full max-w-[768px]",
     mobile: "w-full max-w-[390px]",
   }[viewport];
 
   const isOngoing = project.status === "active" || project.status === "ongoing";
 
+  // Public facts ledger
+  const factsLedger: { label: string; value: string; icon: any }[] = [];
+  if (project.client && project.client.trim()) {
+    factsLedger.push({ label: "Client Organization", value: project.client.trim(), icon: Briefcase });
+  }
+  if (project.owner && project.owner.trim()) {
+    factsLedger.push({ label: "Project Principal / Owner", value: project.owner.trim(), icon: UserCheck });
+  }
+  if (project.area && project.area.trim()) {
+    factsLedger.push({ label: "Gross Built-Up Area", value: project.area.trim(), icon: Ruler });
+  }
+  if (project.category && project.category.trim()) {
+    factsLedger.push({ label: "Sector Classification", value: project.category.trim(), icon: Building2 });
+  }
+  if (project.completionDate && project.completionDate.trim()) {
+    factsLedger.push({ label: "Handover / Completion", value: project.completionDate.trim(), icon: Calendar });
+  } else if (project.date && project.date.trim()) {
+    factsLedger.push({ label: "Project Timeline", value: project.date.trim(), icon: Calendar });
+  }
+  if (project.location && project.location.trim()) {
+    factsLedger.push({ label: "Site Location", value: project.location.trim(), icon: MapPin });
+  }
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-slate-900/60 backdrop-blur-sm flex flex-col overflow-hidden animate-in fade-in duration-150">
       {/* ─────────────────────────────────────────────────────────────
-          PREVIEW CONTROLS HEADER BAR (Admin Chrome)
+          PREVIEW CONTROLS HEADER BAR (Workbench Light Chrome)
           ───────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between shrink-0 z-10 select-none">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-mono font-bold text-amber-400">
-            <Eye className="w-3.5 h-3.5" />
-            <span>DRAFT-SAFE PREVIEW</span>
+      <header className="h-14 bg-white border-b border-slate-200 px-4 sm:px-6 flex items-center justify-between shrink-0 z-20 select-none shadow-sm">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="w-2.5 h-2.5 bg-construction-red"></span>
+            <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-900">
+              PUBLIC PROJECT PREVIEW
+            </span>
           </div>
-          <span className="hidden sm:inline-block text-xs text-slate-400 font-mono truncate max-w-xs">
-            {project.publishStatus === "published" ? "Live Status: Published" : "Live Status: Draft"} · {project.slug || "slug-pending"}
+          <span className="text-slate-300 hidden sm:inline">|</span>
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-300 shrink-0">
+            <Eye className="w-3 h-3 text-amber-600" />
+            <span>Draft Simulation (Light)</span>
+          </span>
+          <span className="hidden md:inline-block text-xs text-slate-500 font-mono truncate max-w-xs">
+            /projects/{project.slug || "slug-pending"}
           </span>
         </div>
 
         {/* Viewport Switcher */}
-        <div className="flex items-center bg-slate-900 p-0.5 border border-slate-800">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center bg-slate-100 p-0.5 border border-slate-300">
+            <button
+              type="button"
+              onClick={() => setViewport("desktop")}
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                viewport === "desktop"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Desktop View (1280px)"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Desktop</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("tablet")}
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                viewport === "tablet"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Tablet View (768px)"
+            >
+              <Tablet className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tablet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewport("mobile")}
+              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                viewport === "mobile"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+              title="Mobile View (390px)"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Mobile</span>
+            </button>
+          </div>
+
+          {/* Close Preview Action */}
           <button
             type="button"
-            onClick={() => setViewport("desktop")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              viewport === "desktop"
-                ? "bg-amber-500 text-black shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Desktop View (1280px)"
+            onClick={onClose}
+            className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-800 px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-300 transition-colors cursor-pointer"
           >
-            <Monitor className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Desktop</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewport("tablet")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              viewport === "tablet"
-                ? "bg-amber-500 text-black shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Tablet View (768px)"
-          >
-            <Tablet className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Tablet</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewport("mobile")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              viewport === "mobile"
-                ? "bg-amber-500 text-black shadow-xs"
-                : "text-slate-400 hover:text-white"
-            }`}
-            title="Mobile View (390px)"
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Mobile</span>
+            <X className="w-4 h-4 text-slate-600" />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
-
-        {/* Close Button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex items-center gap-1.5 bg-slate-900 hover:bg-construction-red text-slate-200 hover:text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-800 transition-colors cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-          <span>Exit Preview</span>
-        </button>
       </header>
 
       {/* ─────────────────────────────────────────────────────────────
-          PREVIEW CANVAS (Replicates /projects/[slug] exact public layout)
+          PREVIEW CANVAS (LIGHT / OFF-WHITE THEME)
           ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto bg-slate-950 p-2 sm:p-6 flex justify-center items-start">
+      <div className="flex-1 overflow-y-auto bg-slate-100 p-2 sm:p-6 flex justify-center items-start">
         <div
-          className={`${containerWidthClass} transition-all duration-300 bg-slate-950 text-slate-100 shadow-2xl border border-slate-800 font-sans min-h-full overflow-hidden relative`}
+          className={`${containerWidthClass} transition-all duration-300 bg-white text-slate-900 shadow-xl border border-slate-200 font-sans min-h-full overflow-hidden relative`}
         >
-          {/* Ambient Glow */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-amber-500/10 blur-[100px] pointer-events-none" />
-
           {/* Breadcrumb banner */}
-          <div className="border-b border-slate-900 bg-slate-950/90 py-3.5 px-4 sm:px-8 text-xs font-mono text-slate-400 flex items-center gap-2">
+          <div className="border-b border-slate-200 bg-slate-50 py-3 px-4 sm:px-8 text-xs font-mono text-slate-500 flex items-center gap-2">
             <span>Home</span>
-            <span className="text-slate-600">/</span>
+            <span className="text-slate-400">/</span>
             <span>Projects</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-amber-400 font-semibold truncate">
+            <span className="text-slate-400">/</span>
+            <span className="text-construction-navy font-semibold truncate">
               {project.title || "Untitled Project"}
             </span>
           </div>
 
-          {/* 1. PROJECT HERO */}
-          <header className="relative pt-8 pb-12 px-4 sm:px-8 lg:px-12 border-b border-slate-900">
-            <div className="max-w-5xl">
+          {/* 1. PROJECT HERO (LIGHT MODE) */}
+          <header className="relative pt-8 pb-10 px-4 sm:px-8 lg:px-12 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white">
+            <div className="max-w-4xl">
               {/* Category & Status Badges */}
-              <div className="flex flex-wrap items-center gap-2.5 mb-5">
+              <div className="flex flex-wrap items-center gap-2 mb-4">
                 {project.category && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono uppercase tracking-widest font-semibold">
-                    <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 border border-red-200 text-construction-red text-xs font-mono uppercase tracking-wider font-bold">
+                    <Building2 className="w-3.5 h-3.5 text-construction-red" />
                     {project.category}
                   </span>
                 )}
                 <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider font-bold ${
-                    isOngoing ? "bg-amber-500 text-black" : "bg-emerald-600 text-white"
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono uppercase tracking-wider font-bold border ${
+                    isOngoing
+                      ? "bg-blue-50 text-blue-800 border-blue-200"
+                      : "bg-emerald-50 text-emerald-800 border-emerald-200"
                   }`}
                 >
                   {isOngoing ? (
                     <>
-                      <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" /> Ongoing
+                      <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" /> Ongoing Operation
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-3 h-3" /> Completed
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Completed Handover
                     </>
                   )}
                 </span>
                 {project.featured && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider border bg-amber-500/20 text-amber-300 border-amber-500/40">
+                  <span className="inline-flex items-center px-2.5 py-1 text-xs font-mono uppercase tracking-wider border bg-amber-50 text-amber-800 border-amber-300 font-bold">
                     ★ Featured Showcase
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-tight text-white leading-tight mb-5 font-display">
-                {project.title || "Untitled Project"}
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-tight text-slate-900 leading-tight mb-4 font-display">
+                {project.title || "Untitled Project Specification"}
               </h1>
 
               {/* Location & Date */}
-              <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400 font-medium">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-slate-600 font-medium">
                 {project.location && (
-                  <span className="inline-flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-amber-400" />
-                    <span className="text-slate-200">{project.location}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-construction-red shrink-0" />
+                    <span className="text-slate-900 font-semibold">{project.location}</span>
                   </span>
                 )}
                 {(project.completionDate || project.date) && (
-                  <span className="inline-flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-amber-400" />
-                    <span className="text-slate-200">{project.completionDate || project.date}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+                    <span className="text-slate-700">{project.completionDate || project.date}</span>
                   </span>
                 )}
               </div>
@@ -271,40 +306,39 @@ export default function ProjectPreviewModal({
 
             {/* Cover Hero Showcase */}
             {project.image ? (
-              <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[520px] overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl mt-8">
+              <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[500px] overflow-hidden bg-slate-100 border border-slate-200 shadow-sm mt-6 sm:mt-8">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={project.image}
-                  alt={project.imageAlt || `${project.title} execution perspective`}
+                  alt={project.imageAlt || `${project.title} cover perspective`}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
                 {project.imageCaption && (
-                  <figcaption className="absolute bottom-4 left-4 right-4 text-xs text-slate-300 font-mono bg-black/80 backdrop-blur-sm p-3 border-l-2 border-amber-500 max-w-xl">
+                  <figcaption className="absolute bottom-3 left-3 right-3 text-xs text-slate-800 font-mono bg-white/95 backdrop-blur-sm p-3 border-l-4 border-construction-red shadow-md max-w-xl">
                     {project.imageCaption}
                   </figcaption>
                 )}
               </figure>
             ) : (
-              <div className="mt-8 p-8 border border-dashed border-slate-800 text-center text-slate-500 text-xs font-mono">
-                No hero cover image uploaded yet. (Tab 04)
+              <div className="mt-6 p-8 border border-dashed border-slate-300 bg-slate-50 text-center text-slate-500 text-xs font-mono">
+                No hero cover image uploaded yet. (Configure in Tab 04 Media)
               </div>
             )}
           </header>
 
-          {/* 2. MAIN CONTENT & FACTS LEDGER */}
-          <div className="px-4 sm:px-8 lg:px-12 py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
+          {/* 2. MAIN CONTENT & FACTS LEDGER (LIGHT MODE) */}
+          <div className="px-4 sm:px-8 lg:px-12 py-8 sm:py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
               {/* MAIN NARRATIVE COLUMN (8 COLS) */}
-              <div className="lg:col-span-8 space-y-12">
+              <div className="lg:col-span-8 space-y-10">
                 {/* Executive Brief (if shortDescription exists) */}
                 {project.shortDescription && (
-                  <section className="p-6 bg-slate-900/80 border-l-4 border-amber-500 border-y border-r border-slate-800/80">
-                    <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-amber-400 mb-2">
-                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <section className="p-5 sm:p-6 bg-blue-50/60 border-l-4 border-construction-navy border-y border-r border-blue-100">
+                    <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-construction-navy mb-2">
+                      <ShieldCheck className="w-4 h-4 text-construction-navy" />
                       <span>Executive Brief</span>
                     </div>
-                    <p className="text-base sm:text-lg text-slate-200 leading-relaxed font-light">
+                    <p className="text-base sm:text-lg text-slate-800 leading-relaxed font-normal">
                       {project.shortDescription}
                     </p>
                   </section>
@@ -313,132 +347,60 @@ export default function ProjectPreviewModal({
                 {/* Case Study Narrative */}
                 {project.description ? (
                   <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <FileText className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                        Project Execution &amp; Engineering Narrative
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-200">
+                      <FileText className="w-5 h-5 text-construction-navy" />
+                      <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-slate-900 font-display">
+                        Engineering Case Study &amp; Scope Narrative
                       </h2>
                     </div>
-                    <div className="text-slate-300 text-base leading-relaxed font-light whitespace-pre-line space-y-4">
+                    <div className="text-slate-700 text-base leading-relaxed whitespace-pre-line space-y-4">
                       {project.description}
                     </div>
                   </section>
                 ) : (
-                  <div className="p-6 border border-dashed border-red-900/40 text-red-400 text-xs font-mono">
-                    ⚠ Full Description is a required field and is currently empty.
+                  <div className="p-5 border border-dashed border-red-200 bg-red-50/50 text-red-700 text-xs font-mono">
+                    ⚠ Full Description is a mandatory publish requirement and is currently empty.
                   </div>
                 )}
 
                 {/* Key Technical Highlights (if non-empty) */}
                 {project.highlights && project.highlights.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <Sparkles className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-200">
+                      <Sparkles className="w-5 h-5 text-amber-600" />
+                      <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-slate-900 font-display">
                         Key Execution Highlights
                       </h2>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       {project.highlights.map((item, idx) => (
                         <div
                           key={idx}
-                          className="p-4 bg-slate-900/60 border border-slate-800 hover:border-amber-500/40 transition-colors"
+                          className="bg-slate-50 border border-slate-200 p-4 shadow-sm hover:border-slate-300 transition-colors"
                         >
-                          {item.label && (
-                            <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold block mb-1">
-                              {item.label}
-                            </span>
-                          )}
-                          <p className="text-sm font-medium text-slate-200">
+                          <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            {item.label || `Highlight #${idx + 1}`}
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 leading-snug">
                             {item.value || "—"}
-                          </p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </section>
                 )}
 
-                {/* Services Deployed (if non-empty) */}
-                {project.services && project.services.length > 0 && (
-                  <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <Layers className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                        Engineering Disciplines &amp; Services Deployed
-                      </h2>
-                    </div>
-                    <div className="flex flex-wrap gap-2.5">
-                      {project.services.map((svc, idx) => (
-                        <span
-                          key={idx}
-                          className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-mono uppercase tracking-wider hover:border-amber-500/50 transition-colors"
-                        >
-                          {svc}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Video Showcase (if exists) */}
-                {hasVideo && (
-                  <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <Play className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                        {project.videoTitle || "Execution Video Showcase"}
-                      </h2>
-                    </div>
-
-                    {project.videoDescription && (
-                      <p className="text-sm text-slate-400 font-light mb-4">
-                        {project.videoDescription}
-                      </p>
-                    )}
-
-                    <div className="relative aspect-video w-full bg-black border border-slate-800 overflow-hidden shadow-2xl">
-                      {youtubeEmbedUrl ? (
-                        <iframe
-                          src={youtubeEmbedUrl}
-                          title={project.videoTitle || `${project.title} Video`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full border-0"
-                        />
-                      ) : vimeoEmbedUrl ? (
-                        <iframe
-                          src={vimeoEmbedUrl}
-                          title={project.videoTitle || `${project.title} Video`}
-                          allow="autoplay; fullscreen; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full border-0"
-                        />
-                      ) : (
-                        <video
-                          controls
-                          poster={project.videoPoster || undefined}
-                          preload="metadata"
-                          className="w-full h-full object-cover"
-                        >
-                          <source src={project.videoUrl} />
-                          Your browser does not support the video tag.
-                        </video>
-                      )}
-                    </div>
-                  </section>
-                )}
-
-                {/* Field Execution & Architectural Gallery */}
+                {/* Media Gallery Showcase (if non-empty) */}
                 {project.galleryDetails && project.galleryDetails.length > 0 && (
                   <section>
-                    <div className="flex items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <Building2 className="w-5 h-5 text-amber-400" />
-                        <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                          Field Execution &amp; Architectural Gallery
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200">
+                      <div className="flex items-center gap-2.5">
+                        <Layers className="w-5 h-5 text-construction-navy" />
+                        <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-slate-900 font-display">
+                          Project Media &amp; Execution Plates
                         </h2>
                       </div>
-                      <span className="text-xs font-mono text-slate-400">
+                      <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 border border-slate-200">
                         {project.galleryDetails.length} Photos
                       </span>
                     </div>
@@ -448,19 +410,19 @@ export default function ProjectPreviewModal({
                         <div
                           key={idx}
                           onClick={() => setLightboxImage(item.url)}
-                          className="group relative aspect-[4/3] bg-slate-900 border border-slate-800 overflow-hidden cursor-pointer hover:border-amber-500/60 transition-all"
+                          className="group relative aspect-4/3 bg-slate-100 border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:border-slate-400 transition-all"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={item.url}
-                            alt={item.alt || `Gallery photo ${idx + 1}`}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            alt={item.alt || `${project.title} photo ${idx + 1}`}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Maximize2 className="w-5 h-5 text-amber-400" />
+                          <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Maximize2 className="w-5 h-5 text-white" />
                           </div>
                           {item.caption && (
-                            <div className="absolute bottom-0 inset-x-0 bg-black/75 p-1.5 text-[10px] text-slate-300 truncate">
+                            <div className="absolute bottom-0 inset-x-0 bg-white/95 text-slate-800 text-[10px] font-mono p-1.5 truncate border-t border-slate-200">
                               {item.caption}
                             </div>
                           )}
@@ -470,77 +432,93 @@ export default function ProjectPreviewModal({
                   </section>
                 )}
 
-                {/* Verified Site Geography */}
-                {hasVerifiedGeo && (
+                {/* Video Presentation (if available) */}
+                {hasVideo && (
                   <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <MapPin className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                        Verified Site Geography
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-200">
+                      <Play className="w-5 h-5 text-construction-red" />
+                      <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-slate-900 font-display">
+                        Video Presentation &amp; Site Walkthrough
                       </h2>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
-                      {geoDetails.map((geo, idx) => (
-                        <div key={idx} className="p-3.5 bg-slate-900/60 border border-slate-800">
-                          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">
-                            {geo.label}
-                          </span>
-                          <p className="text-sm font-semibold text-slate-200">{geo.value}</p>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="bg-slate-50 border border-slate-200 p-4 space-y-3">
+                      {project.videoTitle && (
+                        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
+                          {project.videoTitle}
+                        </h3>
+                      )}
+                      {project.videoDescription && (
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {project.videoDescription}
+                        </p>
+                      )}
 
-                    {project.googleMapsUrl && (
-                      <div className="mt-3">
-                        <a
-                          href={project.googleMapsUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-amber-500 hover:text-black text-white text-xs font-mono uppercase tracking-wider border border-slate-800 hover:border-amber-500 transition-colors"
-                        >
-                          <MapPin className="w-4 h-4 text-amber-400" />
-                          <span>Open Coordinates in Google Maps</span>
-                          <ExternalLink className="w-3.5 h-3.5 ml-1" />
-                        </a>
+                      <div className="relative aspect-video w-full bg-black overflow-hidden border border-slate-200">
+                        {youtubeEmbedUrl ? (
+                          <iframe
+                            src={youtubeEmbedUrl}
+                            title={project.videoTitle || "Project Video"}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : vimeoEmbedUrl ? (
+                          <iframe
+                            src={vimeoEmbedUrl}
+                            title={project.videoTitle || "Project Video"}
+                            className="w-full h-full border-0"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : project.videoUrl ? (
+                          <video
+                            src={project.videoUrl}
+                            poster={project.videoPoster || undefined}
+                            controls
+                            className="w-full h-full"
+                          />
+                        ) : null}
                       </div>
-                    )}
+                    </div>
                   </section>
                 )}
 
-                {/* Project FAQs (Accordion) */}
+                {/* Technical FAQs (if available) */}
                 {project.faqs && project.faqs.length > 0 && (
                   <section>
-                    <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-800">
-                      <HelpCircle className="w-5 h-5 text-amber-400" />
-                      <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-white font-display">
-                        Project Engineering &amp; Technical FAQs
+                    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-200">
+                      <HelpCircle className="w-5 h-5 text-construction-navy" />
+                      <h2 className="text-lg sm:text-2xl font-bold uppercase tracking-tight text-slate-900 font-display">
+                        Frequently Asked Questions
                       </h2>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-2.5">
                       {project.faqs.map((faq, idx) => {
-                        const isOpen = activeFaq === idx;
+                        const isOpenFaq = activeFaq === idx;
                         return (
                           <div
                             key={idx}
-                            className="border border-slate-800 bg-slate-900/40 overflow-hidden"
+                            className="bg-white border border-slate-200 shadow-sm overflow-hidden"
                           >
                             <button
                               type="button"
-                              onClick={() => setActiveFaq(isOpen ? null : idx)}
-                              className="w-full text-left p-4 flex items-center justify-between gap-3 text-sm font-medium text-slate-200 hover:text-white cursor-pointer"
+                              onClick={() => setActiveFaq(isOpenFaq ? null : idx)}
+                              className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors cursor-pointer"
                             >
-                              <span>{faq.question || "Untitled Question"}</span>
+                              <span className="text-sm font-bold text-slate-900 leading-snug">
+                                {faq.question || `Question #${idx + 1}`}
+                              </span>
                               <ChevronDown
-                                className={`w-4 h-4 text-amber-400 shrink-0 transition-transform ${
-                                  isOpen ? "rotate-180" : ""
+                                className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${
+                                  isOpenFaq ? "rotate-180" : ""
                                 }`}
                               />
                             </button>
-                            {isOpen && (
-                              <div className="px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">
-                                {faq.answer || "No answer provided yet."}
+                            {isOpenFaq && (
+                              <div className="px-4 pb-4 pt-1 border-t border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50/50">
+                                {faq.answer || "No answer provided."}
                               </div>
                             )}
                           </div>
@@ -551,130 +529,145 @@ export default function ProjectPreviewModal({
                 )}
               </div>
 
-              {/* SIDEBAR: EXECUTIVE FACTS LEDGER (4 COLS) */}
-              <aside className="lg:col-span-4 space-y-6">
-                <div className="bg-slate-900/80 border border-slate-800 p-6 sticky top-6">
-                  <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-amber-400 mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-amber-400" />
-                    <span>Executive Project Ledger</span>
-                  </h3>
+              {/* SIDEBAR FACTS & GEO INTELLIGENCE (4 COLS) */}
+              <div className="lg:col-span-4 space-y-6">
+                {/* Card 1: Project Facts Ledger */}
+                {factsLedger.length > 0 && (
+                  <div className="bg-white border border-slate-200 p-5 shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+                      <Briefcase className="w-4 h-4 text-construction-navy" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                        Project Specifications Ledger
+                      </h3>
+                    </div>
 
-                  <ul className="space-y-4 text-xs font-mono">
-                    {project.client && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <User className="w-3.5 h-3.5 text-amber-400" />
-                          Client / Employer
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">{project.client}</p>
-                      </li>
-                    )}
-
-                    {project.owner && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <UserCheck className="w-3.5 h-3.5 text-amber-400" />
-                          Project Principal / Owner
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">{project.owner}</p>
-                      </li>
-                    )}
-
-                    {project.area && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <Ruler className="w-3.5 h-3.5 text-amber-400" />
-                          Gross Built-Up Area
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">{project.area}</p>
-                      </li>
-                    )}
-
-                    {project.category && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                          Sector Classification
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">{project.category}</p>
-                      </li>
-                    )}
-
-                    {project.location && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                          Site Location
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">{project.location}</p>
-                      </li>
-                    )}
-
-                    {(project.date || project.completionDate) && (
-                      <li className="pb-3 border-b border-slate-800/80">
-                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
-                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                          Timeline / Handover
-                        </span>
-                        <p className="text-slate-100 font-medium pl-5">
-                          {project.completionDate || project.date}
-                        </p>
-                      </li>
-                    )}
-                  </ul>
-
-                  {/* Physical Stage */}
-                  <div className="mt-6 pt-5 border-t border-slate-800">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                      Execution Stage:
-                    </span>
-                    <div className="flex items-center justify-between bg-slate-950 p-2.5 border border-slate-800">
-                      <span className="text-xs font-mono text-slate-300 font-semibold">
-                        {isOngoing ? "Active Execution" : "Commissioned"}
-                      </span>
-                      <span
-                        className={`text-[9px] font-bold uppercase px-2 py-0.5 ${
-                          isOngoing ? "bg-amber-500 text-black" : "bg-emerald-600 text-white"
-                        }`}
-                      >
-                        {isOngoing ? "Ongoing" : "Completed"}
-                      </span>
+                    <div className="divide-y divide-slate-100">
+                      {factsLedger.map((fact, idx) => {
+                        const Icon = fact.icon;
+                        return (
+                          <div key={idx} className="py-2.5 first:pt-0 last:pb-0 flex items-start gap-3">
+                            <Icon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                                {fact.label}
+                              </span>
+                              <span className="text-xs sm:text-sm font-semibold text-slate-900 break-words">
+                                {fact.value}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
+                )}
 
-                  {/* Inquiry CTA */}
-                  <div className="mt-6 pt-4 border-t border-slate-800">
-                    <div className="w-full flex items-center justify-center gap-2 bg-amber-500 text-slate-950 font-bold uppercase tracking-wider text-xs py-3">
-                      <span>Inquire About Similar Scope</span>
-                      <ChevronRight className="w-4 h-4" />
+                {/* Card 2: Services / Scope Tags */}
+                {project.services && project.services.length > 0 && (
+                  <div className="bg-white border border-slate-200 p-5 shadow-sm space-y-3">
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                      <Layers className="w-4 h-4 text-construction-navy" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                        Services Delivered
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.services.map((svc, i) => (
+                        <span
+                          key={i}
+                          className="px-2.5 py-1 bg-slate-100 text-slate-800 text-[11px] font-mono border border-slate-200"
+                        >
+                          {svc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Card 3: Verified Geographic & Location Intelligence */}
+                {hasVerifiedGeo && (
+                  <div className="bg-white border border-slate-200 p-5 shadow-sm space-y-3.5">
+                    <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                      <Compass className="w-4 h-4 text-construction-red" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                        Site &amp; Location Intelligence
+                      </h3>
+                    </div>
+
+                    <div className="space-y-2">
+                      {geoDetails.map((geo, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-slate-100 last:border-0">
+                          <span className="text-slate-500 font-mono text-[11px]">{geo.label}:</span>
+                          <span className="font-semibold text-slate-800 text-right truncate max-w-[180px]">
+                            {geo.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {project.googleMapsUrl && (
+                      <a
+                        href={project.googleMapsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+                        <span>View on Google Maps</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Card 4: Search & Social Preview Summary */}
+                <div className="bg-white border border-slate-200 p-5 shadow-sm space-y-3">
+                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                    <Globe className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                      Public Search Index Card
+                    </h3>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border border-slate-200 text-xs space-y-1 font-sans">
+                    <div className="text-[11px] text-slate-500 font-mono truncate">
+                      https://www.hindustanprojects.in/projects/{project.slug || "slug"}
+                    </div>
+                    <div className="text-sm font-semibold text-blue-800 line-clamp-1">
+                      {project.metaTitle || `${project.title || "Project"} | Hindustan Projects`}
+                    </div>
+                    <div className="text-[11px] text-slate-600 line-clamp-2 leading-snug">
+                      {project.metaDescription || project.shortDescription || "Hindustan Projects portfolio specification."}
                     </div>
                   </div>
                 </div>
-              </aside>
+              </div>
             </div>
           </div>
+
+          {/* Footer simulation */}
+          <footer className="border-t border-slate-200 bg-slate-50 py-6 px-4 sm:px-8 text-center text-xs text-slate-500 font-mono">
+            <span>© {new Date().getFullYear()} Hindustan Projects (HiPRO) · Engineering &amp; Infrastructure Portfolio</span>
+          </footer>
         </div>
       </div>
 
-      {/* Lightbox Modal for Gallery Images */}
+      {/* Lightbox Modal */}
       {lightboxImage && (
         <div
-          className="fixed inset-0 z-[10000] bg-black/95 flex items-center justify-center p-4 cursor-pointer"
           onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
         >
-          <button
-            type="button"
-            onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 bg-slate-900 text-white p-2.5 hover:bg-construction-red cursor-pointer border border-slate-800"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightboxImage}
-            alt="Enlarged view"
-            className="max-h-[90vh] max-w-[90vw] object-contain border border-slate-800 shadow-2xl"
-          />
+          <div className="relative max-w-4xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-3 right-3 p-1.5 bg-black/70 text-white hover:bg-black transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={lightboxImage} alt="Expanded Plate" className="w-full h-full object-contain max-h-[85vh]" />
+          </div>
         </div>
       )}
     </div>

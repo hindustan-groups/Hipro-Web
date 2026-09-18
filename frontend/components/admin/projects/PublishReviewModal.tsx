@@ -60,9 +60,7 @@ export default function PublishReviewModal({
 }: PublishReviewModalProps) {
   if (!isOpen) return null;
 
-  // ─────────────────────────────────────────────────────────────
   // 1. EVALUATE REQUIRED (STRICT 4 ONLY)
-  // ─────────────────────────────────────────────────────────────
   const requiredChecks = [
     {
       id: "title",
@@ -97,9 +95,7 @@ export default function PublishReviewModal({
   const requiredCount = requiredChecks.filter((r) => r.isComplete).length;
   const allRequiredMet = requiredCount === requiredChecks.length;
 
-  // ─────────────────────────────────────────────────────────────
   // 2. EVALUATE RECOMMENDED (12 ITEMS)
-  // ─────────────────────────────────────────────────────────────
   const recommendedChecks = [
     {
       id: "category",
@@ -138,156 +134,160 @@ export default function PublishReviewModal({
     },
     {
       id: "gallery",
-      label: "Project Gallery Photography (1+ photos)",
+      label: "Multi-Angle Gallery Photographs",
       tabIndex: 3,
       isComplete: project.galleryDetails && project.galleryDetails.length > 0,
-      tip: "Visual proof of site work and architectural finish.",
+      tip: "Visual proof of engineering execution.",
     },
     {
       id: "faqs",
-      label: "Project Engineering FAQs",
+      label: "Technical Project FAQs",
       tabIndex: 2,
       isComplete: project.faqs && project.faqs.length > 0,
-      tip: "Powers Schema.org FAQPage rich search snippets.",
+      tip: "Powers Schema.org FAQPage rich snippets.",
     },
     {
       id: "metaTitle",
-      label: "Custom SEO Meta Title (50-60 chars)",
+      label: "Custom SEO Meta Title",
       tabIndex: 4,
       isComplete: Boolean(project.metaTitle && project.metaTitle.trim()),
-      tip: "Optimizes SERP headline; falls back to brand title.",
+      tip: "Optimizes SERP click-through rates.",
     },
     {
       id: "metaDesc",
-      label: "Custom SEO Meta Description (140-160 chars)",
+      label: "Custom SEO Meta Description",
       tabIndex: 4,
       isComplete: Boolean(project.metaDescription && project.metaDescription.trim()),
-      tip: "Organic search click-through snippet.",
+      tip: "Snippet preview in Google search results.",
     },
     {
-      id: "focusKeywords",
-      label: "Primary Focus Keyword Defined",
+      id: "keywords",
+      label: "Primary Focus Keywords",
       tabIndex: 4,
       isComplete: Boolean(project.focusKeywords && project.focusKeywords.trim()),
-      tip: "Keywords for search intent targeting.",
+      tip: "Target keywords for search queries.",
     },
     {
-      id: "geoCityState",
-      label: "Verified Geographic City & State",
+      id: "cityState",
+      label: "Granular Site Geography (City & State)",
       tabIndex: 1,
       isComplete: Boolean(project.city && project.state),
-      tip: "Powers local GEO search ranking.",
+      tip: "Enables regional search targeting in Rajasthan & India.",
     },
     {
-      id: "geoMap",
-      label: "Google Maps Link or GPS Coordinates",
+      id: "mapsUrl",
+      label: "Google Maps Coordinates or URL",
       tabIndex: 1,
       isComplete: Boolean(project.googleMapsUrl || (project.latitude && project.longitude)),
-      tip: "Verifiable project location coordinate.",
+      tip: "Enables interactive map anchor and verified GEO entity.",
     },
   ];
 
   const recommendedCount = recommendedChecks.filter((r) => r.isComplete).length;
-
-  // ─────────────────────────────────────────────────────────────
-  // 3. OPTIONAL FIELDS SUMMARY
-  // ─────────────────────────────────────────────────────────────
-  const optionalItems = [
-    { label: "Execution Video Showcase", provided: Boolean(project.videoUrl) },
-    { label: "Built-up Area / Scale", provided: Boolean(project.area) },
-    { label: "Client Name", provided: Boolean(project.client) },
-    { label: "Owner / Developer", provided: Boolean(project.owner) },
-    { label: "Postal PIN Code", provided: Boolean(project.postalCode) },
-    { label: "Canonical URL Override", provided: Boolean(project.canonicalUrl) },
-  ];
 
   // Informational readiness score (0 - 100%)
   const totalScore = Math.round((requiredCount * 15) + (recommendedCount * (40 / 12)));
   const readinessPercent = Math.min(100, totalScore);
 
   return (
-    <div className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-300 w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-none">
+    <div className="fixed inset-0 z-[10000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white border border-slate-300 w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] rounded-none animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-slate-950 text-white px-6 py-4 flex items-center justify-between shrink-0 border-b border-slate-800">
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-amber-400" />
+        <div className="bg-white border-b border-slate-200 px-5 sm:px-6 py-3.5 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-slate-100 flex items-center justify-center border border-slate-200">
+              <ShieldCheck className="w-4 h-4 text-construction-navy" />
+            </div>
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wider font-mono text-slate-100">
-                Pre-Publish Engineering Quality Audit
-              </h3>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Verify mandatory schema requirements before public web deployment
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-construction-red"></span>
+                <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-900">
+                  PUBLISH READINESS AUDIT
+                </h3>
+              </div>
+              <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                Validation check before deploying to live public portfolio
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 cursor-pointer transition-colors"
+            className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer transition-colors"
+            title="Close Audit"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Readiness Overview Strip */}
-        <div className="bg-slate-100 border-b border-slate-200 px-6 py-3 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-4">
+        {/* Readiness Gauge Strip */}
+        <div className="bg-slate-50 border-b border-slate-200 px-5 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div>
-              <span className="text-slate-500 font-medium">Readiness Score: </span>
-              <span className="font-bold text-slate-900 font-mono">{readinessPercent}%</span>
+              <span className="text-slate-500 font-mono uppercase text-[10px] block">Readiness</span>
+              <span className="font-bold text-slate-900 font-mono text-sm">{readinessPercent}%</span>
             </div>
-            <div className="h-3 w-px bg-slate-300" />
+            <div className="h-5 w-px bg-slate-200" />
             <div>
-              <span className="text-slate-500 font-medium">Blocking Mandatory: </span>
+              <span className="text-slate-500 font-mono uppercase text-[10px] block">Mandatory</span>
               <span
-                className={`font-bold font-mono ${
+                className={`font-bold font-mono text-sm ${
                   allRequiredMet ? "text-emerald-700" : "text-construction-red"
                 }`}
               >
-                {requiredCount}/4 {allRequiredMet ? "✓ Complete" : "⚠ Incomplete"}
+                {requiredCount}/4 {allRequiredMet ? "✓ Ready" : "⚠ Gaps"}
               </span>
             </div>
-            <div className="h-3 w-px bg-slate-300" />
+            <div className="h-5 w-px bg-slate-200" />
             <div>
-              <span className="text-slate-500 font-medium">Recommended: </span>
-              <span className="font-bold text-slate-900 font-mono">
+              <span className="text-slate-500 font-mono uppercase text-[10px] block">Recommended</span>
+              <span className="font-bold text-slate-900 font-mono text-sm">
                 {recommendedCount}/{recommendedChecks.length}
               </span>
             </div>
           </div>
+
+          <span
+            className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border ${
+              allRequiredMet
+                ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                : "bg-red-50 text-construction-red border-red-300"
+            }`}
+          >
+            {allRequiredMet ? "APPROVED FOR LIVE" : "PUBLISH BLOCKED"}
+          </span>
         </div>
 
         {/* Modal Scroll Body */}
-        <div className="p-6 overflow-y-auto space-y-6 text-xs">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs">
           {/* SECTION 1: REQUIRED (BLOCKING) */}
           <div>
             <div className="flex items-center justify-between mb-2 pb-1 border-b border-slate-200">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                <span className="text-construction-red font-bold">*</span> 1. Hard-Required Fields ({requiredCount}/4)
+                <span className="text-construction-red font-bold">*</span> Mandatory Publish Requirements ({requiredCount}/4)
               </h4>
               <span className="text-[10px] font-mono text-slate-500 uppercase">
-                {allRequiredMet ? "All 4 Satisfied" : "Blocks Publishing"}
+                {allRequiredMet ? "All 4 Complete" : "Blocks Publishing"}
               </span>
             </div>
 
-            <div className="border border-slate-300 divide-y divide-slate-200">
+            <div className="border border-slate-200 divide-y divide-slate-200">
               {requiredChecks.map((req) => (
                 <div
                   key={req.id}
-                  className={`p-3 flex items-center justify-between ${
-                    req.isComplete ? "bg-white" : "bg-red-50/80"
+                  className={`p-3 flex items-center justify-between gap-2 ${
+                    req.isComplete ? "bg-white" : "bg-red-50/70"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     {req.isComplete ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     ) : (
                       <AlertTriangle className="w-4 h-4 text-construction-red shrink-0" />
                     )}
-                    <div>
+                    <div className="min-w-0">
                       <p
-                        className={`font-bold text-xs ${
+                        className={`font-bold text-xs truncate ${
                           req.isComplete ? "text-slate-900" : "text-red-950"
                         }`}
                       >
@@ -295,7 +295,7 @@ export default function PublishReviewModal({
                       </p>
                       {!req.isComplete && (
                         <p className="text-[10px] text-red-700 font-mono mt-0.5">
-                          Missing required value. Provide in {req.tabName}.
+                          Missing value. Configure in {req.tabName}.
                         </p>
                       )}
                     </div>
@@ -308,9 +308,9 @@ export default function PublishReviewModal({
                         onClose();
                         onJumpToTab(req.tabIndex);
                       }}
-                      className="px-3 py-1 bg-construction-red hover:bg-red-700 text-white font-bold text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1 bg-construction-red hover:bg-red-700 text-white font-bold text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                     >
-                      <span>Fix in {req.tabName}</span>
+                      <span>Jump</span>
                       <ArrowRight className="w-3 h-3" />
                     </button>
                   )}
@@ -323,42 +323,34 @@ export default function PublishReviewModal({
           <div>
             <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-slate-200">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-construction-navy" /> 2. Recommended Fields ({recommendedCount}/{recommendedChecks.length})
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Recommended Specifications ({recommendedCount}/{recommendedChecks.length})
               </h4>
               <span className="text-[10px] font-mono text-slate-500 uppercase">
-                Informational • Non-blocking
+                Optional
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mb-2.5 leading-relaxed">
-              Completing recommended items enhances search visibility, rich snippets, and architectural portfolio completeness.
-            </p>
 
-            <div className="border border-slate-300 divide-y divide-slate-100 max-h-52 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               {recommendedChecks.map((rec) => (
                 <div
                   key={rec.id}
-                  className="p-2.5 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors"
+                  className={`p-2.5 border flex items-start gap-2 ${
+                    rec.isComplete ? "bg-white border-slate-200" : "bg-slate-50 border-slate-200"
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                    {rec.isComplete ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    ) : (
-                      <span className="w-3.5 h-3.5 border border-amber-400 bg-amber-50 text-amber-700 flex items-center justify-center text-[9px] font-mono font-bold shrink-0">
-                        !
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <p
-                        className={`text-xs ${
-                          rec.isComplete ? "text-slate-800 font-semibold" : "text-slate-600"
-                        }`}
-                      >
-                        {rec.label}
-                      </p>
-                      <p className="text-[10px] text-slate-400 truncate">{rec.tip}</p>
-                    </div>
+                  {rec.isComplete ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-slate-800 text-[11px] truncate">
+                      {rec.label}
+                    </p>
+                    <p className="text-[10px] text-slate-500 line-clamp-1">
+                      {rec.tip}
+                    </p>
                   </div>
-
                   {!rec.isComplete && (
                     <button
                       type="button"
@@ -366,33 +358,11 @@ export default function PublishReviewModal({
                         onClose();
                         onJumpToTab(rec.tabIndex);
                       }}
-                      className="text-[10px] font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red shrink-0 px-2 py-0.5 border border-slate-300 hover:border-slate-400 transition-colors cursor-pointer"
+                      className="text-[10px] font-bold uppercase text-construction-navy hover:text-construction-red shrink-0 cursor-pointer"
                     >
-                      Fill
+                      Add
                     </button>
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* SECTION 3: OPTIONAL ATTRIBUTES */}
-          <div className="bg-slate-50 border border-slate-200 p-3.5">
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-slate-500" /> 3. Additional Specifications Ledger
-            </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-[11px] font-mono">
-              {optionalItems.map((opt, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-slate-600">
-                  <span
-                    className={`w-1.5 h-1.5 shrink-0 ${
-                      opt.provided ? "bg-emerald-600" : "bg-slate-300"
-                    }`}
-                  />
-                  <span className="truncate">{opt.label}:</span>
-                  <span className="font-bold text-slate-900">
-                    {opt.provided ? "Yes" : "—"}
-                  </span>
                 </div>
               ))}
             </div>
@@ -400,29 +370,26 @@ export default function PublishReviewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="bg-slate-100 border-t border-slate-300 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-          <div>
+        <div className="bg-slate-50 border-t border-slate-200 px-5 sm:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="w-full sm:w-auto text-left">
             {!allRequiredMet ? (
               <p className="text-xs font-bold text-construction-red flex items-center gap-1 font-mono">
                 <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                Cannot publish: {4 - requiredCount} required field(s) missing.
-              </p>
-            ) : recommendedCount < 6 ? (
-              <p className="text-xs text-amber-800 font-medium">
-                Ready to publish. (Cover photo and summary recommended).
+                {4 - requiredCount} required field(s) missing.
               </p>
             ) : (
-              <p className="text-xs text-emerald-800 font-semibold font-mono">
-                ✓ High completeness. Ready for live indexing.
+              <p className="text-xs text-emerald-800 font-semibold font-mono flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                Ready to publish.
               </p>
             )}
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-200 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -431,7 +398,7 @@ export default function PublishReviewModal({
               type="button"
               disabled={!allRequiredMet || isPublishing}
               onClick={onConfirmPublish}
-              className="flex-1 sm:flex-none px-6 py-2 bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 sm:flex-none px-6 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               {isPublishing ? (
                 <>

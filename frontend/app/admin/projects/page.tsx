@@ -26,6 +26,15 @@ import {
   ShieldAlert,
   Sparkles,
   Upload,
+  Copy,
+  ExternalLink,
+  Layers,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
+  Calendar,
 } from "lucide-react";
 import type { Project, ProjectHighlight, ProjectFaq, ProjectGalleryItem } from "@/lib/types";
 import ProjectGeneralTab from "@/components/admin/projects/ProjectGeneralTab";
@@ -279,8 +288,10 @@ export default function AdminProjects() {
   const [saving, setSaving] = useState(false);
   const [slugError, setSlugError] = useState("");
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+  const [copiedCanonical, setCopiedCanonical] = useState(false);
+  const [showMobileInspector, setShowMobileInspector] = useState(false);
 
-  // New Modals & Dialogs
+  // Modals & Dialogs
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewProjectData, setPreviewProjectData] = useState<FormState | null>(null);
   const [showPublishReviewModal, setShowPublishReviewModal] = useState(false);
@@ -341,6 +352,7 @@ export default function AdminProjects() {
     setIsSlugManuallyEdited(false);
     setSlugError("");
     setIsDirty(false);
+    setShowMobileInspector(false);
     setShowEditor(true);
   };
 
@@ -352,6 +364,7 @@ export default function AdminProjects() {
     setForm(projectToFormState(p));
     setActiveTab("general");
     setIsDirty(false);
+    setShowMobileInspector(false);
     setShowEditor(true);
   };
 
@@ -383,18 +396,29 @@ export default function AdminProjects() {
     setIsDirty(false);
     setSlugError("");
     setShowUnsavedConfirm(false);
+    setShowMobileInspector(false);
+  };
+
+  const handleCopyCanonical = () => {
+    const rawSlug = form.slug.trim() || generateSlug(form.title.trim()) || "project";
+    const canonical = form.canonicalUrl.trim() || `https://www.hindustanprojects.in/projects/${rawSlug}`;
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(canonical);
+      setCopiedCanonical(true);
+      setTimeout(() => setCopiedCanonical(false), 2000);
+    }
   };
 
   // Minimum structural validation required to save a draft
   const validateDraftFields = (): boolean => {
     if (!form.title.trim()) {
       setActiveTab("general");
-      setError("Project Title is a required field to save a draft.");
+      setError("Project Title is required to save a draft.");
       return false;
     }
     if (!form.location.trim()) {
-      setActiveTab("specifications");
-      setError("General Location Display is a required field to save a draft.");
+      setActiveTab("general");
+      setError("Site Location is required to save a draft.");
       return false;
     }
     return true;
@@ -404,31 +428,30 @@ export default function AdminProjects() {
   const validatePublishRequiredFields = (): boolean => {
     if (!form.title.trim()) {
       setActiveTab("general");
-      setError("Project Title is a required field before publishing.");
+      setError("Project Title is required before publishing.");
       return false;
     }
     if (!form.location.trim()) {
-      setActiveTab("specifications");
-      setError("General Location Display is a required field before publishing.");
+      setActiveTab("general");
+      setError("Site Location is required before publishing.");
       return false;
     }
     if (!form.date.trim()) {
       setActiveTab("specifications");
-      setError("Project Date / Timeline Display is a required field before publishing.");
+      setError("Project Date / Timeline is required before publishing.");
       return false;
     }
     if (!form.description.trim()) {
       setActiveTab("narrative");
-      setError("Full Project Case Study Narrative is a required field before publishing.");
+      setError("Full Case Study Narrative is required before publishing.");
       return false;
     }
     return true;
   };
 
-  // Triggered when user clicks "Publish Project" button in editor header
+  // Triggered when user clicks "Publish Project" button in command bar
   const handleStartPublishFlow = () => {
     setError("");
-    // Open Pre-Publish Review Modal so user can review the 4 required and 12 recommended items
     setShowPublishReviewModal(true);
   };
 
@@ -706,10 +729,8 @@ export default function AdminProjects() {
   const ongoingCount = projects.filter((p) => p.status === "ongoing" || p.status === "active").length;
   const completedCount = projects.filter((p) => p.status === "completed").length;
 
-  // ─────────────────────────────────────────────────────────────
-  // TAB COMPLETION & READINESS CALCULATIONS (Strictly Informational)
-  // ─────────────────────────────────────────────────────────────
-  const isTab1Valid = Boolean(form.title && form.title.trim());
+  // TAB COMPLETION & READINESS CALCULATIONS
+  const isTab1Valid = Boolean(form.title && form.title.trim() && form.location && form.location.trim());
   const isTab2Valid = Boolean(form.location && form.location.trim() && form.date && form.date.trim());
   const isTab3Valid = Boolean(form.description && form.description.trim());
   const hasCoverImage = Boolean(form.image && form.image.trim());
@@ -769,397 +790,577 @@ export default function AdminProjects() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* SECTION 1: 5-TAB PROJECT EDITOR (MODAL / INLINE DRAWER)        */}
+      {/* SECTION 1: 5-PHASE PROJECT WORKBENCH EDITOR                   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {showEditor && (
-        <div className="bg-white border-2 border-construction-navy shadow-xl rounded-none">
-          {/* Editor Header Bar */}
-          <div className="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800">
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="text-[10px] uppercase font-mono font-bold tracking-widest bg-construction-navy text-white px-2 py-0.5 border border-blue-900/50">
-                  {editingProject ? "Project Editor" : "New Portfolio Project"}
-                </span>
-                <span
-                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border ${
-                    form.publishStatus === "published"
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                      : form.publishStatus === "archived"
-                      ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
-                      : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+        <div className="bg-white border border-slate-300 shadow-sm rounded-none">
+          {/* SINGLE UNIFIED STICKY COMMAND BAR */}
+          <div className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+            {/* Upper Command Bar */}
+            <div className="px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border-b border-slate-200 text-slate-900">
+              {/* Left Group */}
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={handleRequestCloseEditor}
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 border border-slate-300 transition-colors shrink-0 cursor-pointer"
+                  title="Return to Projects List"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Projects</span>
+                </button>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap text-[11px] font-mono">
+                    <span className="text-construction-navy font-bold uppercase text-[10px]">
+                      {editingProject ? `ID #${editingProject.id}` : "NEW PROJECT"}
+                    </span>
+                    <span className="text-slate-300">/</span>
+                    <span
+                      className={`px-1.5 py-0.2 text-[9px] font-mono font-bold uppercase tracking-wider border ${
+                        form.publishStatus === "published"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                          : form.publishStatus === "archived"
+                          ? "bg-purple-50 text-purple-700 border-purple-300"
+                          : "bg-amber-50 text-amber-800 border-amber-300"
+                      }`}
+                    >
+                      {form.publishStatus.toUpperCase()}
+                    </span>
+
+                    {/* Unsaved indicator */}
+                    {isDirty ? (
+                      <span className="px-1.5 py-0.2 text-[9px] font-mono text-amber-800 bg-amber-50 border border-amber-300 flex items-center gap-1">
+                        <Clock className="w-2.5 h-2.5 text-amber-600" /> Unsaved
+                      </span>
+                    ) : (
+                      <span className="px-1.5 py-0.2 text-[9px] font-mono text-slate-600 bg-slate-100 border border-slate-300 flex items-center gap-1">
+                        <Check className="w-2.5 h-2.5 text-emerald-600" /> Synced
+                      </span>
+                    )}
+                  </div>
+
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate max-w-xl font-display mt-0.5">
+                    {form.title.trim() || "Untitled Project Specification"}
+                  </h2>
+                </div>
+              </div>
+
+              {/* Right Action Group */}
+              <div className="flex items-center gap-2 flex-wrap shrink-0 justify-end">
+                <button
+                  type="button"
+                  onClick={handleActiveFormPreview}
+                  className="bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 rounded-none cursor-pointer"
+                  title="Live preview in light mode"
+                >
+                  <Eye className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Preview</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSave("draft")}
+                  disabled={saving}
+                  className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none disabled:opacity-50 cursor-pointer"
+                >
+                  {saving ? "Saving..." : "Save Draft"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleStartPublishFlow}
+                  disabled={saving}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>Publish</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleRequestCloseEditor}
+                  className="text-slate-500 hover:text-slate-900 p-1.5 border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Close Workbench"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Phase Navigation Bar (Horizontally Scrollable on Mobile) */}
+            <div className="flex items-center justify-between bg-slate-50 border-b border-slate-200 px-4 sm:px-6 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1 shrink-0">
+                {/* 01 General / Identity */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("general")}
+                  className={`flex items-center gap-1.5 py-3 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                    activeTab === "general"
+                      ? "border-slate-900 text-slate-900 bg-white shadow-sm"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  PUBLISH: {form.publishStatus.toUpperCase()}
-                </span>
-                <span
-                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border ${
-                    form.status === "completed"
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                      : form.status === "archived"
-                      ? "bg-slate-800 text-slate-400 border-slate-700"
-                      : "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                  <span className="w-5 h-5 rounded-none bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+                    01
+                  </span>
+                  <span>Identity</span>
+                  {isTab1Valid ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-red-500" title="Title & Location required" />
+                  )}
+                </button>
+
+                {/* 02 Specifications & GEO */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("specifications")}
+                  className={`flex items-center gap-1.5 py-3 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                    activeTab === "specifications"
+                      ? "border-slate-900 text-slate-900 bg-white shadow-sm"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
                   }`}
                 >
-                  LIFECYCLE: {form.status.toUpperCase()}
+                  <span className="w-5 h-5 rounded-none bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+                    02
+                  </span>
+                  <span>Specs &amp; GEO</span>
+                  {isTab2Valid ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-red-500" title="Location & Date required" />
+                  )}
+                </button>
+
+                {/* 03 Narrative & FAQs */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("narrative")}
+                  className={`flex items-center gap-1.5 py-3 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                    activeTab === "narrative"
+                      ? "border-slate-900 text-slate-900 bg-white shadow-sm"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <span className="w-5 h-5 rounded-none bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+                    03
+                  </span>
+                  <span>Narrative</span>
+                  {isTab3Valid ? (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  ) : (
+                    <span className="w-2 h-2 rounded-full bg-red-500" title="Description required" />
+                  )}
+                </button>
+
+                {/* 04 Media & Gallery */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("media")}
+                  className={`flex items-center gap-1.5 py-3 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                    activeTab === "media"
+                      ? "border-slate-900 text-slate-900 bg-white shadow-sm"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <span className="w-5 h-5 rounded-none bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+                    04
+                  </span>
+                  <span>Media ({form.galleryDetails.length + (form.image ? 1 : 0)})</span>
+                  {hasCoverImage && <CheckCircle className="w-3.5 h-3.5 text-slate-900" />}
+                </button>
+
+                {/* 05 Search & AI */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("seo")}
+                  className={`flex items-center gap-1.5 py-3 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer shrink-0 ${
+                    activeTab === "seo"
+                      ? "border-slate-900 text-slate-900 bg-white shadow-sm"
+                      : "border-transparent text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  <span className="w-5 h-5 rounded-none bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+                    05
+                  </span>
+                  <span>Search &amp; AI</span>
+                  {form.metaTitle && form.metaDescription && (
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  )}
+                </button>
+              </div>
+
+              {/* Quick Readiness Badge on Right (Desktop) */}
+              <div className="hidden lg:flex items-center gap-2 text-xs font-mono py-2 shrink-0">
+                <span className="text-slate-500">Readiness:</span>
+                <span className="px-2 py-0.5 bg-slate-200 text-slate-800 font-bold text-[11px]">
+                  {completenessPercent}%
+                </span>
+                <span
+                  className={`px-2 py-0.5 text-[10px] font-bold ${
+                    requiredCount === 4
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {requiredCount}/4 Required
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold font-display uppercase tracking-tight text-white mt-1.5 truncate max-w-xl">
-                {form.title.trim() || "Untitled Construction Project"}
-              </h2>
-            </div>
-
-            {/* Quick Action Buttons in Header */}
-            <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Preview Button - Amber Blueprint Style */}
-              <button
-                type="button"
-                onClick={handleActiveFormPreview}
-                className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-400 px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 rounded-none cursor-pointer"
-                title="Preview project using active form state"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Preview Project</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSave("draft")}
-                disabled={saving}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none disabled:opacity-50 cursor-pointer"
-              >
-                Save Draft
-              </button>
-
-              <button
-                type="button"
-                onClick={handleStartPublishFlow}
-                disabled={saving}
-                className="bg-construction-navy hover:bg-slate-900 text-white border border-blue-900/40 px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5 text-construction-red" />
-                <span>Publish Project</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleRequestCloseEditor}
-                className="text-slate-400 hover:text-white p-1 ml-1 cursor-pointer"
-                title="Close Editor"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
           </div>
 
-          {/* Completeness & Readiness Info Strip */}
-          <div className="bg-slate-800/90 text-slate-300 px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-700 font-sans">
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 text-slate-200">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span className="font-semibold uppercase tracking-wider text-[11px]">Readiness:</span>
-                <span className="font-mono font-bold text-amber-400">{completenessPercent}%</span>
-              </span>
-              <span className="text-slate-500">•</span>
-              <span>
-                Required:{" "}
-                <span
-                  className={`font-mono font-bold ${
-                    requiredCount === 4 ? "text-emerald-400" : "text-amber-400"
-                  }`}
-                >
-                  {requiredCount}/4 {requiredCount === 4 ? "✓" : "⚠"}
+          {/* MAIN 2-COLUMN WORKBENCH: Left 8 Cols Form (~68%), Right 4 Cols Inspector (~32%) */}
+          <div className="p-4 sm:p-6 lg:p-8 bg-slate-50/60">
+            {/* Mobile / Tablet Collapsible Inspector Toggle (< 1024px) */}
+            <div className="lg:hidden mb-4 bg-white border border-slate-200 p-3 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                  Readiness: {completenessPercent}% · {requiredCount}/4 Required
                 </span>
-              </span>
-              <span className="text-slate-500">•</span>
-              <span>
-                Recommended: <span className="font-mono font-bold text-slate-200">{recommendedCount}/12</span>
-              </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobileInspector(!showMobileInspector)}
+                className="text-xs font-mono font-bold uppercase px-3 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>{showMobileInspector ? "Hide" : "Inspect"}</span>
+                {showMobileInspector ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
             </div>
 
-            <div className="text-[11px] text-slate-400 font-mono">
-              Only 4 fields required to publish. Recommended fields enrich search &amp; conversions.
-            </div>
-          </div>
+            <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+              {/* Left Column: Form Editor (8 Cols on desktop, 12 on mobile/tablet) */}
+              <div className="lg:col-span-8 space-y-6 w-full">
+                {activeTab === "general" && (
+                  <ProjectGeneralTab
+                    formData={{
+                      title: form.title,
+                      slug: form.slug,
+                      category: form.category,
+                      subCategories: form.subCategories,
+                      status: form.status,
+                      publishStatus: form.publishStatus,
+                      featured: form.featured,
+                      order: form.order,
+                      location: form.location,
+                      city: form.city,
+                      district: form.district,
+                      state: form.state,
+                      country: form.country,
+                      postalCode: form.postalCode,
+                      targetLocation: form.targetLocation,
+                      image: form.image,
+                      imageAlt: form.imageAlt,
+                      shortDescription: form.shortDescription,
+                      description: form.description,
+                      date: form.date,
+                    }}
+                    onChange={handleFormChange}
+                    slugError={slugError}
+                    isSlugManuallyEdited={isSlugManuallyEdited}
+                    setIsSlugManuallyEdited={setIsSlugManuallyEdited}
+                    generateSlug={generateSlug}
+                  />
+                )}
 
-          {/* Architectural Phase / Ledger Tab Bar (5 Tabs with Step Numbers) */}
-          <div className="flex items-center border-b border-slate-200 bg-slate-50 px-4 sm:px-6 overflow-x-auto scrollbar-none">
-            {/* Tab 1: General */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("general")}
-              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === "general"
-                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              <span>01 / GENERAL</span>
-              {isTab1Valid ? (
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-red-500" title="Title required" />
-              )}
-            </button>
+                {activeTab === "specifications" && (
+                  <ProjectSpecificationsTab
+                    formData={{
+                      client: form.client,
+                      owner: form.owner,
+                      area: form.area,
+                      services: form.services,
+                      location: form.location,
+                      city: form.city,
+                      district: form.district,
+                      state: form.state,
+                      country: form.country,
+                      postalCode: form.postalCode,
+                      targetLocation: form.targetLocation,
+                      latitude: form.latitude,
+                      longitude: form.longitude,
+                      googleMapsUrl: form.googleMapsUrl,
+                      date: form.date,
+                      completionDate: form.completionDate,
+                      category: form.category,
+                      status: form.status,
+                      title: form.title,
+                    }}
+                    onChange={handleFormChange}
+                  />
+                )}
 
-            {/* Tab 2: Specifications */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("specifications")}
-              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === "specifications"
-                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              <span>02 / SPECIFICATIONS</span>
-              {isTab2Valid ? (
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-red-500" title="Location & Date required" />
-              )}
-            </button>
+                {activeTab === "narrative" && (
+                  <ProjectNarrativeTab
+                    formData={{
+                      shortDescription: form.shortDescription,
+                      description: form.description,
+                      highlights: form.highlights,
+                      faqs: form.faqs,
+                    }}
+                    onChange={handleFormChange}
+                  />
+                )}
 
-            {/* Tab 3: Narrative */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("narrative")}
-              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === "narrative"
-                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              <span>03 / NARRATIVE</span>
-              {isTab3Valid ? (
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-red-500" title="Description required" />
-              )}
-            </button>
+                {activeTab === "media" && (
+                  <ProjectMediaTab
+                    formData={{
+                      title: form.title,
+                      image: form.image,
+                      imageAlt: form.imageAlt,
+                      imageCaption: form.imageCaption,
+                      galleryDetails: form.galleryDetails,
+                      videoUrl: form.videoUrl,
+                      videoType: form.videoType,
+                      videoTitle: form.videoTitle,
+                      videoDescription: form.videoDescription,
+                      videoPoster: form.videoPoster,
+                    }}
+                    onChange={handleFormChange}
+                  />
+                )}
 
-            {/* Tab 4: Media */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("media")}
-              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === "media"
-                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              <span>04 / MEDIA ({form.galleryDetails.length + (form.image ? 1 : 0)})</span>
-              {hasCoverImage && <CheckCircle className="w-3.5 h-3.5 text-construction-navy" />}
-            </button>
+                {activeTab === "seo" && (
+                  <ProjectSeoTab
+                    formData={{
+                      title: form.title,
+                      slug: form.slug,
+                      metaTitle: form.metaTitle,
+                      metaDescription: form.metaDescription,
+                      focusKeywords: form.focusKeywords,
+                      secondaryKeywords: form.secondaryKeywords,
+                      canonicalUrl: form.canonicalUrl,
+                      ogImage: form.ogImage,
+                      noIndex: form.noIndex,
+                      noFollow: form.noFollow,
 
-            {/* Tab 5: SEO / AEO / GEO */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("seo")}
-              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === "seo"
-                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              <span>05 / SEO · AEO · GEO</span>
-              {form.metaTitle && form.metaDescription && (
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-              )}
-            </button>
-          </div>
+                      shortDescription: form.shortDescription,
+                      highlights: form.highlights,
+                      faqs: form.faqs,
+                      city: form.city,
+                      district: form.district,
+                      state: form.state,
+                      country: form.country,
+                      postalCode: form.postalCode,
+                      targetLocation: form.targetLocation,
+                      latitude: form.latitude,
+                      longitude: form.longitude,
+                      googleMapsUrl: form.googleMapsUrl,
+                      client: form.client,
+                      image: form.image,
+                    }}
+                    onChange={handleFormChange}
+                  />
+                )}
+              </div>
 
-          {/* Active Tab Content Area */}
-          <div className="p-6 md:p-8">
-            {activeTab === "general" && (
-              <ProjectGeneralTab
-                formData={{
-                  title: form.title,
-                  slug: form.slug,
-                  category: form.category,
-                  subCategories: form.subCategories,
-                  status: form.status,
-                  publishStatus: form.publishStatus,
-                  featured: form.featured,
-                  order: form.order,
-                  image: form.image,
-                  imageAlt: form.imageAlt,
-                  shortDescription: form.shortDescription,
-                  description: form.description,
-                  location: form.location,
-                  date: form.date,
-                }}
-                onChange={handleFormChange}
-                slugError={slugError}
-                isSlugManuallyEdited={isSlugManuallyEdited}
-                setIsSlugManuallyEdited={setIsSlugManuallyEdited}
-                generateSlug={generateSlug}
-              />
-            )}
-
-            {activeTab === "specifications" && (
-              <ProjectSpecificationsTab
-                formData={{
-                  client: form.client,
-                  owner: form.owner,
-                  area: form.area,
-                  services: form.services,
-                  location: form.location,
-                  city: form.city,
-                  district: form.district,
-                  state: form.state,
-                  country: form.country,
-                  postalCode: form.postalCode,
-                  targetLocation: form.targetLocation,
-                  latitude: form.latitude,
-                  longitude: form.longitude,
-                  googleMapsUrl: form.googleMapsUrl,
-                  date: form.date,
-                  completionDate: form.completionDate,
-                  category: form.category,
-                  status: form.status,
-                  title: form.title,
-                }}
-                onChange={handleFormChange}
-              />
-            )}
-
-            {activeTab === "narrative" && (
-              <ProjectNarrativeTab
-                formData={{
-                  shortDescription: form.shortDescription,
-                  description: form.description,
-                  highlights: form.highlights,
-                  faqs: form.faqs,
-                }}
-                onChange={handleFormChange}
-              />
-            )}
-
-            {activeTab === "media" && (
-              <ProjectMediaTab
-                formData={{
-                  title: form.title,
-                  image: form.image,
-                  imageAlt: form.imageAlt,
-                  imageCaption: form.imageCaption,
-                  galleryDetails: form.galleryDetails,
-                  videoUrl: form.videoUrl,
-                  videoType: form.videoType,
-                  videoTitle: form.videoTitle,
-                  videoDescription: form.videoDescription,
-                  videoPoster: form.videoPoster,
-                }}
-                onChange={handleFormChange}
-              />
-            )}
-
-            {activeTab === "seo" && (
-              <ProjectSeoTab
-                formData={{
-                  title: form.title,
-                  slug: form.slug,
-                  metaTitle: form.metaTitle,
-                  metaDescription: form.metaDescription,
-                  focusKeywords: form.focusKeywords,
-                  secondaryKeywords: form.secondaryKeywords,
-                  canonicalUrl: form.canonicalUrl,
-                  ogImage: form.ogImage,
-                  noIndex: form.noIndex,
-                  noFollow: form.noFollow,
-
-                  shortDescription: form.shortDescription,
-                  highlights: form.highlights,
-                  faqs: form.faqs,
-                  city: form.city,
-                  district: form.district,
-                  state: form.state,
-                  country: form.country,
-                  postalCode: form.postalCode,
-                  targetLocation: form.targetLocation,
-                  latitude: form.latitude,
-                  longitude: form.longitude,
-                  googleMapsUrl: form.googleMapsUrl,
-                  client: form.client,
-                  image: form.image,
-                }}
-                onChange={handleFormChange}
-              />
-            )}
-          </div>
-
-          {/* Bottom Action Bar */}
-          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-0 z-20 shadow-lg">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              {isDirty ? (
-                <span className="flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 border border-amber-200 font-mono text-[11px]">
-                  <Clock className="w-3.5 h-3.5" /> Unsaved changes in form
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-slate-400 font-mono text-[11px]">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" /> All changes clean
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
-              <button
-                type="button"
-                onClick={handleRequestCloseEditor}
-                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer"
+              {/* Right Column: Sticky Workbench Inspector Panel */}
+              <div
+                className={`lg:col-span-4 space-y-5 lg:sticky lg:top-28 ${
+                  showMobileInspector ? "block" : "hidden lg:block"
+                }`}
               >
-                Cancel
-              </button>
+                {/* Card 1: Publish Readiness Audit */}
+                <div className="bg-white border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-600" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                        Publish Readiness Audit
+                      </h3>
+                    </div>
+                    <span className="font-mono text-xs font-bold text-slate-900">
+                      {completenessPercent}%
+                    </span>
+                  </div>
 
-              <button
-                type="button"
-                onClick={handleActiveFormPreview}
-                className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-500 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 rounded-none cursor-pointer"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Preview</span>
-              </button>
+                  {/* Progress Bar */}
+                  <div className="w-full bg-slate-100 h-2 rounded-none overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        requiredCount === 4 ? "bg-emerald-600" : "bg-amber-500"
+                      }`}
+                      style={{ width: `${completenessPercent}%` }}
+                    />
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => handleSave("draft")}
-                disabled={saving}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors rounded-none disabled:opacity-50 cursor-pointer"
-              >
-                Save as Draft
-              </button>
+                  {/* Criteria Counts */}
+                  <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                    <div className="bg-slate-50 border border-slate-200 p-2.5">
+                      <span className="text-[10px] text-slate-500 block uppercase">Mandatory</span>
+                      <span
+                        className={`text-sm font-bold ${
+                          requiredCount === 4 ? "text-emerald-700" : "text-amber-700"
+                        }`}
+                      >
+                        {requiredCount} / 4 {requiredCount === 4 ? "✓ Ready" : "⚠ Gaps"}
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 p-2.5">
+                      <span className="text-[10px] text-slate-500 block uppercase">Recommended</span>
+                      <span className="text-sm font-bold text-slate-800">
+                        {recommendedCount} / 12 Enriched
+                      </span>
+                    </div>
+                  </div>
 
-              <button
-                type="button"
-                onClick={handleStartPublishFlow}
-                disabled={saving}
-                className="bg-construction-navy hover:bg-slate-900 text-white border border-blue-900/40 px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm rounded-none disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-              >
-                <Upload className="w-3.5 h-3.5 text-construction-red" />
-                <span>Publish Project</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPublishReviewModal(true)}
+                    className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
+                    <span>Run Full Audit Drawer</span>
+                  </button>
+                </div>
+
+                {/* Card 2: Canonical Route & Slug Inspector */}
+                <div className="bg-white border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-blue-600" />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                        Canonical Route &amp; Slug
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-mono uppercase text-slate-400">SEO / AEO</span>
+                  </div>
+
+                  <div className="space-y-1 font-mono text-xs">
+                    <span className="text-[10px] text-slate-500 uppercase block">Public Path:</span>
+                    <div className="bg-slate-50 border border-slate-200 p-2.5 text-slate-900 font-semibold break-all text-[11px]">
+                      /projects/{form.slug.trim() || generateSlug(form.title.trim()) || "..."}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleCopyCanonical}
+                      className="flex-1 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      <Copy className="w-3 h-3 text-slate-500" />
+                      <span>{copiedCanonical ? "Copied!" : "Copy URL"}</span>
+                    </button>
+
+                    {form.publishStatus === "published" && form.slug && (
+                      <a
+                        href={`https://www.hindustanprojects.in/projects/${form.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="py-1.5 px-3 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 shadow-sm"
+                        title="Open Live URL"
+                      >
+                        <ExternalLink className="w-3 h-3 text-blue-600" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card 3: Fast Operational Controls */}
+                <div className="bg-white border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                    <Sliders className="w-4 h-4 text-purple-600" />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                      Workbench Quick Controls
+                    </h3>
+                  </div>
+
+                  {/* Featured Toggle */}
+                  <label className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Star
+                        className={`w-4 h-4 ${
+                          form.featured ? "fill-amber-500 text-amber-500" : "text-slate-400"
+                        }`}
+                      />
+                      <span className="text-xs font-bold text-slate-800 font-mono">
+                        Featured on Homepage
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={form.featured}
+                      onChange={(e) => handleFormChange({ featured: e.target.checked })}
+                      className="w-4 h-4 accent-amber-600 cursor-pointer rounded-none"
+                    />
+                  </label>
+
+                  {/* Lifecycle Toggle */}
+                  <div className="p-2.5 bg-slate-50 border border-slate-200 space-y-2">
+                    <span className="text-[10px] font-mono text-slate-500 uppercase block font-semibold">
+                      Lifecycle Stage:
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleFormChange({ status: "ongoing" })}
+                        className={`py-1 text-xs font-mono font-bold uppercase tracking-wider border cursor-pointer transition-colors ${
+                          form.status === "ongoing" || form.status === "active"
+                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                            : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                        }`}
+                      >
+                        Ongoing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFormChange({ status: "completed" })}
+                        className={`py-1 text-xs font-mono font-bold uppercase tracking-wider border cursor-pointer transition-colors ${
+                          form.status === "completed"
+                            ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                            : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100"
+                        }`}
+                      >
+                        Completed
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Bot Indexing Quick Toggle */}
+                  <label className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-colors">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 font-mono block">
+                        Search Indexing
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {form.noIndex ? "noindex (hidden from search)" : "Indexable (Active)"}
+                      </span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={!form.noIndex}
+                      onChange={(e) => handleFormChange({ noIndex: !e.target.checked })}
+                      className="w-4 h-4 accent-emerald-600 cursor-pointer rounded-none"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* SECTION 2: PROJECTS PORTFOLIO LIST & FILTERS                   */}
+      {/* SECTION 2: PROJECTS REGISTRY (LIST & MOBILE CARDS)            */}
       {/* ───────────────────────────────────────────────────────────── */}
       {!showEditor && (
         <div className="space-y-6">
           {/* Header & Quick Action */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
             <div>
-              <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1">
-                <span>PORTFOLIO</span>
+              <div className="flex items-center gap-2 text-[11px] font-mono tracking-wider text-slate-500 uppercase mb-1">
+                <span>PORTFOLIO WORKBENCH</span>
                 <span className="text-slate-400">/</span>
-                <span className="text-construction-navy font-bold">PROJECTS REGISTRY</span>
+                <span className="text-slate-900 font-bold">PROJECTS REGISTRY</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
-                Project Portfolio CMS
+                HiPRO Projects Registry
               </h1>
-              <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
-                Manage ongoing and commissioned construction portfolios with SEO, AEO, GEO, and execution plates.
+              <p className="text-slate-600 text-xs sm:text-sm mt-0.5">
+                Central ledger for industrial, commercial, and turnkey construction portfolio assets.
               </p>
             </div>
 
@@ -1167,59 +1368,59 @@ export default function AdminProjects() {
               <button
                 onClick={fetchProjects}
                 disabled={loading}
-                className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-none disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
+                className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-none disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
               </button>
               <button
                 onClick={handleStartAdd}
-                className="flex items-center gap-2 bg-construction-navy hover:bg-slate-900 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-none transition-colors shadow-sm cursor-pointer"
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-none transition-colors shadow-sm cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-construction-red" /> Add New Project
+                <Plus className="w-4 h-4 text-amber-400" /> New Project
               </button>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white border border-slate-200 p-3.5 shadow-xs rounded-none">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">
+            <div className="bg-white border border-slate-200 p-3 sm:p-4 shadow-sm rounded-none">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
                 Total Projects
               </span>
-              <span className="text-2xl font-bold text-slate-900 font-display">{projects.length}</span>
+              <span className="text-xl sm:text-2xl font-bold text-slate-900 font-display">{projects.length}</span>
             </div>
 
-            <div className="bg-white border border-emerald-200 p-3.5 shadow-xs rounded-none bg-emerald-50/20">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-700 block mb-1">
+            <div className="bg-white border border-emerald-200 p-3 sm:p-4 shadow-sm rounded-none bg-emerald-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 block mb-1">
                 Published (Live)
               </span>
-              <span className="text-2xl font-bold text-emerald-700 font-display">{publishedCount}</span>
+              <span className="text-xl sm:text-2xl font-bold text-emerald-700 font-display">{publishedCount}</span>
             </div>
 
-            <div className="bg-white border border-amber-200 p-3.5 shadow-xs rounded-none bg-amber-50/20">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-700 block mb-1">
-                Drafts (Hidden)
+            <div className="bg-white border border-amber-200 p-3 sm:p-4 shadow-sm rounded-none bg-amber-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                Drafts
               </span>
-              <span className="text-2xl font-bold text-amber-700 font-display">{draftCount}</span>
+              <span className="text-xl sm:text-2xl font-bold text-amber-700 font-display">{draftCount}</span>
             </div>
 
-            <div className="bg-white border border-blue-200 p-3.5 shadow-xs rounded-none bg-blue-50/20">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-construction-navy block mb-1">
-                Ongoing Work
+            <div className="bg-white border border-blue-200 p-3 sm:p-4 shadow-sm rounded-none bg-blue-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-700 block mb-1">
+                Ongoing
               </span>
-              <span className="text-2xl font-bold text-construction-navy font-display">{ongoingCount}</span>
+              <span className="text-xl sm:text-2xl font-bold text-blue-700 font-display">{ongoingCount}</span>
             </div>
 
-            <div className="bg-white border border-purple-200 p-3.5 shadow-xs rounded-none bg-purple-50/20">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-700 block mb-1">
+            <div className="bg-white border border-purple-200 p-3 sm:p-4 shadow-sm rounded-none bg-purple-50/20 col-span-2 sm:col-span-1">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-700 block mb-1">
                 Archived
               </span>
-              <span className="text-2xl font-bold text-purple-700 font-display">{archivedCount}</span>
+              <span className="text-xl sm:text-2xl font-bold text-purple-700 font-display">{archivedCount}</span>
             </div>
           </div>
 
           {/* Filter & Search Bar */}
-          <div className="bg-white border border-slate-200 p-4 shadow-xs rounded-none flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="bg-white border border-slate-200 p-3.5 sm:p-4 shadow-sm rounded-none flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Search Box */}
             <div className="relative flex-1 max-w-md">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -1234,19 +1435,17 @@ export default function AdminProjects() {
 
             {/* Filter Dropdowns */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* Publication Status Filter */}
               <select
                 value={publishStatusFilter}
                 onChange={(e) => setPublishStatusFilter(e.target.value)}
                 className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
               >
                 <option value="all">Publish: All</option>
-                <option value="published">Publish: Published Only</option>
-                <option value="draft">Publish: Drafts Only</option>
-                <option value="archived">Publish: Archived Only</option>
+                <option value="published">Publish: Published</option>
+                <option value="draft">Publish: Drafts</option>
+                <option value="archived">Publish: Archived</option>
               </select>
 
-              {/* Operational Lifecycle Filter */}
               <select
                 value={operationalStatusFilter}
                 onChange={(e) => setOperationalStatusFilter(e.target.value)}
@@ -1258,7 +1457,6 @@ export default function AdminProjects() {
                 <option value="archived">Lifecycle: Archived</option>
               </select>
 
-              {/* Category Filter */}
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
@@ -1272,7 +1470,6 @@ export default function AdminProjects() {
                 <option value="institutional">Institutional</option>
               </select>
 
-              {/* Sort By Dropdown */}
               <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-2 rounded-none">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                 <select
@@ -1289,8 +1486,8 @@ export default function AdminProjects() {
             </div>
           </div>
 
-          {/* Projects Table */}
-          <div className="bg-white border border-slate-200 shadow-xs rounded-none overflow-hidden">
+          {/* DESKTOP VIEW: Projects Table (>= md / 768px) */}
+          <div className="hidden md:block bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -1325,25 +1522,6 @@ export default function AdminProjects() {
                       const isPublished = p.publishStatus === "published";
                       const isCompleted = p.status === "completed";
 
-                      let galleryCount = 0;
-                      if (p.galleryDetails) {
-                        try {
-                          galleryCount = Array.isArray(p.galleryDetails)
-                            ? p.galleryDetails.length
-                            : JSON.parse(p.galleryDetails).length;
-                        } catch {
-                          galleryCount = 0;
-                        }
-                      } else if (p.images) {
-                        try {
-                          galleryCount = typeof p.images === "string" && p.images.trim().startsWith("[")
-                            ? JSON.parse(p.images).length
-                            : p.images.split("\n").filter(Boolean).length;
-                        } catch {
-                          galleryCount = 0;
-                        }
-                      }
-
                       return (
                         <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                           {/* Project Cover & Title */}
@@ -1368,11 +1546,6 @@ export default function AdminProjects() {
                                 <p className="text-[11px] font-mono text-slate-400 truncate max-w-xs">
                                   /projects/{p.slug || p.id}
                                 </p>
-                                {galleryCount > 0 && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-construction-navy bg-blue-50 px-1.5 py-0.2 border border-blue-200 mt-1">
-                                    <ImageIcon className="w-3 h-3" /> {galleryCount} Plates
-                                  </span>
-                                )}
                               </div>
                             </div>
                           </td>
@@ -1425,8 +1598,7 @@ export default function AdminProjects() {
                                 </>
                               ) : (
                                 <>
-                                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />{" "}
-                                  Ongoing
+                                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" /> Ongoing
                                 </>
                               )}
                             </button>
@@ -1435,13 +1607,13 @@ export default function AdminProjects() {
                           {/* Category */}
                           <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap">
                             <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider rounded-none">
-                              {p.category}
+                              {p.category || "—"}
                             </span>
                           </td>
 
                           {/* Location */}
                           <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap max-w-[140px] truncate text-xs">
-                            {p.location}
+                            {p.location || "—"}
                           </td>
 
                           {/* Client */}
@@ -1467,7 +1639,6 @@ export default function AdminProjects() {
                           {/* Actions */}
                           <td className="px-4 py-3.5 whitespace-nowrap text-right">
                             <div className="inline-flex items-center gap-1.5">
-                              {/* Row Preview Button */}
                               <button
                                 onClick={() => handleRowPreview(p)}
                                 title="Draft-Safe Full Preview"
@@ -1479,26 +1650,19 @@ export default function AdminProjects() {
 
                               <button
                                 onClick={() => handleStartEdit(p)}
-                                title="Edit full project specifications"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-300 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold uppercase rounded-none transition-all shadow-xs cursor-pointer"
+                                title="Edit Project Specifications"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer"
                               >
-                                <Pencil className="w-3.5 h-3.5" /> Edit
+                                <Pencil className="w-3 h-3 text-amber-400" />
+                                <span>Edit</span>
                               </button>
 
                               <button
                                 onClick={() => handleDeleteProject(p, false)}
-                                title="Safe Archive Project (Unpublishes safely)"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all rounded-none shadow-xs cursor-pointer"
+                                title="Archive Project"
+                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-none cursor-pointer"
                               >
                                 <Archive className="w-3.5 h-3.5" />
-                              </button>
-
-                              <button
-                                onClick={() => handleDeleteProject(p, true)}
-                                title="Permanently Delete Project from Database"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all rounded-none shadow-xs cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </td>
@@ -1509,39 +1673,151 @@ export default function AdminProjects() {
                 </tbody>
               </table>
             </div>
+          </div>
 
-            {/* Table Footer */}
-            <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium flex items-center justify-between">
-              <span>
-                Showing {filteredProjects.length} of {projects.length} portfolio records
-              </span>
-              <div className="flex gap-4 text-xs font-medium">
-                <span className="text-emerald-700 font-semibold">{publishedCount} Published</span>
-                <span className="text-amber-700 font-semibold">{draftCount} Drafts</span>
-                <span className="text-blue-700 font-semibold">{ongoingCount} Ongoing</span>
+          {/* MOBILE VIEW: Project Cards (< md / 768px) */}
+          <div className="md:hidden space-y-3">
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white border border-slate-200 p-4 animate-pulse space-y-3">
+                  <div className="h-5 bg-slate-200 w-3/4" />
+                  <div className="h-4 bg-slate-100 w-1/2" />
+                </div>
+              ))
+            ) : filteredProjects.length === 0 ? (
+              <div className="bg-white border border-slate-200 p-8 text-center text-slate-500 text-xs font-mono">
+                No projects match the current filters.
               </div>
-            </div>
+            ) : (
+              filteredProjects.map((p) => {
+                const isPublished = p.publishStatus === "published";
+                const isCompleted = p.status === "completed";
+
+                return (
+                  <div
+                    key={p.id}
+                    className="bg-white border border-slate-200 p-4 space-y-3 shadow-sm"
+                  >
+                    {/* Top Row: Thumbnail + Title + Featured Star */}
+                    <div className="flex items-start gap-3">
+                      {p.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={p.image}
+                          alt={p.title}
+                          className="w-14 h-14 object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                          <ImageIcon className="w-5 h-5" />
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-mono font-bold uppercase tracking-wider">
+                            {p.category || "Unassigned"}
+                          </span>
+                          <button
+                            onClick={() => handleToggleFeatured(p)}
+                            className="text-slate-400 hover:text-amber-500 p-1"
+                          >
+                            <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
+                          </button>
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900 font-display leading-tight truncate">
+                          {p.title}
+                        </h3>
+                        <p className="text-[11px] font-mono text-slate-400 truncate">
+                          /projects/{p.slug || p.id}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metadata Row */}
+                    <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-slate-100 text-slate-600 font-mono">
+                      <div className="flex items-center gap-1 truncate">
+                        <MapPin className="w-3 h-3 text-construction-red shrink-0" />
+                        <span className="truncate">{p.location || "No Location"}</span>
+                      </div>
+                      <div className="flex items-center gap-1 truncate">
+                        <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{p.date || "No Date"}</span>
+                      </div>
+                    </div>
+
+                    {/* Status Badges Row */}
+                    <div className="flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleTogglePublishStatus(p)}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border cursor-pointer ${
+                          isPublished
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                            : "bg-amber-50 text-amber-700 border-amber-300"
+                        }`}
+                      >
+                        {isPublished ? <Check className="w-3 h-3 text-emerald-600" /> : <Clock className="w-3 h-3 text-amber-600" />}
+                        <span>{isPublished ? "Published" : "Draft"}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleOperationalStatus(p)}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border cursor-pointer ${
+                          isCompleted
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
+                        }`}
+                      >
+                        {isCompleted ? <CheckCircle className="w-3 h-3 text-emerald-600" /> : <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+                        <span>{isCompleted ? "Completed" : "Ongoing"}</span>
+                      </button>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => handleRowPreview(p)}
+                        className="flex-1 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Preview
+                      </button>
+                      <button
+                        onClick={() => handleStartEdit(p)}
+                        className="flex-1 py-1.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                      >
+                        <Pencil className="w-3 h-3 text-amber-400" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProject(p, false)}
+                        className="p-1.5 border border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        title="Archive Project"
+                      >
+                        <Archive className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* MODAL 1: DRAFT-SAFE FULL PROJECT PREVIEW MODAL                */}
+      {/* MODALS & PANELS                                               */}
       {/* ───────────────────────────────────────────────────────────── */}
+      {/* 1. Light Mode Project Preview Modal */}
       {showPreviewModal && previewProjectData && (
         <ProjectPreviewModal
           isOpen={showPreviewModal}
-          onClose={() => {
-            setShowPreviewModal(false);
-            setPreviewProjectData(null);
-          }}
+          onClose={() => setShowPreviewModal(false)}
           project={previewProjectData}
         />
       )}
 
-      {/* ───────────────────────────────────────────────────────────── */}
-      {/* MODAL 2: PRE-PUBLISH REVIEW MODAL                             */}
-      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 2. Publish Review Modal */}
       {showPublishReviewModal && (
         <PublishReviewModal
           isOpen={showPublishReviewModal}
@@ -1549,82 +1825,78 @@ export default function AdminProjects() {
           onConfirmPublish={() => handleSave("published")}
           onJumpToTab={(tabIdx) => {
             const tabs: EditorTab[] = ["general", "specifications", "narrative", "media", "seo"];
-            if (tabs[tabIdx]) {
-              setActiveTab(tabs[tabIdx]);
-            }
+            setActiveTab(tabs[tabIdx] || "general");
           }}
           isPublishing={saving}
-          project={form}
+          project={{
+            title: form.title,
+            location: form.location,
+            date: form.date,
+            description: form.description,
+            category: form.category,
+            image: form.image,
+            imageAlt: form.imageAlt,
+            shortDescription: form.shortDescription,
+            highlights: form.highlights,
+            galleryDetails: form.galleryDetails,
+            faqs: form.faqs,
+            metaTitle: form.metaTitle,
+            metaDescription: form.metaDescription,
+            focusKeywords: form.focusKeywords,
+            city: form.city,
+            state: form.state,
+            googleMapsUrl: form.googleMapsUrl,
+            latitude: form.latitude,
+            longitude: form.longitude,
+            videoUrl: form.videoUrl,
+            client: form.client,
+            owner: form.owner,
+            area: form.area,
+            postalCode: form.postalCode,
+            canonicalUrl: form.canonicalUrl,
+          }}
         />
       )}
 
-      {/* ───────────────────────────────────────────────────────────── */}
-      {/* MODAL 3: POST-SAVE / PUBLISH SUCCESS PANEL                    */}
-      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 3. Project Success Panel */}
       {showSuccessPanel && successPanelData && (
         <ProjectSuccessPanel
           isOpen={showSuccessPanel}
-          onClose={() => {
-            setShowSuccessPanel(false);
-            setSuccessPanelData(null);
-            setShowEditor(false);
-            setEditingProject(null);
-            setForm(DEFAULT_FORM);
-          }}
-          onContinueEditing={() => {
-            setShowSuccessPanel(false);
-            setSuccessPanelData(null);
-          }}
+          onClose={() => setShowSuccessPanel(false)}
+          onContinueEditing={() => setShowSuccessPanel(false)}
           title={successPanelData.title}
           slug={successPanelData.slug}
           publishStatus={successPanelData.publishStatus}
         />
       )}
 
-      {/* ───────────────────────────────────────────────────────────── */}
-      {/* MODAL 4: UNSAVED CHANGES CONFIRMATION DIALOG                  */}
-      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 4. Unsaved Changes Confirm Dialog */}
       {showUnsavedConfirm && (
-        <div className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-300 w-full max-w-md p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-[10001] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-300 w-full max-w-md shadow-2xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900">Unsaved Changes</h3>
-                <p className="text-xs text-slate-500">
-                  You have unsaved edits in this project. What would you like to do?
-                </p>
-              </div>
+              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+                Discard Unsaved Changes?
+              </h3>
             </div>
-
-            <div className="space-y-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowUnsavedConfirm(false);
-                  handleSave("draft");
-                }}
-                className="w-full py-2 bg-construction-navy hover:bg-blue-800 text-white font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
-              >
-                Save as Draft
-              </button>
-
-              <button
-                type="button"
-                onClick={forceCloseEditor}
-                className="w-full py-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
-              >
-                Discard Changes &amp; Close
-              </button>
-
+            <p className="text-xs text-slate-600 leading-relaxed">
+              You have unsaved changes in this project workbench. If you close now without saving, those updates will be lost.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowUnsavedConfirm(false)}
-                className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold uppercase tracking-wider text-xs transition-colors cursor-pointer"
+                className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-bold uppercase tracking-wider"
               >
                 Keep Editing
+              </button>
+              <button
+                type="button"
+                onClick={forceCloseEditor}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider"
+              >
+                Discard &amp; Exit
               </button>
             </div>
           </div>
