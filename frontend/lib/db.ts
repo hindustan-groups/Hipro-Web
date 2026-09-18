@@ -1,7 +1,7 @@
 
 import { cache } from "react";
 
-let rawUrl = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
+let rawUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
 if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
   rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
 } else if (rawUrl.startsWith("http:") && !rawUrl.startsWith("http://")) {

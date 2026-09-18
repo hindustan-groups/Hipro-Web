@@ -1,8 +1,8 @@
    /** @type {import('next').NextConfig} */
 
-let rawBackendUrl = process.env.BACKEND_API_URL || "https://hipro-web-1.onrender.com";
+let rawBackendUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
 
-// Auto-heal malformed protocols (e.g. "https:hipro-web-1.onrender.com" -> "https://hipro-web-1.onrender.com")
+// Auto-heal malformed protocols
 if (rawBackendUrl.startsWith("https:") && !rawBackendUrl.startsWith("https://")) {
   rawBackendUrl = rawBackendUrl.replace(/^https:?\/*/, "https://");
 } else if (rawBackendUrl.startsWith("http:") && !rawBackendUrl.startsWith("http://")) {
@@ -18,7 +18,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://i.pravatar.cc https://www.google-analytics.com https://*.google-analytics.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://hipro-web-1.onrender.com https://*.onrender.com https://res.cloudinary.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com ws: wss: http://localhost:* http://127.0.0.1:*",
+  "connect-src 'self' https://hipro-backend-749v.onrender.com https://*.onrender.com https://res.cloudinary.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com ws: wss: http://localhost:* http://127.0.0.1:*",
   "frame-src 'self' https://maps.google.com https://www.google.com",
   "frame-ancestors 'self'",
   "media-src 'self' https://res.cloudinary.com",
