@@ -70,18 +70,18 @@ export default function AdminSidebar({ user }: { user: any }) {
       >
       {/* Brand */}
       <div className="h-16 px-6 border-b border-slate-100 flex items-center gap-3">
-        <div className="w-9 h-9 shrink-0 rounded-none-none bg-transparent border-2 border-construction-red flex items-center justify-center shadow-sm">
-          <span className="text-construction-red font-black text-sm tracking-tighter">Hi</span>
+        <div className="w-9 h-9 shrink-0 rounded-none bg-construction-navy border-2 border-construction-red flex items-center justify-center shadow-xs">
+          <span className="text-white font-black text-xs tracking-tighter">Hi</span>
         </div>
         <div>
-          <p className="text-slate-900 font-bold text-[14px] leading-tight uppercase tracking-tight">Hindustan</p>
-          <p className="text-slate-500 font-semibold text-[11px] leading-tight uppercase tracking-widest">Projects</p>
+          <p className="text-slate-900 font-bold text-[13px] leading-tight uppercase tracking-wider font-display">Hindustan</p>
+          <p className="text-construction-navy font-bold text-[10px] leading-tight uppercase tracking-widest font-display">Projects</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-4">Main Menu</p>
+      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
+        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-3 font-mono">Main Menu</p>
         {navItems.map(({ href, label, icon: Icon }) => {
           
           // Check permissions
@@ -97,37 +97,37 @@ export default function AdminSidebar({ user }: { user: any }) {
             <Link
               key={href}
               href={href}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-none-none text-[14px] font-medium transition-all group ${
+              className={`flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group ${
                 active
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-construction-navy text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`} />
-                {label}
+              <div className="flex items-center gap-2.5">
+                <Icon className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-construction-red" : "text-slate-400 group-hover:text-slate-600"}`} />
+                <span>{label}</span>
               </div>
-              {active && <div className="w-1.5 h-1.5 rounded-none-full bg-blue-600" />}
+              {active && <div className="w-1.5 h-1.5 bg-construction-red" />}
             </Link>
           );
         })}
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-6 border-t border-slate-100 space-y-1.5 bg-slate-50/50">
+      <div className="px-3 py-4 border-t border-slate-100 space-y-1 bg-slate-50/70">
         {isAdmin && (
-          <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
-            <Users className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Users & Roles
+          <Link href="/admin/users" className="flex items-center gap-2.5 px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+            <Users className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> <span>Users & Roles</span>
           </Link>
         )}
-        <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
-          <Settings className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Settings
+        <Link href="/admin/settings" className="flex items-center gap-2.5 px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+          <Settings className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> <span>Settings</span>
         </Link>
-        <Link href="/admin/navigation" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
-          <LinkIcon className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> Navigation
+        <Link href="/admin/navigation" className="flex items-center gap-2.5 px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+          <LinkIcon className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> <span>Navigation</span>
         </Link>
-        <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-none-none text-[14px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
-          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> View Site
+        <Link href="/" className="flex items-center gap-2.5 px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all group">
+          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-slate-600" /> <span>View Live Site</span>
         </Link>
       </div>
     </aside>

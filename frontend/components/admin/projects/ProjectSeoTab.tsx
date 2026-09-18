@@ -6,13 +6,14 @@ import {
   Globe,
   Share2,
   CheckCircle,
-  Eye,
   MapPin,
   Sparkles,
   ListChecks,
   Smartphone,
   Monitor,
-  ExternalLink,
+  ShieldCheck,
+  Radio,
+  FileCheck,
 } from "lucide-react";
 import ImageUpload from "@/components/admin/ImageUpload";
 import type { ProjectHighlight, ProjectFaq } from "@/lib/types";
@@ -71,29 +72,35 @@ export default function ProjectSeoTab({
   const isDescFallback = !formData.metaDescription.trim();
 
   const previewSlug = formData.slug || "project-slug";
-  const resolvedCanonical = formData.canonicalUrl.trim() || `https://www.hindustanprojects.in/projects/${previewSlug}`;
+  const resolvedCanonical =
+    formData.canonicalUrl.trim() || `https://www.hindustanprojects.in/projects/${previewSlug}`;
 
   // Social card image: ogImage || cover image
   const resolvedOgImage = formData.ogImage || formData.image;
 
   return (
     <div className="space-y-8">
-      {/* 1. Google SERP Snippet Preview (Desktop & Mobile) */}
-      <div className="bg-slate-50 border border-slate-200 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-            <Search className="w-3.5 h-3.5 text-blue-600" /> Google Search SERP Snippet Preview
-          </h4>
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 1: GOOGLE SERP SNIPPET SIMULATION
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-slate-200 shadow-xs">
+        <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <Search className="w-3.5 h-3.5 text-amber-400" />
+            <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-200">
+              01 · Google Search SERP Snippet Simulation
+            </h3>
+          </div>
 
           {/* Device Toggle */}
-          <div className="flex items-center bg-white border border-slate-200 p-0.5 text-xs">
+          <div className="flex items-center bg-slate-800 p-0.5 border border-slate-700">
             <button
               type="button"
               onClick={() => setSerpDevice("desktop")}
-              className={`flex items-center gap-1 px-2.5 py-0.5 font-semibold transition-colors cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
                 serpDevice === "desktop"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-amber-500 text-black shadow-xs"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               <Monitor className="w-3 h-3" />
@@ -102,10 +109,10 @@ export default function ProjectSeoTab({
             <button
               type="button"
               onClick={() => setSerpDevice("mobile")}
-              className={`flex items-center gap-1 px-2.5 py-0.5 font-semibold transition-colors cursor-pointer ${
+              className={`flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
                 serpDevice === "mobile"
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-amber-500 text-black shadow-xs"
+                  : "text-slate-400 hover:text-white"
               }`}
             >
               <Smartphone className="w-3 h-3" />
@@ -114,73 +121,79 @@ export default function ProjectSeoTab({
           </div>
         </div>
 
-        {/* Live Search Card Simulation */}
-        <div
-          className={`bg-white border border-slate-200 p-4 shadow-sm font-sans transition-all ${
-            serpDevice === "mobile" ? "max-w-sm" : "max-w-2xl"
-          }`}
-        >
-          <div className="flex items-center gap-2 text-xs text-slate-600 mb-1">
-            <div className="w-4 h-4 bg-construction-navy text-white flex items-center justify-center text-[9px] font-bold">
-              H
+        <div className="p-6 bg-slate-100/60">
+          <div
+            className={`bg-white border border-slate-300 p-5 shadow-sm font-sans transition-all mx-auto ${
+              serpDevice === "mobile" ? "max-w-sm" : "max-w-2xl"
+            }`}
+          >
+            <div className="flex items-center gap-2 text-xs text-slate-600 mb-1.5">
+              <div className="w-4 h-4 bg-construction-navy text-white flex items-center justify-center text-[9px] font-bold">
+                H
+              </div>
+              <div className="flex items-center gap-1 text-[11px] text-slate-700 truncate font-mono">
+                <span>https://www.hindustanprojects.in</span>
+                <span className="text-slate-400">›</span>
+                <span>projects</span>
+                <span className="text-slate-400">›</span>
+                <span className="text-slate-900 font-bold">{previewSlug}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] text-slate-700 truncate">
-              <span>https://www.hindustanprojects.in</span>
-              <span className="text-slate-400">›</span>
-              <span>projects</span>
-              <span className="text-slate-400">›</span>
-              <span className="text-slate-900 font-medium">{previewSlug}</span>
+
+            <h4 className="text-base text-blue-800 hover:underline font-medium cursor-pointer leading-snug truncate">
+              {previewTitle}
+            </h4>
+
+            <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
+              {previewDescription}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-mono pt-2 border-t border-slate-100">
+              {isTitleFallback && (
+                <span className="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 font-semibold">
+                  Title: Auto-fallback active
+                </span>
+              )}
+              {isDescFallback && (
+                <span className="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 font-semibold">
+                  Description: Auto-fallback active
+                </span>
+              )}
+              {!isTitleFallback && !isDescFallback && (
+                <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 font-semibold flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" /> Fully Customized Organic Search Snippet
+                </span>
+              )}
             </div>
-          </div>
-
-          <h3 className="text-base text-blue-800 hover:underline font-medium cursor-pointer leading-snug truncate">
-            {previewTitle}
-          </h3>
-
-          <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-            {previewDescription}
-          </p>
-
-          <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[10px]">
-            {isTitleFallback && (
-              <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-medium">
-                Title: Auto-fallback active
-              </span>
-            )}
-            {isDescFallback && (
-              <span className="px-1.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 font-medium">
-                Description: Auto-fallback active
-              </span>
-            )}
-            {!isTitleFallback && !isDescFallback && (
-              <span className="px-1.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 font-medium flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Fully Customized SEO Metadata
-              </span>
-            )}
           </div>
         </div>
       </div>
 
-      {/* 2. SEO Title & Description */}
-      <div className="space-y-4">
-        <div>
-          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <Globe className="w-4 h-4 text-construction-navy" /> Search Engine Optimization (SEO) Fields
-          </h4>
-          <p className="text-xs text-slate-500">
-            Fine-tune title tags and descriptions for organic search ranking and click-through optimization.
-          </p>
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 2: CORE SEO FIELDS & METADATA
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-slate-200 shadow-xs">
+        <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <Globe className="w-3.5 h-3.5 text-amber-400" />
+            <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-200">
+              02 · Search Engine Optimization (SEO) Meta Tags
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 uppercase">
+            Organic Search Optimization
+          </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="p-6 space-y-6">
           {/* Meta Title */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
                 Custom SEO Meta Title
               </label>
               <span
-                className={`text-[11px] font-mono font-medium ${
+                className={`text-[11px] font-mono ${
                   metaTitleLength > 60
                     ? "text-red-600 font-bold"
                     : metaTitleLength >= 50
@@ -188,7 +201,7 @@ export default function ProjectSeoTab({
                     : "text-slate-400"
                 }`}
               >
-                {metaTitleLength} / 60 chars {metaTitleLength > 60 ? "(May be truncated)" : "(Ideal: 50-60)"}
+                {metaTitleLength} / 60 chars {metaTitleLength > 60 ? "(May be truncated by Google)" : "(Ideal: 50-60)"}
               </span>
             </div>
             <input
@@ -196,21 +209,21 @@ export default function ProjectSeoTab({
               value={formData.metaTitle}
               onChange={(e) => onChange({ metaTitle: e.target.value })}
               placeholder="e.g. Modern Logistics Hub Project in Bhilwara | HiPRO"
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-4 py-2.5 text-sm font-semibold rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy transition-all"
             />
-            <p className="text-[11px] text-slate-500">
-              Leave blank to automatically use project title with brand suffix.
+            <p className="text-[11px] text-slate-500 font-normal leading-relaxed">
+              Leave blank to automatically compose: &ldquo;{formData.title || "Project Title"} | Hindustan Projects (HiPRO)&rdquo;.
             </p>
           </div>
 
           {/* Meta Description */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
                 Custom SEO Meta Description
               </label>
               <span
-                className={`text-[11px] font-mono font-medium ${
+                className={`text-[11px] font-mono ${
                   metaDescLength > 160
                     ? "text-red-600 font-bold"
                     : metaDescLength >= 140
@@ -218,7 +231,7 @@ export default function ProjectSeoTab({
                     : "text-slate-400"
                 }`}
               >
-                {metaDescLength} / 160 chars {metaDescLength > 160 ? "(May be truncated)" : "(Ideal: 140-160)"}
+                {metaDescLength} / 160 chars {metaDescLength > 160 ? "(May be truncated by Google)" : "(Ideal: 140-160)"}
               </span>
             </div>
             <textarea
@@ -226,14 +239,14 @@ export default function ProjectSeoTab({
               value={formData.metaDescription}
               onChange={(e) => onChange({ metaDescription: e.target.value })}
               placeholder="e.g. Explore HiPRO's 120,000 sq.ft industrial turnkey logistics facility in Bhilwara. Delivered on schedule with heavy PEB engineering and EOT cranes."
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none"
+              className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-4 py-2.5 text-sm font-normal rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy resize-none leading-relaxed transition-all"
             />
           </div>
 
           {/* Keywords & Canonical */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+          <div className="grid md:grid-cols-2 gap-6 pt-2 border-t border-slate-100">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
                 Primary Focus Keyword
               </label>
               <input
@@ -241,12 +254,12 @@ export default function ProjectSeoTab({
                 value={formData.focusKeywords}
                 onChange={(e) => onChange({ focusKeywords: e.target.value })}
                 placeholder="e.g. PEB warehouse construction Bhilwara"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-3.5 py-2 text-xs font-semibold rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
                 Secondary Keywords
               </label>
               <input
@@ -254,12 +267,12 @@ export default function ProjectSeoTab({
                 value={formData.secondaryKeywords}
                 onChange={(e) => onChange({ secondaryKeywords: e.target.value })}
                 placeholder="e.g. industrial shed contractor, turnkey warehouse"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-3.5 py-2 text-xs font-semibold rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />
             </div>
 
-            <div className="md:col-span-2 space-y-1">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
                 Canonical URL Override (Optional)
               </label>
               <input
@@ -267,195 +280,218 @@ export default function ProjectSeoTab({
                 value={formData.canonicalUrl}
                 onChange={(e) => onChange({ canonicalUrl: e.target.value })}
                 placeholder="https://www.hindustanprojects.in/projects/canonical-slug"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 px-3.5 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-3.5 py-2 text-xs font-mono rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />
-              <p className="text-[11px] text-slate-500 font-mono">
-                Active Canonical: <span className="text-slate-800 font-semibold">{resolvedCanonical}</span>
-              </p>
+              <div className="text-[11px] font-mono text-slate-600 bg-slate-100 px-3 py-1.5 border border-slate-200">
+                Resolved Canonical Anchor: <strong className="text-construction-navy">{resolvedCanonical}</strong>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Open Graph Social Image & Social Share Card Preview */}
-      <div className="pt-6 border-t border-slate-200 space-y-4">
-        <div>
-          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <Share2 className="w-4 h-4 text-construction-navy" /> Social Sharing (Open Graph) &amp; Crawl Directives
-          </h4>
-          <p className="text-xs text-slate-500">
-            Controls card preview when shared on LinkedIn, WhatsApp, and Twitter/X.
-          </p>
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 3: OPEN GRAPH & CRAWLER DIRECTIVES
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-slate-200 shadow-xs">
+        <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <Share2 className="w-3.5 h-3.5 text-amber-400" />
+            <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-200">
+              03 · Social Sharing (Open Graph) &amp; Search Directives
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 uppercase">
+            Bot Governance
+          </span>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 items-start">
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block">
-              Dedicated Open Graph Image (1200x630 recommended)
-            </label>
-            <ImageUpload
-              value={formData.ogImage}
-              onChange={(url) => onChange({ ogImage: url })}
-            />
-            <p className="text-[11px] text-slate-500">
-              Leave blank to automatically utilize the project cover image.
-            </p>
+        <div className="p-6 space-y-6">
+          <div className="grid md:grid-cols-12 gap-6 items-start">
+            {/* OG Image Upload & Card Simulation */}
+            <div className="md:col-span-7 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block">
+                  Dedicated Open Graph Image (1200x630 Recommended)
+                </label>
+                <ImageUpload
+                  value={formData.ogImage}
+                  onChange={(url) => onChange({ ogImage: url })}
+                />
+                <p className="text-[11px] text-slate-500 font-normal">
+                  Leave empty to automatically utilize the project hero cover image.
+                </p>
+              </div>
 
-            {/* Social Share Card Preview */}
-            <div className="mt-4 border border-slate-300 bg-white shadow-sm overflow-hidden max-w-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-1 bg-slate-100 block border-b border-slate-200">
-                Social Share Card Preview (LinkedIn / WhatsApp)
-              </span>
-              {resolvedOgImage ? (
-                <div className="aspect-[1.91/1] w-full bg-slate-100 overflow-hidden">
-                  <img
-                    src={resolvedOgImage}
-                    alt="OG Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="aspect-[1.91/1] w-full bg-slate-100 flex items-center justify-center text-xs text-slate-400 font-mono">
-                  No Image Available
-                </div>
-              )}
-              <div className="p-3 space-y-1">
-                <span className="text-[10px] uppercase text-slate-400 font-mono block">
-                  hindustanprojects.in
+              {/* Social Share Card Preview */}
+              <div className="border border-slate-300 bg-white shadow-md overflow-hidden max-w-sm rounded-none">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 px-3 py-1.5 bg-slate-100 block border-b border-slate-200">
+                  Social Share Card Preview (LinkedIn / WhatsApp / X)
                 </span>
-                <p className="text-xs font-bold text-slate-900 line-clamp-1">
-                  {previewTitle}
-                </p>
-                <p className="text-[11px] text-slate-600 line-clamp-2 leading-tight">
-                  {previewDescription}
-                </p>
+                {resolvedOgImage ? (
+                  <div className="aspect-[1.91/1] w-full bg-slate-900 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resolvedOgImage}
+                      alt="OG Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[1.91/1] w-full bg-slate-950 flex items-center justify-center text-xs text-slate-400 font-mono">
+                    No Preview Image Available
+                  </div>
+                )}
+                <div className="p-3.5 space-y-1 bg-white">
+                  <span className="text-[10px] uppercase text-slate-400 font-mono block">
+                    hindustanprojects.in
+                  </span>
+                  <p className="text-xs font-bold text-slate-900 line-clamp-1">
+                    {previewTitle}
+                  </p>
+                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                    {previewDescription}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-3 bg-slate-50 p-4 border border-slate-200">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-2">
-              Robots &amp; Crawler Directives
-            </label>
+            {/* Crawler Directives */}
+            <div className="md:col-span-5 space-y-4 bg-slate-50 border border-slate-200 p-5">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-900 block border-b border-slate-200 pb-2">
+                Search Engine Crawler Directives
+              </label>
 
-            <label className="flex items-start gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.noIndex}
-                onChange={(e) => onChange({ noIndex: e.target.checked })}
-                className="w-4 h-4 accent-red-600 mt-0.5 cursor-pointer"
-              />
-              <div>
-                <span className="text-xs font-bold text-slate-800 block">
-                  noindex (Do not index in search engines)
-                </span>
-                <span className="text-[11px] text-slate-500 block">
-                  Instructs Google not to index this page in search results.
-                </span>
-              </div>
-            </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.noIndex}
+                  onChange={(e) => onChange({ noIndex: e.target.checked })}
+                  className="w-4 h-4 accent-red-600 mt-0.5 cursor-pointer rounded-none"
+                />
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block font-mono">
+                    noindex
+                  </span>
+                  <span className="text-[11px] text-slate-500 block leading-relaxed mt-0.5">
+                    Instructs Google, Bing, and search crawlers NOT to index this page in search results.
+                  </span>
+                </div>
+              </label>
 
-            <label className="flex items-start gap-2.5 cursor-pointer pt-2 border-t border-slate-200">
-              <input
-                type="checkbox"
-                checked={formData.noFollow}
-                onChange={(e) => onChange({ noFollow: e.target.checked })}
-                className="w-4 h-4 accent-red-600 mt-0.5 cursor-pointer"
-              />
-              <div>
-                <span className="text-xs font-bold text-slate-800 block">
-                  nofollow (Do not follow outgoing links)
-                </span>
-                <span className="text-[11px] text-slate-500 block">
-                  Instructs search engine bots not to follow links on this page.
-                </span>
-              </div>
-            </label>
+              <label className="flex items-start gap-3 cursor-pointer pt-3 border-t border-slate-200">
+                <input
+                  type="checkbox"
+                  checked={formData.noFollow}
+                  onChange={(e) => onChange({ noFollow: e.target.checked })}
+                  className="w-4 h-4 accent-red-600 mt-0.5 cursor-pointer rounded-none"
+                />
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block font-mono">
+                    nofollow
+                  </span>
+                  <span className="text-[11px] text-slate-500 block leading-relaxed mt-0.5">
+                    Instructs search bots not to crawl or pass authority through outgoing links on this page.
+                  </span>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 4. AEO & GEO Verification Summary (READ-ONLY) */}
-      <div className="pt-6 border-t border-slate-200">
-        <div className="mb-2">
-          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-blue-600" /> AEO &amp; GEO Architecture Readiness
-          </h4>
-          <p className="text-xs text-slate-500">
-            Read-only summary of structured signals entered in Specifications and Narrative tabs.
-          </p>
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 4: AEO & GEO ARCHITECTURE READINESS (READ-ONLY)
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-slate-200 shadow-xs">
+        <div className="bg-slate-900 text-white px-5 py-3 flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <h3 className="text-xs font-bold uppercase tracking-widest font-mono text-slate-200">
+              04 · AEO &amp; GEO Architecture Readiness Certificate
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-400 uppercase bg-emerald-950 border border-emerald-800 px-2 py-0.5">
+            Read-Only Audit
+          </span>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 text-xs">
-          {/* AEO Summary */}
-          <div className="bg-white border border-slate-200 p-3.5 space-y-2">
-            <div className="flex items-center justify-between font-bold text-slate-800 border-b border-slate-100 pb-1.5">
-              <span className="flex items-center gap-1">
-                <ListChecks className="w-3.5 h-3.5 text-blue-600" /> AEO (Answer Engine) Status
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">Schema.org</span>
-            </div>
-            <div className="space-y-1 text-slate-600">
-              <p className="flex justify-between">
-                <span>Summary Snippet:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.shortDescription ? "✓ Defined" : "— Missing"}
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span>Key Highlights:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.highlights.length} Defined
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span>Structured FAQs:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.faqs.length} Questions
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span>Client Reference:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.client || "— Not specified"}
-                </span>
-              </p>
-            </div>
-          </div>
+        <div className="p-6 space-y-4">
+          <p className="text-xs text-slate-500 font-normal leading-relaxed">
+            Consolidated verification of structured knowledge signals configured across Specifications and Narrative tabs.
+          </p>
 
-          {/* GEO Summary */}
-          <div className="bg-white border border-slate-200 p-3.5 space-y-2">
-            <div className="flex items-center justify-between font-bold text-slate-800 border-b border-slate-100 pb-1.5">
-              <span className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-emerald-600" /> GEO (Local Search) Status
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono">Local Search</span>
+          <div className="grid md:grid-cols-2 gap-6 text-xs">
+            {/* AEO Summary */}
+            <div className="bg-slate-50 border border-slate-300 p-4 space-y-3">
+              <div className="flex items-center justify-between font-bold text-slate-900 border-b border-slate-200 pb-2">
+                <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <ListChecks className="w-3.5 h-3.5 text-construction-navy" /> AEO (Answer Engine) Readiness
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Schema.org / JSON-LD</span>
+              </div>
+              <div className="space-y-2 text-slate-700 font-mono">
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>Executive Brief:</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.shortDescription ? "✓ Structured" : "— Missing"}
+                  </span>
+                </p>
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>Key Specifications:</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.highlights.length} Metrics Defined
+                  </span>
+                </p>
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>Structured FAQs:</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.faqs.length} Questions Defined
+                  </span>
+                </p>
+                <p className="flex justify-between">
+                  <span>Client Attribution:</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.client || "— Not specified"}
+                  </span>
+                </p>
+              </div>
             </div>
-            <div className="space-y-1 text-slate-600">
-              <p className="flex justify-between">
-                <span>City / State:</span>
-                <span className="font-semibold text-slate-900">
-                  {[formData.city, formData.state].filter(Boolean).join(", ") || "— None"}
+
+            {/* GEO Summary */}
+            <div className="bg-slate-50 border border-slate-300 p-4 space-y-3">
+              <div className="flex items-center justify-between font-bold text-slate-900 border-b border-slate-200 pb-2">
+                <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <MapPin className="w-3.5 h-3.5 text-construction-red" /> GEO (Local Search) Precision
                 </span>
-              </p>
-              <p className="flex justify-between">
-                <span>District / Country:</span>
-                <span className="font-semibold text-slate-900">
-                  {[formData.district, formData.country].filter(Boolean).join(", ") || "— None"}
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span>Postal Code:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.postalCode || "— None"}
-                </span>
-              </p>
-              <p className="flex justify-between">
-                <span>Google Maps URL:</span>
-                <span className="font-semibold text-slate-900">
-                  {formData.googleMapsUrl ? "✓ Linked" : "— None"}
-                </span>
-              </p>
+                <span className="text-[10px] text-slate-500 font-mono">Verified Coordinates</span>
+              </div>
+              <div className="space-y-2 text-slate-700 font-mono">
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>City / State:</span>
+                  <span className="font-bold text-slate-900">
+                    {[formData.city, formData.state].filter(Boolean).join(", ") || "— None"}
+                  </span>
+                </p>
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>District / Country:</span>
+                  <span className="font-bold text-slate-900">
+                    {[formData.district, formData.country].filter(Boolean).join(", ") || "— None"}
+                  </span>
+                </p>
+                <p className="flex justify-between border-b border-slate-200 pb-1">
+                  <span>Postal Code (PIN):</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.postalCode || "— None"}
+                  </span>
+                </p>
+                <p className="flex justify-between">
+                  <span>Google Maps:</span>
+                  <span className="font-bold text-slate-900">
+                    {formData.googleMapsUrl ? "✓ Verified Link" : "— None"}
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </div>

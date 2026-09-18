@@ -772,49 +772,49 @@ export default function AdminProjects() {
       {/* SECTION 1: 5-TAB PROJECT EDITOR (MODAL / INLINE DRAWER)        */}
       {/* ───────────────────────────────────────────────────────────── */}
       {showEditor && (
-        <div className="bg-white border-2 border-construction-navy shadow-xl">
+        <div className="bg-white border-2 border-construction-navy shadow-xl rounded-none">
           {/* Editor Header Bar */}
-          <div className="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-slate-900 text-white px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800">
             <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-[10px] uppercase font-bold tracking-widest bg-blue-600 text-white px-2 py-0.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="text-[10px] uppercase font-mono font-bold tracking-widest bg-construction-navy text-white px-2 py-0.5 border border-blue-900/50">
                   {editingProject ? "Project Editor" : "New Portfolio Project"}
                 </span>
                 <span
-                  className={`text-[10px] font-bold uppercase px-2 py-0.5 ${
+                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border ${
                     form.publishStatus === "published"
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                       : form.publishStatus === "archived"
-                      ? "bg-purple-600 text-white"
-                      : "bg-amber-500 text-slate-900"
+                      ? "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                      : "bg-amber-500/10 text-amber-400 border-amber-500/30"
                   }`}
                 >
-                  Publish State: {form.publishStatus.toUpperCase()}
+                  PUBLISH: {form.publishStatus.toUpperCase()}
                 </span>
                 <span
-                  className={`text-[10px] font-bold uppercase px-2 py-0.5 ${
+                  className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border ${
                     form.status === "completed"
-                      ? "bg-emerald-700 text-white"
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                       : form.status === "archived"
-                      ? "bg-slate-700 text-white"
-                      : "bg-blue-500 text-white"
+                      ? "bg-slate-800 text-slate-400 border-slate-700"
+                      : "bg-blue-500/10 text-blue-400 border-blue-500/30"
                   }`}
                 >
-                  Lifecycle: {form.status.toUpperCase()}
+                  LIFECYCLE: {form.status.toUpperCase()}
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-white mt-1 truncate max-w-xl">
+              <h2 className="text-lg sm:text-xl font-bold font-display uppercase tracking-tight text-white mt-1.5 truncate max-w-xl">
                 {form.title.trim() || "Untitled Construction Project"}
               </h2>
             </div>
 
             {/* Quick Action Buttons in Header */}
-            <div className="flex items-center gap-2.5">
-              {/* Preview Button */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Preview Button - Amber Blueprint Style */}
               <button
                 type="button"
                 onClick={handleActiveFormPreview}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 hover:text-amber-300 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-400 px-3.5 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 rounded-none cursor-pointer"
                 title="Preview project using active form state"
               >
                 <Eye className="w-3.5 h-3.5" />
@@ -825,7 +825,7 @@ export default function AdminProjects() {
                 type="button"
                 onClick={() => handleSave("draft")}
                 disabled={saving}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none disabled:opacity-50 cursor-pointer"
               >
                 Save Draft
               </button>
@@ -834,9 +834,9 @@ export default function AdminProjects() {
                 type="button"
                 onClick={handleStartPublishFlow}
                 disabled={saving}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                className="bg-construction-navy hover:bg-slate-900 text-white border border-blue-900/40 px-4 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors rounded-none shadow-sm disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
-                <Upload className="w-3.5 h-3.5" />
+                <Upload className="w-3.5 h-3.5 text-construction-red" />
                 <span>Publish Project</span>
               </button>
 
@@ -852,12 +852,12 @@ export default function AdminProjects() {
           </div>
 
           {/* Completeness & Readiness Info Strip */}
-          <div className="bg-slate-800/90 text-slate-300 px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-700">
+          <div className="bg-slate-800/90 text-slate-300 px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs border-b border-slate-700 font-sans">
             <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1 text-slate-200">
+              <span className="flex items-center gap-1.5 text-slate-200">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span className="font-semibold">Project Readiness:</span>
-                <span className="font-mono font-bold text-white">{completenessPercent}%</span>
+                <span className="font-semibold uppercase tracking-wider text-[11px]">Readiness:</span>
+                <span className="font-mono font-bold text-amber-400">{completenessPercent}%</span>
               </span>
               <span className="text-slate-500">•</span>
               <span>
@@ -876,28 +876,28 @@ export default function AdminProjects() {
               </span>
             </div>
 
-            <div className="text-[11px] text-slate-400">
-              Only 4 fields required to save/publish. Recommended fields enrich search and conversions.
+            <div className="text-[11px] text-slate-400 font-mono">
+              Only 4 fields required to publish. Recommended fields enrich search &amp; conversions.
             </div>
           </div>
 
-          {/* 5-Tab Navigation Bar with Completion Indicators */}
-          <div className="flex items-center border-b border-slate-200 bg-slate-50 px-6 overflow-x-auto">
+          {/* Architectural Phase / Ledger Tab Bar (5 Tabs with Step Numbers) */}
+          <div className="flex items-center border-b border-slate-200 bg-slate-50 px-4 sm:px-6 overflow-x-auto scrollbar-none">
             {/* Tab 1: General */}
             <button
               type="button"
               onClick={() => setActiveTab("general")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "general"
-                  ? "border-construction-navy text-construction-navy bg-white"
+                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span>1. General</span>
+              <span>01 / GENERAL</span>
               {isTab1Valid ? (
-                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Title required" />
+                <span className="w-2 h-2 rounded-full bg-red-500" title="Title required" />
               )}
             </button>
 
@@ -905,17 +905,17 @@ export default function AdminProjects() {
             <button
               type="button"
               onClick={() => setActiveTab("specifications")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "specifications"
-                  ? "border-construction-navy text-construction-navy bg-white"
+                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span>2. Specifications</span>
+              <span>02 / SPECIFICATIONS</span>
               {isTab2Valid ? (
-                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Location & Date required" />
+                <span className="w-2 h-2 rounded-full bg-red-500" title="Location & Date required" />
               )}
             </button>
 
@@ -923,17 +923,17 @@ export default function AdminProjects() {
             <button
               type="button"
               onClick={() => setActiveTab("narrative")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "narrative"
-                  ? "border-construction-navy text-construction-navy bg-white"
+                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span>3. Narrative</span>
+              <span>03 / NARRATIVE</span>
               {isTab3Valid ? (
-                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               ) : (
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Description required" />
+                <span className="w-2 h-2 rounded-full bg-red-500" title="Description required" />
               )}
             </button>
 
@@ -941,29 +941,29 @@ export default function AdminProjects() {
             <button
               type="button"
               onClick={() => setActiveTab("media")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "media"
-                  ? "border-construction-navy text-construction-navy bg-white"
+                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span>4. Media ({form.galleryDetails.length + (form.image ? 1 : 0)})</span>
-              {hasCoverImage && <CheckCircle className="w-3 h-3 text-blue-600" />}
+              <span>04 / MEDIA ({form.galleryDetails.length + (form.image ? 1 : 0)})</span>
+              {hasCoverImage && <CheckCircle className="w-3.5 h-3.5 text-construction-navy" />}
             </button>
 
             {/* Tab 5: SEO / AEO / GEO */}
             <button
               type="button"
               onClick={() => setActiveTab("seo")}
-              className={`flex items-center gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 py-3.5 px-4 text-xs font-mono font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "seo"
-                  ? "border-construction-navy text-construction-navy bg-white"
+                  ? "border-construction-navy text-construction-navy bg-white shadow-xs"
                   : "border-transparent text-slate-500 hover:text-slate-900"
               }`}
             >
-              <span>5. SEO / AEO / GEO</span>
+              <span>05 / SEO · AEO · GEO</span>
               {form.metaTitle && form.metaDescription && (
-                <CheckCircle className="w-3 h-3 text-emerald-600" />
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               )}
             </button>
           </div>
@@ -981,6 +981,12 @@ export default function AdminProjects() {
                   publishStatus: form.publishStatus,
                   featured: form.featured,
                   order: form.order,
+                  image: form.image,
+                  imageAlt: form.imageAlt,
+                  shortDescription: form.shortDescription,
+                  description: form.description,
+                  location: form.location,
+                  date: form.date,
                 }}
                 onChange={handleFormChange}
                 slugError={slugError}
@@ -1009,6 +1015,9 @@ export default function AdminProjects() {
                   googleMapsUrl: form.googleMapsUrl,
                   date: form.date,
                   completionDate: form.completionDate,
+                  category: form.category,
+                  status: form.status,
+                  title: form.title,
                 }}
                 onChange={handleFormChange}
               />
@@ -1079,24 +1088,24 @@ export default function AdminProjects() {
           </div>
 
           {/* Bottom Action Bar */}
-          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-0 z-20 shadow-lg">
             <div className="flex items-center gap-2 text-xs text-slate-500">
               {isDirty ? (
-                <span className="flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 border border-amber-200">
+                <span className="flex items-center gap-1.5 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 border border-amber-200 font-mono text-[11px]">
                   <Clock className="w-3.5 h-3.5" /> Unsaved changes in form
                 </span>
               ) : (
-                <span className="flex items-center gap-1.5 text-slate-400">
-                  <Check className="w-3.5 h-3.5" /> All changes clean
+                <span className="flex items-center gap-1.5 text-slate-400 font-mono text-[11px]">
+                  <Check className="w-3.5 h-3.5 text-emerald-600" /> All changes clean
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
               <button
                 type="button"
                 onClick={handleRequestCloseEditor}
-                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors rounded-none cursor-pointer"
               >
                 Cancel
               </button>
@@ -1104,9 +1113,9 @@ export default function AdminProjects() {
               <button
                 type="button"
                 onClick={handleActiveFormPreview}
-                className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/40 text-amber-500 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 rounded-none cursor-pointer"
               >
-                <Eye className="w-3.5 h-3.5 text-slate-600" />
+                <Eye className="w-3.5 h-3.5" />
                 <span>Preview</span>
               </button>
 
@@ -1114,7 +1123,7 @@ export default function AdminProjects() {
                 type="button"
                 onClick={() => handleSave("draft")}
                 disabled={saving}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
+                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors rounded-none disabled:opacity-50 cursor-pointer"
               >
                 Save as Draft
               </button>
@@ -1123,9 +1132,9 @@ export default function AdminProjects() {
                 type="button"
                 onClick={handleStartPublishFlow}
                 disabled={saving}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-md disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                className="bg-construction-navy hover:bg-slate-900 text-white border border-blue-900/40 px-6 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm rounded-none disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
-                <Upload className="w-3.5 h-3.5" />
+                <Upload className="w-3.5 h-3.5 text-construction-red" />
                 <span>Publish Project</span>
               </button>
             </div>
@@ -1141,90 +1150,95 @@ export default function AdminProjects() {
           {/* Header & Quick Action */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-1">
-                Projects Portfolio CMS
+              <div className="flex items-center gap-2 text-[10px] font-mono tracking-widest text-slate-400 uppercase mb-1">
+                <span>PORTFOLIO</span>
+                <span className="text-slate-400">/</span>
+                <span className="text-construction-navy font-bold">PROJECTS REGISTRY</span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
+                Project Portfolio CMS
               </h1>
-              <p className="text-slate-500 text-sm">
-                Manage ongoing and completed construction portfolios with SEO, AEO, GEO, and image galleries.
+              <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+                Manage ongoing and commissioned construction portfolios with SEO, AEO, GEO, and execution plates.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <button
                 onClick={fetchProjects}
                 disabled={loading}
-                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-medium disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+                className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-none disabled:opacity-50 transition-colors shadow-xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
               </button>
               <button
                 onClick={handleStartAdd}
-                className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-5 py-2 text-sm font-semibold transition-colors shadow-md cursor-pointer"
+                className="flex items-center gap-2 bg-construction-navy hover:bg-slate-900 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-none transition-colors shadow-sm cursor-pointer"
               >
-                <Plus className="w-4 h-4" /> Add New Project
+                <Plus className="w-4 h-4 text-construction-red" /> Add New Project
               </button>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white border border-slate-200 p-3 shadow-sm">
-              <span className="text-[10px] font-bold uppercase text-slate-400 block">
+            <div className="bg-white border border-slate-200 p-3.5 shadow-xs rounded-none">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 block mb-1">
                 Total Projects
               </span>
-              <span className="text-xl font-bold text-slate-900">{projects.length}</span>
+              <span className="text-2xl font-bold text-slate-900 font-display">{projects.length}</span>
             </div>
 
-            <div className="bg-white border border-emerald-200 p-3 shadow-sm bg-emerald-50/20">
-              <span className="text-[10px] font-bold uppercase text-emerald-700 block">
+            <div className="bg-white border border-emerald-200 p-3.5 shadow-xs rounded-none bg-emerald-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-700 block mb-1">
                 Published (Live)
               </span>
-              <span className="text-xl font-bold text-emerald-700">{publishedCount}</span>
+              <span className="text-2xl font-bold text-emerald-700 font-display">{publishedCount}</span>
             </div>
 
-            <div className="bg-white border border-amber-200 p-3 shadow-sm bg-amber-50/20">
-              <span className="text-[10px] font-bold uppercase text-amber-700 block">
+            <div className="bg-white border border-amber-200 p-3.5 shadow-xs rounded-none bg-amber-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-700 block mb-1">
                 Drafts (Hidden)
               </span>
-              <span className="text-xl font-bold text-amber-700">{draftCount}</span>
+              <span className="text-2xl font-bold text-amber-700 font-display">{draftCount}</span>
             </div>
 
-            <div className="bg-white border border-blue-200 p-3 shadow-sm bg-blue-50/20">
-              <span className="text-[10px] font-bold uppercase text-blue-700 block">
+            <div className="bg-white border border-blue-200 p-3.5 shadow-xs rounded-none bg-blue-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-construction-navy block mb-1">
                 Ongoing Work
               </span>
-              <span className="text-xl font-bold text-blue-700">{ongoingCount}</span>
+              <span className="text-2xl font-bold text-construction-navy font-display">{ongoingCount}</span>
             </div>
 
-            <div className="bg-white border border-purple-200 p-3 shadow-sm bg-purple-50/20">
-              <span className="text-[10px] font-bold uppercase text-purple-700 block">
+            <div className="bg-white border border-purple-200 p-3.5 shadow-xs rounded-none bg-purple-50/20">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple-700 block mb-1">
                 Archived
               </span>
-              <span className="text-xl font-bold text-purple-700">{archivedCount}</span>
+              <span className="text-2xl font-bold text-purple-700 font-display">{archivedCount}</span>
             </div>
           </div>
 
           {/* Filter & Search Bar */}
-          <div className="bg-white border border-slate-200 p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200 p-4 shadow-xs rounded-none flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Search Box */}
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative flex-1 max-w-md">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title, location, client..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                placeholder="Search projects by title, location, client..."
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-3 py-2 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />
             </div>
 
             {/* Filter Dropdowns */}
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Publication Status Filter */}
               <select
                 value={publishStatusFilter}
                 onChange={(e) => setPublishStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
               >
                 <option value="all">Publish: All</option>
                 <option value="published">Publish: Published Only</option>
@@ -1236,7 +1250,7 @@ export default function AdminProjects() {
               <select
                 value={operationalStatusFilter}
                 onChange={(e) => setOperationalStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
               >
                 <option value="all">Lifecycle: All</option>
                 <option value="ongoing">Lifecycle: Ongoing</option>
@@ -1248,7 +1262,7 @@ export default function AdminProjects() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
               >
                 <option value="all">Category: All</option>
                 <option value="commercial">Commercial</option>
@@ -1259,7 +1273,7 @@ export default function AdminProjects() {
               </select>
 
               {/* Sort By Dropdown */}
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1.5">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-2 rounded-none">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                 <select
                   value={sortBy}
@@ -1276,11 +1290,11 @@ export default function AdminProjects() {
           </div>
 
           {/* Projects Table */}
-          <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white border border-slate-200 shadow-xs rounded-none overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-[10px] font-mono uppercase tracking-widest">
                     <th className="text-left px-4 py-3 font-semibold">Project</th>
                     <th className="text-left px-3 py-3 font-semibold">Publish Status</th>
                     <th className="text-left px-3 py-3 font-semibold">Lifecycle</th>
@@ -1302,7 +1316,7 @@ export default function AdminProjects() {
                     ))
                   ) : filteredProjects.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center text-slate-500 py-16">
+                      <td colSpan={8} className="text-center text-slate-500 py-16 text-xs font-mono">
                         No projects match the current filters.
                       </td>
                     </tr>
@@ -1331,31 +1345,32 @@ export default function AdminProjects() {
                       }
 
                       return (
-                        <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                        <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                           {/* Project Cover & Title */}
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-3">
                               {p.image ? (
+                                /* eslint-disable-next-line @next/next/no-img-element */
                                 <img
                                   src={p.image}
                                   alt={p.title}
-                                  className="w-11 h-11 object-cover border border-slate-200 shrink-0"
+                                  className="w-12 h-12 object-cover border border-slate-200 shrink-0 rounded-none"
                                 />
                               ) : (
-                                <div className="w-11 h-11 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                <div className="w-12 h-12 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 rounded-none">
                                   <ImageIcon className="w-5 h-5" />
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <p className="text-slate-900 font-bold leading-snug truncate max-w-xs">
+                                <p className="text-slate-900 font-bold leading-snug truncate max-w-xs font-display">
                                   {p.title}
                                 </p>
                                 <p className="text-[11px] font-mono text-slate-400 truncate max-w-xs">
                                   /projects/{p.slug || p.id}
                                 </p>
                                 {galleryCount > 0 && (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-construction-navy bg-blue-50 px-1.5 py-0.2 border border-blue-100 mt-1">
-                                    <ImageIcon className="w-3 h-3" /> {galleryCount} Photos
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-construction-navy bg-blue-50 px-1.5 py-0.2 border border-blue-200 mt-1">
+                                    <ImageIcon className="w-3 h-3" /> {galleryCount} Plates
                                   </span>
                                 )}
                               </div>
@@ -1368,7 +1383,7 @@ export default function AdminProjects() {
                               type="button"
                               onClick={() => handleTogglePublishStatus(p)}
                               title="Click to toggle between Draft and Published"
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-none cursor-pointer transition-all ${
                                 isPublished
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
                                   : p.publishStatus === "archived"
@@ -1398,7 +1413,7 @@ export default function AdminProjects() {
                               type="button"
                               onClick={() => handleToggleOperationalStatus(p)}
                               title="Click to toggle between Ongoing and Completed"
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider border cursor-pointer transition-all ${
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-none cursor-pointer transition-all ${
                                 isCompleted
                                   ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                                   : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
@@ -1410,7 +1425,7 @@ export default function AdminProjects() {
                                 </>
                               ) : (
                                 <>
-                                  <span className="w-2 h-2 rounded-none-full bg-blue-500 animate-pulse" />{" "}
+                                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />{" "}
                                   Ongoing
                                 </>
                               )}
@@ -1419,7 +1434,7 @@ export default function AdminProjects() {
 
                           {/* Category */}
                           <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap">
-                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
+                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider rounded-none">
                               {p.category}
                             </span>
                           </td>
@@ -1439,13 +1454,13 @@ export default function AdminProjects() {
                             <button
                               onClick={() => handleToggleFeatured(p)}
                               title="Toggle Featured on Homepage"
-                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors cursor-pointer ${
+                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors rounded-none cursor-pointer ${
                                 p.featured
-                                  ? "bg-yellow-100 text-yellow-600 border border-yellow-200"
-                                  : "bg-slate-50 border border-slate-200 text-slate-300 hover:text-yellow-500"
+                                  ? "bg-amber-50 text-amber-600 border border-amber-300"
+                                  : "bg-slate-50 border border-slate-200 text-slate-300 hover:text-amber-500"
                               }`}
                             >
-                              <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-yellow-500 text-yellow-500" : ""}`} />
+                              <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
                             </button>
                           </td>
 
@@ -1456,7 +1471,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleRowPreview(p)}
                                 title="Draft-Safe Full Preview"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-amber-500 hover:text-amber-700 text-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-600 text-xs font-mono font-bold uppercase rounded-none transition-all cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Preview</span>
@@ -1465,7 +1480,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleStartEdit(p)}
                                 title="Edit full project specifications"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-200 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border border-slate-300 hover:border-construction-navy hover:text-construction-navy text-slate-700 text-xs font-bold uppercase rounded-none transition-all shadow-xs cursor-pointer"
                               >
                                 <Pencil className="w-3.5 h-3.5" /> Edit
                               </button>
@@ -1473,7 +1488,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleDeleteProject(p, false)}
                                 title="Safe Archive Project (Unpublishes safely)"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm cursor-pointer"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-purple-50 hover:text-purple-700 text-slate-400 inline-flex items-center justify-center transition-all rounded-none shadow-xs cursor-pointer"
                               >
                                 <Archive className="w-3.5 h-3.5" />
                               </button>
@@ -1481,7 +1496,7 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleDeleteProject(p, true)}
                                 title="Permanently Delete Project from Database"
-                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all shadow-sm cursor-pointer"
+                                className="w-7 h-7 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 text-slate-400 inline-flex items-center justify-center transition-all rounded-none shadow-xs cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

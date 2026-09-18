@@ -20,6 +20,10 @@ import {
   ChevronRight,
   Eye,
   Maximize2,
+  User,
+  UserCheck,
+  Ruler,
+  CheckCircle,
 } from "lucide-react";
 import type { ProjectHighlight, ProjectFaq, ProjectGalleryItem } from "@/lib/types";
 
@@ -117,33 +121,35 @@ export default function ProjectPreviewModal({
     mobile: "w-full max-w-[390px]",
   }[viewport];
 
+  const isOngoing = project.status === "active" || project.status === "ongoing";
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col overflow-hidden">
       {/* ─────────────────────────────────────────────────────────────
           PREVIEW CONTROLS HEADER BAR (Admin Chrome)
-      ───────────────────────────────────────────────────────────── */}
-      <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between shrink-0 z-10 select-none">
+          ───────────────────────────────────────────────────────────── */}
+      <header className="h-14 bg-slate-950 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between shrink-0 z-10 select-none">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-mono font-bold text-amber-400">
             <Eye className="w-3.5 h-3.5" />
             <span>DRAFT-SAFE PREVIEW</span>
           </div>
-          <span className="hidden sm:inline-block text-xs text-slate-400 font-mono">
-            {project.publishStatus === "published" ? "Status: Published" : "Status: Draft (In-Memory)"}
+          <span className="hidden sm:inline-block text-xs text-slate-400 font-mono truncate max-w-xs">
+            {project.publishStatus === "published" ? "Live Status: Published" : "Live Status: Draft"} · {project.slug || "slug-pending"}
           </span>
         </div>
 
         {/* Viewport Switcher */}
-        <div className="flex items-center bg-slate-800 p-1 border border-slate-700">
+        <div className="flex items-center bg-slate-900 p-0.5 border border-slate-800">
           <button
             type="button"
             onClick={() => setViewport("desktop")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               viewport === "desktop"
-                ? "bg-slate-700 text-white shadow-sm"
+                ? "bg-amber-500 text-black shadow-xs"
                 : "text-slate-400 hover:text-white"
             }`}
-            title="Desktop View (100%)"
+            title="Desktop View (1280px)"
           >
             <Monitor className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Desktop</span>
@@ -151,9 +157,9 @@ export default function ProjectPreviewModal({
           <button
             type="button"
             onClick={() => setViewport("tablet")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               viewport === "tablet"
-                ? "bg-slate-700 text-white shadow-sm"
+                ? "bg-amber-500 text-black shadow-xs"
                 : "text-slate-400 hover:text-white"
             }`}
             title="Tablet View (768px)"
@@ -164,9 +170,9 @@ export default function ProjectPreviewModal({
           <button
             type="button"
             onClick={() => setViewport("mobile")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               viewport === "mobile"
-                ? "bg-slate-700 text-white shadow-sm"
+                ? "bg-amber-500 text-black shadow-xs"
                 : "text-slate-400 hover:text-white"
             }`}
             title="Mobile View (390px)"
@@ -180,7 +186,7 @@ export default function ProjectPreviewModal({
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-700 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 bg-slate-900 hover:bg-construction-red text-slate-200 hover:text-white px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider border border-slate-800 transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
           <span>Exit Preview</span>
@@ -189,35 +195,50 @@ export default function ProjectPreviewModal({
 
       {/* ─────────────────────────────────────────────────────────────
           PREVIEW CANVAS (Replicates /projects/[slug] exact public layout)
-      ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto bg-slate-900/60 p-2 sm:p-6 flex justify-center items-start">
+          ───────────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto bg-slate-950 p-2 sm:p-6 flex justify-center items-start">
         <div
-          className={`${containerWidthClass} transition-all duration-300 bg-slate-950 text-slate-100 shadow-2xl border border-slate-800/80 font-sans min-h-full overflow-hidden`}
+          className={`${containerWidthClass} transition-all duration-300 bg-slate-950 text-slate-100 shadow-2xl border border-slate-800 font-sans min-h-full overflow-hidden relative`}
         >
+          {/* Ambient Glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-amber-500/10 blur-[100px] pointer-events-none" />
+
           {/* Breadcrumb banner */}
-          <div className="border-b border-slate-900 bg-slate-950/90 py-3 px-4 sm:px-8 text-xs font-mono text-slate-400 flex items-center gap-2">
+          <div className="border-b border-slate-900 bg-slate-950/90 py-3.5 px-4 sm:px-8 text-xs font-mono text-slate-400 flex items-center gap-2">
             <span>Home</span>
             <span className="text-slate-600">/</span>
             <span>Projects</span>
             <span className="text-slate-600">/</span>
-            <span className="text-amber-400 font-medium truncate">
+            <span className="text-amber-400 font-semibold truncate">
               {project.title || "Untitled Project"}
             </span>
           </div>
 
           {/* 1. PROJECT HERO */}
-          <header className="pt-8 pb-10 px-4 sm:px-8 lg:px-12 border-b border-slate-900 bg-gradient-to-b from-slate-900/40 to-slate-950">
+          <header className="relative pt-8 pb-12 px-4 sm:px-8 lg:px-12 border-b border-slate-900">
             <div className="max-w-5xl">
               {/* Category & Status Badges */}
-              <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-2.5 mb-5">
                 {project.category && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono uppercase tracking-widest font-semibold">
                     <Building2 className="w-3.5 h-3.5 text-amber-400" />
                     {project.category}
                   </span>
                 )}
-                <span className="inline-flex items-center px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider border bg-slate-900 text-slate-300 border-slate-800">
-                  {project.status || "active"}
+                <span
+                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider font-bold ${
+                    isOngoing ? "bg-amber-500 text-black" : "bg-emerald-600 text-white"
+                  }`}
+                >
+                  {isOngoing ? (
+                    <>
+                      <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" /> Ongoing
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3 h-3" /> Completed
+                    </>
+                  )}
                 </span>
                 {project.featured && (
                   <span className="inline-flex items-center px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider border bg-amber-500/20 text-amber-300 border-amber-500/40">
@@ -227,8 +248,8 @@ export default function ProjectPreviewModal({
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-tight text-white leading-tight mb-4 font-display">
-                {project.title || "Untitled Project (Fill Title)"}
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold uppercase tracking-tight text-white leading-tight mb-5 font-display">
+                {project.title || "Untitled Project"}
               </h1>
 
               {/* Location & Date */}
@@ -251,6 +272,7 @@ export default function ProjectPreviewModal({
             {/* Cover Hero Showcase */}
             {project.image ? (
               <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[520px] overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl mt-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={project.image}
                   alt={project.imageAlt || `${project.title} execution perspective`}
@@ -265,7 +287,7 @@ export default function ProjectPreviewModal({
               </figure>
             ) : (
               <div className="mt-8 p-8 border border-dashed border-slate-800 text-center text-slate-500 text-xs font-mono">
-                No hero cover image provided yet (Recommended).
+                No hero cover image uploaded yet. (Tab 04)
               </div>
             )}
           </header>
@@ -273,10 +295,8 @@ export default function ProjectPreviewModal({
           {/* 2. MAIN CONTENT & FACTS LEDGER */}
           <div className="px-4 sm:px-8 lg:px-12 py-12">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
-              
               {/* MAIN NARRATIVE COLUMN (8 COLS) */}
               <div className="lg:col-span-8 space-y-12">
-                
                 {/* Executive Brief (if shortDescription exists) */}
                 {project.shortDescription && (
                   <section className="p-6 bg-slate-900/80 border-l-4 border-amber-500 border-y border-r border-slate-800/80">
@@ -430,6 +450,7 @@ export default function ProjectPreviewModal({
                           onClick={() => setLightboxImage(item.url)}
                           className="group relative aspect-[4/3] bg-slate-900 border border-slate-800 overflow-hidden cursor-pointer hover:border-amber-500/60 transition-all"
                         >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={item.url}
                             alt={item.alt || `Gallery photo ${idx + 1}`}
@@ -535,90 +556,101 @@ export default function ProjectPreviewModal({
                 <div className="bg-slate-900/80 border border-slate-800 p-6 sticky top-6">
                   <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-amber-400 mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-amber-400" />
-                    <span>Executive Facts Ledger</span>
+                    <span>Executive Project Ledger</span>
                   </h3>
 
-                  <dl className="space-y-4 text-xs font-mono">
+                  <ul className="space-y-4 text-xs font-mono">
                     {project.client && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Client
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">{project.client}</dd>
-                      </div>
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <User className="w-3.5 h-3.5 text-amber-400" />
+                          Client / Employer
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">{project.client}</p>
+                      </li>
                     )}
 
                     {project.owner && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Owner / Developer
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">{project.owner}</dd>
-                      </div>
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+                          Project Principal / Owner
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">{project.owner}</p>
+                      </li>
                     )}
 
                     {project.area && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Built-up Area / Scale
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">{project.area}</dd>
-                      </div>
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <Ruler className="w-3.5 h-3.5 text-amber-400" />
+                          Gross Built-Up Area
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">{project.area}</p>
+                      </li>
                     )}
 
                     {project.category && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Sector / Category
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">{project.category}</dd>
-                      </div>
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                          Sector Classification
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">{project.category}</p>
+                      </li>
                     )}
 
                     {project.location && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Location
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">{project.location}</dd>
-                      </div>
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                          Site Location
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">{project.location}</p>
+                      </li>
                     )}
 
                     {(project.date || project.completionDate) && (
-                      <div className="pb-3 border-b border-slate-800/80">
-                        <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                          Timeline / Delivery
-                        </dt>
-                        <dd className="text-slate-100 font-semibold">
+                      <li className="pb-3 border-b border-slate-800/80">
+                        <span className="flex items-center gap-1.5 text-[10px] uppercase text-slate-400 tracking-wider mb-1">
+                          <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                          Timeline / Handover
+                        </span>
+                        <p className="text-slate-100 font-medium pl-5">
                           {project.completionDate || project.date}
-                        </dd>
-                      </div>
+                        </p>
+                      </li>
                     )}
+                  </ul>
 
-                    <div>
-                      <dt className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">
-                        Execution Status
-                      </dt>
-                      <dd className="text-amber-400 font-semibold uppercase">
-                        {project.status || "active"}
-                      </dd>
+                  {/* Physical Stage */}
+                  <div className="mt-6 pt-5 border-t border-slate-800">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+                      Execution Stage:
+                    </span>
+                    <div className="flex items-center justify-between bg-slate-950 p-2.5 border border-slate-800">
+                      <span className="text-xs font-mono text-slate-300 font-semibold">
+                        {isOngoing ? "Active Execution" : "Commissioned"}
+                      </span>
+                      <span
+                        className={`text-[9px] font-bold uppercase px-2 py-0.5 ${
+                          isOngoing ? "bg-amber-500 text-black" : "bg-emerald-600 text-white"
+                        }`}
+                      >
+                        {isOngoing ? "Ongoing" : "Completed"}
+                      </span>
                     </div>
-                  </dl>
+                  </div>
 
-                  {/* Contact / CTA Button */}
-                  <div className="mt-8 pt-5 border-t border-slate-800">
-                    <a
-                      href="#contact"
-                      onClick={(e) => e.preventDefault()}
-                      className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold uppercase tracking-wider text-xs py-3 transition-colors cursor-pointer"
-                    >
+                  {/* Inquiry CTA */}
+                  <div className="mt-6 pt-4 border-t border-slate-800">
+                    <div className="w-full flex items-center justify-center gap-2 bg-amber-500 text-slate-950 font-bold uppercase tracking-wider text-xs py-3">
                       <span>Inquire About Similar Scope</span>
                       <ChevronRight className="w-4 h-4" />
-                    </a>
+                    </div>
                   </div>
                 </div>
               </aside>
-
             </div>
           </div>
         </div>
@@ -633,10 +665,11 @@ export default function ProjectPreviewModal({
           <button
             type="button"
             onClick={() => setLightboxImage(null)}
-            className="absolute top-4 right-4 bg-slate-800 text-white p-2 hover:bg-slate-700 cursor-pointer"
+            className="absolute top-4 right-4 bg-slate-900 text-white p-2.5 hover:bg-construction-red cursor-pointer border border-slate-800"
           >
             <X className="w-6 h-6" />
           </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={lightboxImage}
             alt="Enlarged view"

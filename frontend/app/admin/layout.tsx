@@ -23,10 +23,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div
-      className="flex h-screen overflow-hidden bg-[#F8FAFC] text-slate-900"
-      style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
-    >
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC] text-slate-900 font-sans">
       <AdminSidebar user={user} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AdminHeader user={user} />
