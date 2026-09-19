@@ -30,7 +30,7 @@ export default async function SiteLayout({
       </main>
       <PopupForm />
       <MobileStickyBar />
-      <Footer />
+      <Footer pageContent={settings?.pageContent || null} />
     </>
   );
 }

@@ -30,13 +30,113 @@ function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-export default async function Footer() {
+const defaultEcosystemCompanies = [
+  {
+    name: "Empanelment",
+    description: "Vendor, contractor & institutional registration portal.",
+    website: "https://empanelment.hindustanprojects.in/",
+    status: "Live Portal",
+    active: true,
+    order: 1,
+  },
+  {
+    name: "HiPro IT Services",
+    description: "Enterprise software, web development & digital solutions.",
+    website: "https://www.itservices.hindustanprojects.in/",
+    status: "Live Portal",
+    active: true,
+    order: 2,
+  },
+  {
+    name: "HiPro Marketing",
+    description: "Brand strategy & commercial solutions.",
+    website: "",
+    status: "Upcoming",
+    active: true,
+    order: 3,
+  },
+];
+
+function getCompanyVisuals(name: string = "", category: string = "") {
+  const text = `${name} ${category}`.toLowerCase();
+  if (text.includes("empanel") || text.includes("vendor") || text.includes("contract")) {
+    return {
+      Icon: FileCheck,
+      iconColor: "text-construction-red",
+      hoverBorder: "hover:border-construction-red/70",
+      badgeColor: "text-emerald-400 bg-emerald-950/60 border-emerald-500/30",
+    };
+  }
+  if (text.includes("market") || text.includes("brand") || text.includes("media")) {
+    return {
+      Icon: Megaphone,
+      iconColor: "text-yellow-500",
+      hoverBorder: "hover:border-yellow-500/70",
+      badgeColor: "text-yellow-400 bg-yellow-950/60 border-yellow-500/30",
+    };
+  }
+  if (/\bit\b/i.test(text) || text.includes("tech") || text.includes("digital") || text.includes("software")) {
+    return {
+      Icon: Laptop,
+      iconColor: "text-blue-400",
+      hoverBorder: "hover:border-blue-500/70",
+      badgeColor: "text-blue-400 bg-blue-950/60 border-blue-500/30",
+    };
+  }
+  return {
+    Icon: Building2,
+    iconColor: "text-construction-red",
+    hoverBorder: "hover:border-construction-red/70",
+    badgeColor: "text-emerald-400 bg-emerald-950/60 border-emerald-500/30",
+  };
+}
+
+export default async function Footer({
+  pageContent: propPageContent,
+}: {
+  pageContent?: any;
+} = {}) {
   const [settingsData, servicesData] = await Promise.all([
     findAll<Settings>("settings"),
     findAll<Service>("services")
   ]);
   
   const settings = settingsData[0] || {};
+  const rawPageContent = propPageContent || settings.pageContent;
+  let resolvedPageContent: any = rawPageContent;
+  if (typeof rawPageContent === "string") {
+    try {
+      resolvedPageContent = JSON.parse(rawPageContent);
+    } catch {
+      resolvedPageContent = {};
+    }
+  }
+
+  const isCurrentSite = (c: any) => {
+    const name = (c.name || "").toLowerCase().trim();
+    const url = (c.website || c.url || "").trim();
+    const status = (c.status || c.statusText || "").toLowerCase().trim();
+    return (
+      status === "flagship" ||
+      name === "hindustan projects" ||
+      url === "https://www.hindustanprojects.in" ||
+      url === "https://www.hindustanprojects.in/" ||
+      url === "/"
+    );
+  };
+
+  const rawGroupCompanies = resolvedPageContent?.groupCompanies;
+  let dynamicEcosystemCompanies: any[] = [];
+
+  if (Array.isArray(rawGroupCompanies) && rawGroupCompanies.length > 0) {
+    dynamicEcosystemCompanies = rawGroupCompanies
+      .filter((c: any) => c && c.active !== false && !isCurrentSite(c))
+      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+  }
+
+  const ecosystemCompanies = dynamicEcosystemCompanies.length > 0
+    ? dynamicEcosystemCompanies
+    : defaultEcosystemCompanies;
   
   const address = settings.companyAddress || COMPANY_INFO.address;
   const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
@@ -273,65 +373,67 @@ export default async function Footer() {
               Ecosystem
             </h3>
             <div className="space-y-3 text-xs">
-              {/* Empanelment Portal */}
-              <a
-                href="https://empanelment.hindustanprojects.in/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block p-3 bg-white/5 border border-white/10 hover:border-construction-red/70 hover:bg-white/10 transition-all rounded-none"
-              >
-                <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
-                  <span className="flex items-center gap-1.5 text-white">
-                    <FileCheck className="w-3.5 h-3.5 text-construction-red" />
-                    Empanelment
-                  </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </div>
-                <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
-                  Vendor, contractor &amp; institutional registration portal.
-                </p>
-                <span className="inline-block mt-2 text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 uppercase tracking-wider">
-                  Live Portal ↗
-                </span>
-              </a>
+              {ecosystemCompanies.map((c: any, i: number) => {
+                const url = (c.website || c.url || "").trim();
+                const name = c.name || "Ecosystem Portal";
+                const category = c.category || "";
+                const description = c.description || (category ? `${category} solutions.` : "");
+                const visuals = getCompanyVisuals(name, category);
+                const rawBadge = c.status || c.statusText;
+                const badgeText = url
+                  ? (rawBadge ? (rawBadge.includes("↗") ? rawBadge : `${rawBadge} ↗`) : "Live Portal ↗")
+                  : (rawBadge || "Upcoming");
 
-              {/* IT Services Portal */}
-              <a
-                href="https://www.itservices.hindustanprojects.in/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block p-3 bg-white/5 border border-white/10 hover:border-blue-500/70 hover:bg-white/10 transition-all rounded-none"
-              >
-                <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
-                  <span className="flex items-center gap-1.5 text-white">
-                    <Laptop className="w-3.5 h-3.5 text-blue-400" />
-                    HiPro IT Services
-                  </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </div>
-                <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
-                  Enterprise software, web development &amp; digital solutions.
-                </p>
-                <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-950/60 border border-blue-500/30 px-2 py-0.5 uppercase tracking-wider">
-                  Live Portal ↗
-                </span>
-              </a>
+                if (url) {
+                  return (
+                    <a
+                      key={c.name || i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group block p-3 bg-white/5 border border-white/10 ${visuals.hoverBorder} hover:bg-white/10 transition-all rounded-none`}
+                    >
+                      <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
+                        <span className="flex items-center gap-1.5 text-white">
+                          <visuals.Icon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
+                          {name}
+                        </span>
+                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                      {description && (
+                        <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
+                          {description}
+                        </p>
+                      )}
+                      <span className={`inline-block mt-2 text-[9px] font-bold ${visuals.badgeColor} px-2 py-0.5 uppercase tracking-wider`}>
+                        {badgeText}
+                      </span>
+                    </a>
+                  );
+                }
 
-              {/* HiPro Marketing */}
-              <div className="p-3 bg-white/5 border border-white/10 rounded-none opacity-85">
-                <div className="flex items-center justify-between text-slate-300 font-bold text-[11px] uppercase tracking-wider mb-1">
-                  <span className="flex items-center gap-1.5">
-                    <Megaphone className="w-3.5 h-3.5 text-yellow-500" />
-                    HiPro Marketing
-                  </span>
-                  <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 font-bold uppercase tracking-wider">
-                    Upcoming
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 font-light leading-relaxed">
-                  Brand strategy &amp; commercial solutions.
-                </p>
-              </div>
+                return (
+                  <div
+                    key={c.name || i}
+                    className="p-3 bg-white/5 border border-white/10 rounded-none opacity-85"
+                  >
+                    <div className="flex items-center justify-between text-slate-300 font-bold text-[11px] uppercase tracking-wider mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <visuals.Icon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
+                        {name}
+                      </span>
+                      <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 font-bold uppercase tracking-wider">
+                        {badgeText}
+                      </span>
+                    </div>
+                    {description && (
+                      <p className="text-[10px] text-slate-400 font-light leading-relaxed">
+                        {description}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
