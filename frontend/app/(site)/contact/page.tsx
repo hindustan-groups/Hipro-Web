@@ -300,14 +300,36 @@ export default async function ContactPage() {
                         </span>
                       )}
                     </div>
-                    {item.value.split("\n").map((line, li) => (
-                      <p
-                        key={li}
-                        className="text-sm font-semibold text-slate-900 leading-snug break-words"
+                    {item.action ? (
+                      <a
+                        href={item.action.href}
+                        target={item.action.isExternal ? "_blank" : undefined}
+                        rel={
+                          item.action.isExternal
+                            ? "noopener noreferrer"
+                            : undefined
+                        }
+                        className="block group"
                       >
-                        {line}
-                      </p>
-                    ))}
+                        {item.value.split("\n").map((line, li) => (
+                          <p
+                            key={li}
+                            className="text-sm font-semibold text-slate-900 group-hover:text-construction-red transition-colors leading-snug break-words"
+                          >
+                            {line}
+                          </p>
+                        ))}
+                      </a>
+                    ) : (
+                      item.value.split("\n").map((line, li) => (
+                        <p
+                          key={li}
+                          className="text-sm font-semibold text-slate-900 leading-snug break-words"
+                        >
+                          {line}
+                        </p>
+                      ))
+                    )}
                     {item.action && (
                       <a
                         href={item.action.href}
