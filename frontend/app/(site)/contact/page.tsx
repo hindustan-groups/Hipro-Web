@@ -157,24 +157,107 @@ export default async function ContactPage() {
 
   return (
     <>
-      {/* Header */}
-      <section className="bg-white pt-36 pb-20 px-4 border-b border-slate-200/80">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-none bg-red-50 border border-red-100 text-construction-red mb-6 shadow-xs">
-            <span className="w-2 h-2 rounded-none bg-construction-red animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider">
+      {/* ─────────────────────────────────────────────────────────────
+          HERO: Technical Engineering Dispatch & Architectural Command
+          ───────────────────────────────────────────────────────────── */}
+      <section className="relative bg-[#071324] text-white pt-36 pb-20 md:pt-44 md:pb-28 px-4 overflow-hidden border-b border-slate-800">
+        {/* Subtle Architectural Blueprint Grid */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-20"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Ambient atmospheric lighting glows */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-red-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 -right-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-construction-red/60 to-transparent" />
+
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
+          {/* Top Live Status Pill */}
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-none bg-white/10 backdrop-blur-md border border-white/15 text-slate-200 mb-6 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
+            <span className="text-[11px] font-bold uppercase tracking-widest font-mono text-slate-300">
               {badge}
             </span>
+            <span className="text-slate-600">|</span>
+            <span className="text-[11px] font-semibold text-emerald-400">
+              Active Site Dispatch
+            </span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-black mb-5 font-display uppercase tracking-tight">
+
+          {/* High-Impact Architectural Headline */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 font-display uppercase tracking-tight leading-[1.12]">
             {headingPrefix}{" "}
-            <span className="font-serif italic font-normal text-construction-red normal-case">
+            <span className="font-serif italic font-normal text-construction-red normal-case tracking-normal">
               {headingAccent}
             </span>
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed">
+
+          {/* Subtitle with engineered clarity */}
+          <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-10">
             {description}
           </p>
+
+          {/* Fast-Action Technical CTAs Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-3.5 mb-14">
+            <a
+              href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+              className="inline-flex items-center gap-2.5 bg-construction-red hover:bg-red-700 text-white font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-wider font-display shadow-lg shadow-red-600/30 transition-all hover:translate-y-[-1px]"
+            >
+              <Phone className="w-4 h-4" />
+              <span>Call Technical Lead: {phone}</span>
+            </a>
+
+            <a
+              href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-wider font-display shadow-md shadow-emerald-900/30 transition-all hover:translate-y-[-1px]"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Instant WhatsApp</span>
+            </a>
+
+            <a
+              href={mapDirectionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-wider font-display border border-white/20 transition-all hover:translate-y-[-1px]"
+            >
+              <Navigation className="w-4 h-4 text-construction-red" />
+              <span>Bhilwara Office Location</span>
+            </a>
+          </div>
+
+          {/* 4 Architectural Response Guarantees */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto pt-8 border-t border-white/10">
+            {[
+              { label: "Turnaround", title: "< 24-Hr Technical Quote", desc: "Detailed BOQ & site evaluation" },
+              { label: "Site Inspection", title: "Regional Site Visits", desc: "Across Bhilwara & Rajasthan" },
+              { label: "Direct Access", title: "Senior Engineers Only", desc: "Zero broker or sales middlemen" },
+              { label: "Consultation", title: "Free Drawing Review", desc: "Architectural & structural checks" },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="bg-white/[0.04] backdrop-blur-sm border border-white/10 p-4 text-left hover:border-construction-red/50 transition-colors"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-widest text-construction-red font-mono mb-1">
+                  {item.label}
+                </p>
+                <p className="text-xs sm:text-sm font-bold text-white font-display uppercase tracking-tight">
+                  {item.title}
+                </p>
+                <p className="text-[11px] text-slate-400 font-light mt-0.5">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
