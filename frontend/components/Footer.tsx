@@ -21,6 +21,7 @@ import {
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 import { COMPANY_INFO, cleanServiceTitle } from "@/lib/companyData";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -156,6 +157,12 @@ export default async function Footer({
   const linkedinUrl = socials.linkedin || COMPANY_INFO.socials.linkedin;
   const pinterestUrl = socials.pinterest || COMPANY_INFO.socials.pinterest;
 
+  // ── CTA CMS resolution ──────────────────────────────────────────────────
+  const ctaEstimator = resolveCTA(settings, "footer_estimator");
+  const ctaWhatsapp  = resolveCTA(settings, "footer_whatsapp");
+  const estimatorHref = ctaEstimator ? resolveCTAHref(ctaEstimator) : "/cost-estimator";
+  const whatsappHref  = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : COMPANY_INFO.whatsappLink;
+
   const activeServices = servicesData
     .filter(s => s.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99))
@@ -216,22 +223,26 @@ export default async function Footer({
             </div>
             
             <div className="flex flex-wrap items-center gap-3.5 shrink-0 w-full sm:w-auto">
-              <Link
-                href="/cost-estimator"
-                className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-construction-red hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest px-5 py-3.5 shadow-md shadow-red-950/30 transition-all duration-200"
-              >
-                <Calculator className="w-4 h-4 text-white" />
-                <span>Instant Cost Estimator</span>
-              </Link>
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3.5 transition-all duration-200"
-              >
-                <MessageSquare className="w-4 h-4 text-emerald-400" />
-                <span>WhatsApp Quote</span>
-              </a>
+              {ctaEstimator?.enabled !== false && (
+                <Link
+                  href={estimatorHref}
+                  className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-construction-red hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest px-5 py-3.5 shadow-md shadow-red-950/30 transition-all duration-200"
+                >
+                  <Calculator className="w-4 h-4 text-white" />
+                  <span>{ctaEstimator?.label ?? "Instant Cost Estimator"}</span>
+                </Link>
+              )}
+              {ctaWhatsapp?.enabled !== false && (
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3.5 transition-all duration-200"
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>{ctaWhatsapp?.label ?? "WhatsApp Quote"}</span>
+                </a>
+              )}
             </div>
           </div>
         </div>

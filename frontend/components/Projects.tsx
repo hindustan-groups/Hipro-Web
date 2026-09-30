@@ -3,10 +3,14 @@ import Image from "next/image";
 import { ArrowUpRight, Building } from "lucide-react";
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
-export default function Projects({ projects = [], title }: { projects?: Project[], title?: string }) {
+export default function Projects({ projects = [], title, settings }: { projects?: Project[], title?: string, settings?: any }) {
   const displayProjects = (projects || []).slice(0, 3);
   const hasProjects = displayProjects.length > 0;
+
+  // CTA CMS resolution
+  const ctaViewAll = resolveCTA(settings, "home_projects_view_all");
 
   return (
     <section id="section-projects" className="pt-24 bg-white relative">
@@ -22,12 +26,12 @@ export default function Projects({ projects = [], title }: { projects?: Project[
               <div className="w-2/3 h-full bg-construction-navy"></div>
             </div>
           </div>
-          {hasProjects && (
+          {hasProjects && ctaViewAll?.enabled !== false && (
             <Link 
-              href="/projects" 
+              href={ctaViewAll ? resolveCTAHref(ctaViewAll) : "/projects"} 
               className="group inline-flex items-center gap-2 text-construction-navy font-bold hover:text-construction-red transition-colors uppercase tracking-widest text-xs"
             >
-              View Full Portfolio 
+              {ctaViewAll?.label ?? "View Full Portfolio"}
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </Link>
           )}

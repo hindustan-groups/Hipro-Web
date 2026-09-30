@@ -3,13 +3,24 @@ import { ArrowRight, Phone, MessageSquare, Sparkles } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings } from "@/lib/types";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 export default async function CTASection() {
   const settingsData = await findAll<Settings>("settings");
   const settings = settingsData[0] || {};
   const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
-  const telLink = `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, '')}`;
-  const whatsappLink = COMPANY_INFO.whatsappLink;
+
+  // ── CTA CMS resolution ──────────────────────────────────────────────────
+  const ctaPrimary    = resolveCTA(settings, "home_cta_primary");
+  const ctaPhone      = resolveCTA(settings, "home_cta_phone");
+  const ctaWhatsapp   = resolveCTA(settings, "home_cta_whatsapp");
+
+  // Phone number: CTA label overrides display; destination used for tel: href
+  const phoneDisplay = ctaPhone?.label || phone;
+  const telLink = ctaPhone?.destination
+    ? resolveCTAHref(ctaPhone)
+    : `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, "")}`;
+  const whatsappHref = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : COMPANY_INFO.whatsappLink;
 
   return (
     <section id="section-cta" className="py-20 px-4 bg-white relative">
@@ -43,30 +54,36 @@ export default async function CTASection() {
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0 w-full md:w-auto">
-              <Link
-                href="/contact"
-                className="group inline-flex items-center justify-center gap-3 bg-construction-navy btn-sweep text-white font-bold px-8 py-3.5 rounded-none text-xs uppercase tracking-widest shadow-lg shadow-blue-900/30"
-              >
-                Get Free Estimate
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              {ctaPrimary?.enabled !== false && (
+                <Link
+                  href={ctaPrimary ? resolveCTAHref(ctaPrimary) : "/contact"}
+                  className="group inline-flex items-center justify-center gap-3 bg-construction-navy btn-sweep text-white font-bold px-8 py-3.5 rounded-none text-xs uppercase tracking-widest shadow-lg shadow-blue-900/30"
+                >
+                  {ctaPrimary?.label ?? "Get Free Estimate"}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
               <div className="flex flex-col sm:flex-row md:flex-col gap-2.5">
-                <a
-                  href={telLink}
-                  className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-7 py-3 rounded-none text-xs transition-all border border-slate-300 shadow-sm uppercase tracking-wider"
-                >
-                  <Phone className="w-3.5 h-3.5 text-construction-red" />
-                  Call: {phone}
-                </a>
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 py-3 rounded-none text-xs transition-all shadow-sm uppercase tracking-wider"
-                >
-                  <MessageSquare className="w-3.5 h-3.5 text-white" />
-                  WhatsApp Us
-                </a>
+                {ctaPhone?.enabled !== false && (
+                  <a
+                    href={telLink}
+                    className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-7 py-3 rounded-none text-xs transition-all border border-slate-300 shadow-sm uppercase tracking-wider"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-construction-red" />
+                    Call: {phone}
+                  </a>
+                )}
+                {ctaWhatsapp?.enabled !== false && (
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-7 py-3 rounded-none text-xs transition-all shadow-sm uppercase tracking-wider"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-white" />
+                    {ctaWhatsapp?.label ?? "WhatsApp Us"}
+                  </a>
+                )}
               </div>
             </div>
           </div>

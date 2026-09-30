@@ -80,11 +80,11 @@ export default async function Home() {
   return (
     <>
       <Hero initialSlides={slidedata} initialStats={statsdata} />
-      <AnimateIn><HomeAbout pageContent={pageContent} projectCount={projectCount} /></AnimateIn>
-      <AnimateIn><Services services={servicesData} /></AnimateIn>
+      <AnimateIn><HomeAbout pageContent={pageContent} projectCount={projectCount} settings={settings} /></AnimateIn>
+      <AnimateIn><Services services={servicesData} settings={settings} /></AnimateIn>
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
-      <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} /></AnimateIn>
+      <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} /></AnimateIn>
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
       <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Blogs posts={blogsData} /></AnimateIn>

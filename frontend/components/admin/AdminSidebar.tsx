@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen,
-  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info, MapPin
+  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info, MapPin, Link2
 } from "lucide-react";
 
 const navItems = [
@@ -24,6 +24,7 @@ const navItems = [
   { href: "/admin/stats",     label: "Stats",       icon: BarChart2 },
   { href: "/admin/applications", label: "Applications", icon: Briefcase },
   { href: "/admin/jobs", label: "Job Postings", icon: Briefcase },
+  { href: "/admin/cta-management", label: "CTA Management", icon: Link2 },
 ];
 
 export default function AdminSidebar({ user }: { user: any }) {

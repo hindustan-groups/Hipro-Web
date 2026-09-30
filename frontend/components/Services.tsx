@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { Service } from "@/lib/types";
 import { cleanServiceTitle, cleanContentTypos } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 const defaultServices: Service[] = [
   {
@@ -61,9 +62,12 @@ const defaultServices: Service[] = [
   }
 ];
 
-export default function Services({ services = [] }: { services?: Service[] }) {
+export default function Services({ services = [], settings }: { services?: Service[]; settings?: any }) {
   const list = services && services.length > 0 ? services : defaultServices;
   const displayServices = list.slice(0, 4);
+
+  // CTA CMS resolution
+  const ctaViewAll = resolveCTA(settings, "home_services_view_all");
 
   return (
     <section id="section-services" className="py-24 bg-white relative">
@@ -132,12 +136,14 @@ export default function Services({ services = [] }: { services?: Service[] }) {
 
         {/* View All Button */}
         <div className="mt-16 text-center">
-          <Link 
-            href="/services" 
-            className="inline-flex items-center justify-center gap-3 bg-white border border-slate-300 text-black font-bold px-10 py-4 rounded-xl text-[15px] hover:bg-construction-navy hover:border-construction-navy hover:text-white transition-all shadow-sm"
-          >
-            View All Services
-          </Link>
+          {ctaViewAll?.enabled !== false && (
+            <Link
+              href={ctaViewAll ? resolveCTAHref(ctaViewAll) : "/services"}
+              className="inline-flex items-center justify-center gap-3 bg-white border border-slate-300 text-black font-bold px-10 py-4 rounded-xl text-[15px] hover:bg-construction-navy hover:border-construction-navy hover:text-white transition-all shadow-sm"
+            >
+              {ctaViewAll?.label ?? "View All Services"}
+            </Link>
+          )}
         </div>
 
       </div>

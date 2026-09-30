@@ -12,6 +12,7 @@ import {
 import type { Service } from "@/lib/types";
 import { cleanServiceTitle } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { getCTAsFromSettings, resolveCTAHref, type CTAConfig } from "@/lib/cta";
 
 // Metadata mapping for rich visual mega menu items
 const serviceMetaMap: Record<string, { icon: any; tagline: string }> = {
@@ -360,6 +361,11 @@ export default function Navbar({
     ];
   }
 
+  // Resolve navbar primary CTA (component-level scope — available to JSX)
+  const navbarCta: CTAConfig | undefined = getCTAsFromSettings({ pageContent }).find(
+    (c) => c.key === "navbar_primary"
+  );
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -677,7 +683,7 @@ export default function Navbar({
             );
           })}
             <Link 
-              href="/contact" 
+              href={navbarCta?.enabled !== false ? (navbarCta ? resolveCTAHref(navbarCta) : "/contact") : "/contact"}
               className={`relative overflow-hidden group ml-1.5 xl:ml-3 px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 rounded-none font-semibold uppercase tracking-wider text-xs xl:text-sm transition-all duration-300 flex items-center gap-1.5 xl:gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
                 isDarkNavbar
                   ? "bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.15)]"
@@ -687,7 +693,7 @@ export default function Navbar({
               {/* Glass subtle shimmer highlight on hover */}
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               
-              <span className="relative z-10">Get a Quote</span>
+              <span className="relative z-10">{navbarCta?.label ?? "Get a Quote"}</span>
               <ArrowRight className="w-3.5 xl:w-4 h-3.5 xl:h-4 relative z-10 text-construction-red transition-transform group-hover:translate-x-1" />
             </Link>
           </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Compass, ShieldCheck, HardHat, Building2, MapPin } from "lucide-react";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 interface HomeAboutProps {
   pageContent?: {
@@ -9,13 +10,18 @@ interface HomeAboutProps {
     [key: string]: any;
   };
   projectCount?: string;
+  settings?: any;
 }
 
-export default function HomeAbout({ pageContent = {}, projectCount = "150+" }: HomeAboutProps) {
+export default function HomeAbout({ pageContent = {}, projectCount = "150+", settings }: HomeAboutProps) {
   const badgeText = pageContent.homeAboutTag || "About Hindustan Projects · Est. 2019";
   const heading = pageContent.homeAboutHeading || "Engineering Landmarks. Building Trust in Rajasthan.";
-  const description = pageContent.homeAboutText || 
+  const description = pageContent.homeAboutText ||
     "Founded in 2019 in Bhilwara, Rajasthan, Hindustan Projects (HiPRO) is an engineering, construction, and infrastructure firm. From architectural planning and precise surveying to turnkey civil construction and infrastructure execution, Hindustan Projects delivers integrated solutions designed around quality, practical execution, and long-term value.";
+
+  // CTA CMS resolution
+  const ctaPrimary   = resolveCTA(settings, "home_about_primary");
+  const ctaSecondary = resolveCTA(settings, "home_about_secondary");
 
   const corePillars = [
     {
@@ -80,19 +86,23 @@ export default function HomeAbout({ pageContent = {}, projectCount = "150+" }: H
             </div>
 
             <div className="flex flex-wrap gap-4 pt-2">
-              <Link
-                href="/about"
-                className="group inline-flex items-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-md shadow-blue-950/20"
-              >
-                Discover Our Story
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="/services"
-                className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest border border-slate-300 transition-all shadow-sm"
-              >
-                Explore Capabilities
-              </Link>
+              {ctaPrimary?.enabled !== false && (
+                <Link
+                  href={ctaPrimary ? resolveCTAHref(ctaPrimary) : "/about"}
+                  className="group inline-flex items-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-md shadow-blue-950/20"
+                >
+                  {ctaPrimary?.label ?? "Discover Our Story"}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
+              {ctaSecondary?.enabled !== false && (
+                <Link
+                  href={ctaSecondary ? resolveCTAHref(ctaSecondary) : "/services"}
+                  className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-900 font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest border border-slate-300 transition-all shadow-sm"
+                >
+                  {ctaSecondary?.label ?? "Explore Capabilities"}
+                </Link>
+              )}
             </div>
           </div>
 
