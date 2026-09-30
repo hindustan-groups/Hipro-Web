@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { trackEvent } from "@/lib/analytics";
 
 import type { HeroSlide, Stats as StatType } from "@/lib/types";
 
@@ -97,6 +98,78 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     initialStats && initialStats.length > 0 ? initialStats : defaultStats
   );
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Quote Form State
+  const [quoteForm, setQuoteForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    service: "",
+    customInquiry: "",
+  });
+  const [quoteStatus, setQuoteStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [quoteError, setQuoteError] = useState("");
+
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setQuoteStatus("loading");
+    setQuoteError("");
+
+    try {
+      const serviceLabelMap: Record<string, string> = {
+        architecture: "Architecture Planning",
+        construction: "Civil Construction Services",
+        surveying: "Surveying & Site Measurements",
+        interior: "Interior & Exterior Design",
+        other: "Other Inquiry",
+      };
+
+      const chosenServiceLabel = serviceLabelMap[quoteForm.service] || quoteForm.service || "General Inquiry";
+      const finalMessage =
+        quoteForm.service === "other" && quoteForm.customInquiry.trim()
+          ? `[Custom Requirement / Other Inquiry]: ${quoteForm.customInquiry.trim()}`
+          : `Quick quote requested from Hero section for: ${chosenServiceLabel}.`;
+
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: quoteForm.name.trim(),
+          email: quoteForm.email.trim(),
+          phone: quoteForm.phone.trim(),
+          service: chosenServiceLabel,
+          message: finalMessage,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to submit quote request.");
+      }
+
+      setQuoteStatus("success");
+      trackEvent("generate_lead", {
+        form_id: "hero_quote_form",
+        service_category: chosenServiceLabel,
+      });
+    } catch (err: any) {
+      console.error("Hero quote submission failed:", err);
+      setQuoteStatus("error");
+      setQuoteError(err.message || "Failed to submit quote request. Please try again.");
+    }
+  };
+
+  const handleResetQuote = () => {
+    setQuoteForm({
+      name: "",
+      email: "",
+      phone: "",
+      service: "",
+      customInquiry: "",
+    });
+    setQuoteStatus("idle");
+    setQuoteError("");
+  };
 
   useEffect(() => {
     if (initialSlides && initialSlides.length > 0) {
@@ -254,49 +327,128 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
           </div>
 
           <div className="hidden lg:block lg:col-span-5 xl:col-span-4 animate-fade-in relative z-20" style={{ animationDelay: "0.5s" }}>
-            <div className="bg-black/40 backdrop-blur-2xl p-10 border border-white/10 shadow-2xl relative rounded-3xl overflow-hidden group">
+            <div className="bg-black/50 backdrop-blur-2xl p-8 lg:p-9 border border-white/10 shadow-2xl relative rounded-3xl overflow-hidden group">
               {/* Glass reflection */}
               <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               
-              <h3 className="text-3xl text-white font-display font-bold mb-3 tracking-tight">Request A Quote</h3>
-              <p className="text-slate-400 text-[15px] mb-8 font-light leading-relaxed">Fill out the form below to get a free estimate.</p>
+              <h3 className="text-2xl lg:text-3xl text-white font-display font-bold mb-2 tracking-tight">Request A Quote</h3>
+              <p className="text-slate-400 text-[14px] mb-6 font-light leading-relaxed">Fill out the form below to get a free estimate.</p>
               
-              <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); alert("Quote requested!"); }}>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="Full Name" 
-                    className="w-full bg-white/5 border border-white/10 text-white px-5 py-3.5 text-[15px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
-                    required
-                  />
+              {quoteStatus === "success" ? (
+                <div className="py-8 text-center space-y-4 animate-fade-in">
+                  <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-white mb-1 tracking-tight">Thank You!</h4>
+                    <p className="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-2">Quote Request Received</p>
+                    <p className="text-slate-300 text-sm leading-relaxed max-w-xs mx-auto">
+                      We have received your inquiry. Our engineering & estimating team will review your requirements and reach out to you within 24 hours.
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={handleResetQuote}
+                      className="inline-flex items-center justify-center px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all shadow-md hover:shadow-lg"
+                    >
+                      Submit Another Request
+                    </button>
+                  </div>
                 </div>
-                <div className="relative">
-                  <input 
-                    type="email" 
-                    placeholder="Email Address" 
-                    className="w-full bg-white/5 border border-white/10 text-white px-5 py-3.5 text-[15px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
-                    required
-                  />
-                </div>
-                <div className="relative">
-                  <select 
-                    className="w-full bg-white/5 border border-white/10 text-slate-300 px-5 py-3.5 text-[15px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl appearance-none"
-                    required
+              ) : (
+                <form className="space-y-4" onSubmit={handleQuoteSubmit}>
+                  {quoteStatus === "error" && quoteError && (
+                    <div className="p-3 bg-red-500/20 border border-red-500/40 rounded-xl text-red-200 text-xs flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                      <span>{quoteError}</span>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder="Full Name *" 
+                      value={quoteForm.name}
+                      onChange={(e) => setQuoteForm((prev) => ({ ...prev, name: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-white px-5 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="relative">
+                      <input 
+                        type="email" 
+                        placeholder="Email Address *" 
+                        value={quoteForm.email}
+                        onChange={(e) => setQuoteForm((prev) => ({ ...prev, email: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
+                        required
+                      />
+                    </div>
+                    <div className="relative">
+                      <input 
+                        type="tel" 
+                        placeholder="Phone Number" 
+                        value={quoteForm.phone}
+                        onChange={(e) => setQuoteForm((prev) => ({ ...prev, phone: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <select 
+                      value={quoteForm.service}
+                      onChange={(e) => setQuoteForm((prev) => ({ ...prev, service: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 text-slate-200 px-5 py-3 pr-10 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl appearance-none cursor-pointer"
+                      required
+                    >
+                      <option value="" className="text-black bg-white">Select a Service *</option>
+                      <option value="architecture" className="text-black bg-white">Architecture Planning</option>
+                      <option value="construction" className="text-black bg-white">Civil Construction Services</option>
+                      <option value="surveying" className="text-black bg-white">Surveying & Site Measurements</option>
+                      <option value="interior" className="text-black bg-white">Interior & Exterior Design</option>
+                      <option value="other" className="text-black bg-white">Other Inquiry</option>
+                    </select>
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+
+                  {/* Dynamic Custom Inquiry Text Box when "other" is selected */}
+                  {quoteForm.service === "other" && (
+                    <div className="relative animate-fade-in space-y-1.5">
+                      <label className="block text-[12px] font-semibold text-slate-300 uppercase tracking-wider">
+                        Specify Your Requirement <span className="text-construction-red">*</span>
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Please describe your specific requirement or project inquiry..."
+                        value={quoteForm.customInquiry}
+                        onChange={(e) => setQuoteForm((prev) => ({ ...prev, customInquiry: e.target.value }))}
+                        className="w-full bg-white/10 border-2 border-construction-red text-white px-4 py-2.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-construction-red/40 rounded-xl placeholder:text-slate-400 resize-none transition-all shadow-[0_0_15px_rgba(220,38,38,0.25)]"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit" 
+                    disabled={quoteStatus === "loading"}
+                    className="w-full bg-white hover:bg-slate-100 disabled:opacity-70 disabled:cursor-not-allowed text-black font-bold py-3.5 px-4 transition-all uppercase tracking-widest text-[13px] mt-2 rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 flex items-center justify-center gap-2"
                   >
-                    <option value="" className="text-black bg-white">Select a Service</option>
-                    <option value="architecture" className="text-black bg-white">Architecture Planning</option>
-                    <option value="construction" className="text-black bg-white">Construction Services</option>
-                    <option value="interior" className="text-black bg-white">Interior & Exterior</option>
-                    <option value="other" className="text-black bg-white">Other Inquiry</option>
-                  </select>
-                </div>
-                <button 
-                  type="submit" 
-                  className="w-full bg-white hover:bg-slate-100 text-black font-bold py-4 px-4 transition-all uppercase tracking-widest text-[14px] mt-4 rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1"
-                >
-                  Get Quote Now
-                </button>
-              </form>
+                    {quoteStatus === "loading" ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <span>Get Quote Now</span>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 
