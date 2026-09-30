@@ -87,7 +87,7 @@ export default function ProjectGalleryLightbox({
           return (
             <figure
               key={`${item.url}-${idx}`}
-              className={`group relative overflow-hidden bg-slate-900 border border-slate-800 transition-all duration-300 hover:border-amber-500/50 cursor-pointer ${
+              className={`group relative overflow-hidden bg-slate-100 border border-slate-200 shadow-sm transition-all duration-300 hover:border-construction-navy cursor-pointer ${
                 isFeaturedSpan ? "sm:col-span-2 lg:col-span-2 aspect-[16/10]" : "aspect-[4/3]"
               }`}
               onClick={() => handleOpen(idx)}

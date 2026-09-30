@@ -74,10 +74,13 @@ export default async function Home() {
     .filter(g => g.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99));
 
+  const projectStat = statsdata.find((s) => /project/i.test(s.label));
+  const projectCount = projectStat?.value || "150+";
+
   return (
     <>
       <Hero initialSlides={slidedata} initialStats={statsdata} />
-      <AnimateIn><HomeAbout pageContent={pageContent} /></AnimateIn>
+      <AnimateIn><HomeAbout pageContent={pageContent} projectCount={projectCount} /></AnimateIn>
       <AnimateIn><Services services={servicesData} /></AnimateIn>
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>

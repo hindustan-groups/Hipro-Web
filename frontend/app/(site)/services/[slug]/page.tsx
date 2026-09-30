@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { findAll } from "@/lib/db";
-import type { Service, Settings } from "@/lib/types";
+import type { Service, Settings, Stats } from "@/lib/types";
 import * as Icons from "lucide-react";
 import DynamicIcon from "@/components/DynamicIcon";
 import { cleanServiceTitle, cleanContentTypos, getServiceSlug } from "@/lib/companyData";
@@ -151,10 +151,14 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
-  const [allServices, settingsData] = await Promise.all([
+  const [allServices, settingsData, statsData] = await Promise.all([
     findAll<Service>("services"),
     findAll<Settings>("settings"),
+    findAll<Stats>("stats"),
   ]);
+
+  const projectStat = statsData?.find((s) => /project/i.test(s.label))?.value || "150+";
+  const expStat = statsData?.find((s) => /experience|year/i.test(s.label))?.value || "8+";
 
   const settings = settingsData[0] || {};
   const phone = settings.companyPhone || "+91 75970 00601";
@@ -282,7 +286,13 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
               </div>
               <div className="space-y-4 text-slate-600 text-base md:text-[17px] leading-relaxed font-light">
                 {richContent.overviewParagraphs.map((para, pi) => (
-                  <p key={pi}>{para}</p>
+                  <p key={pi}>
+                    {para
+                      .replace(/8\+\s*years/gi, `${expStat} years`)
+                      .replace(/over 150 completed projects/gi, `over ${projectStat.replace(/\+$/, '')} completed projects`)
+                      .replace(/150\+\s*projects/gi, `${projectStat} projects`)
+                    }
+                  </p>
                 ))}
               </div>
             </div>
@@ -538,7 +548,10 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
                       <Icons.ShieldCheck className="w-5 h-5" />
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 font-display uppercase tracking-tight mb-2">
-                      {pt.title}
+                      {pt.title
+                        .replace(/8\+\s*Years/gi, `${expStat} Years`)
+                        .replace(/150\+\s*Completed Projects/gi, `${projectStat} Completed Projects`)
+                      }
                     </h3>
                     <p className="text-xs md:text-sm text-slate-600 font-light leading-relaxed">
                       {pt.description}

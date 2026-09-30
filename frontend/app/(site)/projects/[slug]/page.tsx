@@ -410,7 +410,7 @@ export default async function ProjectDetailPage({
   const isOngoing = project.status === "active" || project.status === "ongoing";
 
   return (
-    <article className="min-h-screen bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-black">
+    <article className="min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-amber-500 selection:text-slate-950">
       {/* ─────────────────────────────────────────────────────────────
           STRUCTURED DATA / JSON-LD (Strictly Factual)
       ───────────────────────────────────────────────────────────── */}
@@ -431,31 +431,40 @@ export default async function ProjectDetailPage({
       {/* ─────────────────────────────────────────────────────────────
           1. PREMIUM HERO SECTION
       ───────────────────────────────────────────────────────────── */}
-      <header className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 border-b border-slate-800/80 overflow-hidden">
-        {/* Background Grid Pattern */}
+      <header className="relative w-full pt-28 pb-16 md:pt-36 md:pb-24 bg-white border-b border-slate-200/80 overflow-hidden">
+        {/* Architectural Drafting Blueprint Grid Pattern */}
         <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(#f59e0b 1px, transparent 1px), linear-gradient(to right, #f59e0b 1px, transparent 1px)`,
-            backgroundSize: "48px 48px",
+            backgroundImage:
+              "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
           }}
+          aria-hidden="true"
         />
 
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-amber-500/10 blur-[130px] rounded-full pointer-events-none" />
+        {/* Ambient Subtle Accent Glows */}
+        <div
+          className="absolute -top-20 right-0 w-96 h-96 bg-slate-100/80 rounded-full blur-3xl pointer-events-none -z-0"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -bottom-24 left-0 w-80 h-80 bg-red-50/40 rounded-full blur-3xl pointer-events-none -z-0"
+          aria-hidden="true"
+        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs Navigation */}
-          <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs font-mono tracking-wider text-slate-400 mb-8">
-            <Link href="/" className="hover:text-amber-400 transition-colors">
+          <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs font-mono tracking-wider text-slate-500 mb-8 flex-wrap">
+            <Link href="/" className="hover:text-construction-navy transition-colors">
               Home
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-            <Link href="/projects" className="hover:text-amber-400 transition-colors">
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <Link href="/projects" className="hover:text-construction-navy transition-colors">
               Projects
             </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-            <span className="text-amber-400 truncate max-w-[240px] sm:max-w-md font-semibold">
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <span className="text-construction-navy truncate max-w-[240px] sm:max-w-md font-bold">
               {project.title}
             </span>
           </nav>
@@ -463,26 +472,28 @@ export default async function ProjectDetailPage({
           {/* Badges & Back Button */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="px-3.5 py-1 text-xs font-mono font-bold uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                {project.category}
-              </span>
+              {project.category && project.category.trim() !== "" && (
+                <span className="px-3.5 py-1 text-xs font-mono font-bold uppercase tracking-widest bg-slate-100 text-construction-navy border border-slate-200">
+                  {project.category}
+                </span>
+              )}
 
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider ${
                   isOngoing
-                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    ? "bg-amber-50 text-amber-800 border border-amber-300"
+                    : "bg-emerald-50 text-emerald-800 border border-emerald-300"
                 }`}
               >
                 {isOngoing ? (
                   <>
-                    <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                    <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
                     <span>Ongoing Site</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Completed & Handed Over</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Completed &amp; Handed Over</span>
                   </>
                 )}
               </span>
@@ -490,30 +501,30 @@ export default async function ProjectDetailPage({
 
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-slate-600 hover:text-construction-navy transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 text-amber-400" />
-              Back to Portfolio
+              <ArrowLeft className="w-4 h-4 text-construction-red" />
+              <span>Back to Portfolio</span>
             </Link>
           </div>
 
           {/* Primary Semantic H1 */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-display uppercase tracking-tight text-white max-w-5xl leading-[1.1] mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-display uppercase tracking-tight text-slate-950 max-w-5xl leading-[1.12] mb-6 break-words">
             {project.title}
           </h1>
 
           {/* Hero Quick Location/Date Metadata */}
-          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400 font-medium">
+          <div className="flex flex-wrap items-center gap-6 text-sm text-slate-600 font-medium">
             {project.location && (
               <span className="inline-flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-amber-400" />
-                <span className="text-slate-200">{project.location}</span>
+                <MapPin className="w-4 h-4 text-construction-red" />
+                <span className="text-slate-800 font-semibold">{project.location}</span>
               </span>
             )}
             {(project.completionDate || project.date) && (
               <span className="inline-flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-amber-400" />
-                <span className="text-slate-200">{project.completionDate || project.date}</span>
+                <Calendar className="w-4 h-4 text-construction-navy" />
+                <span className="text-slate-800 font-semibold">{project.completionDate || project.date}</span>
               </span>
             )}
           </div>
@@ -522,7 +533,7 @@ export default async function ProjectDetailPage({
         {/* Primary Cover Image Hero Showcase */}
         {project.image && (
           <div className="mt-10 sm:mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[560px] overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl">
+            <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[560px] overflow-hidden bg-slate-100 border border-slate-200 shadow-md">
               <Image
                 src={project.image}
                 alt={project.imageAlt || `${project.title} - Architectural Engineering Execution Perspective`}
@@ -532,9 +543,9 @@ export default async function ProjectDetailPage({
                 unoptimized={!isOptimizableImage(project.image)}
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-60" />
               {project.imageCaption && (
-                <figcaption className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 text-xs text-slate-300 font-mono tracking-wide bg-black/75 backdrop-blur-sm p-3 border-l-2 border-amber-500 max-w-2xl">
+                <figcaption className="absolute bottom-4 left-4 right-4 sm:bottom-6 sm:left-6 sm:right-6 text-xs text-slate-800 font-mono tracking-wide bg-white/95 backdrop-blur-sm p-3 border-l-4 border-construction-navy max-w-2xl shadow-sm">
                   {project.imageCaption}
                 </figcaption>
               )}
@@ -546,20 +557,20 @@ export default async function ProjectDetailPage({
       {/* ─────────────────────────────────────────────────────────────
           2. EXECUTIVE PROJECT FACTS LEDGER & MAIN CONTENT
       ───────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           
           {/* MAIN NARRATIVE COLUMN (8 COLS) */}
-          <div className="lg:col-span-8 space-y-16">
+          <div className="lg:col-span-8 space-y-12 sm:space-y-16">
             
             {/* Executive Summary Brief (if exists) */}
             {project.shortDescription && (
-              <section aria-labelledby="executive-summary-heading" className="p-6 md:p-8 bg-slate-900/80 border-l-4 border-amber-500 border-y border-r border-slate-800/80">
-                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-amber-400 mb-3">
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <section aria-labelledby="executive-summary-heading" className="p-6 md:p-8 bg-blue-50/60 border-l-4 border-construction-navy border-y border-r border-blue-100 shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-construction-navy mb-3">
+                  <ShieldCheck className="w-4 h-4 text-construction-navy" />
                   <span id="executive-summary-heading">Executive Brief</span>
                 </div>
-                <p className="text-base sm:text-lg text-slate-200 leading-relaxed font-light">
+                <p className="text-base sm:text-lg text-slate-800 leading-relaxed font-normal">
                   {project.shortDescription}
                 </p>
               </section>
@@ -568,13 +579,13 @@ export default async function ProjectDetailPage({
             {/* Case Study Narrative */}
             {project.description && (
               <section aria-labelledby="project-narrative-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <FileText className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-narrative-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
-                    Project Execution & Engineering Narrative
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <FileText className="w-5 h-5 text-construction-red" />
+                  <h2 id="project-narrative-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
+                    Project Execution &amp; Engineering Narrative
                   </h2>
                 </div>
-                <div className="prose prose-invert prose-slate max-w-none text-slate-300 text-base leading-relaxed font-light whitespace-pre-line space-y-4">
+                <div className="prose prose-slate max-w-none text-slate-700 text-base leading-relaxed font-normal whitespace-pre-line space-y-4">
                   {project.description}
                 </div>
               </section>
@@ -583,9 +594,9 @@ export default async function ProjectDetailPage({
             {/* Project Highlights (Rendered ONLY if non-empty) */}
             {highlightsList.length > 0 && (
               <section aria-labelledby="project-highlights-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <Sparkles className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-highlights-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <Sparkles className="w-5 h-5 text-construction-navy" />
+                  <h2 id="project-highlights-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
                     Key Execution Highlights
                   </h2>
                 </div>
@@ -593,14 +604,14 @@ export default async function ProjectDetailPage({
                   {highlightsList.map((item, idx) => (
                     <div
                       key={idx}
-                      className="p-5 bg-slate-900/60 border border-slate-800 hover:border-amber-500/40 transition-colors"
+                      className="p-5 bg-white border border-slate-200 hover:border-slate-300 shadow-sm transition-colors"
                     >
                       {item.label && (
-                        <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-semibold block mb-1">
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-construction-navy font-bold block mb-1">
                           {item.label}
                         </span>
                       )}
-                      <p className="text-sm font-medium text-slate-200">
+                      <p className="text-sm font-semibold text-slate-900">
                         {item.value || (typeof item === "string" ? item : "")}
                       </p>
                     </div>
@@ -612,17 +623,17 @@ export default async function ProjectDetailPage({
             {/* Services Deployed (Rendered ONLY if non-empty) */}
             {servicesList.length > 0 && (
               <section aria-labelledby="project-services-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <Layers className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-services-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
-                    Engineering Disciplines & Services Deployed
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <Layers className="w-5 h-5 text-construction-red" />
+                  <h2 id="project-services-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
+                    Engineering Disciplines &amp; Services Deployed
                   </h2>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
                   {servicesList.map((svc, idx) => (
                     <span
                       key={idx}
-                      className="px-4 py-2 bg-slate-900 border border-slate-800 text-slate-200 text-xs font-mono uppercase tracking-wider hover:border-amber-500/50 transition-colors"
+                      className="px-4 py-2 bg-slate-100 border border-slate-200 text-slate-800 text-xs font-mono uppercase tracking-wider hover:border-slate-400 transition-colors shadow-sm"
                     >
                       {svc}
                     </span>
@@ -634,20 +645,20 @@ export default async function ProjectDetailPage({
             {/* Video Showcase (Rendered ONLY if videoUrl exists) */}
             {hasVideo && (
               <section aria-labelledby="project-video-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <Play className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-video-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <Play className="w-5 h-5 text-construction-navy" />
+                  <h2 id="project-video-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
                     {project.videoTitle || "Execution Video Showcase"}
                   </h2>
                 </div>
 
                 {project.videoDescription && (
-                  <p className="text-sm text-slate-400 font-light mb-4">
+                  <p className="text-sm text-slate-600 font-normal mb-4">
                     {project.videoDescription}
                   </p>
                 )}
 
-                <div className="relative aspect-video w-full bg-black border border-slate-800 overflow-hidden shadow-2xl">
+                <div className="relative aspect-video w-full bg-black border border-slate-200 overflow-hidden shadow-md">
                   {youtubeEmbedUrl ? (
                     <iframe
                       src={youtubeEmbedUrl}
@@ -682,14 +693,14 @@ export default async function ProjectDetailPage({
             {/* Project Gallery & Execution Plates (Rendered ONLY if images exist) */}
             {galleryItems.length > 0 && (
               <section aria-labelledby="project-gallery-heading">
-                <div className="flex items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-800">
+                <div className="flex items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-200">
                   <div className="flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-amber-400" />
-                    <h2 id="project-gallery-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
-                      Field Execution & Architectural Gallery
+                    <Building2 className="w-5 h-5 text-construction-navy" />
+                    <h2 id="project-gallery-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
+                      Field Execution &amp; Architectural Gallery
                     </h2>
                   </div>
-                  <span className="text-xs font-mono text-slate-400">
+                  <span className="text-xs font-mono text-slate-500 font-semibold">
                     {galleryItems.length} {galleryItems.length === 1 ? "Record" : "Records"}
                   </span>
                 </div>
@@ -701,20 +712,20 @@ export default async function ProjectDetailPage({
             {/* Verified Location & Map Section (Rendered ONLY if verified data exists) */}
             {hasVerifiedGeo && (
               <section aria-labelledby="project-location-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <Compass className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-location-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <Compass className="w-5 h-5 text-construction-red" />
+                  <h2 id="project-location-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
                     Verified Site Geography
                   </h2>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
                   {geoDetails.map((geo, idx) => (
-                    <div key={idx} className="p-4 bg-slate-900/60 border border-slate-800">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">
+                    <div key={idx} className="p-4 bg-white border border-slate-200 shadow-sm">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-1">
                         {geo.label}
                       </span>
-                      <p className="text-sm font-semibold text-slate-200">{geo.value}</p>
+                      <p className="text-sm font-bold text-slate-900">{geo.value}</p>
                     </div>
                   ))}
                 </div>
@@ -722,7 +733,7 @@ export default async function ProjectDetailPage({
                 {project.googleMapsUrl && (
                   <div className="mt-4">
                     {project.googleMapsUrl.includes("embed") ? (
-                      <div className="aspect-[21/9] w-full bg-slate-900 border border-slate-800 overflow-hidden">
+                      <div className="aspect-[21/9] w-full bg-slate-100 border border-slate-200 overflow-hidden shadow-sm">
                         <iframe
                           src={project.googleMapsUrl}
                           width="100%"
@@ -739,9 +750,9 @@ export default async function ProjectDetailPage({
                         href={project.googleMapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-amber-500 hover:text-black text-white text-xs font-mono uppercase tracking-wider border border-slate-800 hover:border-amber-500 transition-colors"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-construction-navy hover:bg-slate-800 text-white text-xs font-mono uppercase tracking-wider border border-slate-300 transition-colors shadow-sm"
                       >
-                        <MapPin className="w-4 h-4 text-amber-400" />
+                        <MapPin className="w-4 h-4 text-white" />
                         <span>Open Verified Coordinates in Google Maps</span>
                         <ExternalLink className="w-3.5 h-3.5 ml-1" />
                       </a>
@@ -754,9 +765,9 @@ export default async function ProjectDetailPage({
             {/* Project Technical & Execution Q&A (Rendered ONLY if valid faqs exist) */}
             {validFaqs.length > 0 && (
               <section aria-labelledby="project-faq-heading">
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-                  <HelpCircle className="w-5 h-5 text-amber-400" />
-                  <h2 id="project-faq-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-white">
+                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-200">
+                  <HelpCircle className="w-5 h-5 text-construction-navy" />
+                  <h2 id="project-faq-heading" className="text-xl sm:text-2xl font-bold font-display uppercase tracking-tight text-slate-900">
                     Project Technical &amp; Execution Q&amp;A
                   </h2>
                 </div>
@@ -764,12 +775,12 @@ export default async function ProjectDetailPage({
                   {validFaqs.map((faq, idx) => (
                     <div
                       key={idx}
-                      className="p-6 bg-slate-900/60 border border-slate-800 hover:border-amber-500/40 transition-colors"
+                      className="p-6 bg-white border border-slate-200 hover:border-slate-300 shadow-sm transition-colors"
                     >
-                      <h3 className="text-base font-bold text-amber-400 mb-2 font-display">
+                      <h3 className="text-base font-bold text-construction-navy mb-2 font-display">
                         {faq.question}
                       </h3>
-                      <p className="text-sm font-light text-slate-300 leading-relaxed whitespace-pre-line">
+                      <p className="text-sm font-normal text-slate-700 leading-relaxed whitespace-pre-line">
                         {faq.answer}
                       </p>
                     </div>
@@ -783,10 +794,10 @@ export default async function ProjectDetailPage({
           {/* SIDEBAR COLUMN (4 COLS): FACTS LEDGER & INQUIRY CTA */}
           <aside className="lg:col-span-4 space-y-8">
             {/* Executive Facts Ledger */}
-            <div className="bg-slate-900/90 border border-slate-800 p-6 sm:p-8 sticky top-28 backdrop-blur-sm">
-              <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-slate-800">
-                <Building2 className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white">
+            <div className="bg-white border border-slate-200 p-6 sm:p-8 sticky top-28 shadow-sm">
+              <div className="flex items-center gap-2.5 pb-4 mb-6 border-b border-slate-200">
+                <Building2 className="w-4 h-4 text-construction-navy" />
+                <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-slate-900">
                   Executive Project Ledger
                 </h3>
               </div>
@@ -797,12 +808,12 @@ export default async function ProjectDetailPage({
                   {factsLedger.map((item, idx) => {
                     const Icon = item.icon;
                     return (
-                      <li key={idx} className="border-b border-slate-800/60 pb-4 last:border-0 last:pb-0">
-                        <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 mb-1">
-                          <Icon className="w-3.5 h-3.5 text-amber-400" />
+                      <li key={idx} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                        <span className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1">
+                          <Icon className="w-3.5 h-3.5 text-construction-navy" />
                           {item.label}
                         </span>
-                        <p className="text-sm font-medium text-slate-100 pl-5">
+                        <p className="text-sm font-bold text-slate-900 pl-5">
                           {item.value}
                         </p>
                       </li>
@@ -810,36 +821,36 @@ export default async function ProjectDetailPage({
                   })}
                 </ul>
               ) : (
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-slate-500 font-mono">
                   Standard architectural ledger verified.
                 </p>
               )}
 
               {/* Physical Status Indicator */}
-              <div className="mt-8 pt-6 border-t border-slate-800">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 block mb-2 font-semibold">
                   Structural Commissioning
                 </span>
                 <div
-                  className={`flex items-center gap-2 px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider ${
+                  className={`flex items-center gap-2 px-3.5 py-2 text-xs font-mono font-bold uppercase tracking-wider border ${
                     isOngoing
-                      ? "bg-amber-500/10 text-amber-300 border border-amber-500/30"
-                      : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+                      ? "bg-amber-50 text-amber-800 border-amber-300"
+                      : "bg-emerald-50 text-emerald-800 border-emerald-300"
                   }`}
                 >
-                  <CheckCircle2 className={`w-4 h-4 ${isOngoing ? "text-amber-400" : "text-emerald-400"}`} />
+                  <CheckCircle2 className={`w-4 h-4 ${isOngoing ? "text-amber-600" : "text-emerald-600"}`} />
                   <span>{isOngoing ? "Active Construction Site" : "Completed & Verified Asset"}</span>
                 </div>
               </div>
 
               {/* Consultation / Quote Action */}
-              <div className="mt-8 pt-6 border-t border-slate-800">
-                <p className="text-xs text-slate-400 font-light leading-relaxed mb-4">
+              <div className="mt-8 pt-6 border-t border-slate-200">
+                <p className="text-xs text-slate-600 font-normal leading-relaxed mb-4">
                   Planning a commercial development, civil facility, or industrial structure with similar engineering parameters?
                 </p>
                 <Link
                   href="/contact"
-                  className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-mono font-bold text-xs uppercase tracking-wider transition-colors shadow-lg shadow-amber-500/10"
+                  className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-construction-navy hover:bg-slate-800 text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors shadow-md"
                 >
                   <span>Inquire About Similar Project</span>
                   <ChevronRight className="w-4 h-4" />
@@ -855,20 +866,20 @@ export default async function ProjectDetailPage({
           3. RELATED PROJECTS SECTION (Only if published projects exist)
       ───────────────────────────────────────────────────────────── */}
       {relatedProjects.length > 0 && (
-        <section aria-labelledby="related-projects-heading" className="border-t border-slate-800/80 bg-slate-900/40 py-16 md:py-24">
+        <section aria-labelledby="related-projects-heading" className="border-t border-slate-200 bg-slate-50/70 py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-4 border-b border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10 pb-4 border-b border-slate-200">
               <div>
-                <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-400 block mb-2">
+                <span className="text-xs font-mono font-bold uppercase tracking-widest text-construction-navy block mb-2">
                   Portfolio Cross-Reference
                 </span>
-                <h2 id="related-projects-heading" className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-white">
+                <h2 id="related-projects-heading" className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
                   Related {project.category} Projects
                 </h2>
               </div>
               <Link
                 href="/projects"
-                className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 hover:text-white transition-colors inline-flex items-center gap-1 self-start sm:self-auto"
+                className="text-xs font-mono font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red transition-colors inline-flex items-center gap-1 self-start sm:self-auto"
               >
                 <span>View Full Portfolio</span>
                 <ChevronRight className="w-4 h-4" />
@@ -884,9 +895,9 @@ export default async function ProjectDetailPage({
                   <Link
                     key={rel.id}
                     href={`/projects/${relSlug}`}
-                    className="group flex flex-col bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition-all duration-300 overflow-hidden shadow-lg"
+                    className="group flex flex-col bg-white border border-slate-200 hover:border-slate-300 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md"
                   >
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
                       {rel.image ? (
                         <Image
                           src={rel.image}
@@ -897,12 +908,12 @@ export default async function ProjectDetailPage({
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-700 font-mono text-xs">
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-mono text-xs">
                           HiPRO Execution
                         </div>
                       )}
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-black/80 text-amber-400 border border-amber-500/30">
+                        <span className="px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider bg-white/95 text-construction-navy border border-slate-200 shadow-sm">
                           {rel.category}
                         </span>
                       </div>
@@ -910,8 +921,8 @@ export default async function ProjectDetailPage({
 
                     <div className="p-6 flex flex-col flex-1 justify-between">
                       <div>
-                        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 mb-2">
-                          <span className={relIsOngoing ? "text-amber-400" : "text-emerald-400"}>
+                        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500 mb-2">
+                          <span className={relIsOngoing ? "text-amber-700 font-bold" : "text-emerald-700 font-bold"}>
                             ● {relIsOngoing ? "Ongoing" : "Completed"}
                           </span>
                           {rel.location && (
@@ -922,14 +933,14 @@ export default async function ProjectDetailPage({
                           )}
                         </div>
 
-                        <h3 className="text-base font-bold font-display uppercase tracking-tight text-white group-hover:text-amber-400 transition-colors line-clamp-2">
+                        <h3 className="text-base font-bold font-display uppercase tracking-tight text-slate-900 group-hover:text-construction-navy transition-colors line-clamp-2">
                           {rel.title}
                         </h3>
                       </div>
 
-                      <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono font-semibold text-slate-400 group-hover:text-white transition-colors">
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-mono font-bold text-construction-navy group-hover:text-construction-red transition-colors">
                         <span>Review Case Study</span>
-                        <ChevronRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight className="w-4 h-4 text-construction-navy group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </Link>
@@ -943,38 +954,38 @@ export default async function ProjectDetailPage({
       {/* ─────────────────────────────────────────────────────────────
           4. FINAL ARCHITECTURAL INQUIRY CTA
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-t border-slate-800 bg-black py-20 md:py-28">
+      <section className="relative overflow-hidden border-t border-slate-200 bg-white py-20 md:py-28">
         <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 opacity-[0.02] pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(#f59e0b 1px, transparent 1px), linear-gradient(to right, #f59e0b 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(#0F2C59 1px, transparent 1px), linear-gradient(to right, #0F2C59 1px, transparent 1px)`,
             backgroundSize: "32px 32px",
           }}
         />
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 text-xs font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/30 mb-6">
-            <Building2 className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-2 px-3.5 py-1 text-xs font-mono font-bold uppercase tracking-widest text-construction-navy bg-slate-100 border border-slate-200 mb-6 shadow-sm">
+            <Building2 className="w-3.5 h-3.5 text-construction-navy" />
             Direct Consultation
           </span>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display uppercase tracking-tight text-white mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display uppercase tracking-tight text-slate-950 mb-6">
             Consult With Our Engineering Directors
           </h2>
 
-          <p className="text-base sm:text-lg text-slate-400 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-600 font-normal max-w-2xl mx-auto mb-10 leading-relaxed">
             Planning a heavy industrial superstructure, commercial landmark, or residential development? Leverage Hindustan Projects&apos; verified civil engineering expertise.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/contact"
-              className="w-full sm:w-auto px-8 py-4 bg-amber-500 hover:bg-amber-400 text-black font-mono font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-amber-500/20"
+              className="w-full sm:w-auto px-8 py-4 bg-construction-red hover:bg-red-700 text-white font-mono font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
             >
               Initiate Project Consultation
             </Link>
             <Link
               href="/projects"
-              className="w-full sm:w-auto px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-xs uppercase tracking-widest border border-slate-800 hover:border-slate-700 transition-all"
+              className="w-full sm:w-auto px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-mono font-bold text-xs uppercase tracking-widest border border-slate-300 transition-all"
             >
               Browse All Projects
             </Link>

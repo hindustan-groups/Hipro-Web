@@ -56,16 +56,6 @@ const defaultStats: StatType[] = [
   { id: "4", label: "Client Satisfaction", value: "85%", icon: "Award", order: 4 }
 ];
 
-const verifiedStatsMap: Record<string, string> = {
-  "Years Experience": "8+",
-  "Projects Done": "150+",
-  "Projects Completed": "150+",
-  "Team Members": "30+",
-  "Satisfaction Rate": "85%",
-  "Client Satisfaction": "85%",
-  "Happy Clients": "200+",
-  "Awards Won": "10+",
-};
 
 function cleanHeroText(text: string = ""): string {
   if (!text) return "";
@@ -104,9 +94,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     initialSlides && initialSlides.length > 0 ? initialSlides : defaultSlides
   );
   const [stats, setStats] = useState<StatType[]>(
-    initialStats && initialStats.length > 0 
-      ? initialStats.map(s => ({ ...s, value: verifiedStatsMap[s.label] || s.value }))
-      : defaultStats
+    initialStats && initialStats.length > 0 ? initialStats : defaultStats
   );
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -118,7 +106,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
 
   useEffect(() => {
     if (initialStats && initialStats.length > 0) {
-      setStats(initialStats.map(s => ({ ...s, value: verifiedStatsMap[s.label] || s.value })));
+      setStats(initialStats);
     }
   }, [initialStats]);
 
@@ -144,7 +132,7 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
         if (!res.ok) return;
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setStats(json.data.map((s: StatType) => ({ ...s, value: verifiedStatsMap[s.label] || s.value })));
+          setStats(json.data);
         }
       } catch (err) {
         console.error("Failed to load stats:", err);

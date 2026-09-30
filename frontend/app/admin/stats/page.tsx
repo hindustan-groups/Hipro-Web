@@ -52,6 +52,17 @@ export default function AdminStats() {
       });
       const json = await res.json();
       if (json.success) {
+        // Trigger on-demand cache revalidation for stats tag and affected public paths
+        try {
+          await fetch("/api/revalidate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tag: "stats", paths: ["/", "/cost-estimator", "/services"] }),
+          });
+        } catch {
+          /* silent fallback */
+        }
+
         setSuccess(`Updated "${stat.label}"`);
         setTimeout(() => setSuccess(""), 3000);
       } else {

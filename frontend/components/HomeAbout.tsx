@@ -8,9 +8,10 @@ interface HomeAboutProps {
     homeAboutText?: string;
     [key: string]: any;
   };
+  projectCount?: string;
 }
 
-export default function HomeAbout({ pageContent = {} }: HomeAboutProps) {
+export default function HomeAbout({ pageContent = {}, projectCount = "150+" }: HomeAboutProps) {
   const badgeText = pageContent.homeAboutTag || "About Hindustan Projects · Est. 2019";
   const heading = pageContent.homeAboutHeading || "Engineering Landmarks. Building Trust in Rajasthan.";
   const description = pageContent.homeAboutText || 
@@ -70,7 +71,7 @@ export default function HomeAbout({ pageContent = {} }: HomeAboutProps) {
               </span>
               <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 border border-slate-200 shadow-sm">
                 <Building2 className="w-3.5 h-3.5 text-construction-navy" />
-                150+ Projects Handed Over
+                {projectCount} Projects Handed Over
               </span>
               <span className="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 border border-slate-200 shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-construction-red" />

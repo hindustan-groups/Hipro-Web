@@ -6,6 +6,7 @@ import { CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PhoneCaptureModal from "@/components/PhoneCaptureModal";
 import { trackEvent } from "@/lib/analytics";
+import type { Stats as StatType } from "@/lib/types";
 
 export default function CostEstimatorPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -13,7 +14,19 @@ export default function CostEstimatorPage() {
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [selectedTier, setSelectedTier] = useState("Classic");
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [siteStats, setSiteStats] = useState<StatType[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/stats")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          setSiteStats(json.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Check if the user has already entered their phone number (via cookie)
@@ -71,20 +84,36 @@ export default function CostEstimatorPage() {
             {/* Stats */}
             <div className="flex flex-wrap gap-8 md:gap-16 mb-10">
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">150+</div>
-                <div className="text-gray-600 text-sm">Projects</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
+                  {siteStats.find((s) => /project/i.test(s.label))?.value || "150+"}
+                </div>
+                <div className="text-gray-600 text-sm">
+                  {siteStats.find((s) => /project/i.test(s.label))?.label || "Projects"}
+                </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">8+</div>
-                <div className="text-gray-600 text-sm">Years Experience</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
+                  {siteStats.find((s) => /year|experience/i.test(s.label))?.value || "8+"}
+                </div>
+                <div className="text-gray-600 text-sm">
+                  {siteStats.find((s) => /year|experience/i.test(s.label))?.label || "Years Experience"}
+                </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">30+</div>
-                <div className="text-gray-600 text-sm">Team Members</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
+                  {siteStats.find((s) => /team/i.test(s.label))?.value || "30+"}
+                </div>
+                <div className="text-gray-600 text-sm">
+                  {siteStats.find((s) => /team/i.test(s.label))?.label || "Team Members"}
+                </div>
               </div>
               <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">85%</div>
-                <div className="text-gray-600 text-sm">Client Satisfaction</div>
+                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
+                  {siteStats.find((s) => /satisfaction/i.test(s.label))?.value || "85%"}
+                </div>
+                <div className="text-gray-600 text-sm">
+                  {siteStats.find((s) => /satisfaction/i.test(s.label))?.label || "Client Satisfaction"}
+                </div>
               </div>
             </div>
 
