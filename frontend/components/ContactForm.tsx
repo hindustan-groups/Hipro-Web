@@ -2,8 +2,21 @@
 
 import { useState } from "react";
 import { trackEvent } from "@/lib/analytics";
+import { cleanServiceTitle } from "@/lib/companyData";
 
-export default function ContactForm({ services = [] }: { services?: { title: string }[] }) {
+interface ContactFormProps {
+  services?: { title: string }[];
+  customCategories?: string[];
+  buttonText?: string;
+  responseNote?: string;
+}
+
+export default function ContactForm({
+  services = [],
+  customCategories = [],
+  buttonText = "Submit Project Inquiry",
+  responseNote = "Our senior project engineers will respond within 24 business hours.",
+}: ContactFormProps) {
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", service: "", message: "",
   });
@@ -48,6 +61,29 @@ export default function ContactForm({ services = [] }: { services?: { title: str
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Compute normalized service category options
+  const categoryOptions =
+    customCategories && customCategories.length > 0
+      ? customCategories.map((c) => c.trim()).filter(Boolean)
+      : services && services.length > 0
+      ? Array.from(
+          new Set(
+            services
+              .map((s) => cleanServiceTitle(s?.title || ""))
+              .filter(Boolean)
+          )
+        )
+      : [
+          "Architecture & Planning",
+          "Professional Construction Services",
+          "Surveying & Site Measurements",
+          "Interior & Exterior Design",
+          "Water Treatment Plant Construction",
+          "Project Management & Consultancy",
+          "Structural Engineering & Analysis",
+          "Construction Cost Estimation & BOQ",
+        ];
+
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
@@ -57,7 +93,7 @@ export default function ContactForm({ services = [] }: { services?: { title: str
           </svg>
         </div>
         <p className="text-xl font-bold text-black font-display uppercase tracking-tight">Message Received!</p>
-        <p className="text-sm text-slate-500 font-light">Our senior project engineers will respond within 24 business hours.</p>
+        <p className="text-sm text-slate-500 font-light">{responseNote}</p>
       </div>
     );
   }
@@ -109,20 +145,11 @@ export default function ContactForm({ services = [] }: { services?: { title: str
             className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
           >
             <option value="">Select a service category</option>
-            {services && services.length > 0 ? (
-              services.map((s, idx) => (
-                s && s.title ? <option key={idx} value={s.title}>{s.title}</option> : null
-              ))
-            ) : (
-              <>
-                <option value="residential">Residential Construction</option>
-                <option value="commercial">Commercial Development</option>
-                <option value="industrial">Industrial Facilities</option>
-                <option value="renovation">Renovation & Remodeling</option>
-                <option value="design-build">Design Build Turnkey</option>
-                <option value="management">Project Management</option>
-              </>
-            )}
+            {categoryOptions.map((opt, idx) => (
+              <option key={idx} value={opt}>
+                {opt}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -142,7 +169,7 @@ export default function ContactForm({ services = [] }: { services?: { title: str
         disabled={loading}
         className="w-full bg-construction-red hover:bg-red-700 disabled:opacity-50 text-white font-bold py-4 rounded-none text-sm uppercase tracking-wider shadow-lg shadow-red-600/30 transition-all"
       >
-        {loading ? "Sending..." : "Submit Project Inquiry"}
+        {loading ? "Sending..." : buttonText}
       </button>
     </form>
   );

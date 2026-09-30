@@ -122,9 +122,17 @@ export function cleanServiceTitle(title: string = ""): string {
     return "Professional Construction Services";
   }
 
+  if (lower.includes("structure analysis") || lower.includes("structural")) {
+    return "Structural Engineering & Analysis";
+  }
+  if (lower.includes("estimation") || lower.includes("boq") || lower.includes("quantity takeoff")) {
+    return "Construction Cost Estimation & BOQ";
+  }
+
   // Generic typo replacements
   return trimmed
     .replace(/architcture\s*planning/gi, "Architecture & Planning")
+    .replace(/architcture/gi, "Architecture")
     .replace(/Interior\s+&\s+Exterior/gi, "Interior & Exterior")
     .replace(/constrution/gi, "construction")
     .replace(/povide/gi, "provide");

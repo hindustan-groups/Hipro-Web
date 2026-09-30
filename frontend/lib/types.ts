@@ -224,6 +224,27 @@ export interface Settings {
   updatedAt?: string;
 }
 
+export interface ContactPageContent {
+  badge?: string;
+  headingPrefix?: string;
+  headingAccent?: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  businessHours?: string;
+  whatsapp?: string;
+  formTitle?: string;
+  formSubtitle?: string;
+  responseNote?: string;
+  serviceCategories?: string[];
+  mapEmbedUrl?: string;
+  mapDirectionsUrl?: string;
+  showMap?: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
+}
+
 export interface HeroSlide {
   id: string;
   image: string;

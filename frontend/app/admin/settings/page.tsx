@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import type { Settings } from "@/lib/types";
 
@@ -325,14 +326,23 @@ export default function AdminSettings() {
 
         {/* ── 2. Contact Details ───────────────────────────────── */}
         <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/30">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-slate-100 flex items-center justify-center border border-slate-200">
-              <Phone className="w-5 h-5 text-slate-700" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-none bg-slate-100 flex items-center justify-center border border-slate-200">
+                <Phone className="w-5 h-5 text-slate-700" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Contact Information</h2>
+                <p className="text-slate-500 text-xs mt-0.5">Appears in footer and on the Contact page.</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Contact Information</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Appears in footer and on the Contact page.</p>
-            </div>
+            <Link
+              href="/admin/contact-page"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-construction-navy hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider font-display transition-colors self-start sm:self-auto"
+            >
+              <MapPin className="w-3.5 h-3.5 text-construction-red" />
+              <span>Full Contact Page & Map CMS →</span>
+            </Link>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
