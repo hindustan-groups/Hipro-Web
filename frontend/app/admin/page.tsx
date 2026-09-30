@@ -115,9 +115,15 @@ export default function AdminDashboard() {
         <>
           {/* Stat cards including Blog Articles */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard label="Messages"    value={data.contacts.total}    sub={`${data.contacts.new} new`}           icon={Inbox} />
-            <StatCard label="Quotes"      value={data.quotes.total}      sub={`${data.quotes.pending} pending`}     icon={ClipboardList} />
-            <StatCard label="Subscribers" value={data.newsletter.total}  sub="newsletter"                          icon={Users} />
+            <Link href="/admin/leads?type=contact" className="block group transition-transform hover:-translate-y-0.5">
+              <StatCard label="Messages"    value={data.contacts.total}    sub={`${data.contacts.new} new`}           icon={Inbox} />
+            </Link>
+            <Link href="/admin/leads?type=quote" className="block group transition-transform hover:-translate-y-0.5">
+              <StatCard label="Quotes"      value={data.quotes.total}      sub={`${data.quotes.pending} pending`}     icon={ClipboardList} />
+            </Link>
+            <Link href="/admin/leads?type=newsletter" className="block group transition-transform hover:-translate-y-0.5">
+              <StatCard label="Subscribers" value={data.newsletter.total}  sub="newsletter"                          icon={Users} />
+            </Link>
             <StatCard label="Projects"    value={data.projects.active}   sub={`${data.projects.featured} featured`} icon={Building2} />
             <StatCard label="Reviews"     value={data.testimonials.total} sub={`${data.testimonials.pending} pending`} icon={Award} />
             <Link href="/admin/blogs" className="block group transition-transform hover:-translate-y-0.5">
@@ -259,7 +265,7 @@ export default function AdminDashboard() {
             <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
                 <h3 className="text-slate-900 font-bold text-sm tracking-tight">Recent Messages</h3>
-                <Link href="/admin/contacts" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all &rarr;</Link>
+                <Link href="/admin/leads?type=contact" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all in Hub &rarr;</Link>
               </div>
               {data.recentContacts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50 flex-1">
@@ -292,7 +298,7 @@ export default function AdminDashboard() {
             <div className="bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-white">
                 <h3 className="text-slate-900 font-bold text-sm tracking-tight">Recent Quote Requests</h3>
-                <Link href="/admin/quotes" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all &rarr;</Link>
+                <Link href="/admin/leads?type=quote" className="text-construction-navy text-[13px] font-semibold hover:text-blue-700 transition-colors">View all in Hub &rarr;</Link>
               </div>
               {data.recentQuotes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50 flex-1">

@@ -54,10 +54,51 @@ router.post("/", contactLimiter, async (req: Request, res: Response) => {
 // GET /api/contact — get all messages (Protected)
 router.get("/", authGuard, async (req: Request, res: Response) => {
   try {
-    const messages = await findAll<ContactMessage>("contacts");
+    const { status, search, page, limit } = req.query;
+    let messages = await findAll<ContactMessage>("contacts");
+
+    // Filter by status if provided
+    if (status && status !== "all") {
+      messages = messages.filter((m) => m.status === status);
+    }
+
+    // Filter by search query if provided
+    if (search && typeof search === "string" && search.trim()) {
+      const q = search.trim().toLowerCase();
+      messages = messages.filter((m) =>
+        (m.name && m.name.toLowerCase().includes(q)) ||
+        (m.email && m.email.toLowerCase().includes(q)) ||
+        (m.phone && m.phone.toLowerCase().includes(q)) ||
+        (m.service && m.service.toLowerCase().includes(q)) ||
+        (m.message && m.message.toLowerCase().includes(q)) ||
+        (m.id && m.id.toLowerCase().includes(q))
+      );
+    }
+
     messages.sort((a, b) =>
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
     );
+
+    // If pagination requested
+    if (page && limit) {
+      const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+      const limitNum = Math.max(1, parseInt(limit as string, 10) || 20);
+      const total = messages.length;
+      const startIndex = (pageNum - 1) * limitNum;
+      const paginated = messages.slice(startIndex, startIndex + limitNum);
+
+      return res.json({
+        success: true,
+        data: paginated,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
+    }
+
     return res.json({
       success: true,
       data: messages,
@@ -104,4 +145,71 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
   }
 });
 
+// DELETE /api/contact/:id — delete message (Protected)
+router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Record ID is required",
+      } as ApiResponse);
+    }
+
+    const { deleteOne } = await import("../lib/db");
+    const ok = await deleteOne("contacts", id);
+    if (!ok) {
+      return res.status(404).json({
+        success: false,
+        error: "Message not found or already deleted",
+      } as ApiResponse);
+    }
+
+    return res.json({
+      success: true,
+      message: "Message deleted successfully",
+    } as ApiResponse);
+  } catch (err) {
+    console.error("[/api/contact DELETE /:id]", err);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse);
+  }
+});
+
+// DELETE /api/contact — delete message by body { id } (Protected)
+router.delete("/", authGuard, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Record ID is required",
+      } as ApiResponse);
+    }
+
+    const { deleteOne } = await import("../lib/db");
+    const ok = await deleteOne("contacts", id);
+    if (!ok) {
+      return res.status(404).json({
+        success: false,
+        error: "Message not found or already deleted",
+      } as ApiResponse);
+    }
+
+    return res.json({
+      success: true,
+      message: "Message deleted successfully",
+    } as ApiResponse);
+  } catch (err) {
+    console.error("[/api/contact DELETE]", err);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    } as ApiResponse);
+  }
+});
+
 export default router;
+

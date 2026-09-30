@@ -64,6 +64,7 @@ const PRIVATE_COLLECTIONS = new Set([
   "adminUsers",
   "applications",
   "newsletter",
+  "leads",
 ]);
 
 const DEFAULT_TIMEOUT_MS = 12000;

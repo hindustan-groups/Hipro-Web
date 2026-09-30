@@ -22,7 +22,15 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
   }
 
   const sectionKey = pathname.split("/")[2] || "dashboard";
-  const hasAccess = sectionKey === "dashboard" || userPermissions.includes(sectionKey);
+  const hasAccess =
+    sectionKey === "dashboard" ||
+    userPermissions.includes(sectionKey) ||
+    (sectionKey === "leads" && (
+      userPermissions.includes("leads") ||
+      userPermissions.includes("contacts") ||
+      userPermissions.includes("quotes") ||
+      userPermissions.includes("applications")
+    ));
 
   if (!hasAccess) {
     return (

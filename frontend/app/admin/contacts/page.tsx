@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, CheckCircle, Clock, Eye, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { RefreshCw, CheckCircle, Clock, Eye, Trash2, Inbox } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 
 interface Contact {
@@ -43,6 +44,27 @@ export default function AdminContacts() {
 
   return (
     <div className="space-y-5">
+      {/* Leads Hub Announcement Banner */}
+      <div className="bg-blue-50 border border-blue-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-blue-600 text-white flex items-center justify-center shrink-0">
+            <Inbox className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-blue-950">Looking for all website form submissions?</h4>
+            <p className="text-xs text-blue-700 mt-0.5">
+              Manage Contact forms, Quotes, Cost Estimates, and Applications in the unified Lead Management Hub.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin/leads?type=contact"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-construction-navy hover:bg-blue-900 text-white text-xs font-bold uppercase tracking-wider whitespace-nowrap shadow-xs transition-colors"
+        >
+          Open Leads Hub &rarr;
+        </Link>
+      </div>
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2 p-1 bg-slate-100 rounded-none-full border border-slate-200">

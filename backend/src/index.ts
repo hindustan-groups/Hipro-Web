@@ -23,6 +23,7 @@ import applicationsRouter from "./routes/applications";
 import locationsRouter from "./routes/locations";
 import aboutRouter from "./routes/about";
 import uploadRouter from "./routes/upload";
+import leadsRouter from "./routes/leads";
 import { securityHeaders } from "./middleware/securityHeaders";
 
 const app = express();
@@ -80,6 +81,7 @@ app.use("/api/applications", applicationsRouter);
 app.use("/api/locations", locationsRouter);
 app.use("/api/about", aboutRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/leads", leadsRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {

@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, 
 import { findBySlug, getRelatedBlogs } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import BlogNewsletterForm from "@/components/BlogNewsletterForm";
 import { Metadata } from "next";
 import { generateBreadcrumbSchema, generateFaqSchema } from "@/lib/schema";
 import {
@@ -624,12 +625,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <div className="bg-slate-50 p-8 border border-slate-200">
                 <h4 className="text-xl font-bold text-slate-900 font-display uppercase tracking-tight mb-2">Never miss an update</h4>
                 <p className="text-sm text-slate-500 font-light mb-6">Get the latest insights delivered straight to your inbox.</p>
-                <form className="flex flex-col gap-3">
-                  <input type="email" placeholder="Email Address" className="w-full px-4 py-3 bg-white border border-slate-300 text-sm focus:outline-none focus:border-construction-red" required />
-                  <button type="submit" className="w-full bg-construction-red hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs py-4 transition-colors">
-                    Subscribe
-                  </button>
-                </form>
+                <BlogNewsletterForm />
               </div>
 
               {/* Related Posts */}

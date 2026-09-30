@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Mail, FileText, FolderOpen,
-  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info, MapPin, Link2
+  Star, Users, BarChart2, HardHat, Settings, LogOut, LayoutTemplate, Link as LinkIcon, Briefcase, BookOpen, Info, MapPin, Link2, Inbox
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin",           label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/admin/leads",     label: "Leads Hub",   icon: Inbox },
   { href: "/admin/hero",      label: "Hero Section", icon: LayoutTemplate },
   { href: "/admin/about",     label: "About Page",  icon: Info },
   { href: "/admin/contact-page", label: "Contact Page", icon: MapPin },
@@ -88,7 +89,16 @@ export default function AdminSidebar({ user }: { user: any }) {
           
           // Check permissions
           const sectionKey = href.split("/")[2] || "dashboard";
-          const hasAccess = isAdmin || sectionKey === "dashboard" || userPermissions.includes(sectionKey);
+          const hasAccess =
+            isAdmin ||
+            sectionKey === "dashboard" ||
+            userPermissions.includes(sectionKey) ||
+            (sectionKey === "leads" && (
+              userPermissions.includes("leads") ||
+              userPermissions.includes("contacts") ||
+              userPermissions.includes("quotes") ||
+              userPermissions.includes("applications")
+            ));
           
           if (!hasAccess) return null;
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 import { cleanServiceTitle } from "@/lib/companyData";
 
@@ -12,12 +13,13 @@ interface ContactFormProps {
   responseNote?: string;
 }
 
-export default function ContactForm({
+function ContactFormInner({
   services = [],
   customCategories = [],
   buttonText = "Submit Project Inquiry",
   responseNote = "Our senior project engineers will respond within 24 business hours.",
 }: ContactFormProps) {
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", service: "", message: "",
   });
@@ -26,6 +28,27 @@ export default function ContactForm({
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Auto-fill from query params (e.g. from service or project detail pages)
+  useEffect(() => {
+    if (!searchParams) return;
+    const serviceParam = searchParams.get("service");
+    const projectParam = searchParams.get("project");
+
+    if (serviceParam) {
+      setFormData((prev) => ({
+        ...prev,
+        service: cleanServiceTitle(serviceParam),
+      }));
+    }
+
+    if (projectParam) {
+      setFormData((prev) => ({
+        ...prev,
+        message: prev.message || `I am inquiring regarding the "${projectParam}" execution specifications. Please provide a technical review and cost estimate.`,
+      }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +72,7 @@ export default function ContactForm({
       });
       const data = await res.json();
       
-      if (data.success) {
+      if (res.ok && data.success) {
         trackEvent("generate_lead", {
           form_id: "contact_page",
           service_category: finalService || undefined,
@@ -129,8 +152,9 @@ export default function ContactForm({
           <input
             id="contact-name"
             type="text" name="name" value={formData.name} onChange={handleChange} required
+            disabled={loading}
             placeholder="John Doe"
-            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
+            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red disabled:opacity-60 transition-all"
           />
         </div>
         <div>
@@ -138,8 +162,9 @@ export default function ContactForm({
           <input
             id="contact-email"
             type="email" name="email" value={formData.email} onChange={handleChange} required
+            disabled={loading}
             placeholder="john@company.com"
-            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
+            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red disabled:opacity-60 transition-all"
           />
         </div>
       </div>
@@ -150,8 +175,9 @@ export default function ContactForm({
           <input
             id="contact-phone"
             type="tel" name="phone" value={formData.phone} onChange={handleChange}
+            disabled={loading}
             placeholder="+91 75970 00601"
-            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
+            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red disabled:opacity-60 transition-all"
           />
         </div>
         <div>
@@ -160,7 +186,8 @@ export default function ContactForm({
             id="contact-service"
             aria-label="Service Category"
             name="service" value={formData.service} onChange={handleChange}
-            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all"
+            disabled={loading}
+            className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red disabled:opacity-60 transition-all"
           >
             <option value="">Select a service category</option>
             {categoryOptions.map((opt, idx) => (
@@ -176,8 +203,9 @@ export default function ContactForm({
                 type="text"
                 value={customService}
                 onChange={(e) => setCustomService(e.target.value)}
+                disabled={loading}
                 placeholder="Specify your required service / work..."
-                className="w-full px-3.5 py-2.5 rounded-none border border-slate-300 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-construction-red focus:border-construction-red focus:bg-white transition-all font-sans"
+                className="w-full px-3.5 py-2.5 rounded-none border border-slate-300 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-construction-red focus:border-construction-red focus:bg-white disabled:opacity-60 transition-all font-sans"
               />
             </div>
           )}
@@ -189,8 +217,9 @@ export default function ContactForm({
         <textarea
           id="contact-message"
           name="message" value={formData.message} onChange={handleChange} required rows={4}
+          disabled={loading}
           placeholder="Specify project scope, location, timeline, and estimated plot area..."
-          className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all resize-none"
+          className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red disabled:opacity-60 transition-all resize-none"
         />
       </div>
 
@@ -201,6 +230,7 @@ export default function ContactForm({
             id="contact-consent-checkbox"
             type="checkbox"
             required
+            disabled={loading}
             checked={consentGiven}
             onChange={(e) => setConsentGiven(e.target.checked)}
             className="mt-0.5 w-4 h-4 rounded-none border-slate-300 text-construction-red focus:ring-construction-red/30 cursor-pointer accent-red-600 shrink-0"
@@ -226,10 +256,18 @@ export default function ContactForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-construction-red hover:bg-red-700 disabled:opacity-50 text-white font-bold py-4 rounded-none text-sm uppercase tracking-wider shadow-lg shadow-red-600/30 transition-all"
+        className="w-full bg-construction-red hover:bg-red-700 disabled:opacity-50 text-white font-bold py-4 rounded-none text-sm uppercase tracking-wider shadow-lg shadow-red-600/30 transition-all cursor-pointer"
       >
-        {loading ? "Sending..." : buttonText}
+        {loading ? "Sending Message..." : buttonText}
       </button>
     </form>
+  );
+}
+
+export default function ContactForm(props: ContactFormProps) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-xs">Loading form...</div>}>
+      <ContactFormInner {...props} />
+    </Suspense>
   );
 }

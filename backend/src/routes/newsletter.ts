@@ -77,11 +77,38 @@ router.get("/", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/newsletter — unsubscribe (Public)
+// DELETE /api/newsletter/:id — delete subscriber by ID (Protected)
+router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, error: "ID required" } as ApiResponse);
+
+    const { deleteOne } = await import("../lib/db");
+    const ok = await deleteOne("newsletter", id as string);
+    if (!ok) {
+      return res.status(404).json({ success: false, error: "Subscriber not found" } as ApiResponse);
+    }
+
+    return res.json({ success: true, message: "Subscriber deleted successfully" } as ApiResponse);
+  } catch {
+    return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
+  }
+});
+
+// DELETE /api/newsletter — unsubscribe (Public or Protected with body { id } or { email })
 router.delete("/", async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, error: "Email required" } as ApiResponse);
+    const { email, id } = req.body;
+    if (id) {
+      const { deleteOne } = await import("../lib/db");
+      const ok = await deleteOne("newsletter", id as string);
+      if (!ok) {
+        return res.status(404).json({ success: false, error: "Subscriber not found" } as ApiResponse);
+      }
+      return res.json({ success: true, message: "Subscriber deleted successfully" } as ApiResponse);
+    }
+
+    if (!email) return res.status(400).json({ success: false, error: "Email or ID required" } as ApiResponse);
 
     const normalised = email.trim().toLowerCase();
     const subscriber = await prisma.newsletterSubscriber.findUnique({
@@ -104,3 +131,4 @@ router.delete("/", async (req: Request, res: Response) => {
 });
 
 export default router;
+
