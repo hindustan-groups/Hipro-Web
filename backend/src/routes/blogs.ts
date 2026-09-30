@@ -113,6 +113,13 @@ router.get("/", async (req: Request, res: Response) => {
     const includeFull = req.query.full === "true";
     const statusFilter = typeof req.query.status === "string" ? req.query.status.toLowerCase() : null;
 
+    // Scalable server-side limiting: optional ?limit=N and ?page=N (1-indexed)
+    // Admin requests (all=true) bypass limit for full dataset access
+    const rawLimit = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : null;
+    const rawPage = typeof req.query.page === "string" ? parseInt(req.query.page, 10) : 1;
+    const pageSize = rawLimit && rawLimit > 0 && rawLimit <= 500 ? rawLimit : null;
+    const pageIndex = rawPage > 0 ? rawPage - 1 : 0;
+
     // When all=true is requested, require valid admin authentication
     if (includeAll) {
       const user = await getSessionUser(req);
@@ -148,6 +155,8 @@ router.get("/", async (req: Request, res: Response) => {
       },
       select: includeFull ? undefined : LISTING_SELECT,
       orderBy: { createdAt: "desc" },
+      // Apply server-side limit/page when requested
+      ...(pageSize ? { take: pageSize, skip: pageIndex * pageSize } : {}),
     });
 
     return res.json({ success: true, data: active } as ApiResponse<any[]>);

@@ -132,6 +132,86 @@ export async function findBySlug<T>(collection: string, slug: string): Promise<T
   return items.find((item: any) => (item.slug === slug || item.id === slug) && item.active !== false) || null;
 }
 
+/**
+ * findLimited — Server-side limited fetch.
+ * Requests ONLY the needed number of records from the backend API.
+ * Use on home page / preview sections where you need N records at most.
+ * PREFERRED over findAll().slice(0,N) for scalability.
+ */
+export async function findLimited<T>(collection: string, limit: number): Promise<T[]> {
+  const endpoint = getEndpoint(collection);
+  const isPrivate = PRIVATE_COLLECTIONS.has(collection);
+  const url = `${BACKEND_URL}/api/${endpoint}?limit=${limit}`;
+  try {
+    const fetchOptions: RequestInit = isPrivate
+      ? { cache: "no-store", signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) }
+      : { next: { revalidate: 60, tags: [collection] }, signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) };
+    const res = await fetch(url, fetchOptions);
+    if (!res.ok) {
+      console.error(`findLimited: Failed to fetch ${collection} (limit=${limit}): ${res.statusText}`);
+      return [];
+    }
+    const json = await res.json();
+    if (json.data && Array.isArray(json.data)) return json.data as T[];
+    if (Array.isArray(json)) return json as T[];
+    return [];
+  } catch (err) {
+    console.error(`findLimited: Network error fetching ${collection}:`, err);
+    return [];
+  }
+}
+
+/**
+ * findPage — Server-side paginated fetch.
+ * Requests page N (1-indexed) of pageSize records from the backend API.
+ * Use on listing pages for proper server-driven pagination.
+ */
+export async function findPage<T>(collection: string, page: number, pageSize: number): Promise<T[]> {
+  const endpoint = getEndpoint(collection);
+  const isPrivate = PRIVATE_COLLECTIONS.has(collection);
+  const url = `${BACKEND_URL}/api/${endpoint}?page=${page}&limit=${pageSize}`;
+  try {
+    const fetchOptions: RequestInit = isPrivate
+      ? { cache: "no-store", signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) }
+      : { next: { revalidate: 60, tags: [collection] }, signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS) };
+    const res = await fetch(url, fetchOptions);
+    if (!res.ok) {
+      console.error(`findPage: Failed to fetch ${collection} (page=${page}, size=${pageSize}): ${res.statusText}`);
+      return [];
+    }
+    const json = await res.json();
+    if (json.data && Array.isArray(json.data)) return json.data as T[];
+    if (Array.isArray(json)) return json as T[];
+    return [];
+  } catch (err) {
+    console.error(`findPage: Network error fetching ${collection}:`, err);
+    return [];
+  }
+}
+
+/**
+ * getRelatedBlogs — Fetch a limited set of latest published blogs.
+ * Used by blog detail pages instead of findAll().filter().slice()
+ */
+export async function getRelatedBlogs<T>(excludeSlug: string, limit = 3): Promise<T[]> {
+  try {
+    const url = `${BACKEND_URL}/api/blogs?limit=${limit + 1}`; // fetch +1 to allow exclusion
+    const res = await fetch(url, {
+      next: { revalidate: 60, tags: ["blogs"] },
+      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const data: any[] = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+    return data
+      .filter((p: any) => p.slug !== excludeSlug && p.id !== excludeSlug)
+      .slice(0, limit) as T[];
+  } catch (err) {
+    console.error(`getRelatedBlogs: Network error:`, err);
+    return [];
+  }
+}
+
 export async function updateOne<T>(collection: string, id: string, updates: any): Promise<T | null> {
   const endpoint = getEndpoint(collection);
   const useParamId = ["team", "admin-users", "adminUsers"].includes(endpoint);

@@ -13,6 +13,7 @@ import {
 import { findAll } from "@/lib/db";
 import type { Service } from "@/lib/types";
 import DynamicIcon from "@/components/DynamicIcon";
+import PublicServicesList from "@/components/PublicServicesList";
 import { cleanServiceTitle, getServiceSlug } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
 
@@ -153,63 +154,7 @@ export default async function ServicesPage() {
       {/* Services Grid */}
       <section id="services-list" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {services.map((s, i) => {
-              const cleanTitle = cleanServiceTitle(s.title);
-              const slug = getServiceSlug(cleanTitle);
-              const firstWord = (cleanTitle || "Service").split(' ')[0];
-              const imageUrl = s.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75";
-              
-              return (
-                <div 
-                  key={i}
-                  className="group relative h-[320px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
-                >
-                  {/* Background Image */}
-                  <Image 
-                    src={imageUrl} 
-                    alt={s.title}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    unoptimized={!isOptimizableImage(imageUrl)}
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 transition-opacity duration-300" />
-                  
-                  {/* Content Box */}
-                  <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2.5 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white">
-                          <DynamicIcon name={s.icon || "Wrench"} className="w-4 h-4" />
-                        </div>
-                        <span className="text-[11px] uppercase tracking-widest font-bold text-slate-300">
-                          {s.category || "Our Capabilities"}
-                        </span>
-                      </div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-white font-display mb-2 leading-tight">
-                        {s.title}
-                      </h3>
-                      <p className="text-slate-200 font-light line-clamp-2 text-sm md:text-base">
-                        {s.description}
-                      </p>
-                    </div>
-                    
-                    <Link 
-                      href={`/services/${slug}`}
-                      className="inline-flex shrink-0 items-center justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-md shadow-orange-900/30 hover:shadow-orange-900/50"
-                    >
-                      Explore {firstWord}
-                    </Link>
-
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <PublicServicesList services={services} initialCount={4} />
         </div>
       </section>
 

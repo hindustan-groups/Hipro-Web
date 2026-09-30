@@ -947,6 +947,17 @@ export default async function ProjectDetailPage({
                 );
               })}
             </div>
+
+            {/* View More Projects */}
+            <div className="mt-10 text-center">
+              <Link
+                href="/projects"
+                className="inline-flex items-center justify-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-construction-navy hover:text-construction-red transition-colors border border-slate-300 hover:border-construction-navy bg-white hover:bg-slate-50 px-6 py-3"
+              >
+                <span>View More Projects</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </section>
       )}

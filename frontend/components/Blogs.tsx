@@ -55,6 +55,7 @@ export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
                 fill
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 unoptimized={!isOptimizableImage(featuredPost.image)}
+                loading="lazy"
                 className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-90 group-hover:opacity-100"
               />
             ) : (
@@ -114,6 +115,7 @@ export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
                       fill
                       sizes="(max-width: 640px) 100vw, 200px"
                       unoptimized={!isOptimizableImage(post.image)}
+                      loading="lazy"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (

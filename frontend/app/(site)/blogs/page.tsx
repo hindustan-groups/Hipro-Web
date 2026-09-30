@@ -1,9 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowUpRight,
-  Calendar,
-  User,
   ShieldCheck,
   Building2,
   Calculator,
@@ -11,7 +8,7 @@ import {
 } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
-import { isOptimizableImage } from "@/lib/imageUtils";
+import PublicBlogGrid from "@/components/PublicBlogGrid";
 
 import { Metadata } from "next";
 
@@ -35,10 +32,12 @@ export default async function BlogsPage({
 }: {
   searchParams?: { category?: string };
 }) {
+  const selectedCategory = searchParams?.category;
+
   const allBlogs = await findAll<BlogPost>("blogs");
   const now = new Date();
-  const blogs = allBlogs
-    .filter(b => {
+  const publishedBlogs = allBlogs
+    .filter((b) => {
       if (!b || b.active === false) return false;
       const status = (b.status || "published").toLowerCase();
       if (status !== "published") return false;
@@ -49,13 +48,6 @@ export default async function BlogsPage({
       return true;
     })
     .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-
-  const selectedCategory = searchParams?.category;
-  const categories = Array.from(new Set(blogs.map(b => b.category).filter(Boolean)));
-
-  const displayBlogs = selectedCategory
-    ? blogs.filter(b => b.category && b.category.toLowerCase() === selectedCategory.toLowerCase())
-    : blogs;
 
   return (
     <>
@@ -166,110 +158,11 @@ export default async function BlogsPage({
       {/* Grid */}
       <section className="py-16 bg-slate-50 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Category Filter Pills (Functional Query Links) */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-12">
-            <Link
-              href="/blogs"
-              className={`text-xs font-bold uppercase tracking-wider px-4 py-2 border shadow-sm transition-colors ${
-                !selectedCategory
-                  ? "bg-construction-navy text-white border-construction-navy"
-                  : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
-              }`}
-            >
-              All Articles
-            </Link>
-            {categories.map((cat, ci) => {
-              const isSelected = selectedCategory?.toLowerCase() === cat.toLowerCase();
-              return (
-                <Link
-                  key={ci}
-                  href={`/blogs?category=${encodeURIComponent(cat)}`}
-                  className={`text-xs font-bold uppercase tracking-wider px-4 py-2 border transition-colors ${
-                    isSelected
-                      ? "bg-construction-navy text-white border-construction-navy shadow-sm"
-                      : "bg-white hover:bg-slate-100 text-slate-600 border-slate-200"
-                  }`}
-                >
-                  {cat}
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayBlogs.length === 0 ? (
-              <div className="col-span-full py-20 text-center text-slate-500">
-                {selectedCategory ? (
-                  <div>
-                    <p className="mb-4">No blog posts found in category &quot;{selectedCategory}&quot;.</p>
-                    <Link
-                      href="/blogs"
-                      className="inline-block bg-construction-navy text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5"
-                    >
-                      View All Articles
-                    </Link>
-                  </div>
-                ) : (
-                  "No blog posts available at the moment. Please check back later."
-                )}
-              </div>
-            ) : (
-              displayBlogs.map((post) => (
-                <Link
-                  key={post.id}
-                  href={`/blogs/${post.slug}`}
-                  className="group flex flex-col h-full bg-white border border-slate-200 hover:border-slate-300 hover:shadow-xl transition-all duration-300 rounded-none overflow-hidden"
-                >
-                  {/* Image */}
-                  <div className="relative overflow-hidden h-56">
-                    {post.image && (
-                      <Image
-                        src={post.image}
-                        alt={post.imageAlt || post.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        unoptimized={!isOptimizableImage(post.image)}
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    {/* Category badge */}
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-construction-navy text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-none shadow-sm">
-                        {post.category}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-4 text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-3">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-construction-navy" />
-                          {post.date}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-construction-navy" />
-                          {post.author}
-                        </div>
-                      </div>
-                      <h3 className="text-xl font-bold text-black mb-3 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors line-clamp-2">
-                        {post.title}
-                      </h3>
-                      <p className="text-sm text-slate-500 font-medium mb-4 line-clamp-3">{post.excerpt}</p>
-                    </div>
-                    
-                    <div className="pt-4 border-t border-slate-100">
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-construction-navy uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                        Read Article <ArrowUpRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
+          <PublicBlogGrid
+            blogs={publishedBlogs}
+            initialCategory={selectedCategory || ""}
+            initialPageSize={6}
+          />
         </div>
       </section>
 

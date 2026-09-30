@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -66,6 +66,10 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
   const [selectedStatus, setSelectedStatus] = useState<"all" | "ongoing" | "completed">("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [sortBy, setSortBy] = useState<"featured" | "latest" | "oldest" | "name-asc" | "order">("featured");
+
+  // Pagination: render INITIAL_PAGE_SIZE projects, View More reveals next batch
+  const INITIAL_PAGE_SIZE = 6;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_PAGE_SIZE);
 
   // Dynamically extract available categories from verified published projects
   const availableCategories = useMemo(() => {
@@ -205,7 +209,17 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
     setSelectedCategory("All");
     setSelectedStatus("all");
     setSelectedLocation("all");
+    setVisibleCount(INITIAL_PAGE_SIZE);
   };
+
+  // Reset visible count whenever filters/sort change so user sees fresh results from top
+  useEffect(() => {
+    setVisibleCount(INITIAL_PAGE_SIZE);
+  }, [searchQuery, selectedCategory, selectedStatus, selectedLocation, sortBy]);
+
+  // Projects to actually render (sliced for performance)
+  const visibleProjects = filteredProjects.slice(0, visibleCount);
+  const hasMore = filteredProjects.length > visibleCount;
 
   // If entire public dataset is empty in database
   if (publicProjects.length === 0) {
@@ -570,7 +584,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
           ) : (
             /* Multi-Column Responsive Project Grid */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredProjects.map((p) => {
+              {visibleProjects.map((p) => {
                 const canonicalSlug = p.slug || p.id;
                 const isOngoing = p.status === "ongoing" || p.status === "active";
                 const isCompleted = p.status === "completed";
@@ -591,6 +605,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           unoptimized={!isOptimizableImage(p.image)}
+                          loading="lazy"
                           className="object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out opacity-95 group-hover:opacity-100 motion-reduce:transform-none"
                         />
                       ) : (
@@ -708,6 +723,25 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
           )}
         </div>
       </section>
+
+      {/* View More / Load More Button */}
+      {hasMore ? (
+        <section className="py-12 bg-white border-t border-slate-100 px-4 text-center">
+          <button
+            onClick={() => setVisibleCount((c) => c + INITIAL_PAGE_SIZE)}
+            className="inline-flex items-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-9 py-4 text-xs uppercase tracking-widest transition-all shadow-md cursor-pointer rounded-none border border-construction-navy hover:border-slate-900 group focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
+          >
+            <span>View More Projects ({filteredProjects.length - visibleCount} remaining)</span>
+            <ArrowUpRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </button>
+        </section>
+      ) : filteredProjects.length > INITIAL_PAGE_SIZE ? (
+        <section className="py-8 bg-white border-t border-slate-100 px-4 text-center">
+          <p className="text-xs text-slate-500 font-mono uppercase tracking-wider">
+            Showing all {filteredProjects.length} projects
+          </p>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -10,8 +10,13 @@ import GroupEcosystem from "@/components/GroupEcosystem";
 import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
 import AnimateIn from "@/components/AnimateIn";
-import { findAll } from "@/lib/db";
+import { findAll, findLimited } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
+
+// Home page content limits (server-side — only these records are fetched from DB)
+const HOME_PROJECTS_LIMIT = 6;
+const HOME_SERVICES_LIMIT = 6;
+const HOME_BLOGS_LIMIT = 3;
 
 export const revalidate = 60;
 
@@ -29,10 +34,13 @@ export default async function Home() {
     findAll<Settings>("settings"),
     findAll<HeroSlide>("hero"),
     findAll<StatType>("stats"),
-    findAll<Service>("services"),
-    findAll<Project>("projects"),
+    // Server-side limited: only HOME_SERVICES_LIMIT services fetched from DB
+    findLimited<Service>("services", HOME_SERVICES_LIMIT),
+    // Server-side limited: only HOME_PROJECTS_LIMIT projects fetched from DB
+    findLimited<Project>("projects", HOME_PROJECTS_LIMIT),
     findAll<Testimonial>("testimonials"),
-    findAll<BlogPost>("blogs"),
+    // Server-side limited: only HOME_BLOGS_LIMIT blogs fetched from DB
+    findLimited<BlogPost>("blogs", HOME_BLOGS_LIMIT),
     findAll<Guarantee>("guarantees"),
   ]);
 
@@ -57,6 +65,7 @@ export default async function Home() {
       !/services of compan/i.test(t.text || "")
   );
   const now = new Date();
+  // Server already returned only HOME_BLOGS_LIMIT blogs — apply publish-date safety filter only
   const blogsData = blogs
     .filter(b => {
       if (!b || b.active === false) return false;
@@ -67,9 +76,8 @@ export default async function Home() {
         if (!isNaN(pd.getTime()) && pd > now) return false;
       }
       return true;
-    })
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-    .slice(0, 3);
+    });
+  // No .slice() here — server already enforced the limit
   const guaranteesData = guarantees
     .filter(g => g.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99));

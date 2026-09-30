@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, User, Share2, Facebook, Twitter, Linkedin, Clock, HelpCircle, ExternalLink, Compass, ArrowUpRight } from "lucide-react";
-import { findAll, findBySlug } from "@/lib/db";
+import { findBySlug, getRelatedBlogs } from "@/lib/db";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { Metadata } from "next";
@@ -77,26 +77,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   if (!post) notFound();
 
-  const allBlogs = await findAll<BlogPost>("blogs");
-
   // Curated related articles with fallback to latest published
+  // Uses getRelatedBlogs() — fetches only N+1 records from API instead of entire blog DB
   const curatedIds = getRelatedPostIds(post);
   let relatedBlogs: BlogPost[] = [];
   if (curatedIds.length > 0) {
-    relatedBlogs = allBlogs.filter(p =>
+    // For curated IDs we still need a targeted fetch — use the lightweight related helper
+    // and cross-reference IDs after (small N, acceptable)
+    const candidateBlogs = await getRelatedBlogs<BlogPost>(decodedSlug, 6);
+    relatedBlogs = candidateBlogs.filter(p =>
       (curatedIds.includes(p.id || "") || curatedIds.includes(p.slug || "")) &&
-      p.id !== post.id &&
-      p.slug !== post.slug &&
-      p.active !== false &&
-      (p.status || "published").toLowerCase() === "published"
+      p.id !== post.id && p.slug !== post.slug
     );
   }
   if (relatedBlogs.length === 0) {
-    relatedBlogs = allBlogs
-      .filter(p => p.id !== post.id && p.slug !== post.slug && p.active !== false && (p.status || "published").toLowerCase() === "published")
-      .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-      .slice(0, 3);
+    // Fallback: latest 3 blogs excluding current
+    relatedBlogs = await getRelatedBlogs<BlogPost>(decodedSlug, 3);
   }
+  // Clamp to 3
+  relatedBlogs = relatedBlogs.slice(0, 3);
 
   // Enrich content with clean markdown (no duplicate H1) and verified natural contextual internal links
   const enrichedContent = enrichBlogContent(decodedSlug, post.content || "");
@@ -658,6 +657,15 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                         </div>
                       </Link>
                     ))}
+                  </div>
+                  <div className="pt-4 mt-6 border-t border-slate-100 text-center">
+                    <Link
+                      href="/blogs"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-construction-navy hover:text-construction-red uppercase tracking-wider transition-colors group"
+                    >
+                      <span>View More Articles</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </Link>
                   </div>
                 </div>
               )}

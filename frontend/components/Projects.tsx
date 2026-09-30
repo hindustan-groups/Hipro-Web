@@ -55,6 +55,7 @@ export default function Projects({ projects = [], title, settings }: { projects?
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   unoptimized={!isOptimizableImage(p.image)}
+                  loading="lazy"
                   className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                 />
                 

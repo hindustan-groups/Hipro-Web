@@ -646,6 +646,12 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
                       </Link>
                     );
                   })}
+                <Link
+                  href="/services"
+                  className="text-xs font-bold text-construction-navy hover:text-construction-red bg-slate-50 hover:bg-slate-100 px-4 py-2 border border-construction-navy/30 uppercase tracking-wider transition-colors inline-flex items-center gap-1"
+                >
+                  View More Services →
+                </Link>
               </div>
             </div>
           </div>

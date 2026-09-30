@@ -186,6 +186,13 @@ router.get("/", async (req: Request, res: Response) => {
     const featured = req.query.featured === "true";
     const search = typeof req.query.search === "string" ? req.query.search.trim().toLowerCase() : null;
 
+    // Scalable server-side limiting: optional ?limit=N and ?page=N (1-indexed)
+    // Admin requests (all=true) bypass limit for full dataset access
+    const rawLimit = typeof req.query.limit === "string" ? parseInt(req.query.limit, 10) : null;
+    const rawPage = typeof req.query.page === "string" ? parseInt(req.query.page, 10) : 1;
+    const pageSize = rawLimit && rawLimit > 0 && rawLimit <= 500 ? rawLimit : null;
+    const pageIndex = rawPage > 0 ? rawPage - 1 : 0;
+
     let user = null;
     if (includeAll) {
       user = await getSessionUser(req);
@@ -237,6 +244,8 @@ router.get("/", async (req: Request, res: Response) => {
         { date: "desc" },
         { createdAt: "desc" },
       ],
+      // Apply server-side limit/page when requested (admin all=true bypasses this)
+      ...(pageSize && !includeAll ? { take: pageSize, skip: pageIndex * pageSize } : {}),
     });
 
     return res.json({
