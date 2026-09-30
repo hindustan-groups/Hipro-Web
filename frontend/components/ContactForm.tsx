@@ -20,6 +20,7 @@ export default function ContactForm({
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", service: "", message: "",
   });
+  const [customService, setCustomService] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,23 +30,29 @@ export default function ContactForm({
     setLoading(true);
     setError("");
 
+    const finalService =
+      formData.service === "Other / Custom Requirement" && customService.trim()
+        ? `Other: ${customService.trim()}`
+        : formData.service;
+
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, service: finalService }),
       });
       const data = await res.json();
       
       if (data.success) {
         trackEvent("generate_lead", {
           form_id: "contact_page",
-          service_category: formData.service || undefined,
+          service_category: finalService || undefined,
         });
         setSubmitted(true);
         setTimeout(() => {
           setSubmitted(false);
           setFormData({ name: "", email: "", phone: "", service: "", message: "" });
+          setCustomService("");
         }, 5000);
       } else {
         setError(data.error || "Failed to submit message");
@@ -62,7 +69,7 @@ export default function ContactForm({
   };
 
   // Compute normalized service category options
-  const categoryOptions =
+  const baseCategoryOptions =
     customCategories && customCategories.length > 0
       ? customCategories.map((c) => c.trim()).filter(Boolean)
       : services && services.length > 0
@@ -83,6 +90,11 @@ export default function ContactForm({
           "Structural Engineering & Analysis",
           "Construction Cost Estimation & BOQ",
         ];
+
+  const categoryOptions = [
+    ...baseCategoryOptions.filter((opt) => !/^other/i.test(opt)),
+    "Other / Custom Requirement",
+  ];
 
   if (submitted) {
     return (
@@ -151,6 +163,18 @@ export default function ContactForm({
               </option>
             ))}
           </select>
+          {formData.service === "Other / Custom Requirement" && (
+            <div className="mt-2.5">
+              <input
+                id="contact-custom-service"
+                type="text"
+                value={customService}
+                onChange={(e) => setCustomService(e.target.value)}
+                placeholder="Specify your required service / work..."
+                className="w-full px-3.5 py-2.5 rounded-none border border-slate-300 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-construction-red focus:border-construction-red focus:bg-white transition-all font-sans"
+              />
+            </div>
+          )}
         </div>
       </div>
 

@@ -20,7 +20,8 @@ export default function UsersPage() {
   const availableSections = [
     { key: "hero", label: "Hero Section" },
     { key: "about", label: "About Page" },
-    { key: "contacts", label: "Contacts" },
+    { key: "contact-page", label: "Contact Page CMS" },
+    { key: "contacts", label: "Contacts (Inquiries)" },
     { key: "quotes", label: "Quote Requests" },
     { key: "projects", label: "Projects" },
     { key: "services", label: "Services" },
