@@ -211,6 +211,7 @@ export default function ImageUpload({ value, onChange }: ImageUploadProps) {
                   placeholder="https://example.com/image.jpg"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
+                  onBlur={() => handleApplyUrl()}
                   className="flex-1 px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-construction-navy"
                 />
                 <button

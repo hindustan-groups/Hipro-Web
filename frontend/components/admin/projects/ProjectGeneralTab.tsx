@@ -308,6 +308,7 @@ export default function ProjectGeneralTab({
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown}
+                  onBlur={handleAddTag}
                   placeholder="Add tag and press Enter"
                   className="flex-1 bg-slate-50 border border-slate-300 text-slate-900 px-3 py-2 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
                 />

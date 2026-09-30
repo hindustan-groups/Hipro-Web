@@ -122,6 +122,13 @@ export default function MultiImageUpload({ value = [], onChange }: MultiImageUpl
             type="url"
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
+            onBlur={handleAddUrl}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddUrl();
+              }
+            }}
             placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
             className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 rounded-none-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy"
           />

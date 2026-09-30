@@ -207,6 +207,7 @@ export default function ProjectSpecificationsTab({
                 value={serviceInput}
                 onChange={(e) => setServiceInput(e.target.value)}
                 onKeyDown={handleServiceKeyDown}
+                onBlur={() => handleAddService(serviceInput)}
                 placeholder="e.g. Turnkey Civil Works (Enter to add)"
                 className="flex-1 bg-slate-50 border border-slate-300 text-slate-900 px-3 py-2 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
               />

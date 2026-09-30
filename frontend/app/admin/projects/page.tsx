@@ -185,7 +185,15 @@ function projectToFormState(p: Project): FormState {
     try {
       hls = Array.isArray(p.highlights) ? p.highlights : JSON.parse(p.highlights);
     } catch {
-      hls = [];
+      if (typeof p.highlights === "string") {
+        hls = p.highlights
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((label) => ({ label, value: "" }));
+      } else {
+        hls = [];
+      }
     }
   }
 
@@ -194,7 +202,15 @@ function projectToFormState(p: Project): FormState {
     try {
       fqs = Array.isArray(p.faqs) ? p.faqs : JSON.parse(p.faqs);
     } catch {
-      fqs = [];
+      if (typeof p.faqs === "string") {
+        fqs = p.faqs
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((question) => ({ question, answer: "" }));
+      } else {
+        fqs = [];
+      }
     }
   }
 
@@ -205,7 +221,8 @@ function projectToFormState(p: Project): FormState {
     } catch {
       gDetails = [];
     }
-  } else if (p.images) {
+  }
+  if ((!gDetails || gDetails.length === 0) && p.images) {
     try {
       const urls = typeof p.images === "string" && p.images.trim().startsWith("[")
         ? JSON.parse(p.images)
@@ -560,6 +577,12 @@ export default function AdminProjects() {
 
       // Close Publish Review modal if open
       setShowPublishReviewModal(false);
+
+      // Sync editing state with the saved project record so subsequent saves use PATCH
+      if (json.data) {
+        setEditingProject(json.data);
+        setForm(projectToFormState(json.data));
+      }
 
       // Open Success Panel
       setSuccessPanelData({
@@ -1033,7 +1056,7 @@ export default function AdminProjects() {
             <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 items-start">
               {/* Left Column: Form Editor (8 Cols on desktop, 12 on mobile/tablet) */}
               <div className="lg:col-span-8 space-y-6 w-full">
-                {activeTab === "general" && (
+                <div className={activeTab === "general" ? "block space-y-6" : "hidden"}>
                   <ProjectGeneralTab
                     formData={{
                       title: form.title,
@@ -1063,9 +1086,9 @@ export default function AdminProjects() {
                     setIsSlugManuallyEdited={setIsSlugManuallyEdited}
                     generateSlug={generateSlug}
                   />
-                )}
+                </div>
 
-                {activeTab === "specifications" && (
+                <div className={activeTab === "specifications" ? "block space-y-6" : "hidden"}>
                   <ProjectSpecificationsTab
                     formData={{
                       client: form.client,
@@ -1090,9 +1113,9 @@ export default function AdminProjects() {
                     }}
                     onChange={handleFormChange}
                   />
-                )}
+                </div>
 
-                {activeTab === "narrative" && (
+                <div className={activeTab === "narrative" ? "block space-y-6" : "hidden"}>
                   <ProjectNarrativeTab
                     formData={{
                       shortDescription: form.shortDescription,
@@ -1102,9 +1125,9 @@ export default function AdminProjects() {
                     }}
                     onChange={handleFormChange}
                   />
-                )}
+                </div>
 
-                {activeTab === "media" && (
+                <div className={activeTab === "media" ? "block space-y-6" : "hidden"}>
                   <ProjectMediaTab
                     formData={{
                       title: form.title,
@@ -1120,9 +1143,9 @@ export default function AdminProjects() {
                     }}
                     onChange={handleFormChange}
                   />
-                )}
+                </div>
 
-                {activeTab === "seo" && (
+                <div className={activeTab === "seo" ? "block space-y-6" : "hidden"}>
                   <ProjectSeoTab
                     formData={{
                       title: form.title,
@@ -1153,7 +1176,7 @@ export default function AdminProjects() {
                     }}
                     onChange={handleFormChange}
                   />
-                )}
+                </div>
               </div>
 
               {/* Right Column: Sticky Workbench Inspector Panel */}

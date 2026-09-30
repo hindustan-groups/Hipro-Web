@@ -47,23 +47,28 @@ export default function ProjectMediaTab({
 
   // Gallery Helpers
   const handleAddMultiUpload = (urls: string[]) => {
-    const existingUrls = new Set(formData.galleryDetails.map((g) => g.url));
+    const urlSet = new Set(urls);
+    // Keep existing items that are still in urls
+    const retained = formData.galleryDetails.filter((g) => urlSet.has(g.url));
+    const retainedUrls = new Set(retained.map((g) => g.url));
     const newItems: ProjectGalleryItem[] = [];
 
     urls.forEach((url, i) => {
-      if (!existingUrls.has(url)) {
+      if (!retainedUrls.has(url)) {
         newItems.push({
           url,
-          alt: `${formData.title || "Project"} photo ${formData.galleryDetails.length + i + 1}`,
+          alt: `${formData.title || "Project"} photo ${retained.length + i + 1}`,
           caption: "",
-          order: formData.galleryDetails.length + i + 1,
+          order: retained.length + i + 1,
         });
       }
     });
 
-    if (newItems.length > 0) {
-      onChange({ galleryDetails: [...formData.galleryDetails, ...newItems] });
-    }
+    const combined = [...retained, ...newItems].map((item, idx) => ({
+      ...item,
+      order: idx + 1,
+    }));
+    onChange({ galleryDetails: combined });
   };
 
   const handleAddManualUrl = () => {
@@ -301,6 +306,13 @@ export default function ProjectMediaTab({
                 type="url"
                 value={manualGalleryUrl}
                 onChange={(e) => setManualGalleryUrl(e.target.value)}
+                onBlur={handleAddManualUrl}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddManualUrl();
+                  }
+                }}
                 placeholder="Paste image URL..."
                 className="bg-slate-50 border border-slate-300 text-slate-900 px-2.5 py-1.5 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy w-44 sm:w-56 font-mono"
               />
