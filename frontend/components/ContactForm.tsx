@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import { cleanServiceTitle } from "@/lib/companyData";
 
@@ -20,6 +21,7 @@ export default function ContactForm({
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", service: "", message: "",
   });
+  const [consentGiven, setConsentGiven] = useState(false);
   const [customService, setCustomService] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,6 +29,10 @@ export default function ContactForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consentGiven) {
+      setError("Please check the permission box to agree to our Privacy Policy & Terms of Service.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -186,6 +192,35 @@ export default function ContactForm({
           placeholder="Specify project scope, location, timeline, and estimated plot area..."
           className="w-full px-4 py-3.5 rounded-none border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all resize-none"
         />
+      </div>
+
+      {/* User Permission & Privacy Consent Checkbox */}
+      <div className="p-3 bg-slate-50 border border-slate-200">
+        <label className="flex items-start gap-3 cursor-pointer select-none group">
+          <input
+            id="contact-consent-checkbox"
+            type="checkbox"
+            required
+            checked={consentGiven}
+            onChange={(e) => setConsentGiven(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded-none border-slate-300 text-construction-red focus:ring-construction-red/30 cursor-pointer accent-red-600 shrink-0"
+          />
+          <span className="text-xs text-slate-600 leading-relaxed font-light">
+            I give my explicit consent to <strong className="text-slate-900 font-semibold">Hindustan Projects (HiPRO)</strong> to contact me via Call, WhatsApp, or Email regarding this inquiry, and I agree to the{" "}
+            <Link href="/privacy-policy" target="_blank" className="font-semibold text-construction-red hover:underline">
+              Privacy Policy
+            </Link>
+            ,{" "}
+            <Link href="/cookie-policy" target="_blank" className="font-semibold text-construction-red hover:underline">
+              Cookie Policy
+            </Link>{" "}
+            and{" "}
+            <Link href="/terms" target="_blank" className="font-semibold text-construction-red hover:underline">
+              Terms of Service
+            </Link>
+            . <span className="text-construction-red font-bold">*</span>
+          </span>
+        </label>
       </div>
 
       <button

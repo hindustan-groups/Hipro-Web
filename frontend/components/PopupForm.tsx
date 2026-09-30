@@ -57,6 +57,7 @@ export default function PopupForm() {
   const [districts, setDistricts] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [consentGiven, setConsentGiven] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -103,6 +104,10 @@ export default function PopupForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!consentGiven) {
+      setError("Please check the permission box to agree to our Privacy Policy & Terms.");
+      return;
+    }
     if (!selectedState || !selectedDistrict) {
       setError("Please select both State and District");
       return;
@@ -280,6 +285,30 @@ export default function PopupForm() {
               <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
+            </div>
+
+            {/* Explicit Permission / Consent Checkbox */}
+            <div className="p-2.5 bg-gray-50 border border-gray-200">
+              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  required
+                  checked={consentGiven}
+                  onChange={(e) => setConsentGiven(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded-none border-gray-300 text-construction-red focus:ring-construction-red/30 cursor-pointer accent-red-600 shrink-0"
+                />
+                <span className="text-[11px] text-gray-600 leading-snug">
+                  I agree to the{" "}
+                  <Link href="/privacy-policy" onClick={() => setIsOpen(false)} className="text-construction-red hover:underline font-semibold">
+                    Privacy Policy
+                  </Link>
+                  ,{" "}
+                  <Link href="/cookie-policy" onClick={() => setIsOpen(false)} className="text-construction-red hover:underline font-semibold">
+                    Cookie Policy
+                  </Link>{" "}
+                  &amp; consent to be contacted regarding this request. *
+                </span>
+              </label>
             </div>
 
             {/* Submit Button */}

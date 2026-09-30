@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PopupForm from "@/components/PopupForm";
 import MobileStickyBar from "@/components/MobileStickyBar";
+import CookieConsent from "@/components/CookieConsent";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 
@@ -30,6 +31,7 @@ export default async function SiteLayout({
       </main>
       <PopupForm />
       <MobileStickyBar />
+      <CookieConsent />
       <Footer pageContent={settings?.pageContent || null} />
     </>
   );

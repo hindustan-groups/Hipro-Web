@@ -540,6 +540,12 @@ export default async function Footer({
               Privacy Policy
             </Link>
             <Link 
+              href="/cookie-policy" 
+              className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
+            >
+              Cookie Policy
+            </Link>
+            <Link 
               href="/terms" 
               className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
             >
