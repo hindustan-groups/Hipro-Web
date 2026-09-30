@@ -384,7 +384,7 @@ export default async function ContactPage() {
       {/* Map Section */}
       {showMap && (
         <section className="relative bg-slate-100 border-t border-slate-200">
-          <div className="relative w-full h-[400px] md:h-[460px]">
+          <div className="relative w-full h-[400px] md:h-[500px]">
             <iframe
               src={mapEmbedUrl}
               width="100%"
@@ -394,45 +394,7 @@ export default async function ContactPage() {
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               title="Hindustan Projects Bhilwara Office Location"
-              className="grayscale-[20%] contrast-[1.05]"
             />
-
-            {/* Floating Office Card */}
-            <div className="absolute top-6 left-6 z-10 hidden sm:block max-w-sm bg-white/95 backdrop-blur-md p-5 border border-slate-300 shadow-xl">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-none bg-construction-navy text-white flex items-center justify-center shrink-0">
-                  <MapPin className="w-4 h-4 text-construction-red" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                    Registered Headquarters
-                  </p>
-                  <p className="text-sm font-bold text-slate-900 font-display uppercase tracking-tight mt-0.5">
-                    Hindustan Projects (HiPRO)
-                  </p>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    {address}
-                  </p>
-                  <div className="mt-3 flex items-center gap-3">
-                    <a
-                      href={mapDirectionsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-construction-navy hover:bg-slate-800 text-white text-[11px] font-bold uppercase tracking-wider transition-colors font-display"
-                    >
-                      <Navigation className="w-3 h-3 text-construction-red" />
-                      <span>Directions</span>
-                    </a>
-                    <a
-                      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-                      className="text-[11px] font-bold text-slate-700 hover:text-black uppercase tracking-wider underline underline-offset-2"
-                    >
-                      {phone}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       )}
