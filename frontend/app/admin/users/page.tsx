@@ -31,7 +31,11 @@ export default function UsersPage() {
     { key: "blogs", label: "Blogs" },
     { key: "stats", label: "Stats" },
     { key: "applications", label: "Job Applications" },
-    { key: "jobs", label: "Job Postings" }
+    { key: "jobs", label: "Job Postings" },
+    { key: "leads", label: "Leads Hub" },
+    { key: "cta-management", label: "CTA Management" },
+    { key: "navigation", label: "Navigation Menus" },
+    { key: "settings", label: "Site Settings" }
   ];
 
   const fetchUsers = async () => {

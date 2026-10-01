@@ -5,15 +5,25 @@ import { Bell, Search, Menu, LogOut } from "lucide-react";
 
 const titles: Record<string, string> = {
   "/admin":             "Dashboard",
-  "/admin/hero":         "Hero Section",
-  "/admin/about":        "About Page Content",
-  "/admin/contacts":    "Contacts",
+  "/admin/stats":       "Site Stats & Analytics",
+  "/admin/leads":       "Leads Hub",
   "/admin/quotes":      "Quote Requests",
-  "/admin/projects":    "Projects",
-  "/admin/testimonials":"Testimonials",
-  "/admin/newsletter":  "Newsletter",
-  "/admin/stats":       "Site Stats",
-  "/admin/settings":    "Settings",
+  "/admin/contacts":    "Contact Inquiries",
+  "/admin/applications":"Job Applications",
+  "/admin/newsletter":  "Newsletter Subscribers",
+  "/admin/projects":    "Projects Portfolio",
+  "/admin/services":    "Services Management",
+  "/admin/blogs":       "Blog Articles",
+  "/admin/testimonials":"Client Reviews",
+  "/admin/team":        "Team Members",
+  "/admin/hero":        "Hero Section CMS",
+  "/admin/about":       "About Page CMS",
+  "/admin/contact-page":"Contact Page CMS",
+  "/admin/jobs":        "Job Openings",
+  "/admin/cta-management": "CTA Management",
+  "/admin/navigation":  "Navigation Menus",
+  "/admin/users":       "Users & Roles",
+  "/admin/settings":    "Site Settings",
 };
 
 export default function AdminHeader({ user }: { user: any }) {
@@ -24,7 +34,14 @@ export default function AdminHeader({ user }: { user: any }) {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/admin-login";
   };
-  const title = titles[pathname] ?? "Admin";
+  const getTitle = () => {
+    if (titles[pathname]) return titles[pathname];
+    const match = Object.entries(titles).find(
+      ([key]) => key !== "/admin" && pathname.startsWith(key)
+    );
+    return match ? match[1] : "Admin Panel";
+  };
+  const title = getTitle();
 
   return (
     <header className="h-[72px] shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 md:px-8 z-20 sticky top-0">
