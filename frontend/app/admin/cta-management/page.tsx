@@ -125,8 +125,10 @@ export default function AdminCTAManagement() {
 
   // ── Unique Locations ───────────────────────────────────────────────────
   const locationOrder = useMemo(() => {
-    return Array.from(new Set(DEFAULT_CTAS.map((c) => c.location ?? "Other")));
-  }, []);
+    const fromDefs = Array.from(new Set(DEFAULT_CTAS.map((c) => c.location ?? "Other").filter(Boolean)));
+    const fromCtas = Array.from(new Set(ctas.map((c) => c.location ?? "Other").filter(Boolean)));
+    return Array.from(new Set([...fromDefs, ...fromCtas]));
+  }, [ctas]);
 
   // ── Filtered view ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -159,6 +161,16 @@ export default function AdminCTAManagement() {
     }
     return map;
   }, [filtered]);
+
+  // Locations that actually have CTAs to display
+  const renderLocations = useMemo(() => {
+    const keys = Object.keys(grouped).filter((k) => grouped[k]?.length > 0);
+    const ordered = locationOrder.filter((loc) => keys.includes(loc));
+    for (const k of keys) {
+      if (!ordered.includes(k)) ordered.push(k);
+    }
+    return ordered;
+  }, [grouped, locationOrder]);
 
   // ── Edit helpers ────────────────────────────────────────────────────────
   const startEdit = (cta: CTAConfig) => {
@@ -382,11 +394,13 @@ export default function AdminCTAManagement() {
             className="pl-10 pr-8 py-2.5 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/30 bg-white appearance-none min-w-[220px] font-medium text-slate-700"
           >
             <option value="all">All Locations ({ctas.length} CTAs)</option>
-            {locationOrder.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc} ({ctas.filter((c) => c.location === loc).length})
-              </option>
-            ))}
+            {locationOrder
+              .filter((loc) => ctas.some((c) => c.location === loc))
+              .map((loc) => (
+                <option key={loc} value={loc}>
+                  {loc} ({ctas.filter((c) => c.location === loc).length})
+                </option>
+              ))}
           </select>
         </div>
       </div>
@@ -397,9 +411,7 @@ export default function AdminCTAManagement() {
           No CTAs match your search query. Try searching by CTA key, label, or location.
         </div>
       ) : (
-        locationOrder
-          .filter((loc) => grouped[loc]?.length > 0)
-          .map((loc) => (
+        renderLocations.map((loc) => (
             <div key={loc} className="bg-white border border-slate-200 shadow-xs overflow-hidden">
               {/* Section Header */}
               <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">

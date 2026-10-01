@@ -470,7 +470,22 @@ export function getCTAStyleClasses(style: CTAStyle): string {
 export function mergeCTAsWithDefaults(cmsCtas: CTAConfig[]): CTAConfig[] {
   const merged = DEFAULT_CTAS.map((d) => {
     const override = cmsCtas.find((c) => c.key === d.key);
-    return override ? { ...d, ...override } : d;
+    if (!override) return d;
+    return {
+      ...d,
+      label: override.label ?? d.label,
+      destination: override.destination ?? d.destination,
+      actionType: override.actionType ?? d.actionType,
+      style: override.style ?? d.style,
+      enabled: override.enabled !== undefined ? override.enabled : d.enabled,
+      openNewTab: override.openNewTab !== undefined ? override.openNewTab : d.openNewTab,
+      icon: override.icon ?? d.icon,
+      // Metadata (location, section, usedIn, description) always comes from canonical registry
+      location: d.location,
+      section: d.section,
+      usedIn: d.usedIn,
+      description: d.description,
+    };
   });
   const defaultKeys = new Set(DEFAULT_CTAS.map((d) => d.key));
   for (const c of cmsCtas) {
