@@ -215,15 +215,25 @@ export default async function AboutPage({
   const heroSecondaryCta =
     content?.heroSecondaryCtaText || "Estimate Build Cost";
 
-  // Executive Statement
+  // Executive Statement & Founder Resolution
   const executiveBadge =
     content?.executiveBadge || fallback.executiveStatement.badge;
   const executiveTitle =
     content?.executiveTitle || fallback.executiveStatement.title;
-  const executiveStatementParagraphs: string[] = safeJsonParse(
+  const parsedExecutiveStatement: string[] = safeJsonParse(
     content?.executiveStatement,
-    fallback.executiveStatement.statement
+    []
   );
+  const executiveStatementParagraphs: string[] =
+    parsedExecutiveStatement.length > 0
+      ? parsedExecutiveStatement
+      : founderInDb?.bio
+      ? founderInDb.bio.split("\n").map((s) => s.trim()).filter(Boolean)
+      : fallback.executiveStatement.statement;
+  const founderName =
+    founderInDb?.name || fallback.executiveStatement.leaderName;
+  const founderRole =
+    founderInDb?.role || fallback.executiveStatement.leaderRole;
   const founderImage =
     content?.founderImage ||
     founderInDb?.img ||
@@ -233,6 +243,12 @@ export default async function AboutPage({
     content?.founderImageAlt ||
     founderInDb?.name ||
     fallback.executiveStatement.leaderName;
+  const founderLinkedin =
+    founderInDb?.linkedin || COMPANY_INFO.socials.linkedin;
+  const founderInstagram =
+    founderInDb?.instagram || COMPANY_INFO.socials.instagram;
+  const founderFacebook =
+    founderInDb?.facebook || COMPANY_INFO.socials.facebook;
 
   // Company Facts
   const companyFacts: AboutFactItem[] = safeJsonParse(
@@ -491,10 +507,10 @@ export default async function AboutPage({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   <div className="absolute bottom-6 left-6 right-6 text-white">
                     <p className="text-xl font-bold font-display uppercase tracking-tight">
-                      {fallback.executiveStatement.leaderName}
+                      {founderName}
                     </p>
                     <p className="text-xs uppercase tracking-wider text-slate-300 font-medium">
-                      {fallback.executiveStatement.leaderRole}
+                      {founderRole}
                     </p>
                   </div>
                 </div>
@@ -528,10 +544,10 @@ export default async function AboutPage({
                       <Building2 className="w-12 h-12 text-construction-navy" />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900 font-display uppercase tracking-tight">
-                      {fallback.executiveStatement.leaderName}
+                      {founderName}
                     </h2>
                     <p className="text-xs font-bold text-construction-red uppercase tracking-wider mt-1">
-                      {fallback.executiveStatement.leaderRole}
+                      {founderRole}
                     </p>
                     <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">
                       {fallback.executiveStatement.company}
@@ -575,45 +591,192 @@ export default async function AboutPage({
               <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <p className="text-lg font-bold text-black font-display uppercase tracking-tight">
-                    {fallback.executiveStatement.leaderName}
+                    {founderName}
                   </p>
                   <p className="text-xs font-bold uppercase tracking-wider text-construction-navy">
-                    {fallback.executiveStatement.leaderRole} · {COMPANY_INFO.name}
+                    {founderRole} · {COMPANY_INFO.name}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <a
-                    href={COMPANY_INFO.socials.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Connect with Hindustan Projects on LinkedIn"
-                    className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#0077b5] hover:border-[#0077b5] transition-colors"
-                  >
-                    <Linkedin className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={COMPANY_INFO.socials.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Follow Hindustan Projects on Instagram"
-                    className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#E1306C] hover:border-[#E1306C] transition-colors"
-                  >
-                    <Instagram className="w-4 h-4" />
-                  </a>
-                  <a
-                    href={COMPANY_INFO.socials.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Visit Hindustan Projects on Facebook"
-                    className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#1877F2] hover:border-[#1877F2] transition-colors"
-                  >
-                    <Facebook className="w-4 h-4" />
-                  </a>
+                  {founderLinkedin && (
+                    <a
+                      href={founderLinkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Connect with ${founderName} on LinkedIn`}
+                      className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#0077b5] hover:border-[#0077b5] transition-colors"
+                    >
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {founderInstagram && (
+                    <a
+                      href={founderInstagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Follow ${founderName} on Instagram`}
+                      className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#E1306C] hover:border-[#E1306C] transition-colors"
+                    >
+                      <Instagram className="w-4 h-4" />
+                    </a>
+                  )}
+                  {founderFacebook && (
+                    <a
+                      href={founderFacebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Visit ${founderName} on Facebook`}
+                      className="w-9 h-9 flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:text-[#1877F2] hover:border-[#1877F2] transition-colors"
+                    >
+                      <Facebook className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* ─────────────────────────────────────────────────────────────
+              OUR TECHNICAL TEAM — Positioned Directly Underneath Founder
+              Natural visual hierarchy: Founder -> Our Team Heading -> Team Cards
+              ───────────────────────────────────────────────────────────── */}
+          {additionalTeam.length > 0 && (
+            <div id="team" className="mt-16 sm:mt-20 pt-12 sm:pt-16 border-t border-slate-200/80">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12 gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-2.5 px-3 py-1 bg-white border border-slate-200 text-construction-navy mb-3 shadow-sm">
+                    <span className="w-1.5 h-1.5 bg-construction-red" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider">
+                      Our Team
+                    </span>
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-bold text-black font-display uppercase tracking-tight">
+                    Engineering &amp; Site Leadership
+                  </h3>
+                  <p className="text-slate-600 text-sm mt-1.5 font-light max-w-xl">
+                    Disciplined civil engineers, licensed surveyors, and turnkey execution supervisors dedicated to structural integrity and on-site precision.
+                  </p>
+                </div>
+                <div className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest hidden md:block">
+                  Verified Technical Practice
+                </div>
+              </div>
+
+              {/* Responsive Team Profile Cards Grid: 1 col on mobile, 2 on tablet, 3 on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {additionalTeam.map((m, idx) => (
+                  <div
+                    key={m.id || idx}
+                    className="bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                  >
+                    <div>
+                      {/* Photo Area with Consistent Aspect Ratio */}
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 border-b border-slate-100">
+                        {m.img ? (
+                          <Image
+                            src={m.img}
+                            alt={m.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            unoptimized={!isOptimizableImage(m.img)}
+                            loading="lazy"
+                            className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 relative p-6 text-center">
+                            <div
+                              className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                              style={{
+                                backgroundImage:
+                                  "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
+                                backgroundSize: "16px 16px",
+                              }}
+                              aria-hidden="true"
+                            />
+                            <div className="w-16 h-16 border-2 border-construction-navy flex items-center justify-center bg-white shadow-sm mb-3">
+                              <Building2 className="w-8 h-8 text-construction-navy" />
+                            </div>
+                            <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+                              HiPRO Technical
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute top-3 right-3">
+                          <span className="px-2 py-0.5 bg-white/90 backdrop-blur-sm border border-slate-200/80 text-[10px] font-mono font-bold text-slate-700 uppercase tracking-widest shadow-sm">
+                            HiPRO
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-6">
+                        <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-construction-navy bg-slate-100 px-2.5 py-1 mb-2.5 border border-slate-200/60">
+                          {m.role}
+                        </span>
+                        <h4 className="text-xl font-bold text-slate-900 font-display uppercase tracking-tight group-hover:text-construction-navy transition-colors">
+                          {m.name}
+                        </h4>
+                        {m.bio && (
+                          <p className="text-xs sm:text-sm text-slate-600 font-light leading-relaxed mt-2.5 line-clamp-3">
+                            {m.bio}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Footer: Social Links or Corporate Verification */}
+                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                        {m.linkedin || m.instagram || m.facebook ? "Connect" : "Site Verified"}
+                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {m.linkedin && (
+                          <a
+                            href={m.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${m.name} on LinkedIn`}
+                            className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:text-[#0077b5] hover:border-[#0077b5] transition-colors"
+                          >
+                            <Linkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {m.instagram && (
+                          <a
+                            href={m.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${m.name} on Instagram`}
+                            className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:text-[#E1306C] hover:border-[#E1306C] transition-colors"
+                          >
+                            <Instagram className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {m.facebook && (
+                          <a
+                            href={m.facebook}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${m.name} on Facebook`}
+                            className="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 text-slate-500 hover:text-[#1877F2] hover:border-[#1877F2] transition-colors"
+                          >
+                            <Facebook className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {!m.linkedin && !m.instagram && !m.facebook && (
+                          <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                            Technical Team
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1106,57 +1269,7 @@ export default async function AboutPage({
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────────────────────
-          OPTIONAL: Additional Team Members (Rendered only if active team exists)
-          ───────────────────────────────────────────────────────────── */}
-      {additionalTeam.length > 0 && (
-        <section className="py-20 bg-slate-50 border-b border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
-              <span className="text-xs font-bold uppercase tracking-wider text-construction-navy mb-2 block">
-                Technical Team
-              </span>
-              <h2 className="text-3xl font-bold text-black font-display uppercase tracking-tight">
-                Engineering &amp; Site Supervisors
-              </h2>
-            </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {additionalTeam.map((m, i) => (
-                <div
-                  key={i}
-                  className="bg-white border border-slate-200/80 p-6 flex items-center gap-4 shadow-sm"
-                >
-                  {m.img ? (
-                    <div className="relative w-16 h-16 shrink-0 rounded-none overflow-hidden bg-slate-100 border border-slate-200">
-                      <Image
-                        src={m.img}
-                        alt={m.name}
-                        fill
-                        sizes="64px"
-                        unoptimized={!isOptimizableImage(m.img)}
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center text-construction-navy font-bold font-display text-lg">
-                      {m.name.charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900 font-display uppercase tracking-tight">
-                      {m.name}
-                    </h3>
-                    <p className="text-xs font-semibold text-construction-navy uppercase tracking-wider mt-0.5">
-                      {m.role}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ─────────────────────────────────────────────────────────────
           SECTION 9 — HINDUSTAN GROUP ECOSYSTEM
