@@ -28,7 +28,8 @@ import {
   ChevronRight,
   Search,
   X,
-  Layers
+  Layers,
+  Calculator
 } from "lucide-react";
 
 export interface NavItem {
@@ -84,6 +85,7 @@ const navCategories: NavCategory[] = [
       { href: "/admin/projects-hero", label: "Projects Page Hero", icon: Layers, sectionKey: "projects-hero" },
       { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
       { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
+      { href: "/admin/cost-estimator", label: "Cost Estimator CMS", icon: Calculator, sectionKey: "cost-estimator" },
       { href: "/admin/jobs", label: "Job Postings", icon: Briefcase, sectionKey: "jobs" },
       { href: "/admin/cta-management", label: "CTA Management", icon: Megaphone, sectionKey: "cta-management" },
       { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },

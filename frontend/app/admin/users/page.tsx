@@ -34,6 +34,7 @@ export default function UsersPage() {
     { key: "jobs", label: "Job Postings" },
     { key: "leads", label: "Leads Hub" },
     { key: "cta-management", label: "CTA Management" },
+    { key: "cost-estimator", label: "Cost Estimator CMS" },
     { key: "navigation", label: "Navigation Menus" },
     { key: "settings", label: "Site Settings" }
   ];

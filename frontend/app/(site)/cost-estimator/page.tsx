@@ -1,468 +1,320 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { CheckCircle, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import PhoneCaptureModal from "@/components/PhoneCaptureModal";
-import { trackEvent } from "@/lib/analytics";
-import type { Stats as StatType } from "@/lib/types";
+import {
+  ShieldCheck,
+  CheckCircle,
+  HelpCircle,
+  ChevronDown,
+  PhoneCall,
+  Clock,
+  Sparkles,
+  ArrowRight,
+  Award,
+  Layers,
+  Calculator,
+} from "lucide-react";
+import EstimatorEngine from "@/components/estimator/EstimatorEngine";
+import type { CostEstimatorCMSConfig } from "@/components/estimator/types";
+import { DEFAULT_ESTIMATOR_CMS_CONFIG } from "@/components/estimator/configDefaults";
+import { COMPANY_INFO } from "@/lib/companyData";
+
+const FAQ_ITEMS = [
+  {
+    q: "What is the average house construction cost per sq. ft in Bhilwara and Rajasthan?",
+    a: "In 2026, standard turnkey residential house construction in Bhilwara and across Rajasthan ranges from ₹1,680 to ₹2,450 per sq. ft of built-up area. A standard Silver package costs ~₹1,680/sqft, our most popular Gold (Classic) package costs ₹1,850/sqft (using Tata/UltraTech/Jaquar), and architectural luxury packages (Platinum/Royale) range from ₹2,150 to ₹2,450/sqft depending on imported Italian marble, UPVC double-glazing, and designer elevation treatments.",
+  },
+  {
+    q: "How much does it cost to build a house on a 100 Gaj (900 sqft) plot?",
+    a: "For a 100 Gaj (20×45 ft) plot, built-up area typically averages around 1,500 sqft for a G+1 duplex home (including ground coverage, first floor living, parking, and balcony). At our Gold Package rate of ₹1,850/sqft, the estimated complete turnkey construction cost is approximately ₹27.75 Lakhs to ₹29.5 Lakhs, including foundation, RCC structure, brick masonry, premium tiles, Jaquar bath fittings, modular switches, and exterior 3D elevation.",
+  },
+  {
+    q: "Why should I use Hindustan Projects instead of hiring a local 'Thekedar' (contractor)?",
+    a: "Local contractors often provide vague initial verbal quotes that later balloon with 30-50% cost overruns, substandard duplicate materials (unbranded steel/cement), delayed timelines, and zero post-handover warranty. Hindustan Projects provides a legally binding Guaranteed Fixed-Price Agreement, 100% genuine brand factory invoicing (Tata Tiscon, UltraTech 53, Jaquar, Asian Paints), an escrow-style 9-stage payment release schedule, and an official 10-Year Structural Integrity Warranty.",
+  },
+  {
+    q: "What is the difference between Plot Area and Built-up Area?",
+    a: "Plot Area is the total boundary footprint of your land (e.g. 1,500 sq. ft or ~167 Gaj). Built-up Area is the actual constructed floor space across all levels. For a Ground + 1 Floor house on a 1,500 sqft plot, the built-up area is roughly 2,520 sqft (Ground floor ~1,200 sqft + First floor ~1,200 sqft + Covered parking & balconies ~120 sqft). Construction cost is always calculated on the total Built-Up Area.",
+  },
+  {
+    q: "Are architectural drawings, 3D elevation, and structural designs included?",
+    a: "Yes! Every turnkey construction package with Hindustan Projects includes complete Vastu-compliant 2D architectural floor plans, 3D photo-realistic exterior elevation renders, structural engineering CAD blueprints, and plumbing/electrical working drawings at zero additional charge.",
+  },
+  {
+    q: "How do milestone-based payments work?",
+    a: "You never pay large upfront sums. Payments are divided into 9 safe, certified milestone stages (e.g., Booking 5%, Foundation 10%, Plinth 10%, Ground Slab 15%, First Slab 15%, Brickwork 15%, Finishing 15%, Paint & Elevation 10%, Final Handover 5%). Each stage is only billed after physical inspection and quality sign-off by our site engineers.",
+  },
+];
 
 export default function CostEstimatorPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [showModal, setShowModal] = useState(true);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [selectedTier, setSelectedTier] = useState("Classic");
-  const [pendingSubmit, setPendingSubmit] = useState(false);
-  const [siteStats, setSiteStats] = useState<StatType[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  // Estimator Form States
-  const [plotShape, setPlotShape] = useState("rectangular");
-  const [plotArea, setPlotArea] = useState(1000);
-  const [city, setCity] = useState("Bhilwara");
-  const [floors, setFloors] = useState("g+1");
-  const [parking, setParking] = useState("1");
-  const [balcony, setBalcony] = useState("1");
-  const [estimatedCostInfo, setEstimatedCostInfo] = useState<{
-    totalCost: string;
-    builtUpArea: number;
-    ratePerSqft: number;
-  } | null>(null);
-
-  const router = useRouter();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [cmsConfig, setCmsConfig] = useState<CostEstimatorCMSConfig>(DEFAULT_ESTIMATOR_CMS_CONFIG);
 
   useEffect(() => {
-    fetch("/api/stats")
+    fetch("/api/settings")
       .then((res) => res.json())
-      .then((json) => {
-        if (json.success && Array.isArray(json.data)) {
-          setSiteStats(json.data);
+      .then((data) => {
+        if (data.success && data.data?.pageContent) {
+          try {
+            const pc =
+              typeof data.data.pageContent === "string"
+                ? JSON.parse(data.data.pageContent)
+                : data.data.pageContent;
+            if (pc.costEstimator) {
+              setCmsConfig(pc.costEstimator);
+            }
+          } catch {
+            // keep fallback
+          }
         }
       })
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    // Check if the user has already entered their phone number (via cookie)
-    const hasCookie = document.cookie.includes("cost_estimator_unlocked=true");
-    if (hasCookie) {
-      setShowModal(false);
-      setIsUnlocked(true);
-    }
-  }, []);
-
-  const triggerCalculate = async (tier?: string) => {
-    const activeTier = tier || selectedTier || "Classic";
-    setLoading(true);
-
-    // Rates per sqft
-    const tierRates: Record<string, number> = {
-      Basic: 1680,
-      Classic: 1840,
-      Premium: 2110,
-      Royale: 2350,
-    };
-    const rate = tierRates[activeTier] || 1840;
-
-    // Floor multipliers
-    const floorMultipliers: Record<string, number> = {
-      "g+1": 1.8,
-      "g+2": 2.6,
-      "g+3": 3.4,
-    };
-    const mult = floorMultipliers[floors] || 1.8;
-
-    const parkingArea = (parseInt(parking, 10) || 0) * 130;
-    const balconyArea = (parseInt(balcony, 10) || 0) * 40;
-    const totalBuiltUpArea = Math.round(plotArea * mult + parkingArea + balconyArea);
-    const totalCost = totalBuiltUpArea * rate;
-
-    // Format in Lakhs / Crores
-    let costDisplay = "";
-    if (totalCost >= 10000000) {
-      costDisplay = `₹${(totalCost / 10000000).toFixed(2)} Cr`;
-    } else {
-      costDisplay = `₹${(totalCost / 100000).toFixed(2)} Lakhs`;
-    }
-
-    setEstimatedCostInfo({
-      totalCost: costDisplay,
-      builtUpArea: totalBuiltUpArea,
-      ratePerSqft: rate,
-    });
-
-    // Track analytics event
-    trackEvent("calculate_cost_estimate", {
-      project_type: "Residential Construction",
-      construction_tier: activeTier,
-      city,
-      plot_area: plotArea,
-      floors,
-    });
-
-    // Persist calculation as a Quote Lead in the Database
-    try {
-      const userPhone = typeof window !== "undefined" ? localStorage.getItem("user_phone") || "" : "";
-      const cleanPhone = userPhone.replace(/\D/g, "");
-      const email = cleanPhone ? `lead-${cleanPhone}@hindustanprojects.in` : "estimator-user@hindustanprojects.in";
-
-      await fetch("/api/quote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Cost Estimator Lead",
-          email,
-          phone: userPhone || "9999999999",
-          location: `${city}, Rajasthan`,
-          projectType: "Cost Estimator Access",
-          budget: `${costDisplay} (${activeTier} Package)`,
-          description: `House Construction Cost Calculation: Plot Shape: ${plotShape}, Plot Area: ${plotArea} sqft, City: ${city}, Floors: ${floors}, Parking: ${parking}, Balcony: ${balcony}, Package: ${activeTier}. Total estimated built-up area: ${totalBuiltUpArea} sqft, Total estimated cost: ${costDisplay} (@ ₹${rate}/sqft).`,
-        }),
-      });
-    } catch (err) {
-      console.warn("Failed to persist estimator lead:", err);
-    } finally {
-      setLoading(false);
-      setSubmitted(true);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isUnlocked) {
-      setPendingSubmit(true);
-      setShowModal(true);
-      return;
-    }
-    triggerCalculate();
-  };
-
   return (
-    <div className="pt-24 pb-20 bg-white min-h-screen relative">
-      <PhoneCaptureModal 
-        isOpen={showModal} 
-        onClose={() => {
-          setShowModal(false);
-          setPendingSubmit(false);
-        }} 
-        onSuccess={() => {
-           setShowModal(false);
-           setIsUnlocked(true);
-           if (pendingSubmit) {
-             setPendingSubmit(false);
-             triggerCalculate();
-           }
+    <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
+      
+      {/* JSON-LD Structured Data for FAQ & SoftwareApplication */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: "Hindustan Projects House Construction Cost Estimator",
+            applicationCategory: "RealEstateApplication",
+            operatingSystem: "All",
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "INR",
+            },
+            description: "Free interactive house construction cost estimator for Bhilwara, Jaipur, Udaipur and Rajasthan. Calculate package-wise BOQ estimates instantly.",
+          }),
         }}
       />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
-          
-          {/* Left Side: Content & Info */}
-          <div className="w-full lg:w-7/12 flex flex-col pt-4">
-            <h1 className="text-[40px] md:text-[56px] font-bold text-gray-900 leading-[1.1] mb-10 font-display">
-              House Construction <br className="hidden sm:block" /> Cost Calculator
-            </h1>
-            
-            {/* Stats */}
-            <div className="flex flex-wrap gap-8 md:gap-16 mb-10">
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
-                  {siteStats.find((s) => /project/i.test(s.label))?.value || "150+"}
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {siteStats.find((s) => /project/i.test(s.label))?.label || "Projects"}
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
-                  {siteStats.find((s) => /year|experience/i.test(s.label))?.value || "8+"}
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {siteStats.find((s) => /year|experience/i.test(s.label))?.label || "Years Experience"}
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
-                  {siteStats.find((s) => /team/i.test(s.label))?.value || "30+"}
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {siteStats.find((s) => /team/i.test(s.label))?.label || "Team Members"}
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-construction-red mb-2 font-display">
-                  {siteStats.find((s) => /satisfaction/i.test(s.label))?.value || "85%"}
-                </div>
-                <div className="text-gray-600 text-sm">
-                  {siteStats.find((s) => /satisfaction/i.test(s.label))?.label || "Client Satisfaction"}
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <p className="text-[17px] text-gray-600 leading-relaxed mb-10">
-              Use our house construction cost calculator to get free, package-wise estimates instantly. 
-              Residential construction in India costs ₹1,680–₹2,350 per sqft depending on your city and 
-              package tier. A 30×40 ft plot with G+1 construction typically runs ₹33L–₹53L at Basic to 
-              Classic rates. Every estimate is backed by our fixed-price contracts and milestone inspections.
-            </p>
-
-            {/* Indicative Rates Widget */}
-            <div className="bg-white border border-gray-100 rounded-none p-6 shadow-sm mb-12">
-              <div className="flex justify-between items-center mb-5">
-                <h3 className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
-                  Indicative Rates Per Sqft (Select Tier)
-                </h3>
-                <span className="text-xs text-construction-red font-bold uppercase tracking-wider">
-                  Active: {selectedTier}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedTier("Basic")}
-                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
-                    selectedTier === "Basic"
-                      ? "border-construction-red bg-orange-50/50 shadow-sm"
-                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
-                  }`}
-                >
-                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Basic</div>
-                  <div className="text-construction-red font-bold">₹1,680</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTier("Classic")}
-                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
-                    selectedTier === "Classic"
-                      ? "border-construction-red bg-orange-50/50 shadow-sm"
-                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
-                  }`}
-                >
-                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Classic</div>
-                  <div className="text-construction-red font-bold">₹1,840</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTier("Premium")}
-                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
-                    selectedTier === "Premium"
-                      ? "border-construction-red bg-orange-50/50 shadow-sm"
-                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
-                  }`}
-                >
-                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Premium</div>
-                  <div className="text-construction-red font-bold">₹2,110</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTier("Royale")}
-                  className={`border rounded-none p-4 text-center transition-colors cursor-pointer ${
-                    selectedTier === "Royale"
-                      ? "border-construction-red bg-orange-50/50 shadow-sm"
-                      : "border-gray-100 bg-gray-50/50 hover:bg-orange-50/30 hover:border-orange-200"
-                  }`}
-                >
-                  <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Royale</div>
-                  <div className="text-construction-red font-bold">₹2,350</div>
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-4">
-                Rates vary by city and site conditions. Click a tier to set your desired package.
-              </p>
-            </div>
-            
-            {/* SEO Text Area */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4 font-display">How are these rates estimated?</h2>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                Rates are based on city-level construction cost inputs such as plot size, number of floors, and the quality of materials selected. Our smart algorithm factors in local labor and material costs to give you the most accurate real-time estimate possible.
-              </p>
-            </div>
+        
+        {/* ======================================================== */}
+        {/* HERO SECTION                                             */}
+        {/* ======================================================== */}
+        <div className="text-center max-w-3xl mx-auto pt-6 pb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-red-50 border border-red-200 text-[#D9232A] text-xs font-bold uppercase tracking-widest mb-4">
+            <Calculator className="w-3.5 h-3.5" />
+            <span>{cmsConfig.heroBadge || "Rajasthan Construction Intelligence Engine"}</span>
           </div>
 
-          {/* Right Side: Form Card */}
-          <div className="w-full lg:w-5/12">
-            <div className="bg-white rounded-none shadow-3d-lg border border-gray-100 p-8 lg:p-10 sticky top-32">
-              <h2 className="text-[28px] font-bold text-gray-900 mb-8 font-display">Calculate My Estimate</h2>
-              
-              {submitted ? (
-                <div className="py-8 flex flex-col items-center justify-center text-center animate-fade-in">
-                  <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-5">
-                    <CheckCircle className="w-9 h-9" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2 font-display uppercase tracking-tight">Estimate Generated!</h3>
-                  
-                  {estimatedCostInfo && (
-                    <div className="w-full my-6 p-6 bg-slate-50 border border-slate-200 text-left space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Estimated Total Cost</span>
-                        <span className="text-2xl font-black text-construction-red">{estimatedCostInfo.totalCost}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-1">
-                        <div>Built-up Area: <strong className="text-slate-900">{estimatedCostInfo.builtUpArea} sqft</strong></div>
-                        <div>Package: <strong className="text-slate-900">{selectedTier}</strong></div>
-                        <div>Indicative Rate: <strong className="text-slate-900">₹{estimatedCostInfo.ratePerSqft}/sqft</strong></div>
-                        <div>Location: <strong className="text-slate-900">{city}</strong></div>
-                      </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 font-display tracking-tight leading-[1.15] mb-5">
+            {cmsConfig.heroTitle || "House Construction Cost Calculator"}{" "}
+            <br className="hidden sm:inline" />
+            <span className="text-[#D9232A]">
+              {cmsConfig.heroAccent || "& Itemized BOQ Engine"}
+            </span>
+          </h1>
+
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed mb-8">
+            {cmsConfig.heroDescription ||
+              "Plan your dream home with Rajasthan’s most transparent construction estimation tool. Get instant, engineer-verified material breakdowns, package specifications, and milestone budgets for Bhilwara, Jaipur, Udaipur & beyond."}
+          </p>
+
+          {/* Quick Trust Highlights Banner */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white border border-slate-200 p-4 shadow-2xs text-left">
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-6 h-6 text-[#D9232A] shrink-0" />
+              <div>
+                <div className="text-xs font-bold text-slate-900">Fixed-Price</div>
+                <div className="text-[10px] text-slate-500">Zero Cost Overruns</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <Award className="w-6 h-6 text-[#0F2C59] shrink-0" />
+              <div>
+                <div className="text-xs font-bold text-slate-900">10-Yr Warranty</div>
+                <div className="text-[10px] text-slate-500">Structural Guarantee</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <Layers className="w-6 h-6 text-emerald-600 shrink-0" />
+              <div>
+                <div className="text-xs font-bold text-slate-900">100% Escrow</div>
+                <div className="text-[10px] text-slate-500">Milestone Payments</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <CheckCircle className="w-6 h-6 text-blue-600 shrink-0" />
+              <div>
+                <div className="text-xs font-bold text-slate-900">150+ Builds</div>
+                <div className="text-[10px] text-slate-500">Rajasthan Verified</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* INTERACTIVE ESTIMATOR ENGINE TOOL                        */}
+        {/* ======================================================== */}
+        <section className="mb-20">
+          <Suspense fallback={<div className="p-12 text-center text-slate-400">Loading Construction Estimator...</div>}>
+            <EstimatorEngine
+              initialArea={1500}
+              initialFloors="g+1"
+              initialTier="Gold"
+              cmsConfig={cmsConfig}
+            />
+          </Suspense>
+        </section>
+
+        {/* ======================================================== */}
+        {/* WHY HIPRO VS LOCAL CONTRACTOR COMPARISON TABLE           */}
+        {/* ======================================================== */}
+        <section className="mb-20 bg-white border border-slate-200 p-6 sm:p-10 shadow-xs">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#D9232A] mb-2 block">
+              Transparent Engineering
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
+              Hindustan Projects vs. Local Contractors
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2">
+              Why 200+ families across Bhilwara and Rajasthan trust our civil-engineering approach over traditional verbal thekedars.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs sm:text-sm min-w-[650px]">
+              <thead>
+                <tr className="border-b-2 border-slate-200 bg-slate-50">
+                  <th className="p-4 font-bold text-slate-700 uppercase tracking-wider w-1/3">Key Parameter</th>
+                  <th className="p-4 font-bold text-[#D9232A] uppercase tracking-wider w-1/3 bg-red-50/50">Hindustan Projects (HiPRO)</th>
+                  <th className="p-4 font-bold text-slate-500 uppercase tracking-wider w-1/3">Traditional Local Contractor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Cost Transparency</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">Guaranteed Fixed-Price Contract. Zero escalation clause.</td>
+                  <td className="p-4 text-slate-500">Starts low; frequent hidden charges & 25-40% budget overruns.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Material Brand Assurance</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">100% Verified Factory Invoices: Tata Tiscon, UltraTech, Jaquar.</td>
+                  <td className="p-4 text-slate-500">Unbranded or duplicate regional materials with zero lab test certs.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Payment Security</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">Escrow-style 9-Stage Milestone schedule. Pay only as work is verified.</td>
+                  <td className="p-4 text-slate-500">Demands heavy advance payments before work even starts.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Structural Warranty</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">Official 10-Year Structural Guarantee + 1-Year Free Maintenance.</td>
+                  <td className="p-4 text-slate-500">Zero written warranty. Disappears after handover when cracks appear.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Quality Control Audit</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">140+ Point QC Audit with digital site reports & cube compression tests.</td>
+                  <td className="p-4 text-slate-500">Zero engineering supervision; left entirely to untrained masons.</td>
+                </tr>
+                <tr>
+                  <td className="p-4 font-semibold text-slate-800">Timeline Commitment</td>
+                  <td className="p-4 bg-red-50/20 font-bold text-emerald-700">Contractual On-Time Handover with penalty guarantee for delays.</td>
+                  <td className="p-4 text-slate-500">Frequent 6 to 12 month unmonitored construction delays.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* ======================================================== */}
+        {/* FAQS SECTION                                             */}
+        {/* ======================================================== */}
+        <section className="mb-20 max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#D9232A] mb-2 block">
+              Frequently Asked Questions
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
+              House Construction Cost in Rajasthan
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-2">
+              Common questions answered by our chief civil estimation engineers.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQ_ITEMS.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={faq.q}
+                  className="bg-white border border-slate-200 transition-all overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/60"
+                  >
+                    <span className="text-sm font-bold text-slate-900 font-display">
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                        isOpen ? "transform rotate-180 text-[#D9232A]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30">
+                      {faq.a}
                     </div>
                   )}
-
-                  <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-                    Based on your inputs, our senior estimating engineers are reviewing site parameters. We will contact you shortly with a formal BOQ breakdown.
-                  </p>
-                  <button 
-                    onClick={() => setSubmitted(false)}
-                    className="text-construction-red font-semibold hover:underline text-sm uppercase tracking-wider"
-                  >
-                    Calculate another estimate
-                  </button>
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  
-                  <div className="relative">
-                    <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Plot Shape</label>
-                    <select
-                      aria-label="Plot Shape"
-                      value={plotShape}
-                      onChange={(e) => setPlotShape(e.target.value)}
-                      className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent"
-                    >
-                      <option value="rectangular">Rectangular</option>
-                      <option value="square">Square</option>
-                      <option value="other">Other / Irregular</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Plot Area (sqft)</label>
-                    <input 
-                      type="number" 
-                      aria-label="Plot Area in sqft"
-                      value={plotArea}
-                      onChange={(e) => setPlotArea(Math.max(100, parseInt(e.target.value, 10) || 0))}
-                      required
-                      min={100}
-                      className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red bg-transparent text-gray-900 font-medium"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="relative">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">City</label>
-                      <select
-                        aria-label="City"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent"
-                      >
-                        <option value="Bhilwara">Bhilwara</option>
-                        <option value="Jaipur">Jaipur</option>
-                        <option value="Udaipur">Udaipur</option>
-                        <option value="Kota">Kota</option>
-                        <option value="Jodhpur">Jodhpur</option>
-                        <option value="Ajmer">Ajmer</option>
-                        <option value="Other Rajasthan">Other Rajasthan</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Floors</label>
-                      <select
-                        aria-label="Floors"
-                        value={floors}
-                        onChange={(e) => setFloors(e.target.value)}
-                        className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent"
-                      >
-                        <option value="g+1">G+1</option>
-                        <option value="g+2">G+2</option>
-                        <option value="g+3">G+3</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center px-1 mb-2">
-                    <span className="text-[10px] text-gray-400">Indicative rates: ₹1,680 - ₹2,350/sqft</span>
-                    <span className="text-[10px] font-semibold text-slate-500">Tier: <strong className="text-construction-red">{selectedTier}</strong></span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="relative">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Parking</label>
-                      <select
-                        aria-label="Parking Units"
-                        value={parking}
-                        onChange={(e) => setParking(e.target.value)}
-                        className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent"
-                      >
-                        <option value="1">1 Car</option>
-                        <option value="2">2 Cars</option>
-                        <option value="0">None</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-
-                    <div className="relative">
-                      <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] text-gray-500 font-medium">Balcony</label>
-                      <select
-                        aria-label="Balcony Units"
-                        value={balcony}
-                        onChange={(e) => setBalcony(e.target.value)}
-                        className="w-full h-14 px-4 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red appearance-none bg-transparent"
-                      >
-                        <option value="1">1 Balcony</option>
-                        <option value="2">2 Balconies</option>
-                        <option value="3">3 Balconies</option>
-                        <option value="0">None</option>
-                      </select>
-                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-between px-1 mb-8">
-                    <span className="text-[10px] text-gray-400">Assumed 130 sqft per unit</span>
-                    <span className="text-[10px] text-gray-400">Assumed 40 sqft per unit</span>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-construction-red hover:bg-red-700 disabled:opacity-50 text-white font-bold py-4 rounded-none text-[16px] transition-all uppercase tracking-wider shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Calculating Estimate...</span>
-                      </>
-                    ) : (
-                      <span>Calculate Your Cost</span>
-                    )}
-                  </button>
-
-                  <p className="text-[11px] text-gray-500 leading-relaxed pt-2">
-                    By submitting this form, I confirm that I have read and agreed to accept our <Link href="/privacy-policy" className="text-construction-red hover:underline">privacy policy</Link>.
-                  </p>
-                </form>
-              )}
-            </div>
+              );
+            })}
           </div>
-          
+        </section>
+
+        {/* ======================================================== */}
+        {/* BOTTOM CALL TO ACTION BANNER                             */}
+        {/* ======================================================== */}
+        <div className="bg-[#0F2C59] text-white p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-2xl">
+            <div className="inline-block bg-[#D9232A] text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 mb-3">
+              Free Engineering Site Feasibility
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-white mb-2">
+              Already have an architectural floor plan?
+            </h3>
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Send your blueprint or plot survey to our senior civil engineers in Bhilwara for a formal itemized BOQ tender and fixed-price quotation within 24 hours.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+            <a
+              href={`https://wa.me/91${COMPANY_INFO.whatsappNumber || "7597000601"}?text=Hello%20Hindustan%20Projects%2C%20I%20have%20an%20architectural%20plan%20and%20would%20like%20a%20detailed%20BOQ%20quote.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider text-center transition-all shadow-md"
+            >
+              WhatsApp Architectural Plan
+            </a>
+
+            <Link
+              href="/contact"
+              className="px-6 py-3.5 bg-white text-[#0F2C59] hover:bg-slate-100 font-bold text-xs uppercase tracking-wider text-center transition-all shadow-md"
+            >
+              Contact Our Engineers
+            </Link>
+          </div>
         </div>
+
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
@@ -30,12 +31,18 @@ const defaultDistrictsByState: Record<string, string[]> = {
 };
 
 export default function PopupForm() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
     
+    // Do not trigger generic popup on interactive cost estimator page
+    if (pathname && pathname.startsWith("/cost-estimator")) {
+      return;
+    }
+
     // Check if the user has already seen the popup
     try {
       const hasSeenPopup = localStorage.getItem("hasSeenConsultationPopup");
@@ -50,7 +57,7 @@ export default function PopupForm() {
     } catch {
       // localStorage may be disabled
     }
-  }, []);
+  }, [pathname]);
 
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [states, setStates] = useState<string[]>(defaultIndianStates);

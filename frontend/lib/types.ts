@@ -254,6 +254,8 @@ export interface ContactPageContent {
   metaDescription?: string;
 }
 
+export type { CostEstimatorCMSConfig } from "@/components/estimator/types";
+
 export interface HeroSlide {
   id: string;
   image: string;

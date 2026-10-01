@@ -19,6 +19,7 @@ const titles: Record<string, string> = {
   "/admin/hero":        "Hero Section CMS",
   "/admin/about":       "About Page CMS",
   "/admin/contact-page":"Contact Page CMS",
+  "/admin/cost-estimator": "Cost Estimator CMS",
   "/admin/jobs":        "Job Openings",
   "/admin/cta-management": "CTA Management",
   "/admin/navigation":  "Navigation Menus",

@@ -30,6 +30,10 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
       userPermissions.includes("projects") ||
       userPermissions.includes("hero")
     )) ||
+    (sectionKey === "cost-estimator" && (
+      userPermissions.includes("cost-estimator") ||
+      userPermissions.includes("settings")
+    )) ||
     (sectionKey === "leads" && (
       userPermissions.includes("leads") ||
       userPermissions.includes("contacts") ||
