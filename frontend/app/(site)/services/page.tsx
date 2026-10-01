@@ -11,11 +11,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { findAll } from "@/lib/db";
-import type { Service } from "@/lib/types";
+import type { Service, Settings } from "@/lib/types";
 import DynamicIcon from "@/components/DynamicIcon";
 import PublicServicesList from "@/components/PublicServicesList";
 import { cleanServiceTitle, getServiceSlug } from "@/lib/companyData";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 export const revalidate = 60;
 
@@ -28,7 +29,15 @@ export const metadata: Metadata = {
 };
 
 export default async function ServicesPage() {
-  const allServices = await findAll<Service>("services");
+  const [allServices, settingsData] = await Promise.all([
+    findAll<Service>("services"),
+    findAll<Settings>("settings"),
+  ]);
+  const settings = settingsData[0] || {};
+  const ctaHeroPrimary = resolveCTA(settings, "services_hero_primary");
+  const ctaHeroSecondary = resolveCTA(settings, "services_hero_secondary");
+  const ctaBottomPrimary = resolveCTA(settings, "services_bottom_primary");
+
   const services = allServices.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
 
   return (
@@ -126,20 +135,28 @@ export default async function ServicesPage() {
 
           {/* Concise Action CTA Area */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3 max-w-md sm:max-w-none mx-auto">
-            <Link
-              href="/contact"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-5 py-3 rounded-none text-xs sm:text-sm uppercase tracking-wider transition-all shadow-sm group"
-            >
-              <span>Consult Technical Team</span>
-              <ArrowRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-            <Link
-              href="/cost-estimator"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-none border border-slate-300 text-xs sm:text-sm uppercase tracking-wider transition-all shadow-xs"
-            >
-              <Calculator className="w-4 h-4 text-construction-red" />
-              <span>Estimate Project Cost</span>
-            </Link>
+            {ctaHeroPrimary?.enabled !== false && (
+              <Link
+                href={ctaHeroPrimary ? resolveCTAHref(ctaHeroPrimary) : "/contact"}
+                target={ctaHeroPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-5 py-3 rounded-none text-xs sm:text-sm uppercase tracking-wider transition-all shadow-sm group"
+              >
+                <span>{ctaHeroPrimary?.label ?? "Consult Technical Team"}</span>
+                <ArrowRight className="w-4 h-4 text-construction-red group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            )}
+            {ctaHeroSecondary?.enabled !== false && (
+              <Link
+                href={ctaHeroSecondary ? resolveCTAHref(ctaHeroSecondary) : "/cost-estimator"}
+                target={ctaHeroSecondary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-5 py-3 rounded-none border border-slate-300 text-xs sm:text-sm uppercase tracking-wider transition-all shadow-xs"
+              >
+                <Calculator className="w-4 h-4 text-construction-red" />
+                <span>{ctaHeroSecondary?.label ?? "Estimate Project Cost"}</span>
+              </Link>
+            )}
             <a
               href="#services-list"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1 text-slate-600 hover:text-construction-navy px-3 py-3 rounded-none text-xs sm:text-sm font-semibold uppercase tracking-wider transition-colors"
@@ -205,12 +222,16 @@ export default async function ServicesPage() {
             <p className="text-slate-600 font-light mb-8 max-w-xl mx-auto text-base">
               Consult with our senior technical engineering team for complete BOQ estimation and blueprint reviews.
             </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-3 bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-none text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/30"
-            >
-              Contact Technical Team
-            </Link>
+            {ctaBottomPrimary?.enabled !== false && (
+              <Link
+                href={ctaBottomPrimary ? resolveCTAHref(ctaBottomPrimary) : "/contact"}
+                target={ctaBottomPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaBottomPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="inline-flex items-center gap-3 bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 rounded-none text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/30"
+              >
+                {ctaBottomPrimary?.label ?? "Contact Technical Team"}
+              </Link>
+            )}
           </div>
         </div>
       </section>

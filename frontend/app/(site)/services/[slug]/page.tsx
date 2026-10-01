@@ -10,6 +10,7 @@ import { cleanServiceTitle, cleanContentTypos, getServiceSlug } from "@/lib/comp
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { generateBreadcrumbSchema, generateServiceSchema, generateFaqSchema } from "@/lib/schema";
 import { getServiceDetailContent, resolveServiceDetail } from "@/lib/serviceContentData";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 export const revalidate = 60;
 
@@ -161,6 +162,8 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
   const expStat = statsData?.find((s) => /experience|year/i.test(s.label))?.value || "8+";
 
   const settings = settingsData[0] || {};
+  const ctaDetailPrimary = resolveCTA(settings, "service_detail_primary");
+  const ctaDetailSecondary = resolveCTA(settings, "service_detail_secondary");
   const phone = settings.companyPhone || "+91 75970 00601";
   const paramSlug = decodeURIComponent(params.slug).toLowerCase().trim();
   const servicesList = allServices && allServices.length > 0 ? allServices : defaultServices;
@@ -604,18 +607,26 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
               Our engineering and technical teams are ready to mobilize across Bhilwara and Rajasthan. Contact us today for a comprehensive consultation and project estimate.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href={`/contact?service=${encodeURIComponent(service.title)}`}
-                className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/20"
-              >
-                Get a Free Quote
-              </Link>
-              <Link
-                href="/cost-estimator"
-                className="bg-construction-navy hover:bg-blue-900 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-md"
-              >
-                Calculate Cost
-              </Link>
+              {ctaDetailPrimary?.enabled !== false && (
+                <Link
+                  href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : `/contact?service=${encodeURIComponent(service.title)}`}
+                  target={ctaDetailPrimary?.openNewTab ? "_blank" : undefined}
+                  rel={ctaDetailPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                  className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/20"
+                >
+                  {ctaDetailPrimary?.label ?? "Get a Free Quote"}
+                </Link>
+              )}
+              {ctaDetailSecondary?.enabled !== false && (
+                <Link
+                  href={ctaDetailSecondary ? resolveCTAHref(ctaDetailSecondary) : "/cost-estimator"}
+                  target={ctaDetailSecondary?.openNewTab ? "_blank" : undefined}
+                  rel={ctaDetailSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                  className="bg-construction-navy hover:bg-blue-900 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-md"
+                >
+                  {ctaDetailSecondary?.label ?? "Calculate Cost"}
+                </Link>
+              )}
               <a 
                 href={`tel:${phone.replace(/\s+/g, '')}`} 
                 className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider flex items-center gap-2 shadow-sm"

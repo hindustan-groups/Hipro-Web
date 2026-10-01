@@ -22,9 +22,11 @@ import {
   Sparkles,
   HelpCircle,
 } from "lucide-react";
-import type { Project, ProjectGalleryItem, ProjectHighlight, ProjectFaq } from "@/lib/types";
+import type { Project, ProjectGalleryItem, ProjectHighlight, ProjectFaq, Settings } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import ProjectGalleryLightbox, { GalleryImageItem } from "@/components/projects/ProjectGalleryLightbox";
+import { findAll } from "@/lib/db";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 import {
   generateProjectBreadcrumbs,
   generateProjectJsonLd,
@@ -264,8 +266,15 @@ export default async function ProjectDetailPage({
     redirect(`/projects/${project.slug}`, RedirectType.replace);
   }
 
-  // Related projects
-  const relatedProjects = await getRelatedProjects(project.id || "", project.category);
+  // Related projects & settings
+  const [relatedProjects, settingsData] = await Promise.all([
+    getRelatedProjects(project.id || "", project.category),
+    findAll<Settings>("settings"),
+  ]);
+  const settings = settingsData[0] || {};
+  const ctaDetailPrimary = resolveCTA(settings, "project_detail_primary");
+  const ctaBottomPrimary = resolveCTA(settings, "project_detail_bottom_primary");
+  const ctaBottomSecondary = resolveCTA(settings, "project_detail_bottom_secondary");
 
   // Parse Gallery Images
   const galleryItems: GalleryImageItem[] = [];
@@ -848,13 +857,17 @@ export default async function ProjectDetailPage({
                 <p className="text-xs text-slate-600 font-normal leading-relaxed mb-4">
                   Planning a commercial development, civil facility, or industrial structure with similar engineering parameters?
                 </p>
-                <Link
-                  href="/contact"
-                  className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-construction-navy hover:bg-slate-800 text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors shadow-md"
-                >
-                  <span>Inquire About Similar Project</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+                {ctaDetailPrimary?.enabled !== false && (
+                  <Link
+                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : "/contact"}
+                    target={ctaDetailPrimary?.openNewTab ? "_blank" : undefined}
+                    rel={ctaDetailPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                    className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-construction-navy hover:bg-slate-800 text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors shadow-md"
+                  >
+                    <span>{ctaDetailPrimary?.label ?? "Inquire About Similar Project"}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                )}
               </div>
             </div>
           </aside>
@@ -988,18 +1001,26 @@ export default async function ProjectDetailPage({
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/contact"
-              className="w-full sm:w-auto px-8 py-4 bg-construction-red hover:bg-red-700 text-white font-mono font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
-            >
-              Initiate Project Consultation
-            </Link>
-            <Link
-              href="/projects"
-              className="w-full sm:w-auto px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-mono font-bold text-xs uppercase tracking-widest border border-slate-300 transition-all"
-            >
-              Browse All Projects
-            </Link>
+            {ctaBottomPrimary?.enabled !== false && (
+              <Link
+                href={ctaBottomPrimary ? resolveCTAHref(ctaBottomPrimary) : "/contact"}
+                target={ctaBottomPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaBottomPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto px-8 py-4 bg-construction-red hover:bg-red-700 text-white font-mono font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
+              >
+                {ctaBottomPrimary?.label ?? "Initiate Project Consultation"}
+              </Link>
+            )}
+            {ctaBottomSecondary?.enabled !== false && (
+              <Link
+                href={ctaBottomSecondary ? resolveCTAHref(ctaBottomSecondary) : "/projects"}
+                target={ctaBottomSecondary?.openNewTab ? "_blank" : undefined}
+                rel={ctaBottomSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto px-8 py-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-mono font-bold text-xs uppercase tracking-widest border border-slate-300 transition-all"
+              >
+                {ctaBottomSecondary?.label ?? "Browse All Projects"}
+              </Link>
+            )}
           </div>
         </div>
       </section>

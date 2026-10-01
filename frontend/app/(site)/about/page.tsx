@@ -24,6 +24,7 @@ import {
 import CTASection from "@/components/CTASection";
 import GroupEcosystem from "@/components/GroupEcosystem";
 import { findAll } from "@/lib/db";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 import type {
   TeamMember,
   Settings,
@@ -180,6 +181,8 @@ export default async function AboutPage({
   const additionalTeam = team.filter((m) => !m.isFounder);
 
   const settings = settingsData[0] || {};
+  const ctaHeroPrimary = resolveCTA(settings, "about_hero_primary");
+  const ctaHeroSecondary = resolveCTA(settings, "about_hero_secondary");
   let pageContent: any = {};
   try {
     if (settings.pageContent) {
@@ -422,19 +425,27 @@ export default async function AboutPage({
 
           {/* Primary & Secondary Action CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-8 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-md shadow-blue-950/20"
-            >
-              {heroPrimaryCta}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/cost-estimator"
-              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest border border-slate-300 transition-all shadow-sm"
-            >
-              {heroSecondaryCta}
-            </Link>
+            {ctaHeroPrimary?.enabled !== false && (
+              <Link
+                href={ctaHeroPrimary ? resolveCTAHref(ctaHeroPrimary) : "/services"}
+                target={ctaHeroPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="inline-flex items-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-8 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-md shadow-blue-950/20"
+              >
+                <span>{ctaHeroPrimary?.label || heroPrimaryCta}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+            {ctaHeroSecondary?.enabled !== false && (
+              <Link
+                href={ctaHeroSecondary ? resolveCTAHref(ctaHeroSecondary) : "/cost-estimator"}
+                target={ctaHeroSecondary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-900 font-bold px-7 py-3.5 rounded-none text-xs uppercase tracking-widest border border-slate-300 transition-all shadow-sm"
+              >
+                {ctaHeroSecondary?.label || heroSecondaryCta}
+              </Link>
+            )}
           </div>
 
           {/* Verified Operational Highlights Grid */}

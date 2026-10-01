@@ -826,14 +826,18 @@ export default function Navbar({
               </div>
             );
           })}
-          <Link 
-            href="/contact" 
-            onClick={() => setMobileOpen(false)}
-            className="mt-4 mb-2 mx-4 bg-construction-navy text-white px-4 py-3.5 rounded-none font-semibold text-center uppercase tracking-wider shadow-md shadow-blue-900/20 flex items-center justify-center gap-2"
-          >
-            <span>Get a Quote</span>
-            <ArrowRight className="w-4 h-4 text-construction-red" />
-          </Link>
+          {navbarCta?.enabled !== false && (
+            <Link 
+              href={navbarCta ? resolveCTAHref(navbarCta) : "/contact"} 
+              target={navbarCta?.openNewTab ? "_blank" : undefined}
+              rel={navbarCta?.openNewTab ? "noopener noreferrer" : undefined}
+              onClick={() => setMobileOpen(false)}
+              className="mt-4 mb-2 mx-4 bg-construction-navy text-white px-4 py-3.5 rounded-none font-semibold text-center uppercase tracking-wider shadow-md shadow-blue-900/20 flex items-center justify-center gap-2"
+            >
+              <span>{navbarCta?.label ?? "Get a Quote"}</span>
+              <ArrowRight className="w-4 h-4 text-construction-red" />
+            </Link>
+          )}
         </div>
       </nav>
     </header>

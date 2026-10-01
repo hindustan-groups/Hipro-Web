@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import PublicProjectGrid from "@/components/PublicProjectGrid";
 import { findAll } from "@/lib/db";
-import type { Project } from "@/lib/types";
+import type { Project, Settings } from "@/lib/types";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 export const revalidate = 60;
 
@@ -44,8 +45,15 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsPage() {
-  // Fetch raw projects from database/API
-  const allProjects = await findAll<Project>("projects");
+  // Fetch raw projects and settings from database/API
+  const [allProjects, settingsData] = await Promise.all([
+    findAll<Project>("projects"),
+    findAll<Settings>("settings"),
+  ]);
+  const settings = settingsData[0] || {};
+  const ctaHeroPrimary = resolveCTA(settings, "projects_hero_primary");
+  const ctaHeroSecondary = resolveCTA(settings, "projects_hero_secondary");
+  const ctaBottomPrimary = resolveCTA(settings, "projects_bottom_primary");
 
   // Strict Public Isolation Rule (Defense-in-depth):
   // Filter out any draft or operationally archived records before passing to public grid
@@ -130,20 +138,28 @@ export default async function ProjectsPage() {
 
           {/* Action Navigation CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs sm:max-w-none mx-auto">
-            <a
-              href="#projects-list"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
-            >
-              <span>Explore Portfolio</span>
-              <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
-            </a>
-            <Link
-              href="/contact"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-xs group"
-            >
-              <span>Discuss Your Project</span>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            {ctaHeroPrimary?.enabled !== false && (
+              <a
+                href={ctaHeroPrimary ? resolveCTAHref(ctaHeroPrimary) : "#projects-list"}
+                target={ctaHeroPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
+              >
+                <span>{ctaHeroPrimary?.label ?? "Explore Portfolio"}</span>
+                <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
+              </a>
+            )}
+            {ctaHeroSecondary?.enabled !== false && (
+              <Link
+                href={ctaHeroSecondary ? resolveCTAHref(ctaHeroSecondary) : "/contact"}
+                target={ctaHeroSecondary?.openNewTab ? "_blank" : undefined}
+                rel={ctaHeroSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-xs group"
+              >
+                <span>{ctaHeroSecondary?.label ?? "Discuss Your Project"}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -167,12 +183,16 @@ export default async function ProjectsPage() {
             <p className="text-slate-600 font-light mb-8 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
               Partner with Hindustan Projects for end-to-end industrial master planning, heavy PEB steel fabrication, and coordinated turnkey execution.
             </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-3 bg-construction-navy hover:bg-slate-900 text-white font-bold px-8 py-4 text-xs sm:text-sm transition-all uppercase tracking-wider shadow-sm"
-            >
-              Start Project Discussion
-            </Link>
+            {ctaBottomPrimary?.enabled !== false && (
+              <Link
+                href={ctaBottomPrimary ? resolveCTAHref(ctaBottomPrimary) : "/contact"}
+                target={ctaBottomPrimary?.openNewTab ? "_blank" : undefined}
+                rel={ctaBottomPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                className="inline-flex items-center gap-3 bg-construction-navy hover:bg-slate-900 text-white font-bold px-8 py-4 text-xs sm:text-sm transition-all uppercase tracking-wider shadow-sm"
+              >
+                {ctaBottomPrimary?.label ?? "Start Project Discussion"}
+              </Link>
+            )}
           </div>
         </div>
       </section>

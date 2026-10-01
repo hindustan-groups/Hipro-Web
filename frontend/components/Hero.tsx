@@ -8,10 +8,12 @@ import { isOptimizableImage } from "@/lib/imageUtils";
 import { trackEvent } from "@/lib/analytics";
 
 import type { HeroSlide, Stats as StatType } from "@/lib/types";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 interface HeroProps {
   initialSlides?: HeroSlide[];
   initialStats?: StatType[];
+  settings?: any;
 }
 
 const fallbackHeroImages = [
@@ -90,7 +92,7 @@ function formatHeroTitle(title: string) {
   );
 }
 
-export default function Hero({ initialSlides = [], initialStats = [] }: HeroProps) {
+export default function Hero({ initialSlides = [], initialStats = [], settings }: HeroProps) {
   const [slides, setSlides] = useState<HeroSlide[]>(
     initialSlides && initialSlides.length > 0 ? initialSlides : defaultSlides
   );
@@ -98,6 +100,10 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
     initialStats && initialStats.length > 0 ? initialStats : defaultStats
   );
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Dynamic CMS CTA Resolution
+  const ctaPrimary = resolveCTA(settings, "home_hero_primary");
+  const ctaSecondary = resolveCTA(settings, "home_hero_secondary");
 
   // Quote Form State
   const [quoteForm, setQuoteForm] = useState({
@@ -309,20 +315,28 @@ export default function Hero({ initialSlides = [], initialStats = [] }: HeroProp
 
             {/* CTA buttons */}
             <div className="flex flex-col sm:flex-row gap-5 mt-10 animate-fade-up" style={{ animationDelay: "0.4s" }}>
-              <Link
-                href="/contact"
-                className="group relative inline-flex items-center justify-center gap-3 bg-construction-red text-white font-bold px-8 py-4 rounded-none text-[15px] transition-all uppercase tracking-widest shadow-[0_0_40px_-10px_rgba(220,38,38,0.5)] hover:shadow-[0_0_60px_-15px_rgba(220,38,38,0.7)] overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                <span className="relative">Start Your Project</span>
-                <ArrowRight className="w-5 h-5 relative group-hover:translate-x-2 transition-transform duration-300" />
-              </Link>
-              <Link
-                href="/projects"
-                className="group inline-flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:border-white hover:bg-white text-white hover:text-black font-bold px-8 py-4 rounded-none text-[15px] transition-all duration-300 uppercase tracking-widest backdrop-blur-sm"
-              >
-                View Portfolio
-              </Link>
+              {ctaPrimary?.enabled !== false && (
+                <Link
+                  href={ctaPrimary ? resolveCTAHref(ctaPrimary) : "/contact"}
+                  target={ctaPrimary?.openNewTab ? "_blank" : undefined}
+                  rel={ctaPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                  className="group relative inline-flex items-center justify-center gap-3 bg-construction-red text-white font-bold px-8 py-4 rounded-none text-[15px] transition-all uppercase tracking-widest shadow-[0_0_40px_-10px_rgba(220,38,38,0.5)] hover:shadow-[0_0_60px_-15px_rgba(220,38,38,0.7)] overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                  <span className="relative">{ctaPrimary?.label ?? "Start Your Project"}</span>
+                  <ArrowRight className="w-5 h-5 relative group-hover:translate-x-2 transition-transform duration-300" />
+                </Link>
+              )}
+              {ctaSecondary?.enabled !== false && (
+                <Link
+                  href={ctaSecondary ? resolveCTAHref(ctaSecondary) : "/projects"}
+                  target={ctaSecondary?.openNewTab ? "_blank" : undefined}
+                  rel={ctaSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                  className="group inline-flex items-center justify-center gap-2 bg-transparent border border-white/30 hover:border-white hover:bg-white text-white hover:text-black font-bold px-8 py-4 rounded-none text-[15px] transition-all duration-300 uppercase tracking-widest backdrop-blur-sm"
+                >
+                  {ctaSecondary?.label ?? "View Portfolio"}
+                </Link>
+              )}
             </div>
           </div>
 

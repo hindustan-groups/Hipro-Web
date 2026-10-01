@@ -7,7 +7,8 @@ import {
   Compass,
 } from "lucide-react";
 import { findAll } from "@/lib/db";
-import type { BlogPost } from "@/lib/types";
+import type { BlogPost, Settings } from "@/lib/types";
+import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 import PublicBlogGrid from "@/components/PublicBlogGrid";
 
 import { Metadata } from "next";
@@ -34,7 +35,14 @@ export default async function BlogsPage({
 }) {
   const selectedCategory = searchParams?.category;
 
-  const allBlogs = await findAll<BlogPost>("blogs");
+  const [allBlogs, allSettings] = await Promise.all([
+    findAll<BlogPost>("blogs"),
+    findAll<Settings>("settings"),
+  ]);
+  const settings = allSettings[0];
+  const primaryCta = resolveCTA(settings, "blogs_cta_primary");
+  const secondaryCta = resolveCTA(settings, "blogs_cta_secondary");
+
   const now = new Date();
   const publishedBlogs = allBlogs
     .filter((b) => {
@@ -177,18 +185,26 @@ export default async function BlogsPage({
             From turnkey civil construction and architectural planning to site surveying and cost estimation, our team delivers disciplined engineering excellence across Bhilwara and Rajasthan.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/cost-estimator"
-              className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
-            >
-              Use Cost Estimator
-            </Link>
-            <Link
-              href="/contact?service=General%20Inquiry"
-              className="bg-construction-navy hover:bg-blue-900 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
-            >
-              Consult an Engineer
-            </Link>
+            {secondaryCta && secondaryCta.enabled !== false && (
+              <Link
+                href={resolveCTAHref(secondaryCta)}
+                target={secondaryCta.openNewTab ? "_blank" : undefined}
+                rel={secondaryCta.openNewTab ? "noopener noreferrer" : undefined}
+                className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
+              >
+                {secondaryCta.label}
+              </Link>
+            )}
+            {primaryCta && primaryCta.enabled !== false && (
+              <Link
+                href={resolveCTAHref(primaryCta)}
+                target={primaryCta.openNewTab ? "_blank" : undefined}
+                rel={primaryCta.openNewTab ? "noopener noreferrer" : undefined}
+                className="bg-construction-navy hover:bg-blue-900 text-white font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-md"
+              >
+                {primaryCta.label}
+              </Link>
+            )}
             <a
               href="tel:7597000601"
               className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-sm"
