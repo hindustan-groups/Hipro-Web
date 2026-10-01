@@ -41,14 +41,6 @@ const defaultEcosystemCompanies = [
     order: 1,
   },
   {
-    name: "HiPro IT Services",
-    description: "Enterprise software, web development & digital solutions.",
-    website: "https://www.itservices.hindustanprojects.in/",
-    status: "Live Portal",
-    active: true,
-    order: 2,
-  },
-  {
     name: "HiPro Marketing",
     description: "Brand strategy & commercial solutions.",
     website: "",

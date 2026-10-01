@@ -33,14 +33,6 @@ const DEFAULT_GROUP_COMPANIES: GroupCompanyConfig[] = [
     order: 2,
   },
   {
-    name: "HiPro IT Services",
-    description: "Digital solutions and technology services under the Hindustan Group.",
-    website: "https://www.itservices.hindustanprojects.in/",
-    status: "Live Portal",
-    active: true,
-    order: 3,
-  },
-  {
     name: "Hindustan Empanelment",
     description: "Contractor, Vendor & Institutional Empanelment Services.",
     website: "https://empanelment.hindustanprojects.in/",
@@ -654,7 +646,7 @@ export default function AdminSettings() {
                       type="text" 
                       value={company.name}
                       onChange={(e) => handleGroupCompanyChange(index, "name", e.target.value)}
-                      placeholder="e.g. HiPro IT Services"
+                      placeholder="e.g. Hindustan Empanelment"
                       className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
                     />
                   </div>

@@ -33,16 +33,6 @@ const defaultCompanies: GroupCompanyItem[] = [
     icon: Megaphone,
   },
   {
-    name: "HiPro IT Services",
-    category: "Digital & Technology",
-    description: "Digital solutions and technology services under the Hindustan Group.",
-    url: "https://www.itservices.hindustanprojects.in/",
-    website: "https://www.itservices.hindustanprojects.in/",
-    isExternal: true,
-    statusText: "Live Portal",
-    icon: Laptop,
-  },
-  {
     name: "Hindustan Empanelment",
     category: "Institutional Empanelment",
     description: "Contractor, Vendor & Institutional Empanelment Services.",

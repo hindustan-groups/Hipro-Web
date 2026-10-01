@@ -65,14 +65,6 @@ export const COMPANY_INFO = {
       status: "Coming Soon",
     },
     {
-      name: "HiPro IT Services",
-      category: "Digital & Technology",
-      description: "Digital solutions and technology services under the Hindustan Group.",
-      url: "https://www.itservices.hindustanprojects.in/",
-      isExternal: true,
-      status: "Live Portal",
-    },
-    {
       name: "Hindustan Empanelment",
       category: "Institutional Empanelment",
       description: "Contractor, Vendor & Institutional Empanelment Services.",
@@ -204,7 +196,7 @@ export const ABOUT_PAGE_DATA = {
     { label: "Core Industry Focus", value: "Civil Engineering, Turnkey Construction & Infrastructure" },
     { label: "Core Engineering Disciplines", value: "6 Verified Practice Areas (Planning, Civil, Surveying, Interiors, ETP/STP, PMC)" },
     { label: "Project Delivery Model", value: "Turnkey Civil Execution, Architectural Planning & Project Management Consultancy" },
-    { label: "Corporate Ecosystem", value: "Hindustan Projects, Hindustan Empanelment, HiPro IT Services, HiPro Marketing" },
+    { label: "Corporate Ecosystem", value: "Hindustan Projects, Hindustan Empanelment, HiPro Marketing" },
   ],
   missionVision: {
     mission: {

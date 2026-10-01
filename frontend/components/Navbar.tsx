@@ -315,7 +315,6 @@ export default function Navbar({
         });
     }
 
-    // Default fallback if no active dynamic portals configured
     if (dynamicEcosystemLinks.length === 0) {
       dynamicEcosystemLinks = [
         {
@@ -323,14 +322,6 @@ export default function Navbar({
           label: "Hindustan Empanelment",
           tagline: "Govt, vendor & contractor empanelment gateway",
           icon: FileCheck2,
-          isExternal: true,
-          badge: "Live Portal",
-        },
-        {
-          href: "https://www.itservices.hindustanprojects.in/",
-          label: "HiPro IT Services",
-          tagline: "Software, web platforms & digital engineering",
-          icon: Globe2,
           isExternal: true,
           badge: "Live Portal",
         },
