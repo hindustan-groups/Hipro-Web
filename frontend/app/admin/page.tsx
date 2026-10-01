@@ -327,6 +327,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
                   <Link href="/admin/hero" className="font-semibold text-construction-navy hover:underline">Hero Banner &rarr;</Link>
+                  <Link href="/admin/projects-hero" className="text-slate-500 hover:text-slate-900">Projects Hero</Link>
                   <Link href="/admin/about" className="text-slate-500 hover:text-slate-900">About</Link>
                   <Link href="/admin/navigation" className="text-slate-500 hover:text-slate-900">Nav</Link>
                 </div>

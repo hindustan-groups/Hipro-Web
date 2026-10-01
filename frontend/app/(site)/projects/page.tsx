@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ArrowDown,
-} from "lucide-react";
 import PublicProjectGrid from "@/components/PublicProjectGrid";
+import ProjectsHero from "@/components/ProjectsHero";
 import { findAll } from "@/lib/db";
-import type { Project, Settings } from "@/lib/types";
+import type { Project, Settings, ProjectsHeroContent } from "@/lib/types";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
 export const revalidate = 60;
@@ -45,15 +42,37 @@ export const metadata: Metadata = {
 };
 
 export default async function ProjectsPage() {
-  // Fetch raw projects and settings from database/API
-  const [allProjects, settingsData] = await Promise.all([
+  // Fetch raw projects, settings, and authoritative site stats concurrently
+  const [allProjects, settingsData, rawStats] = await Promise.all([
     findAll<Project>("projects"),
     findAll<Settings>("settings"),
+    findAll<any>("stats"),
   ]);
   const settings = settingsData[0] || {};
   const ctaHeroPrimary = resolveCTA(settings, "projects_hero_primary");
   const ctaHeroSecondary = resolveCTA(settings, "projects_hero_secondary");
   const ctaBottomPrimary = resolveCTA(settings, "projects_bottom_primary");
+
+  // Parse Projects Hero configuration from authoritative Settings.pageContent
+  let heroConfig: ProjectsHeroContent = {};
+  try {
+    if (settings.pageContent) {
+      const pc =
+        typeof settings.pageContent === "string"
+          ? JSON.parse(settings.pageContent)
+          : settings.pageContent;
+      if (pc.projectsHero && typeof pc.projectsHero === "object") {
+        heroConfig = pc.projectsHero;
+      }
+    }
+  } catch {
+    heroConfig = {};
+  }
+
+  // Sort authoritative site stats
+  const sortedStats = Array.isArray(rawStats)
+    ? [...rawStats].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    : [];
 
   // Strict Public Isolation Rule (Defense-in-depth):
   // Filter out any draft or operationally archived records before passing to public grid
@@ -89,80 +108,17 @@ export default async function ProjectsPage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1 — HERO: Architectural Engineering Project Portfolio
           ───────────────────────────────────────────────────────────── */}
-      <section className="relative bg-white pt-28 sm:pt-32 md:pt-36 pb-10 sm:pb-12 md:pb-14 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 overflow-hidden">
-        {/* Architectural Drafting Blueprint Grid Pattern */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
-            backgroundSize: "36px 36px",
-          }}
-          aria-hidden="true"
-        />
-
-        {/* Ambient Subtle Accent Glows */}
-        <div
-          className="absolute -top-20 right-0 w-96 h-96 bg-slate-100/80 rounded-full blur-3xl pointer-events-none -z-0"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-24 left-0 w-80 h-80 bg-red-50/40 rounded-full blur-3xl pointer-events-none -z-0"
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          {/* Eyebrow Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 text-construction-navy mb-4 sm:mb-5 shadow-xs">
-            <span className="w-1.5 h-1.5 bg-construction-red" aria-hidden="true" />
-            <span className="text-[11px] font-bold uppercase tracking-widest font-mono">
-              OUR PROJECTS
-            </span>
-          </div>
-
-          {/* Primary Semantic H1 */}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-950 mb-4 font-display uppercase tracking-tight leading-[1.15]">
-            ENGINEERING PROJECTS THAT DELIVER
-          </h1>
-
-          {/* HiPRO Two-Tone Architectural Accent Bar */}
-          <div className="flex w-32 h-1 mx-auto mb-5" aria-hidden="true">
-            <div className="w-1/3 h-full bg-yellow-500" />
-            <div className="w-2/3 h-full bg-construction-navy" />
-          </div>
-
-          {/* Supporting Lead Description (Concise & Verified, Zero Invented Claims) */}
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto font-light leading-relaxed mb-6 sm:mb-8">
-            Explore verified industrial, commercial, and turnkey construction projects engineered with precision and delivered across Rajasthan and India.
-          </p>
-
-          {/* Action Navigation CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs sm:max-w-none mx-auto">
-            {ctaHeroPrimary?.enabled !== false && (
-              <a
-                href={ctaHeroPrimary ? resolveCTAHref(ctaHeroPrimary) : "#projects-list"}
-                target={ctaHeroPrimary?.openNewTab ? "_blank" : undefined}
-                rel={ctaHeroPrimary?.openNewTab ? "noopener noreferrer" : undefined}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
-              >
-                <span>{ctaHeroPrimary?.label ?? "Explore Portfolio"}</span>
-                <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
-              </a>
-            )}
-            {ctaHeroSecondary?.enabled !== false && (
-              <Link
-                href={ctaHeroSecondary ? resolveCTAHref(ctaHeroSecondary) : "/contact"}
-                target={ctaHeroSecondary?.openNewTab ? "_blank" : undefined}
-                rel={ctaHeroSecondary?.openNewTab ? "noopener noreferrer" : undefined}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-xs group"
-              >
-                <span>{ctaHeroSecondary?.label ?? "Discuss Your Project"}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
+      <ProjectsHero
+        eyebrow={heroConfig.eyebrow}
+        title={heroConfig.title}
+        description={heroConfig.description}
+        image={heroConfig.image}
+        imageAlt={heroConfig.imageAlt}
+        ctaPrimary={ctaHeroPrimary}
+        ctaSecondary={ctaHeroSecondary}
+        stats={sortedStats}
+        enabled={heroConfig.enabled !== false}
+      />
 
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2 — DYNAMIC FILTERABLE & SORTABLE PORTFOLIO GRID

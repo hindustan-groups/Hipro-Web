@@ -224,6 +224,15 @@ export interface Settings {
   updatedAt?: string;
 }
 
+export interface ProjectsHeroContent {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  enabled?: boolean;
+}
+
 export interface HeroSlide {
   id: string;
   image: string;

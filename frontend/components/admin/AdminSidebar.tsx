@@ -81,6 +81,7 @@ const navCategories: NavCategory[] = [
     title: "Pages & Site CMS",
     items: [
       { href: "/admin/hero", label: "Hero Banner", icon: LayoutTemplate, sectionKey: "hero" },
+      { href: "/admin/projects-hero", label: "Projects Page Hero", icon: Layers, sectionKey: "projects-hero" },
       { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
       { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
       { href: "/admin/jobs", label: "Job Postings", icon: Briefcase, sectionKey: "jobs" },
@@ -118,6 +119,14 @@ export default function AdminSidebar({ user }: { user: any }) {
     const key = sectionKey || href.split("/")[2] || "dashboard";
     if (key === "dashboard") return true;
     if (userPermissions.includes(key)) return true;
+    if (
+      key === "projects-hero" &&
+      (userPermissions.includes("projects-hero") ||
+        userPermissions.includes("projects") ||
+        userPermissions.includes("hero"))
+    ) {
+      return true;
+    }
     if (key === "leads") {
       return (
         userPermissions.includes("leads") ||

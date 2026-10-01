@@ -1,122 +1,319 @@
-"use client";
-
-import Link from "next/link";
+import React from "react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { ArrowRight, MapPin } from "lucide-react";
-import type { Project } from "@/lib/types";
+import Link from "next/link";
+import { ArrowDown, ArrowRight } from "lucide-react";
+import type { CTAConfig } from "@/lib/cta";
+import { resolveCTAHref } from "@/lib/cta";
 import { isOptimizableImage } from "@/lib/imageUtils";
 
-export default function ProjectsHero({ featuredProjects }: { featuredProjects: Project[] }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+export interface ProjectHeroStat {
+  id?: string;
+  label: string;
+  value: string;
+  icon?: string;
+}
 
-  useEffect(() => {
-    if (featuredProjects.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featuredProjects.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [featuredProjects.length]);
+export interface ProjectsHeroProps {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  ctaPrimary?: CTAConfig | null;
+  ctaSecondary?: CTAConfig | null;
+  stats?: ProjectHeroStat[];
+  enabled?: boolean;
+  isPreview?: boolean;
+}
 
-  if (featuredProjects.length === 0) return null;
+export const DEFAULT_PROJECTS_HERO = {
+  eyebrow: "PROJECTS / PORTFOLIO",
+  title: "ENGINEERED FOR REAL.\nBUILT TO LAST.",
+  description:
+    "Explore our portfolio of construction, architecture and engineering projects delivered across diverse sectors.",
+  image:
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80",
+  imageAlt: "HiPRO Civil & Industrial Engineering Infrastructure Projects",
+  enabled: true,
+};
+
+export default function ProjectsHero({
+  eyebrow = DEFAULT_PROJECTS_HERO.eyebrow,
+  title = DEFAULT_PROJECTS_HERO.title,
+  description = DEFAULT_PROJECTS_HERO.description,
+  image = DEFAULT_PROJECTS_HERO.image,
+  imageAlt = DEFAULT_PROJECTS_HERO.imageAlt,
+  ctaPrimary,
+  ctaSecondary,
+  stats = [],
+  enabled = true,
+  isPreview = false,
+}: ProjectsHeroProps) {
+  // If explicitly disabled and not in admin preview, render minimal fallback header
+  if (!enabled && !isPreview) {
+    return (
+      <section className="bg-white pt-28 sm:pt-32 pb-8 px-4 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-bold font-display uppercase tracking-tight text-slate-950">
+            {title ? title.replace(/\n+/g, " ") : "Projects Portfolio"}
+          </h1>
+          {description && (
+            <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl font-light">
+              {description}
+            </p>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  const effectiveEyebrow = eyebrow?.trim() || DEFAULT_PROJECTS_HERO.eyebrow;
+  const effectiveTitle = title?.trim() || DEFAULT_PROJECTS_HERO.title;
+  const effectiveDescription =
+    description?.trim() || DEFAULT_PROJECTS_HERO.description;
+  const effectiveImage = image?.trim() || DEFAULT_PROJECTS_HERO.image;
+  const effectiveImageAlt =
+    imageAlt?.trim() || DEFAULT_PROJECTS_HERO.imageAlt;
+
+  // Split title on newlines if provided for controlled multiline hierarchy
+  const titleLines = effectiveTitle.split("\n").filter(Boolean);
+
+  // Filter and display top authoritative statistics
+  const displayStats = Array.isArray(stats) ? stats.slice(0, 3) : [];
+
+  const primaryHref = ctaPrimary
+    ? resolveCTAHref(ctaPrimary)
+    : "#projects-list";
+  const secondaryHref = ctaSecondary
+    ? resolveCTAHref(ctaSecondary)
+    : "/contact";
 
   return (
-    <section className="relative min-h-[85vh] bg-slate-950 flex items-center justify-center overflow-hidden border-b border-slate-900">
-      {/* Background Images Slider */}
-      <div className="absolute inset-0 z-0">
-        {featuredProjects.map((project, idx) => (
-          <div 
-            key={project.id}
-            className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-              idx === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-          >
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              priority={idx === 0}
-              sizes="100vw"
-              unoptimized={!isOptimizableImage(project.image)}
-              className={`object-cover transition-transform duration-[10000ms] ${
-                idx === currentSlide ? "scale-105" : "scale-100"
-              }`}
-            />
-            {/* Very light gradient just for text readability at bottom */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-          </div>
-        ))}
-        {/* Blueprint Vector Grid Overlay Pattern */}
-        <div 
-          className="absolute inset-0 opacity-15 z-10 pointer-events-none mix-blend-overlay"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }}
-        />
-      </div>
+    <section className="relative bg-white pt-32 sm:pt-36 md:pt-40 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-slate-200/90 overflow-hidden">
+      {/* Architectural Drafting Blueprint Grid Pattern */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.035]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
+        }}
+        aria-hidden="true"
+      />
 
-      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-full pt-32 pb-24">
-        <div className="w-full grid lg:grid-cols-12 gap-12 items-center">
-          
-          <div className="lg:col-span-8 xl:col-span-9 relative">
-            {/* Badge / Primary H1 for the Projects Page */}
-            <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-5 py-2 mb-8 backdrop-blur-md shadow-lg shadow-black/20">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-construction-red opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-construction-red"></span>
+      {/* Ambient Engineering Glows */}
+      <div
+        className="absolute -top-24 right-0 w-96 h-96 bg-slate-100/70 rounded-full blur-3xl pointer-events-none -z-0"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -bottom-24 left-0 w-80 h-80 bg-red-50/40 rounded-full blur-3xl pointer-events-none -z-0"
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-14 items-center">
+          {/* ─────────────────────────────────────────────────────────────
+              LEFT COLUMN: Editorial Content & Hierarchy
+              ───────────────────────────────────────────────────────────── */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            {/* 1. Eyebrow Tagline Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200/90 text-construction-navy self-start mb-4 sm:mb-5 shadow-2xs">
+              <span
+                className="w-1.5 h-1.5 bg-construction-red shrink-0"
+                aria-hidden="true"
+              />
+              <span className="text-[11px] font-bold uppercase tracking-widest font-mono">
+                {effectiveEyebrow}
               </span>
-              <h1 className="text-[13px] text-white font-bold uppercase tracking-[0.2em] m-0 p-0 inline">
-                Featured Engineering Projects &amp; Portfolio
-              </h1>
             </div>
 
-            {/* Dynamic Content Slider */}
-            <div className="relative h-[220px] sm:h-[180px]">
-              {featuredProjects.map((project, idx) => (
-                <div
-                  key={project.id}
-                  className={`absolute inset-0 transition-all duration-1000 transform ${
-                    idx === currentSlide 
-                      ? "opacity-100 translate-y-0 pointer-events-auto" 
-                      : "opacity-0 translate-y-8 pointer-events-none"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 text-construction-red font-bold text-sm uppercase tracking-widest mb-4">
-                    <MapPin className="w-4 h-4" /> {project.location}
-                  </div>
-                  <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6 font-display uppercase tracking-tight leading-[1.1] drop-shadow-2xl">
-                    {project.title}
-                  </h2>
-                  
-                  <Link 
-                    href={`/projects/${project.id}`}
-                    className="inline-flex items-center gap-3 bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider group w-fit"
-                  >
-                    View Project Details
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
+            {/* 2. Semantic H1 Header */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-bold text-slate-950 font-display uppercase tracking-tight leading-[1.12] mb-4">
+              {titleLines.map((line, idx) => (
+                <span key={idx} className="block">
+                  {line}
+                </span>
               ))}
+            </h1>
+
+            {/* 3. HiPRO Two-Tone Architectural Accent Bar */}
+            <div className="flex w-28 h-1 mb-5" aria-hidden="true">
+              <div className="w-1/3 h-full bg-yellow-500" />
+              <div className="w-2/3 h-full bg-construction-navy" />
             </div>
+
+            {/* 4. Supporting Lead Description */}
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl font-light leading-relaxed mb-7 sm:mb-8">
+              {effectiveDescription}
+            </p>
+
+            {/* 5. Connected Action Navigation CTAs */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8 sm:mb-10 max-w-md sm:max-w-none">
+              {ctaPrimary?.enabled !== false && (
+                isPreview ? (
+                  <button
+                    type="button"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
+                  >
+                    <span>{ctaPrimary?.label ?? "Explore Portfolio"}</span>
+                    <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
+                  </button>
+                ) : (
+                  <a
+                    href={primaryHref}
+                    target={ctaPrimary?.openNewTab ? "_blank" : undefined}
+                    rel={ctaPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
+                  >
+                    <span>{ctaPrimary?.label ?? "Explore Portfolio"}</span>
+                    <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
+                  </a>
+                )
+              )}
+
+              {ctaSecondary?.enabled !== false && (
+                isPreview ? (
+                  <button
+                    type="button"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3.5 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-2xs group"
+                  >
+                    <span>{ctaSecondary?.label ?? "Discuss Your Project"}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                ) : (
+                  <Link
+                    href={secondaryHref}
+                    target={ctaSecondary?.openNewTab ? "_blank" : undefined}
+                    rel={ctaSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3.5 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-2xs group"
+                  >
+                    <span>{ctaSecondary?.label ?? "Discuss Your Project"}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                )
+              )}
+            </div>
+
+            {/* 6. Desktop Authoritative Statistics Strip (Hidden on mobile for strict mobile ordering) */}
+            {displayStats.length > 0 && (
+              <div className="hidden lg:grid grid-cols-3 gap-3 pt-6 border-t border-slate-200/90">
+                {displayStats.map((st, idx) => (
+                  <div
+                    key={st.id || idx}
+                    className="bg-slate-50/90 border border-slate-200/80 p-3.5 transition-colors hover:border-slate-300 shadow-2xs"
+                  >
+                    <div className="text-2xl font-bold font-display text-slate-950 tracking-tight">
+                      {st.value}
+                    </div>
+                    <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono mt-0.5">
+                      {st.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ─────────────────────────────────────────────────────────────
+              RIGHT COLUMN: Architectural Hero Frame & Dynamic Imagery
+              ───────────────────────────────────────────────────────────── */}
+          <div className="lg:col-span-5">
+            <div className="relative mx-auto max-w-lg lg:max-w-none">
+              {/* Outer Architectural Double-Border Frame */}
+              <div className="relative bg-white border border-slate-200 p-2 sm:p-2.5 shadow-md shadow-slate-200/50">
+                {/* Engineering Corner Registration Marks */}
+                <div
+                  className="absolute -top-1.5 -left-1.5 w-3 h-3 border-t-2 border-l-2 border-construction-navy pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute -top-1.5 -right-1.5 w-3 h-3 border-t-2 border-r-2 border-construction-navy pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute -bottom-1.5 -left-1.5 w-3 h-3 border-b-2 border-l-2 border-construction-navy pointer-events-none"
+                  aria-hidden="true"
+                />
+                <div
+                  className="absolute -bottom-1.5 -right-1.5 w-3 h-3 border-b-2 border-r-2 border-construction-navy pointer-events-none"
+                  aria-hidden="true"
+                />
+
+                {/* Inner Image Container */}
+                <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden bg-slate-100 border border-slate-200">
+                  {effectiveImage ? (
+                    isOptimizableImage(effectiveImage) ? (
+                      <Image
+                        src={effectiveImage}
+                        alt={effectiveImageAlt}
+                        fill
+                        priority={!isPreview}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 550px"
+                        className="object-cover transition-transform duration-500 hover:scale-[1.02]"
+                      />
+                    ) : (
+                      <img
+                        src={effectiveImage}
+                        alt={effectiveImageAlt}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100">
+                      <span className="text-xs font-mono uppercase tracking-wider">
+                        No Hero Image Selected
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Architectural Overlay Strip */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-transparent p-3 sm:p-4 text-white flex items-end justify-between">
+                    <div>
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-yellow-400 font-bold">
+                        CIVIL &amp; INDUSTRIAL
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold font-display uppercase tracking-tight">
+                        VERIFIED PORTFOLIO
+                      </div>
+                    </div>
+                    <div className="text-[10px] font-mono uppercase tracking-wider text-slate-300 font-semibold bg-white/10 px-2 py-0.5 backdrop-blur-xs border border-white/20">
+                      RAJASTHAN &amp; PAN-INDIA
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Architectural Technical Detail Badge */}
+              <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-slate-500 px-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
+                  <span>STRUCTURED SPECIFICATIONS</span>
+                </span>
+                <span className="text-slate-400">TURNKEY STANDARDS</span>
+              </div>
+            </div>
+
+            {/* 7. Mobile Authoritative Statistics Strip (Rendered after Hero Image per specification) */}
+            {displayStats.length > 0 && (
+              <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-6 border-t border-slate-200/90 mt-8">
+                {displayStats.map((st, idx) => (
+                  <div
+                    key={st.id || idx}
+                    className="bg-slate-50 border border-slate-200/80 p-3 text-center shadow-2xs"
+                  >
+                    <div className="text-xl font-bold font-display text-slate-950 tracking-tight">
+                      {st.value}
+                    </div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono mt-0.5">
+                      {st.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Slide Indicators */}
-      <div className="absolute bottom-10 left-0 right-0 z-30 flex justify-center gap-3">
-        {featuredProjects.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentSlide(idx)}
-            className={`transition-all duration-500 rounded-none h-1.5 ${
-              idx === currentSlide 
-                ? "bg-construction-red w-12" 
-                : "bg-white/30 hover:bg-white/50 w-6"
-            }`}
-            aria-label={`Go to slide ${idx + 1}`}
-          />
-        ))}
       </div>
     </section>
   );
