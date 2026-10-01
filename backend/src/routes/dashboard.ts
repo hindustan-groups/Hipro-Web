@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { readDB } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
-import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testimonial, BlogPost, ApiResponse } from "../lib/types";
+import type { ContactMessage, QuoteRequest, NewsletterSubscriber, Project, Testimonial, BlogPost, JobApplication, Service, ApiResponse } from "../lib/types";
 
 const router = Router();
 
@@ -17,6 +17,8 @@ router.get("/", async (req: Request, res: Response) => {
     const projects     = await readDB<Project>("projects");
     const testimonials = await readDB<Testimonial>("testimonials");
     const blogs        = await readDB<BlogPost>("blogs");
+    const applications = await readDB<JobApplication>("applications");
+    const services     = await readDB<Service>("services");
 
     const summary = {
       contacts: {
@@ -50,9 +52,18 @@ router.get("/", async (req: Request, res: Response) => {
         published: blogs.filter((b) => (b.status || "published").toLowerCase() === "published" && b.active !== false).length,
         drafts:    blogs.filter((b) => (b.status || "").toLowerCase() === "draft" || b.active === false).length,
       },
-      recentContacts:  contacts.slice(-5).reverse(),
-      recentQuotes:    quotes.slice(-5).reverse(),
-      recentBlogs:     blogs.slice(-5).reverse(),
+      applications: {
+        total: applications.length,
+        new:   applications.filter((a) => a.status === "new").length,
+      },
+      services: {
+        total:  services.length,
+        active: services.filter((s) => s.active !== false).length,
+      },
+      recentContacts:     contacts.slice(-5).reverse(),
+      recentQuotes:       quotes.slice(-5).reverse(),
+      recentBlogs:        blogs.slice(-5).reverse(),
+      recentApplications: applications.slice(-5).reverse(),
     };
 
     return res.json({ success: true, data: summary } as ApiResponse);
