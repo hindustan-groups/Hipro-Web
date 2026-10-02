@@ -22,54 +22,6 @@ import {
 import type { Testimonial } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 
-// Authoritative verified partner testimonials fallback (ensures the site always presents enterprise credibility)
-export const CURATED_TESTIMONIALS: Testimonial[] = [
-  {
-    id: "testimonial-singhal-logistics",
-    name: "Rajesh Singhal",
-    role: "Managing Director",
-    company: "Singhal Logistics Hub, Jaipur",
-    rating: 5,
-    text: "Hindustan Projects delivered our 450,000 sq.ft industrial warehousing complex 3 weeks ahead of schedule. Their laser-screed heavy-duty flooring and pre-engineered steel execution set a new benchmark in Rajasthan.",
-    project: "Jaipur Logistics Hub",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80",
-    approved: true,
-  },
-  {
-    id: "testimonial-apex-towers",
-    name: "Vikramaditya Rathore",
-    role: "Executive Director",
-    company: "Apex Commercial Towers, Bhilwara",
-    rating: 5,
-    text: "The architectural engineering on our 12-story commercial IT tower was executed with absolute precision. From double-glazed acoustic facade to seismic damping, HiPRO handled the entire turnkey EPC with zero safety incidents.",
-    project: "Apex IT Tower",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
-    approved: true,
-  },
-  {
-    id: "testimonial-chambal-viaduct",
-    name: "Er. Alok Sharma",
-    role: "Chief Infrastructure Consultant",
-    company: "State Corridor Works, Kota",
-    rating: 5,
-    text: "Managing complex deep-foundation piling and prestressed girder launches across the riverbed was technically rigorous. HiPRO's civil engineering squad proved their expertise with continuous QA/QC and site safety.",
-    project: "Chambal River Viaduct",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80",
-    approved: true,
-  },
-  {
-    id: "testimonial-grand-horizon",
-    name: "Sanjay K. Maheshwari",
-    role: "Principal Developer",
-    company: "Grand Horizon Enclave, Udaipur",
-    rating: 5,
-    text: "Working with Hindustan Projects on our luxury private villa enclave was an exceptional experience. Their turnkey execution, precision MEP coordination, and authentic indigenous stone facade masonry were truly world-class.",
-    project: "Grand Horizon Villas",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80",
-    approved: true,
-  },
-];
-
 interface TestimonialsProps {
   testimonials?: Testimonial[];
 }
@@ -106,26 +58,15 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
     };
   }, []);
 
-  // Merge live approved DB testimonials (placed at the front) with enterprise curated testimonials
+  // Only use real approved DB testimonials — no hardcoded demo reviews!
   const validTestimonials = useMemo(() => {
-    const approvedDbList = (liveTestimonials || []).filter(
+    return (liveTestimonials || []).filter(
       (t) => t && t.approved === true
     );
-
-    const existingNames = new Set(
-      approvedDbList.map((t) => (t.name || "").trim().toLowerCase())
-    );
-
-    const remainingCurated = CURATED_TESTIMONIALS.filter(
-      (c) => !existingNames.has((c.name || "").trim().toLowerCase())
-    );
-
-    const merged = [...approvedDbList, ...remainingCurated];
-    return merged.length > 0 ? merged : CURATED_TESTIMONIALS;
   }, [liveTestimonials]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isCardHovered, setIsCardHovered] = useState(false);
   const [fadeAnim, setFadeAnim] = useState(false);
 
   // Write Review Modal state
@@ -158,6 +99,13 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
   const totalCount = validTestimonials.length;
   const activeReview = validTestimonials[currentIndex] || validTestimonials[0];
 
+  // Boundary protection: clamp currentIndex if testimonials list length changes
+  useEffect(() => {
+    if (currentIndex >= validTestimonials.length && validTestimonials.length > 0) {
+      setCurrentIndex(0);
+    }
+  }, [validTestimonials.length, currentIndex]);
+
   // Switch testimonial with smooth fade
   const changeReview = (newIndex: number) => {
     if (newIndex === currentIndex || totalCount <= 1) return;
@@ -170,24 +118,37 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
 
   const handleNext = () => {
     if (totalCount <= 1) return;
-    const next = (currentIndex + 1) % totalCount;
-    changeReview(next);
+    setFadeAnim(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalCount);
+      setFadeAnim(false);
+    }, 180);
   };
 
   const handlePrev = () => {
     if (totalCount <= 1) return;
-    const prev = (currentIndex - 1 + totalCount) % totalCount;
-    changeReview(prev);
+    setFadeAnim(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev - 1 + totalCount) % totalCount);
+      setFadeAnim(false);
+    }, 180);
   };
 
-  // Auto-advance timer (pauses when user hovers or interacts)
+  // Continuous Auto-Advance: rotates smoothly every 5 seconds
+  // Only pauses when the user directly hovers over the active spotlight card
   useEffect(() => {
-    if (totalCount <= 1 || isPaused || isModalOpen) return;
+    if (totalCount <= 1 || isModalOpen) return;
     const timer = setInterval(() => {
-      handleNext();
-    }, 7000);
+      if (!isCardHovered) {
+        setFadeAnim(true);
+        setTimeout(() => {
+          setCurrentIndex((prev) => (prev + 1) % totalCount);
+          setFadeAnim(false);
+        }, 180);
+      }
+    }, 5000);
     return () => clearInterval(timer);
-  }, [totalCount, isPaused, isModalOpen, currentIndex]);
+  }, [totalCount, isCardHovered, isModalOpen]);
 
   // Handle body scroll locking when modal is open
   useEffect(() => {
@@ -203,7 +164,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
 
   // Touch handlers for mobile swipe
   const onTouchStart = (e: React.TouchEvent) => {
-    setIsPaused(true);
+    setIsCardHovered(true);
     setTouchStartX(e.touches[0].clientX);
     setTouchDeltaX(0);
   };
@@ -222,7 +183,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
     }
     setTouchStartX(null);
     setTouchDeltaX(0);
-    setIsPaused(false);
+    setIsCardHovered(false);
   };
 
   // Photo Processing with strict validation & Canvas avatar optimization
@@ -445,8 +406,6 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
       id="section-testimonials"
       aria-label="Client Stories and Partner Testimonials"
       className="py-12 sm:py-16 md:py-20 bg-[#0B1E3B] text-white relative overflow-hidden border-t border-slate-800"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       {/* Background Blueprint Grid */}
       <div
@@ -513,144 +472,189 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* EXECUTIVE SPOTLIGHT CARD (Desktop & Mobile)                               */}
-        {/* Focused, authoritative presentation with watermark, stars, verified badge */}
-        {/* ========================================================================= */}
-        <div
-          className="relative bg-white/[0.05] border border-white/15 backdrop-blur-md shadow-2xl p-6 sm:p-8 md:p-10 overflow-hidden touch-pan-y select-none"
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
-        >
-          {/* Watermark Quote Icon */}
-          <div className="absolute top-4 right-6 text-white/5 pointer-events-none select-none">
-            <Quote className="w-24 h-24 sm:w-28 sm:h-28" />
-          </div>
-
-          <div
-            className={`relative z-10 transition-opacity duration-200 ${
-              fadeAnim ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            {/* Top Row: 5 Stars + Verified Project Badge */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  {[...Array(activeReview.rating || 5)].map((_, si) => (
-                    <Star
-                      key={si}
-                      className="w-4 h-4 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-                <span className="text-xs font-bold text-amber-400 ml-1">5.0 Verified</span>
-              </div>
-
-              {activeReview.project && (
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-construction-red/20 border border-construction-red/40 text-red-200 text-[11px] font-bold uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-construction-red animate-pulse" />
-                  <span>Turnkey EPC:</span>
-                  <span className="text-white">{activeReview.project}</span>
-                </div>
-              )}
+        {totalCount === 0 ? (
+          <div className="relative bg-white/[0.05] border border-white/15 backdrop-blur-md shadow-2xl p-8 sm:p-12 text-center overflow-hidden">
+            <div className="w-12 h-12 mx-auto mb-3 bg-white/10 border border-white/20 flex items-center justify-center text-amber-400 shadow-md">
+              <Sparkles className="w-6 h-6" />
             </div>
-
-            {/* Main Quotation Text */}
-            <blockquote className="text-base sm:text-lg md:text-xl text-slate-100 font-light leading-relaxed mb-6 sm:mb-8 italic">
-              &ldquo;{activeReview.text}&rdquo;
-            </blockquote>
-
-            {/* Bottom Row: Client Identity (Left) + Nav Controls (Right) */}
-            <div className="pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              {/* Author Info */}
-              <div className="flex items-center gap-3.5">
-                {activeReview.image ? (
-                  <Image
-                    src={activeReview.image}
-                    alt={activeReview.name}
-                    width={48}
-                    height={48}
-                    unoptimized={!isOptimizableImage(activeReview.image)}
-                    className="w-12 h-12 object-cover border border-white/30 shadow-md shrink-0"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-construction-navy border border-white/20 flex items-center justify-center font-bold text-base text-white shrink-0 shadow-md">
-                    {activeReview.name.charAt(0)}
-                  </div>
-                )}
-
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm sm:text-base font-bold text-white font-display uppercase tracking-wider">
-                      {activeReview.name}
-                    </h3>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  </div>
-                  <p className="text-xs text-slate-300 font-medium">
-                    {activeReview.role}
-                    {activeReview.company ? ` • ${activeReview.company}` : ""}
-                  </p>
-                </div>
-              </div>
-
-              {/* Navigation Controls: Counter + Prev/Next Buttons */}
-              <div className="flex items-center gap-3 self-end sm:self-center">
-                <span className="text-xs text-slate-400 font-mono tracking-wider">
-                  {String(currentIndex + 1).padStart(2, "0")} / {String(totalCount).padStart(2, "0")}
-                </span>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={handlePrev}
-                    aria-label="Previous Partner Story"
-                    className="w-8 h-8 border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shadow-xs"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNext}
-                    aria-label="Next Partner Story"
-                    className="w-8 h-8 border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shadow-xs"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* QUICK PARTNER SELECTOR TABS (Desktop)                                     */}
-        {/* Clean pill buttons below card allowing instant 1-click preview of partners*/}
-        {/* ========================================================================= */}
-        <div className="hidden sm:flex items-center justify-center gap-2 mt-4 flex-wrap">
-          {validTestimonials.map((t, idx) => (
+            <h3 className="text-base sm:text-lg font-bold text-white font-display uppercase tracking-wide mb-2">
+              Be The First Partner To Share Your Experience
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto mb-5 leading-relaxed">
+              We take pride in our precision engineering and on-time delivery across turnkey industrial & commercial infrastructure.
+            </p>
             <button
-              key={t.id || idx}
               type="button"
-              onClick={() => changeReview(idx)}
-              className={`px-3 py-1.5 text-xs transition-all border ${
-                idx === currentIndex
-                  ? "bg-white/15 border-construction-red text-white font-bold shadow-xs"
-                  : "bg-white/[0.03] border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]"
-              }`}
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-construction-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider transition-all shadow-md"
             >
-              <span className="text-[10px] text-slate-500 mr-1.5">0{idx + 1}</span>
-              <span>{t.name}</span>
+              <PenLine className="w-4 h-4" />
+              <span>Write Review</span>
             </button>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <>
+            {/* ========================================================================= */}
+            {/* EXECUTIVE SPOTLIGHT CARD (Desktop & Mobile)                               */}
+            {/* Focused, authoritative presentation with watermark, stars, verified badge */}
+            {/* ========================================================================= */}
+            <div
+              className="relative bg-white/[0.05] border border-white/15 backdrop-blur-md shadow-2xl p-6 sm:p-8 md:p-10 overflow-hidden touch-pan-y select-none"
+              onMouseEnter={() => setIsCardHovered(true)}
+              onMouseLeave={() => setIsCardHovered(false)}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
+              {/* Watermark Quote Icon */}
+              <div className="absolute top-4 right-6 text-white/5 pointer-events-none select-none">
+                <Quote className="w-24 h-24 sm:w-28 sm:h-28" />
+              </div>
 
-        {/* Mobile Swipe Gesture Hint */}
-        <div className="block sm:hidden mt-3 text-center">
-          <span className="text-[10px] text-slate-400">
-            &larr; Swipe card or tap arrows to browse partner stories &rarr;
-          </span>
-        </div>
+              <div
+                className={`relative z-10 transition-opacity duration-200 ${
+                  fadeAnim ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                {/* Top Row: 5 Stars + Verified Project Badge */}
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[...Array(activeReview.rating || 5)].map((_, si) => (
+                        <Star
+                          key={si}
+                          className="w-4 h-4 fill-amber-400 text-amber-400"
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs font-bold text-amber-400 ml-1">5.0 Verified</span>
+                  </div>
+
+                  {activeReview.project && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-construction-red/20 border border-construction-red/40 text-red-200 text-[11px] font-bold uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-construction-red animate-pulse" />
+                      <span>Turnkey EPC:</span>
+                      <span className="text-white">{activeReview.project}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Main Quotation Text */}
+                <blockquote className="text-base sm:text-lg md:text-xl text-slate-100 font-light leading-relaxed mb-6 sm:mb-8 italic">
+                  &ldquo;{activeReview.text}&rdquo;
+                </blockquote>
+
+                {/* Bottom Row: Client Identity (Left) + Nav Controls (Right) */}
+                <div className="pt-5 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {/* Author Info */}
+                  <div className="flex items-center gap-3.5">
+                    {activeReview.image ? (
+                      <Image
+                        src={activeReview.image}
+                        alt={activeReview.name}
+                        width={48}
+                        height={48}
+                        unoptimized={!isOptimizableImage(activeReview.image)}
+                        className="w-12 h-12 object-cover border border-white/30 shadow-md shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-construction-navy border border-white/20 flex items-center justify-center font-bold text-base text-white shrink-0 shadow-md">
+                        {activeReview.name.charAt(0)}
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-bold text-white font-display uppercase tracking-wider">
+                          {activeReview.name}
+                        </h3>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      </div>
+                      <p className="text-xs text-slate-300 font-medium">
+                        {activeReview.role}
+                        {activeReview.company ? ` • ${activeReview.company}` : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Navigation Controls: Counter + Prev/Next Buttons */}
+                  <div className="flex items-center gap-3 self-end sm:self-center">
+                    <span className="text-xs text-slate-400 font-mono tracking-wider">
+                      {String(currentIndex + 1).padStart(2, "0")} / {String(totalCount).padStart(2, "0")}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handlePrev}
+                        aria-label="Previous Partner Story"
+                        className="w-8 h-8 border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shadow-xs"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        aria-label="Next Partner Story"
+                        className="w-8 h-8 border border-white/20 bg-white/5 hover:bg-white/20 flex items-center justify-center text-white active:scale-95 transition-all shadow-xs"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ========================================================================= */}
+            {/* QUICK PARTNER SELECTOR TABS (Desktop)                                     */}
+            {/* Clean pill buttons below card allowing instant 1-click preview of partners*/}
+            {/* ========================================================================= */}
+            <div className="hidden sm:flex items-center justify-center gap-2 mt-4 flex-wrap">
+              {validTestimonials.map((t, idx) => (
+                <button
+                  key={t.id || idx}
+                  type="button"
+                  onClick={() => changeReview(idx)}
+                  className={`px-3 py-1.5 text-xs transition-all border ${
+                    idx === currentIndex
+                      ? "bg-white/15 border-construction-red text-white font-bold shadow-xs"
+                      : "bg-white/[0.03] border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <span className="text-[10px] text-slate-500 mr-1.5">0{idx + 1}</span>
+                  <span>{t.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Slide Dot Indicators */}
+            {totalCount > 1 && (
+              <div className="flex sm:hidden items-center justify-center gap-1.5 mt-3">
+                {validTestimonials.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => changeReview(idx)}
+                    aria-label={`Go to slide ${idx + 1}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      idx === currentIndex
+                        ? "w-6 bg-construction-red"
+                        : "w-2 bg-white/20"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Mobile Swipe Gesture Hint */}
+            <div className="block sm:hidden mt-2 text-center">
+              <span className="text-[10px] text-slate-400">
+                &larr; Swipe card or tap arrows to browse partner stories &rarr;
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ========================================================================= */}
