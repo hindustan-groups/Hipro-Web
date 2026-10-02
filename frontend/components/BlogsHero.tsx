@@ -23,7 +23,7 @@ export const DEFAULT_BLOGS_HERO: BlogsHeroContent = {
   description:
     "Practical civil engineering guidance, construction cost planning frameworks, architectural guidelines, and site execution insights for residential and commercial projects in Rajasthan.",
   image:
-    "https://images.unsplash.com/photo-1541888946425-d0fbb1861593?q=80&w=1600&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80",
   imageAlt: "Civil Engineering and Structural Construction in Rajasthan by HiPRO",
   ctaText: "Explore Articles",
   ctaLink: "#articles-feed",
@@ -64,8 +64,9 @@ export default function BlogsHero({
 
   // Dynamic image fallback: CMS image -> Featured Blog image -> Brand default image
   const effectiveImage = useMemo(() => {
-    if (image && image.trim().length > 0) return image.trim();
-    if (featuredBlog?.image && featuredBlog.image.trim().length > 0)
+    const isDeadUnsplash = (url?: string) => !url || url.includes("1541888946425");
+    if (image && image.trim().length > 0 && !isDeadUnsplash(image)) return image.trim();
+    if (featuredBlog?.image && featuredBlog.image.trim().length > 0 && !isDeadUnsplash(featuredBlog.image))
       return featuredBlog.image.trim();
     return DEFAULT_BLOGS_HERO.image!;
   }, [image, featuredBlog]);

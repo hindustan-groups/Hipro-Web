@@ -36,6 +36,14 @@ function estimateReadingTime(post: BlogPost): string {
   return `${mins} min read`;
 }
 
+// Helper to get safe image for blog posts, replacing any dead legacy URLs
+function getSafeBlogImage(img?: string | null): string {
+  if (!img || img.includes("1541888946425")) {
+    return "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80";
+  }
+  return img;
+}
+
 export default function PublicBlogGrid({
   blogs = [],
   initialCategory = "",
@@ -190,6 +198,8 @@ export default function PublicBlogGrid({
             </div>
             <input
               type="text"
+              id="blog-search-input"
+              name="search"
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -298,12 +308,12 @@ export default function PublicBlogGrid({
                   <div className="lg:col-span-7 relative aspect-[16/10] lg:aspect-auto overflow-hidden bg-slate-950 min-h-[260px] sm:min-h-[340px] lg:min-h-[420px]">
                     {featuredArticle.image ? (
                       <Image
-                        src={featuredArticle.image}
+                        src={getSafeBlogImage(featuredArticle.image)}
                         alt={featuredArticle.imageAlt || featuredArticle.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 60vw"
                         priority
-                        unoptimized={!isOptimizableImage(featuredArticle.image)}
+                        unoptimized={!isOptimizableImage(getSafeBlogImage(featuredArticle.image))}
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     ) : (
@@ -427,11 +437,11 @@ export default function PublicBlogGrid({
                     <div className="relative aspect-[16/10] overflow-hidden bg-slate-950">
                       {post.image ? (
                         <Image
-                          src={post.image}
+                          src={getSafeBlogImage(post.image)}
                           alt={post.imageAlt || post.title}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          unoptimized={!isOptimizableImage(post.image)}
+                          unoptimized={!isOptimizableImage(getSafeBlogImage(post.image))}
                           loading="lazy"
                           className="object-cover group-hover:scale-105 transition-transform duration-700"
                         />
