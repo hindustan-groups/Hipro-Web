@@ -60,10 +60,7 @@ export default async function Home() {
   const servicesData = services.filter(s => s.active !== false).sort((a, b) => (a.order || 99) - (b.order || 99));
   const projectsData = projects.filter(p => p.status !== "archived");
   const testimonialsData = testimonials.filter(
-    (t) =>
-      t.approved === true &&
-      !/^(avinash|piyush|test)/i.test(t.name?.trim() || "") &&
-      !/services of compan/i.test(t.text || "")
+    (t) => t && t.approved === true
   );
   const now = new Date();
   // Server already returned only HOME_BLOGS_LIMIT blogs — apply publish-date safety filter only

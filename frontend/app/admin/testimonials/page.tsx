@@ -33,7 +33,10 @@ export default function AdminTestimonials() {
   const fetchTestimonials = async () => {
     setLoading(true); setError("");
     try {
-      const res  = await fetch("/api/testimonials?all=true");
+      const res = await fetch(`/api/testimonials?all=true&t=${Date.now()}`, {
+        credentials: "include",
+        cache: "no-store",
+      });
       const json = await res.json();
       if (json.success) setTestimonials(json.data);
       else setError(json.error || "Failed to load testimonials");
@@ -46,18 +49,33 @@ export default function AdminTestimonials() {
 
   useEffect(() => { fetchTestimonials(); }, []);
 
+  const triggerRevalidation = async () => {
+    try {
+      await fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ tag: "testimonials", path: "/" }),
+      });
+    } catch {
+      // Revalidation best-effort
+    }
+  };
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true); setError("");
     try {
       const res = await fetch("/api/testimonials", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(form)
       });
       const json = await res.json();
       if (json.success) {
         setShowForm(false);
         setForm(EMPTY_FORM);
+        await triggerRevalidation();
         fetchTestimonials();
       } else {
         setError(json.error || "Failed to add testimonial");
@@ -71,17 +89,43 @@ export default function AdminTestimonials() {
 
   const approve = async (id: string) => {
     try {
-      await fetch("/api/testimonials", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, approved: true }) });
-      fetchTestimonials();
-    } catch { /* silent */ }
+      const res = await fetch("/api/testimonials", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id, approved: true })
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        await triggerRevalidation();
+        fetchTestimonials();
+      } else {
+        setError(json.error || "Failed to approve testimonial");
+      }
+    } catch {
+      setError("Network error while approving testimonial");
+    }
   };
 
   const remove = async (id: string) => {
     if (!confirm("Delete this testimonial?")) return;
     try {
-      await fetch("/api/testimonials", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
-      fetchTestimonials();
-    } catch { /* silent */ }
+      const res = await fetch("/api/testimonials", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id })
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        await triggerRevalidation();
+        fetchTestimonials();
+      } else {
+        setError(json.error || "Failed to delete testimonial");
+      }
+    } catch {
+      setError("Network error while deleting testimonial");
+    }
   };
 
   const filtered = filter === "all" ? testimonials : filter === "approved" ? testimonials.filter((t) => t.approved) : testimonials.filter((t) => !t.approved);

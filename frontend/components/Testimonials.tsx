@@ -75,17 +75,54 @@ interface TestimonialsProps {
 }
 
 export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
-  // Use approved DB testimonials if available, otherwise provide curated enterprise testimonials
+  // Live client-side testimonials state initialized with SSR props
+  const [liveTestimonials, setLiveTestimonials] = useState<Testimonial[]>(testimonials || []);
+
+  // Real-time synchronization: Fetch fresh approved testimonials from DB on client mount & window focus
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLatestApproved = async () => {
+      try {
+        const res = await fetch(`/api/testimonials?t=${Date.now()}`, {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
+        const json = await res.json();
+        if (isMounted && json.success && Array.isArray(json.data)) {
+          setLiveTestimonials(json.data);
+        }
+      } catch {
+        // Fall back gracefully to SSR props
+      }
+    };
+
+    fetchLatestApproved();
+
+    const onFocus = () => fetchLatestApproved();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("focus", onFocus);
+    };
+  }, []);
+
+  // Merge live approved DB testimonials (placed at the front) with enterprise curated testimonials
   const validTestimonials = useMemo(() => {
-    const fromProps = (testimonials || []).filter(
-      (t) =>
-        t &&
-        t.approved === true &&
-        !/^(avinash|piyush|test)/i.test(t.name?.trim() || "") &&
-        !/services of compan/i.test(t.text || "")
+    const approvedDbList = (liveTestimonials || []).filter(
+      (t) => t && t.approved === true
     );
-    return fromProps.length > 0 ? fromProps : CURATED_TESTIMONIALS;
-  }, [testimonials]);
+
+    const existingNames = new Set(
+      approvedDbList.map((t) => (t.name || "").trim().toLowerCase())
+    );
+
+    const remainingCurated = CURATED_TESTIMONIALS.filter(
+      (c) => !existingNames.has((c.name || "").trim().toLowerCase())
+    );
+
+    const merged = [...approvedDbList, ...remainingCurated];
+    return merged.length > 0 ? merged : CURATED_TESTIMONIALS;
+  }, [liveTestimonials]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
