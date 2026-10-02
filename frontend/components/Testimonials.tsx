@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import {
   Star,
@@ -14,6 +14,10 @@ import {
   Send,
   Loader2,
   ShieldCheck,
+  UploadCloud,
+  Link2,
+  Trash2,
+  AlertCircle,
 } from "lucide-react";
 import type { Testimonial } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -101,6 +105,15 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
   const [submitError, setSubmitError] = useState("");
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState(false);
 
+  // Photo upload & strict validation state
+  const [photoMode, setPhotoMode] = useState<"upload" | "url">("upload");
+  const [imageFileName, setImageFileName] = useState("");
+  const [imageOriginalSize, setImageOriginalSize] = useState("");
+  const [imageUploadError, setImageUploadError] = useState("");
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Touch gesture state for mobile swipe
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchDeltaX, setTouchDeltaX] = useState<number>(0);
@@ -175,6 +188,143 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
     setIsPaused(false);
   };
 
+  // Photo Processing with strict validation & Canvas avatar optimization
+  const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB strict limit
+  const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+
+  const processSelectedFile = (file: File) => {
+    setImageUploadError("");
+
+    if (!file) return;
+
+    // 1. Strict File Type Validation
+    const ext = "." + (file.name.split(".").pop() || "").toLowerCase();
+    const isMimeValid = ALLOWED_MIME_TYPES.includes((file.type || "").toLowerCase());
+    const isExtValid = ALLOWED_EXTENSIONS.includes(ext);
+
+    if (!isMimeValid && !isExtValid) {
+      setImageUploadError("Invalid file format. Please upload a JPG, PNG, or WebP photo.");
+      return;
+    }
+
+    // 2. Strict File Size Validation (Max 2MB)
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      setImageUploadError(
+        `File size (${sizeMb} MB) exceeds the 2 MB limit. Please select a photo under 2 MB.`
+      );
+      return;
+    }
+
+    if (file.size === 0) {
+      setImageUploadError("Selected file is empty. Please select a valid photo.");
+      return;
+    }
+
+    setIsProcessingImage(true);
+    setImageFileName(file.name);
+    const sizeDisplay =
+      file.size >= 1024 * 1024
+        ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(file.size / 1024)} KB`;
+    setImageOriginalSize(sizeDisplay);
+
+    // 3. Client-side Canvas Avatar Normalization & Compression
+    const reader = new FileReader();
+    reader.onerror = () => {
+      setIsProcessingImage(false);
+      setImageUploadError("Failed to read image file. Please try another photo.");
+    };
+
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (!result || typeof result !== "string") {
+        setIsProcessingImage(false);
+        setImageUploadError("Failed to process image file.");
+        return;
+      }
+
+      const img = new window.Image();
+      img.onerror = () => {
+        setIsProcessingImage(false);
+        setImageUploadError("The file does not appear to be a valid image.");
+      };
+
+      img.onload = () => {
+        try {
+          // Normalize to 240x240 square avatar for crisp presentation
+          const canvas = document.createElement("canvas");
+          const targetSize = 240;
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+          const ctx = canvas.getContext("2d");
+
+          if (!ctx) {
+            setFormImage(result);
+            setIsProcessingImage(false);
+            return;
+          }
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          // Center-crop into square
+          const minDim = Math.min(img.width, img.height);
+          const sx = (img.width - minDim) / 2;
+          const sy = (img.height - minDim) / 2;
+
+          ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, targetSize, targetSize);
+
+          // Export as compressed high-quality JPEG (~15-25KB)
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          setFormImage(compressedDataUrl);
+          setImageUploadError("");
+        } catch {
+          setFormImage(result);
+        } finally {
+          setIsProcessingImage(false);
+        }
+      };
+
+      img.src = result;
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setFormImage("");
+    setImageFileName("");
+    setImageOriginalSize("");
+    setImageUploadError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingPhoto(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingPhoto(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingPhoto(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      processSelectedFile(files[0]);
+    }
+  };
+
   // Submit new review to backend API for admin CMS verification
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,6 +337,16 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
 
     if (formText.trim().length < 15) {
       setSubmitError("Please write at least 15 characters describing your project experience.");
+      return;
+    }
+
+    if (isProcessingImage) {
+      setSubmitError("Please wait for your photo to finish processing.");
+      return;
+    }
+
+    if (imageUploadError) {
+      setSubmitError("Please resolve the photo error or remove the photo before submitting.");
       return;
     }
 
@@ -232,6 +392,15 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
     setFormRating(5);
     setFormText("");
     setFormImage("");
+    setPhotoMode("upload");
+    setImageFileName("");
+    setImageOriginalSize("");
+    setImageUploadError("");
+    setIsProcessingImage(false);
+    setIsDraggingPhoto(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -624,18 +793,232 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                     />
                   </div>
 
-                  {/* Profile Photo URL (Optional) */}
+                  {/* Profile Photo (Upload with 2MB Limit & Strict Validation, or Photo URL) */}
                   <div>
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      Photo URL (Optional)
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://example.com/photo.jpg"
-                      value={formImage}
-                      onChange={(e) => setFormImage(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <span>Profile Photo (Optional)</span>
+                        <span className="text-[10px] text-slate-400 font-normal lowercase">(max 2MB)</span>
+                      </label>
+
+                      {/* Mode Toggle Tabs */}
+                      <div className="flex items-center border border-slate-700 bg-slate-800/90 p-0.5 text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPhotoMode("upload");
+                            setImageUploadError("");
+                          }}
+                          className={`px-2 py-0.5 uppercase tracking-wider font-bold transition-colors ${
+                            photoMode === "upload"
+                              ? "bg-construction-red text-white"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          Upload File
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPhotoMode("url");
+                            setImageUploadError("");
+                          }}
+                          className={`px-2 py-0.5 uppercase tracking-wider font-bold transition-colors ${
+                            photoMode === "url"
+                              ? "bg-construction-red text-white"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          Photo URL
+                        </button>
+                      </div>
+                    </div>
+
+                    {photoMode === "upload" ? (
+                      <div>
+                        {/* Hidden file input */}
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) processSelectedFile(file);
+                          }}
+                        />
+
+                        {formImage && formImage.startsWith("data:") ? (
+                          /* Validated Selected Image Preview Card */
+                          <div className="flex items-center gap-3 p-2.5 bg-slate-800/90 border border-slate-700 relative">
+                            {/* Avatar Preview Thumbnail */}
+                            <div className="relative w-12 h-12 shrink-0 border border-white/20 shadow-md bg-slate-900 overflow-hidden">
+                              <Image
+                                src={formImage}
+                                alt="Uploaded profile preview"
+                                width={48}
+                                height={48}
+                                unoptimized
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 text-xs text-white font-medium truncate">
+                                <span className="truncate">{imageFileName || "Uploaded Photo"}</span>
+                                <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 shrink-0">
+                                  ✓ Validated
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-400 mt-0.5">
+                                {imageOriginalSize ? `Original: ${imageOriginalSize} • ` : ""}
+                                Optimized 240px avatar
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                              >
+                                Change
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleRemovePhoto}
+                                aria-label="Remove photo"
+                                className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"
+                                title="Remove photo"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Upload Dropzone Container */
+                          <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`
+                              border-2 border-dashed p-3.5 text-center cursor-pointer transition-all
+                              ${
+                                isDraggingPhoto
+                                  ? "border-construction-red bg-construction-red/10 scale-[0.99]"
+                                  : "border-slate-700 hover:border-slate-500 bg-slate-800/40 hover:bg-slate-800/80"
+                              }
+                            `}
+                          >
+                            {isProcessingImage ? (
+                              <div className="flex flex-col items-center justify-center py-1">
+                                <Loader2 className="w-5 h-5 text-construction-red animate-spin mb-1" />
+                                <span className="text-xs text-slate-200 font-bold uppercase tracking-wider">
+                                  Optimizing Photo...
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center">
+                                <div className="w-8 h-8 rounded-full bg-slate-700/60 flex items-center justify-center text-slate-300 mb-1">
+                                  <UploadCloud className="w-4 h-4 text-slate-300" />
+                                </div>
+                                <p className="text-xs text-slate-200 font-medium">
+                                  <span className="text-construction-red font-bold underline underline-offset-2">
+                                    Click to upload photo
+                                  </span>{" "}
+                                  or drag & drop
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                  Strict limit: Max 2MB • JPG, PNG, or WebP
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Validation Error Banner */}
+                        {imageUploadError && (
+                          <div className="mt-1.5 p-2 bg-red-950/80 border border-red-500/60 text-red-200 text-xs flex items-center justify-between gap-2 animate-in fade-in">
+                            <div className="flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                              <span>{imageUploadError}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setImageUploadError("")}
+                              className="text-red-300 hover:text-white"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Direct URL Input Mode */
+                      <div>
+                        <div className="flex gap-2">
+                          <input
+                            type="url"
+                            placeholder="https://example.com/photo.jpg"
+                            value={formImage}
+                            onChange={(e) => {
+                              setFormImage(e.target.value);
+                              setImageUploadError("");
+                            }}
+                            className="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
+                          />
+                          {formImage.trim() && (
+                            <button
+                              type="button"
+                              onClick={handleRemovePhoto}
+                              className="px-2.5 py-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 text-xs"
+                              title="Clear URL"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {formImage.trim() && formImage.startsWith("http") && (
+                          <div className="mt-2 flex items-center gap-2.5 p-2 bg-slate-800/60 border border-slate-700">
+                            <div className="w-8 h-8 shrink-0 border border-white/20 overflow-hidden bg-slate-900">
+                              <Image
+                                src={formImage}
+                                alt="URL preview"
+                                width={32}
+                                height={32}
+                                unoptimized
+                                className="w-full h-full object-cover"
+                                onError={() =>
+                                  setImageUploadError("Image URL could not be loaded. Please check the link.")
+                                }
+                                onLoad={() => setImageUploadError("")}
+                              />
+                            </div>
+                            <span className="text-[10px] text-slate-300 truncate flex-1">
+                              Preview loaded from remote URL
+                            </span>
+                          </div>
+                        )}
+
+                        {imageUploadError && (
+                          <div className="mt-1.5 p-2 bg-red-950/80 border border-red-500/60 text-red-200 text-xs flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                              <span>{imageUploadError}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setImageUploadError("")}
+                              className="text-red-300 hover:text-white"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}

@@ -53,12 +53,37 @@ router.post("/", async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Rating must be between 1 and 5" } as ApiResponse);
     }
 
+    let sanitizedImage = "";
+    if (image && typeof image === "string" && image.trim().length > 0) {
+      const trimmed = image.trim();
+      if (trimmed.length > 500 * 1024) {
+        return res.status(400).json({
+          success: false,
+          error: "Uploaded photo is too large. Please upload an image under 2MB.",
+        } as ApiResponse);
+      }
+      const isValidImage =
+        trimmed.startsWith("http://") ||
+        trimmed.startsWith("https://") ||
+        trimmed.startsWith("data:image/jpeg;base64,") ||
+        trimmed.startsWith("data:image/png;base64,") ||
+        trimmed.startsWith("data:image/webp;base64,");
+
+      if (!isValidImage) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid image format. Allowed: JPG, PNG, WEBP, or HTTPS URL.",
+        } as ApiResponse);
+      }
+      sanitizedImage = trimmed;
+    }
+
     const doc = await insertOne<Testimonial>("testimonials", {
       name: name.trim(),
       role: role.trim(),
       text: text.trim(),
       rating: Number(rating),
-      image: image?.trim() || "",
+      image: sanitizedImage,
       approved: false,
     });
 
