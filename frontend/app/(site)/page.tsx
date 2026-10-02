@@ -95,9 +95,9 @@ export default async function Home() {
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
       <Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} />
       <HomeImageShowcase content={pageContent.imageShowcase} />
-      <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
       <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Blogs posts={blogsData} /></AnimateIn>
+      <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
       <AnimateIn><CTASection /></AnimateIn>
     </>
   );

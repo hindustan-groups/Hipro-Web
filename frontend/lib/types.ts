@@ -175,6 +175,8 @@ export interface Testimonial {
   id?: string;
   name: string;
   role: string;
+  company?: string;
+  project?: string;
   image?: string;
   rating: number;
   text: string;
