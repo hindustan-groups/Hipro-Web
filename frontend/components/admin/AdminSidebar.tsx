@@ -83,6 +83,7 @@ const navCategories: NavCategory[] = [
     items: [
       { href: "/admin/hero", label: "Hero Banner", icon: LayoutTemplate, sectionKey: "hero" },
       { href: "/admin/projects-hero", label: "Projects Page Hero", icon: Layers, sectionKey: "projects-hero" },
+      { href: "/admin/blogs-hero", label: "Blogs Page Hero", icon: BookOpen, sectionKey: "blogs-hero" },
       { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
       { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
       { href: "/admin/cost-estimator", label: "Cost Estimator CMS", icon: Calculator, sectionKey: "cost-estimator" },

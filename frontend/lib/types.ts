@@ -233,6 +233,17 @@ export interface ProjectsHeroContent {
   enabled?: boolean;
 }
 
+export interface BlogsHeroContent {
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  enabled?: boolean;
+}
+
 export interface ContactPageContent {
   badge?: string;
   headingPrefix?: string;

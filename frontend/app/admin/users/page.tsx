@@ -29,6 +29,7 @@ export default function UsersPage() {
     { key: "team", label: "Team" },
     { key: "newsletter", label: "Newsletter" },
     { key: "blogs", label: "Blogs" },
+    { key: "blogs-hero", label: "Blogs Page Hero" },
     { key: "stats", label: "Stats" },
     { key: "applications", label: "Job Applications" },
     { key: "jobs", label: "Job Postings" },

@@ -617,6 +617,14 @@ export default function AdminBlogs() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/admin/blogs-hero"
+            className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-construction-navy hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-semibold transition-colors shadow-sm"
+            title="Configure the blogs listing page hero banner, image, and copywriting"
+          >
+            <Layers className="w-3.5 h-3.5 text-construction-red" />
+            <span>Customize Hero Banner</span>
+          </Link>
           <button
             onClick={fetchBlogs}
             disabled={loading}
