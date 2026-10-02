@@ -93,7 +93,7 @@ export default async function Home() {
       <AnimateIn><Services services={servicesData} settings={settings} /></AnimateIn>
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
-      <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} /></AnimateIn>
+      <Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} />
       <HomeImageShowcase content={pageContent.imageShowcase} />
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
       <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
