@@ -340,47 +340,6 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
             <ArrowUpRight className="w-4 h-4 text-construction-red" />
           </Link>
         </div>
-
-        {/* Bottom Trust & Portfolio Metric Strip */}
-        <div className="mt-12 sm:mt-16 pt-10 border-t border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
-            <div className="p-4 bg-slate-50 border border-slate-100">
-              <div className="text-2xl sm:text-3xl font-extrabold text-construction-navy font-display">
-                150+
-              </div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
-                Landmarks Delivered
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-50 border border-slate-100">
-              <div className="text-2xl sm:text-3xl font-extrabold text-construction-navy font-display">
-                12M+
-              </div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
-                Sq.Ft. Built
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-50 border border-slate-100">
-              <div className="text-2xl sm:text-3xl font-extrabold text-construction-navy font-display">
-                100%
-              </div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
-                Turnkey Execution
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-50 border border-slate-100">
-              <div className="text-2xl sm:text-3xl font-extrabold text-construction-red font-display">
-                0 Days
-              </div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
-                Zero Safety Incidents
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
