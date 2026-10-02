@@ -7,6 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.hindustanprojects.in';
 
   // Core static routes
+  const legalRoutes = new Set(['/privacy-policy', '/terms', '/cookie-policy']);
   const staticRoutes = [
     '',
     '/about',
@@ -18,12 +19,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/contact',
     '/cost-estimator',
     '/privacy-policy',
-    '/terms'
+    '/terms',
+    '/cookie-policy',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === '/privacy-policy' || route === '/terms' ? ('monthly' as const) : ('weekly' as const),
-    priority: route === '' ? 1 : (route === '/privacy-policy' || route === '/terms' ? 0.3 : 0.8),
+    changeFrequency: legalRoutes.has(route) ? ('monthly' as const) : ('weekly' as const),
+    priority: route === '' ? 1 : (legalRoutes.has(route) ? 0.3 : 0.8),
   }));
 
   try {

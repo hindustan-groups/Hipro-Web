@@ -44,9 +44,13 @@ async function getContactSettings(): Promise<{
 export async function generateMetadata(): Promise<Metadata> {
   const { contactContent } = await getContactSettings();
 
-  const title =
+  let rawTitle =
     contactContent.metaTitle ||
-    "Contact Us | Hindustan Projects (HiPRO) — Bhilwara, Rajasthan";
+    "Contact Office — Bhilwara, Rajasthan";
+  if (rawTitle.includes(" | Hindustan Projects")) {
+    rawTitle = rawTitle.replace(/\s*\|\s*Hindustan Projects.*/i, "").trim();
+  }
+  const title = rawTitle;
   const description =
     contactContent.metaDescription ||
     "Get in touch with Hindustan Projects (HiPRO) for construction inquiries, architectural consultation, turnkey civil contracting, and site evaluations in Bhilwara, Rajasthan.";

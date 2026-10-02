@@ -123,7 +123,7 @@ export async function generateMetadata({
   const data = await getProjectData(decodeURIComponent(params.slug));
   if (!data || !data.project) {
     return {
-      title: "Project Case Study | Hindustan Projects (HiPRO)",
+      title: "Project Case Study",
       description: "Engineering and infrastructure project portfolio by Hindustan Projects.",
       robots: {
         index: false,
@@ -134,13 +134,13 @@ export async function generateMetadata({
 
   const p = data.project;
   const baseUrl = "https://www.hindustanprojects.in";
-  const canonicalUrl =
-    p.canonicalUrl && (p.canonicalUrl.startsWith("http://") || p.canonicalUrl.startsWith("https://"))
-      ? p.canonicalUrl
-      : `${baseUrl}/projects/${p.slug || params.slug}`;
+  const canonicalUrl = `${baseUrl}/projects/${p.slug || params.slug}`;
 
-  const pageTitle =
-    p.metaTitle?.trim() || `${p.title} | ${p.category} Case Study | Hindustan Projects`;
+  let rawTitle = p.metaTitle?.trim() || `${p.title} | ${p.category} Case Study`;
+  if (rawTitle.includes(" | Hindustan Projects")) {
+    rawTitle = rawTitle.replace(/\s*\|\s*Hindustan Projects.*/i, "").trim();
+  }
+  const pageTitle = rawTitle;
   const pageDescription =
     p.metaDescription?.trim() ||
     p.shortDescription?.trim() ||
@@ -407,10 +407,7 @@ export default async function ProjectDetailPage({
     : [];
 
   const baseUrl = "https://www.hindustanprojects.in";
-  const canonicalUrl =
-    project.canonicalUrl && (project.canonicalUrl.startsWith("http://") || project.canonicalUrl.startsWith("https://"))
-      ? project.canonicalUrl
-      : `${baseUrl}/projects/${project.slug || rawParam}`;
+  const canonicalUrl = `${baseUrl}/projects/${project.slug || rawParam}`;
 
   const breadcrumbJsonLd = generateProjectBreadcrumbs(project.title, project.slug || rawParam);
   const projectJsonLd = generateProjectJsonLd(project, canonicalUrl);

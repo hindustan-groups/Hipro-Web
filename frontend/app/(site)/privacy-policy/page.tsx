@@ -6,8 +6,8 @@ import { COMPANY_INFO } from "@/lib/companyData";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Hindustan Projects (HiPRO)",
-  description: "Read the Privacy Policy for Hindustan Projects (HiPRO). Learn how we handle project inquiries, consultation requests, job applications, and website data.",
+  title: "Privacy Policy",
+  description: "Read the Privacy Policy for Hindustan Projects (HiPRO). Learn how we handle project inquiries, consultation requests, job applications, advertising cookies, and website data.",
   alternates: {
     canonical: "/privacy-policy",
   },
@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
             Privacy <span className="font-serif italic font-normal text-construction-red normal-case">Policy</span>
           </h1>
           <p className="text-slate-500 text-sm font-light">
-            Last Updated: September 2026 &bull; Effective Date: September 2026
+            Last Updated: October 2026 &bull; Effective Date: October 2026
           </p>
         </div>
       </section>
@@ -165,44 +165,74 @@ export default function PrivacyPolicyPage() {
               </p>
             </div>
 
-            {/* 8. Cookies and Local Storage */}
+            {/* 8. Cookies and Tracking Technologies */}
             <div>
               <h2 className="text-2xl font-bold text-black font-display uppercase tracking-tight mb-4 flex items-center gap-3">
                 <span className="text-construction-red text-base font-sans font-bold">08.</span>
-                Cookies and Local Storage
+                Cookies and Tracking Technologies
               </h2>
               <p className="mb-3">
-                Our website utilizes minimal functional cookies and browser storage strictly required for operational user-experience features:
+                Our website utilizes first-party cookies and browser storage required for operational performance, session management, and interactive features:
               </p>
               <div className="space-y-3">
                 <div className="p-4 bg-slate-50 border-l-4 border-construction-navy text-sm">
                   <strong>Functional Cookie:</strong> <code className="text-xs bg-slate-200 px-1 py-0.5 text-slate-800">cost_estimator_unlocked</code>
                   <p className="text-xs text-slate-600 mt-1">
-                    Set in your browser for 24 hours after entering your phone number on the Cost Estimator page. This ensures you do not need to repeatedly submit your phone number on subsequent calculator visits within that day.
+                    Set in your browser for 24 hours after entering your contact details to unlock the interactive house construction cost calculator. This prevents repeated verification prompts on subsequent calculations within that day.
                   </p>
                 </div>
                 <div className="p-4 bg-slate-50 border-l-4 border-construction-red text-sm">
                   <strong>Browser Local Storage:</strong> <code className="text-xs bg-slate-200 px-1 py-0.5 text-slate-800">hasSeenConsultationPopup</code> &amp; <code className="text-xs bg-slate-200 px-1 py-0.5 text-slate-800">user_phone</code>
                   <p className="text-xs text-slate-600 mt-1">
-                    Used to remember if you have dismissed the consultation popup so it does not interrupt your browsing repeatedly, and to cache your phone number locally on your device for convenience.
+                    Used to remember consultation popup dismissal so browsing remains uninterrupted, and to cache your phone number locally on your device for user convenience.
                   </p>
                 </div>
               </div>
               <p className="mt-4 text-sm text-slate-600">
-                We do not deploy third-party advertising cookies, behavioural retargeting pixels, or invasive surveillance scripts. You can clear cookies and local storage anytime through your browser settings.
+                You can configure, block, or delete cookies at any time through your browser settings. Please note that disabling certain cookies may impact interactive website features such as the construction cost estimator.
               </p>
             </div>
 
-            {/* 9. Third-Party Services */}
+            {/* 9. Third-Party Services & Advertising */}
             <div>
               <h2 className="text-2xl font-bold text-black font-display uppercase tracking-tight mb-4 flex items-center gap-3">
                 <span className="text-construction-red text-base font-sans font-bold">09.</span>
-                Third-Party Services
+                Third-Party Services &amp; Advertising
               </h2>
               <p className="mb-3">
-                To deliver specific website features, we integrate the following verified third-party services:
+                To deliver specific website capabilities, analyze site performance, and support digital content publishing, we integrate and partner with verified third-party providers:
               </p>
-              <ul className="list-disc pl-6 space-y-2 text-slate-600">
+              <ul className="list-disc pl-6 space-y-3 text-slate-600">
+                <li>
+                  <strong>Google Analytics (GA4):</strong> We utilize Google Analytics to understand website traffic trends, visitor interactions, and content engagement in an aggregated, non-personally identifiable format. Google Analytics uses cookies to collect standard internet log information. You may opt out of Google Analytics tracking across the web via the{" "}
+                  <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" className="text-construction-red hover:underline font-normal">
+                    Google Analytics Opt-out Browser Add-on
+                  </a>.
+                </li>
+                <li>
+                  <strong>Google AdSense &amp; Advertising Partners:</strong> We partner with Google and certified third-party advertising networks to display contextual and relevant advertisements. Third-party vendors, including Google, use cookies (such as the DoubleClick cookie) to serve ads based on a user&apos;s prior visits to our website or other websites on the internet.
+                  <div className="mt-2 text-xs bg-slate-50 p-3.5 border border-slate-200 text-slate-600 space-y-1.5">
+                    <p className="font-semibold text-slate-800">
+                      Personalized vs. Non-Personalized / Contextual Advertising:
+                    </p>
+                    <p>
+                      Google&apos;s use of advertising cookies enables it and its partners to serve ads based on your visit to our website and/or other sites. Users may opt out of personalized advertising at any time by visiting{" "}
+                      <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-construction-red hover:underline font-medium">
+                        Google Ads Settings
+                      </a>.
+                    </p>
+                    <p>
+                      Alternatively, you can opt out of third-party vendor cookies for personalized advertising by visiting{" "}
+                      <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-construction-red hover:underline font-medium">
+                        www.aboutads.info
+                      </a>{" "}
+                      or the{" "}
+                      <a href="https://www.networkadvertising.org/choices/" target="_blank" rel="noopener noreferrer" className="text-construction-red hover:underline font-medium">
+                        Network Advertising Initiative
+                      </a>. When personalized advertising is disabled, contextual or non-personalized ads may still appear based on current page topics without cross-site profiling.
+                    </p>
+                  </div>
+                </li>
                 <li>
                   <strong>Cloudinary:</strong> Used to securely store uploaded resume files and serve optimized project imagery. When you upload a resume, the document is hosted on Cloudinary&apos;s infrastructure.
                 </li>
@@ -271,7 +301,7 @@ export default function PrivacyPolicyPage() {
                 External Links
               </h2>
               <p>
-                Our website includes links to external third-party websites, including our official profiles on Instagram, Facebook, LinkedIn, and Pinterest, as well as external links to group initiatives. We have no control over and assume no responsibility for the privacy practices, policies, or content of any external third-party websites. We encourage you to review their respective privacy notices when visiting them.
+                Our website includes links to external third-party websites, including our official profiles on Instagram, LinkedIn, and Pinterest, as well as external links to group initiatives. We have no control over and assume no responsibility for the privacy practices, policies, or content of any external third-party websites. We encourage you to review their respective privacy notices when visiting them.
               </p>
             </div>
 

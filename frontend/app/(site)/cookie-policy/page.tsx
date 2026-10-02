@@ -6,7 +6,7 @@ import { COMPANY_INFO } from "@/lib/companyData";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Hindustan Projects (HiPRO)",
+  title: "Cookie Policy",
   description: "Learn how Hindustan Projects uses cookies and tracking technologies to optimize website experience, analyze visitor traffic, and protect your privacy.",
   alternates: {
     canonical: "/cookie-policy",

@@ -6,7 +6,7 @@ import { COMPANY_INFO } from "@/lib/companyData";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Hindustan Projects (HiPRO)",
+  title: "Terms of Service",
   description: "Review the Terms of Service for Hindustan Projects (HiPRO). Understand website terms, service inquiries, and our construction cost estimator disclaimer.",
   alternates: {
     canonical: "/terms",

@@ -400,7 +400,7 @@ export default function AdminSettings() {
                 type="url" 
                 value={socials.facebook} 
                 onChange={(e) => setSocials({ ...socials, facebook: e.target.value })}
-                placeholder="https://www.facebook.com/people/Hindustan-Projects"
+                placeholder="https://facebook.com/your-page"
                 className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
               />
             </div>

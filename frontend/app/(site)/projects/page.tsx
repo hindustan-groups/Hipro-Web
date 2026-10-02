@@ -9,14 +9,14 @@ import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Project Portfolio | HiPRO Construction & Turnkey Engineering",
+  title: "Project Portfolio — Turnkey Engineering",
   description:
     "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
   alternates: {
     canonical: "https://www.hindustanprojects.in/projects",
   },
   openGraph: {
-    title: "Project Portfolio | HiPRO Construction & Turnkey Engineering",
+    title: "Project Portfolio — Turnkey Engineering | Hindustan Projects (HiPRO)",
     description:
       "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
     url: "https://www.hindustanprojects.in/projects",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Project Portfolio | HiPRO Construction & Turnkey Engineering",
+    title: "Project Portfolio — Turnkey Engineering | Hindustan Projects (HiPRO)",
     description:
       "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
     images: ["https://www.hindustanprojects.in/og-image.jpg"],

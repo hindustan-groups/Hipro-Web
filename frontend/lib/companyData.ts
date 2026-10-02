@@ -41,7 +41,7 @@ export const COMPANY_INFO = {
   // Social Links (Verified only - YouTube not available)
   socials: {
     instagram: "https://www.instagram.com/hindustan_projects/",
-    facebook: "https://www.facebook.com/people/Hindustan-Projects",
+    facebook: "",
     linkedin: "https://linkedin.com/company/hindustanprojects",
     pinterest: "https://pin.it/5OlMWwi2w",
   },

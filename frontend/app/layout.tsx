@@ -149,7 +149,6 @@ const jsonLd = [
     email: "info@hindustanprojects.in",
     sameAs: [
       "https://www.instagram.com/hindustan_projects/",
-      "https://www.facebook.com/people/Hindustan-Projects",
       "https://linkedin.com/company/hindustanprojects",
       "https://pin.it/5OlMWwi2w",
     ],
