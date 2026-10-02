@@ -375,6 +375,13 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
     ? generateFaqSchema(richContent.faqs) 
     : null;
 
+  const heroImage = service.image || "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80";
+  const heroFeatures = (
+    richContent?.detailedCapabilities?.map((c) => c.title) ||
+    fallbackFeatures ||
+    []
+  ).slice(0, 3);
+
   return (
     <>
       <script
@@ -393,53 +400,198 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
       )}
       <div className="bg-white min-h-screen">
         
-        {/* 1. Hero Section */}
-        <section className="relative pt-32 pb-16 lg:pt-40 lg:pb-24 overflow-hidden bg-slate-50 border-b border-slate-200/60">
-          <div className="absolute inset-0 z-0">
-            {service.image && (
-              <Image 
-                src={service.image} 
-                alt={service.title} 
-                fill
-                sizes="100vw"
-                unoptimized={!isOptimizableImage(service.image)}
-                className="object-cover opacity-10"
-              />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-50/50 to-slate-50" />
-          </div>
-          
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 text-center">
-            <Link href="/services" className="inline-flex items-center text-slate-600 hover:text-construction-navy mb-6 transition-colors text-xs font-bold uppercase tracking-wider group bg-white hover:bg-slate-100 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-              <Icons.ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Capabilities
-            </Link>
-            
-            <div className="flex justify-center mb-5">
-              <div className="w-12 h-12 bg-construction-red flex items-center justify-center text-white shadow-md rounded-full">
-                <DynamicIcon name={service.icon || "Wrench"} className="w-6 h-6" />
-              </div>
+        {/* 1. Hero Section - Crisp Architectural Engineering Presentation (Zero Blur) */}
+        <section className="relative pt-28 pb-14 sm:pt-32 sm:pb-16 lg:pt-36 lg:pb-20 overflow-hidden bg-slate-50 border-b border-slate-200/80">
+          {/* Architectural Drafting Blueprint Grid Pattern - Sharp, Clean, Zero Blurry Fog */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.035]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #0F2C59 1px, transparent 1px), linear-gradient(to bottom, #0F2C59 1px, transparent 1px)",
+              backgroundSize: "32px 32px",
+            }}
+            aria-hidden="true"
+          />
+
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+            {/* Top Bar: Breadcrumbs + Back Navigation */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-8 pb-4 border-b border-slate-200/70">
+              <nav aria-label="Breadcrumbs" className="flex items-center gap-2 text-xs font-mono tracking-wider text-slate-500 flex-wrap">
+                <Link href="/" className="hover:text-construction-navy transition-colors">
+                  Home
+                </Link>
+                <Icons.ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                <Link href="/services" className="hover:text-construction-navy transition-colors">
+                  Services
+                </Link>
+                <Icons.ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-construction-navy truncate max-w-[200px] sm:max-w-md font-bold">
+                  {displayTitle}
+                </span>
+              </nav>
+
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-slate-600 hover:text-construction-navy transition-colors group"
+              >
+                <Icons.ArrowLeft className="w-3.5 h-3.5 text-construction-red group-hover:-translate-x-1 transition-transform" />
+                <span>All Capabilities</span>
+              </Link>
             </div>
 
-            {richContent?.badge && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-none bg-red-50 border border-red-100 text-construction-red text-[11px] font-bold uppercase tracking-wider mb-4 shadow-sm">
-                <Icons.Sparkles className="w-3.5 h-3.5" />
-                <span>{richContent.badge}</span>
+            {/* 2-Column Hero Grid: Left Content, Right Crisp High-Res Architectural Showcase */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+              
+              {/* Left Column (7 cols): Headings, Details, Highlights & CTAs */}
+              <div className="lg:col-span-7 space-y-6">
+                
+                {/* Discipline Badges & Icon */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="w-9 h-9 bg-construction-navy text-white flex items-center justify-center shrink-0 shadow-sm border border-slate-700">
+                    <DynamicIcon name={service.icon || "Wrench"} className="w-4 h-4 text-construction-red" />
+                  </div>
+                  {service.category && (
+                    <span className="px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider bg-white text-construction-navy border border-slate-200 shadow-2xs">
+                      {service.category}
+                    </span>
+                  )}
+                  {richContent?.badge && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 border border-red-100 text-construction-red text-[11px] font-mono font-bold uppercase tracking-wider shadow-2xs">
+                      <Icons.Sparkles className="w-3 h-3" />
+                      <span>{richContent.badge}</span>
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-mono font-bold uppercase tracking-wider">
+                    <Icons.ShieldCheck className="w-3 h-3 text-emerald-600" />
+                    <span>Verified Execution</span>
+                  </span>
+                </div>
+
+                {/* Primary H1 */}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display uppercase tracking-tight text-slate-950 leading-[1.12]">
+                  {displayTitle}
+                </h1>
+
+                {/* Supporting Tagline / Description */}
+                <p className="text-base sm:text-lg text-slate-600 font-light leading-relaxed max-w-2xl">
+                  {richContent?.tagline || displayDescription}
+                </p>
+
+                {/* Top Deliverables / Highlights */}
+                {heroFeatures.length > 0 && (
+                  <div className="pt-2">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500 block mb-2.5">
+                      Core Discipline Deliverables
+                    </span>
+                    <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                      {heroFeatures.map((feat, idx) => (
+                        <li key={idx} className="flex items-start gap-2 p-2.5 bg-white border border-slate-200/90 shadow-2xs">
+                          <Icons.CheckCircle2 className="w-4 h-4 text-construction-red shrink-0 mt-0.5" />
+                          <span className="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight">
+                            {feat}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Action CTA Row */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link
+                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : `/contact?service=${encodeURIComponent(displayTitle)}`}
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-construction-navy hover:bg-slate-900 text-white font-bold text-xs uppercase tracking-widest transition-all duration-200 shadow-md group border border-slate-900"
+                  >
+                    <span>{ctaDetailPrimary?.label || "Request Service Quote"}</span>
+                    <Icons.ArrowRight className="w-4 h-4 text-construction-red group-hover:translate-x-1 transition-transform" />
+                  </Link>
+
+                  <a
+                    href={`tel:${phone.replace(/\s+/g, '')}`}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs uppercase tracking-widest transition-all duration-200 shadow-xs"
+                  >
+                    <Icons.PhoneCall className="w-3.5 h-3.5 text-construction-red" />
+                    <span>Call Expert: {phone}</span>
+                  </a>
+                </div>
+
+                {/* Quick Trust Anchor */}
+                <div className="flex items-center gap-4 text-xs font-mono text-slate-500 pt-1">
+                  <a href="#overview" className="hover:text-construction-navy flex items-center gap-1 transition-colors font-semibold">
+                    <span>View Engineering Scope</span>
+                    <Icons.ChevronDown className="w-3.5 h-3.5 text-construction-red" />
+                  </a>
+                  <span className="text-slate-300">|</span>
+                  <span>{expStat} Years Field Experience</span>
+                  <span className="text-slate-300">|</span>
+                  <span>{projectStat} Executed Projects</span>
+                </div>
               </div>
-            )}
-            
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-construction-navy mb-5 font-display uppercase tracking-tight max-w-4xl mx-auto">
-              {displayTitle}
-            </h1>
-            <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto font-light leading-relaxed">
-              {richContent?.tagline || displayDescription}
-            </p>
+
+              {/* Right Column (5 cols): Razor-Sharp, High-Resolution Architectural Cover Showcase */}
+              <div className="lg:col-span-5 w-full">
+                <div className="relative">
+                  <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-xl group">
+                    {heroImage && (
+                      <Image
+                        src={heroImage}
+                        alt={`${displayTitle} - Hindustan Projects Engineering Execution`}
+                        fill
+                        priority
+                        sizes="(max-width: 1024px) 100vw, 42vw"
+                        unoptimized={!isOptimizableImage(heroImage)}
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    )}
+
+                    {/* High-contrast bottom vignette for caption legibility */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Top Discipline Tag */}
+                    <div className="absolute top-3 left-3 z-10">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-950/90 border-l-2 border-construction-red text-white text-[10px] font-mono uppercase tracking-wider shadow-md">
+                        <Icons.CheckCircle2 className="w-3.5 h-3.5 text-construction-red" />
+                        <span>HiPRO Engineering Spec</span>
+                      </div>
+                    </div>
+
+                    {/* Bottom Spec Sheet Strip */}
+                    <div className="absolute bottom-0 inset-x-0 p-4 z-10 flex items-center justify-between border-t border-white/10 bg-slate-950/85">
+                      <div>
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">
+                          Execution Track
+                        </span>
+                        <span className="text-xs sm:text-sm font-bold font-display uppercase tracking-tight text-white">
+                          {service.category || "Civil & Engineering Discipline"}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">
+                          Quality Assurance
+                        </span>
+                        <span className="text-xs font-bold font-mono text-amber-400 uppercase tracking-wider flex items-center gap-1 justify-end">
+                          <Icons.ShieldCheck className="w-3.5 h-3.5 text-construction-red" />
+                          <span>Standardized</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Red accent blueprint offset border */}
+                  <div 
+                    className="absolute -bottom-2 -right-2 -z-10 w-full h-full border-2 border-construction-red/25 hidden sm:block pointer-events-none"
+                    aria-hidden="true" 
+                  />
+                </div>
+              </div>
+
+            </div>
           </div>
         </section>
 
         {/* 2. Detailed Overview Section */}
         {richContent?.overviewParagraphs && richContent.overviewParagraphs.length > 0 && (
-          <section className="py-16 bg-white border-b border-slate-100">
+          <section id="overview" className="py-16 bg-white border-b border-slate-100 scroll-mt-24">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="border-l-4 border-construction-red pl-5 mb-6">
                 <h2 className="text-2xl md:text-3xl font-bold text-slate-900 font-display uppercase tracking-tight">
