@@ -29,7 +29,8 @@ import {
   Search,
   X,
   Layers,
-  Calculator
+  Calculator,
+  Sparkles
 } from "lucide-react";
 
 export interface NavItem {
@@ -82,6 +83,7 @@ const navCategories: NavCategory[] = [
     title: "Pages & Site CMS",
     items: [
       { href: "/admin/hero", label: "Hero Banner", icon: LayoutTemplate, sectionKey: "hero" },
+      { href: "/admin/image-showcase", label: "Image Showcase", icon: Sparkles, sectionKey: "image-showcase" },
       { href: "/admin/projects-hero", label: "Projects Page Hero", icon: Layers, sectionKey: "projects-hero" },
       { href: "/admin/blogs-hero", label: "Blogs Page Hero", icon: BookOpen, sectionKey: "blogs-hero" },
       { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
@@ -127,6 +129,15 @@ export default function AdminSidebar({ user }: { user: any }) {
       (userPermissions.includes("projects-hero") ||
         userPermissions.includes("projects") ||
         userPermissions.includes("hero"))
+    ) {
+      return true;
+    }
+    if (
+      key === "image-showcase" &&
+      (userPermissions.includes("image-showcase") ||
+        userPermissions.includes("hero") ||
+        userPermissions.includes("settings") ||
+        userPermissions.includes("projects"))
     ) {
       return true;
     }

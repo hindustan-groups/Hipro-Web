@@ -82,3 +82,40 @@ h1, h2, h3, h4, h5 {
 .btn-sweep:hover::before {
   width: 100%;
 }
+
+/* Infinite Continuous Showcase Marquee */
+@keyframes marquee-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left var(--marquee-duration, 34s) linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  animation: marquee-right var(--marquee-duration, 38s) linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right {
+    animation: none !important;
+    transform: none !important;
+  }
+}

@@ -9,6 +9,7 @@ import Testimonials from "@/components/Testimonials";
 import GroupEcosystem from "@/components/GroupEcosystem";
 import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
+import HomeImageShowcase from "@/components/HomeImageShowcase";
 import AnimateIn from "@/components/AnimateIn";
 import { findAll, findLimited } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
@@ -93,6 +94,7 @@ export default async function Home() {
       <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
       <AnimateIn delay={200}><CostEstimator /></AnimateIn>
       <AnimateIn><Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} /></AnimateIn>
+      <HomeImageShowcase content={pageContent.imageShowcase} />
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
       <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Blogs posts={blogsData} /></AnimateIn>

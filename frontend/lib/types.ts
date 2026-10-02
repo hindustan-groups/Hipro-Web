@@ -244,6 +244,24 @@ export interface BlogsHeroContent {
   enabled?: boolean;
 }
 
+export interface ImageShowcaseItem {
+  id: string;
+  image: string;
+  title?: string;
+  alt?: string;
+  category?: string;
+  order: number;
+  active: boolean;
+}
+
+export interface ImageShowcaseContent {
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  enabled?: boolean;
+  items: ImageShowcaseItem[];
+}
+
 export interface ContactPageContent {
   badge?: string;
   headingPrefix?: string;
