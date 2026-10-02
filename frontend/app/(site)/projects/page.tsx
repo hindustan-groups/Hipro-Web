@@ -75,9 +75,14 @@ export default async function ProjectsPage() {
     : [];
 
   // Strict Public Isolation Rule (Defense-in-depth):
-  // Filter out any draft or operationally archived records before passing to public grid
+  // Filter out any draft or operationally archived records before passing to public grid & hero
   const publicProjects = (allProjects || []).filter((p) => {
-    return p && p.publishStatus === "published" && p.status !== "archived";
+    return (
+      p &&
+      (p.publishStatus === "published" ||
+        (!p.publishStatus && p.status !== "archived")) &&
+      p.status !== "archived"
+    );
   });
 
   const breadcrumbsJsonLd = {
@@ -118,6 +123,7 @@ export default async function ProjectsPage() {
         ctaSecondary={ctaHeroSecondary}
         stats={sortedStats}
         enabled={heroConfig.enabled !== false}
+        projects={publicProjects}
       />
 
       {/* ─────────────────────────────────────────────────────────────

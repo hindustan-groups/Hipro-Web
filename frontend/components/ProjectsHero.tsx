@@ -1,10 +1,19 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowRight } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpRight,
+} from "lucide-react";
 import type { CTAConfig } from "@/lib/cta";
 import { resolveCTAHref } from "@/lib/cta";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import type { Project } from "@/lib/types";
 
 export interface ProjectHeroStat {
   id?: string;
@@ -24,6 +33,7 @@ export interface ProjectsHeroProps {
   stats?: ProjectHeroStat[];
   enabled?: boolean;
   isPreview?: boolean;
+  projects?: Project[];
 }
 
 export const DEFAULT_PROJECTS_HERO = {
@@ -37,6 +47,16 @@ export const DEFAULT_PROJECTS_HERO = {
   enabled: true,
 };
 
+interface HeroSlideItem {
+  id: string;
+  image: string;
+  imageAlt: string;
+  title: string;
+  category: string;
+  location: string;
+  href?: string;
+}
+
 export default function ProjectsHero({
   eyebrow = DEFAULT_PROJECTS_HERO.eyebrow,
   title = DEFAULT_PROJECTS_HERO.title,
@@ -48,7 +68,128 @@ export default function ProjectsHero({
   stats = [],
   enabled = true,
   isPreview = false,
+  projects = [],
 }: ProjectsHeroProps) {
+  const effectiveEyebrow = eyebrow?.trim() || DEFAULT_PROJECTS_HERO.eyebrow;
+  const effectiveTitle = title?.trim() || DEFAULT_PROJECTS_HERO.title;
+  const effectiveDescription =
+    description?.trim() || DEFAULT_PROJECTS_HERO.description;
+  const effectiveFallbackImage = image?.trim() || DEFAULT_PROJECTS_HERO.image;
+  const effectiveFallbackAlt =
+    imageAlt?.trim() || DEFAULT_PROJECTS_HERO.imageAlt;
+
+  // Build rotating slides from active/published projects
+  const activeSlides = useMemo<HeroSlideItem[]>(() => {
+    if (Array.isArray(projects) && projects.length > 0) {
+      const validProjects = projects.filter(
+        (p) =>
+          p &&
+          typeof p.image === "string" &&
+          p.image.trim().length > 0 &&
+          p.status !== "archived"
+      );
+
+      if (validProjects.length > 0) {
+        return validProjects.map((p, idx) => ({
+          id: p.id || p.slug || `project-${idx}`,
+          image: p.image.trim(),
+          imageAlt:
+            p.imageAlt?.trim() ||
+            `${p.title} - ${p.category || "Turnkey Engineering"} Project by HiPRO`,
+          title: p.title || "Turnkey Industrial Project",
+          category: p.category || "CIVIL & INDUSTRIAL",
+          location: p.location || p.city || "RAJASTHAN & PAN-INDIA",
+          href: p.slug
+            ? `/projects/${p.slug}`
+            : p.id
+            ? `/projects/${p.id}`
+            : undefined,
+        }));
+      }
+    }
+
+    // Fallback if no projects with images are available
+    if (effectiveFallbackImage) {
+      return [
+        {
+          id: "default-hero-slide",
+          image: effectiveFallbackImage,
+          imageAlt: effectiveFallbackAlt,
+          title: "ENGINEERED FOR REAL. BUILT TO LAST.",
+          category: "CIVIL & INDUSTRIAL",
+          location: "RAJASTHAN & PAN-INDIA",
+          href: undefined,
+        },
+      ];
+    }
+
+    return [];
+  }, [projects, effectiveFallbackImage, effectiveFallbackAlt]);
+
+  // Slideshow State
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+
+  // Keep index within bounds if slide count changes
+  useEffect(() => {
+    if (currentIdx >= activeSlides.length) {
+      setCurrentIdx(0);
+    }
+  }, [activeSlides.length, currentIdx]);
+
+  // Auto-advance slideshow every 4.5 seconds
+  useEffect(() => {
+    if (activeSlides.length <= 1 || isPaused) return;
+
+    const timer = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % activeSlides.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [activeSlides.length, isPaused]);
+
+  const handlePrev = useCallback(
+    (e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      setCurrentIdx((prev) =>
+        prev === 0 ? activeSlides.length - 1 : prev - 1
+      );
+    },
+    [activeSlides.length]
+  );
+
+  const handleNext = useCallback(
+    (e?: React.MouseEvent) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      setCurrentIdx((prev) => (prev + 1) % activeSlides.length);
+    },
+    [activeSlides.length]
+  );
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+    if (Math.abs(deltaX) > 40) {
+      if (deltaX < 0) {
+        handleNext();
+      } else {
+        handlePrev();
+      }
+    }
+    touchStartXRef.current = null;
+  };
+
   // If explicitly disabled and not in admin preview, render minimal fallback header
   if (!enabled && !isPreview) {
     return (
@@ -67,14 +208,6 @@ export default function ProjectsHero({
     );
   }
 
-  const effectiveEyebrow = eyebrow?.trim() || DEFAULT_PROJECTS_HERO.eyebrow;
-  const effectiveTitle = title?.trim() || DEFAULT_PROJECTS_HERO.title;
-  const effectiveDescription =
-    description?.trim() || DEFAULT_PROJECTS_HERO.description;
-  const effectiveImage = image?.trim() || DEFAULT_PROJECTS_HERO.image;
-  const effectiveImageAlt =
-    imageAlt?.trim() || DEFAULT_PROJECTS_HERO.imageAlt;
-
   // Split title on newlines if provided for controlled multiline hierarchy
   const titleLines = effectiveTitle.split("\n").filter(Boolean);
 
@@ -87,6 +220,8 @@ export default function ProjectsHero({
   const secondaryHref = ctaSecondary
     ? resolveCTAHref(ctaSecondary)
     : "/contact";
+
+  const currentSlide = activeSlides[currentIdx] || activeSlides[0];
 
   return (
     <section className="relative bg-white pt-32 sm:pt-36 md:pt-40 pb-12 sm:pb-16 px-4 sm:px-6 lg:px-8 border-b border-slate-200/90 overflow-hidden">
@@ -150,11 +285,11 @@ export default function ProjectsHero({
 
             {/* 5. Connected Action Navigation CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8 sm:mb-10 max-w-md sm:max-w-none">
-              {ctaPrimary?.enabled !== false && (
-                isPreview ? (
+              {ctaPrimary?.enabled !== false &&
+                (isPreview ? (
                   <button
                     type="button"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group cursor-pointer"
                   >
                     <span>{ctaPrimary?.label ?? "Explore Portfolio"}</span>
                     <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
@@ -163,20 +298,21 @@ export default function ProjectsHero({
                   <a
                     href={primaryHref}
                     target={ctaPrimary?.openNewTab ? "_blank" : undefined}
-                    rel={ctaPrimary?.openNewTab ? "noopener noreferrer" : undefined}
+                    rel={
+                      ctaPrimary?.openNewTab ? "noopener noreferrer" : undefined
+                    }
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-construction-navy hover:bg-slate-900 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-widest transition-all shadow-sm group"
                   >
                     <span>{ctaPrimary?.label ?? "Explore Portfolio"}</span>
                     <ArrowDown className="w-3.5 h-3.5 text-construction-red group-hover:translate-y-0.5 transition-transform" />
                   </a>
-                )
-              )}
+                ))}
 
-              {ctaSecondary?.enabled !== false && (
-                isPreview ? (
+              {ctaSecondary?.enabled !== false &&
+                (isPreview ? (
                   <button
                     type="button"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3.5 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-2xs group"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3.5 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-2xs group cursor-pointer"
                   >
                     <span>{ctaSecondary?.label ?? "Discuss Your Project"}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -185,14 +321,17 @@ export default function ProjectsHero({
                   <Link
                     href={secondaryHref}
                     target={ctaSecondary?.openNewTab ? "_blank" : undefined}
-                    rel={ctaSecondary?.openNewTab ? "noopener noreferrer" : undefined}
+                    rel={
+                      ctaSecondary?.openNewTab
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-800 font-bold px-6 py-3.5 rounded-none border border-slate-300 text-xs uppercase tracking-widest transition-all shadow-2xs group"
                   >
                     <span>{ctaSecondary?.label ?? "Discuss Your Project"}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
-                )
-              )}
+                ))}
             </div>
 
             {/* 6. Desktop Authoritative Statistics Strip (Hidden on mobile for strict mobile ordering) */}
@@ -216,7 +355,7 @@ export default function ProjectsHero({
           </div>
 
           {/* ─────────────────────────────────────────────────────────────
-              RIGHT COLUMN: Architectural Hero Frame & Dynamic Imagery
+              RIGHT COLUMN: Architectural Hero Frame & Auto-Rotating Projects
               ───────────────────────────────────────────────────────────── */}
           <div className="lg:col-span-5">
             <div className="relative mx-auto max-w-lg lg:max-w-none">
@@ -240,47 +379,147 @@ export default function ProjectsHero({
                   aria-hidden="true"
                 />
 
-                {/* Inner Image Container */}
-                <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden bg-slate-100 border border-slate-200">
-                  {effectiveImage ? (
-                    isOptimizableImage(effectiveImage) ? (
-                      <Image
-                        src={effectiveImage}
-                        alt={effectiveImageAlt}
-                        fill
-                        priority={!isPreview}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 550px"
-                        className="object-cover transition-transform duration-500 hover:scale-[1.02]"
-                      />
-                    ) : (
-                      <img
-                        src={effectiveImage}
-                        alt={effectiveImageAlt}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
-                      />
-                    )
+                {/* Inner Image Container (Auto-Rotating Project Carousel) */}
+                <div
+                  className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden bg-slate-950 border border-slate-200 select-none group"
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {activeSlides.length > 0 ? (
+                    <>
+                      {/* Render all slides with cross-fade opacity transitions */}
+                      {activeSlides.map((slide, idx) => {
+                        const isActive = idx === currentIdx;
+                        return (
+                          <div
+                            key={slide.id || idx}
+                            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                              isActive
+                                ? "opacity-100 z-10 pointer-events-auto"
+                                : "opacity-0 z-0 pointer-events-none"
+                            }`}
+                            aria-hidden={!isActive}
+                          >
+                            {isOptimizableImage(slide.image) ? (
+                              <Image
+                                src={slide.image}
+                                alt={slide.imageAlt}
+                                fill
+                                priority={idx === 0 && !isPreview}
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 550px"
+                                className={`object-cover transition-transform duration-700 ${
+                                  isActive ? "scale-100" : "scale-105"
+                                }`}
+                              />
+                            ) : (
+                              <img
+                                src={slide.image}
+                                alt={slide.imageAlt}
+                                className={`w-full h-full object-cover transition-transform duration-700 ${
+                                  isActive ? "scale-100" : "scale-105"
+                                }`}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Top Header Badge & Live Rotating Counter */}
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2 bg-slate-950/85 backdrop-blur-md border border-white/20 px-2.5 py-1 text-white text-[10px] font-mono uppercase tracking-wider shadow-sm">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>PROJECT SHOWCASE</span>
+                        {activeSlides.length > 1 && (
+                          <span className="text-yellow-400 font-bold ml-1 font-mono">
+                            {String(currentIdx + 1).padStart(2, "0")} /{" "}
+                            {String(activeSlides.length).padStart(2, "0")}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Navigation Arrow Controls (Previous / Next) */}
+                      {activeSlides.length > 1 && (
+                        <div className="absolute top-3 right-3 z-20 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={handlePrev}
+                            aria-label="Previous project"
+                            className="w-7 h-7 bg-slate-950/80 hover:bg-construction-navy text-white flex items-center justify-center border border-white/20 transition-colors backdrop-blur-xs cursor-pointer"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleNext}
+                            aria-label="Next project"
+                            className="w-7 h-7 bg-slate-950/80 hover:bg-construction-navy text-white flex items-center justify-center border border-white/20 transition-colors backdrop-blur-xs cursor-pointer"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Architectural Overlay Strip with Current Project Details */}
+                      {currentSlide && (
+                        <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pt-8 pb-3.5 px-3.5 sm:px-4 text-white">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-yellow-400 font-bold truncate">
+                              {currentSlide.category}
+                            </div>
+                            {currentSlide.location && (
+                              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-300 font-semibold bg-white/10 px-2 py-0.5 backdrop-blur-xs border border-white/20 shrink-0">
+                                {currentSlide.location}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-end justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              {currentSlide.href && !isPreview ? (
+                                <Link
+                                  href={currentSlide.href}
+                                  className="text-xs sm:text-sm font-bold font-display uppercase tracking-tight text-white hover:text-yellow-300 transition-colors truncate block group/link"
+                                >
+                                  <span>{currentSlide.title}</span>
+                                  <ArrowUpRight className="inline-block w-3.5 h-3.5 ml-1 text-yellow-400 opacity-90 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+                                </Link>
+                              ) : (
+                                <div className="text-xs sm:text-sm font-bold font-display uppercase tracking-tight text-white truncate">
+                                  {currentSlide.title}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Interactive Progress Indicator Dots / Bars */}
+                            {activeSlides.length > 1 && (
+                              <div className="flex items-center gap-1 shrink-0 mb-1">
+                                {activeSlides.map((_, i) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => setCurrentIdx(i)}
+                                    aria-label={`Jump to project ${i + 1}`}
+                                    className={`h-1.5 transition-all duration-300 cursor-pointer ${
+                                      i === currentIdx
+                                        ? "w-5 bg-yellow-400"
+                                        : "w-1.5 bg-white/40 hover:bg-white/80"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-900">
                       <span className="text-xs font-mono uppercase tracking-wider">
-                        No Hero Image Selected
+                        No Project Imagery Found
                       </span>
                     </div>
                   )}
-
-                  {/* Architectural Overlay Strip */}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/60 to-transparent p-3 sm:p-4 text-white flex items-end justify-between">
-                    <div>
-                      <div className="text-[10px] font-mono uppercase tracking-widest text-yellow-400 font-bold">
-                        CIVIL &amp; INDUSTRIAL
-                      </div>
-                      <div className="text-xs sm:text-sm font-bold font-display uppercase tracking-tight">
-                        VERIFIED PORTFOLIO
-                      </div>
-                    </div>
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-slate-300 font-semibold bg-white/10 px-2 py-0.5 backdrop-blur-xs border border-white/20">
-                      RAJASTHAN &amp; PAN-INDIA
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -288,13 +527,17 @@ export default function ProjectsHero({
               <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-slate-500 px-1">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
-                  <span>STRUCTURED SPECIFICATIONS</span>
+                  <span>AUTO-ROTATING PORTFOLIO</span>
                 </span>
-                <span className="text-slate-400">TURNKEY STANDARDS</span>
+                <span className="text-slate-400">
+                  {activeSlides.length > 1
+                    ? `${activeSlides.length} PROJECTS SHOWCASED`
+                    : "STRUCTURED SPECIFICATIONS"}
+                </span>
               </div>
             </div>
 
-            {/* 7. Mobile Authoritative Statistics Strip (Rendered after Hero Image per specification) */}
+            {/* 7. Mobile Authoritative Statistics Strip */}
             {displayStats.length > 0 && (
               <div className="lg:hidden grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-6 border-t border-slate-200/90 mt-8">
                 {displayStats.map((st, idx) => (

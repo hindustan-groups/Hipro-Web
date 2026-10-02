@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Save,
   Loader2,
@@ -24,7 +25,7 @@ import ProjectsHero, {
   DEFAULT_PROJECTS_HERO,
   type ProjectHeroStat,
 } from "@/components/ProjectsHero";
-import type { Settings, ProjectsHeroContent } from "@/lib/types";
+import type { Settings, ProjectsHeroContent, Project } from "@/lib/types";
 import { resolveCTA, type CTAConfig } from "@/lib/cta";
 
 interface FormState {
@@ -49,6 +50,9 @@ export default function AdminProjectsHeroCMS() {
 
   // Authoritative site stats for preview
   const [siteStats, setSiteStats] = useState<ProjectHeroStat[]>([]);
+
+  // Real uploaded projects from portfolio
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Connected CTAs from Central CTA Management
   const [ctaPrimary, setCtaPrimary] = useState<CTAConfig | null>(null);
@@ -94,21 +98,44 @@ export default function AdminProjectsHeroCMS() {
     );
   }, [form, baseline]);
 
+  // Projects with valid images ready for hero rotation
+  const validProjectsWithImages = useMemo(() => {
+    return projects.filter(
+      (p) =>
+        p &&
+        typeof p.image === "string" &&
+        p.image.trim().length > 0 &&
+        p.status !== "archived"
+    );
+  }, [projects]);
+
   // Fetch initial data
   const fetchData = useCallback(async () => {
     setLoading(true);
     setStatusMessage({ text: "", type: "" });
 
     try {
-      const [settingsRes, statsRes] = await Promise.all([
+      const [settingsRes, statsRes, projectsRes] = await Promise.all([
         fetch("/api/settings", { credentials: "include" }),
         fetch("/api/stats"),
+        fetch("/api/projects?all=true", { credentials: "include" }).catch(() => null),
       ]);
 
       const [settingsData, statsData] = await Promise.all([
         settingsRes.json(),
         statsRes.json(),
       ]);
+
+      if (projectsRes && projectsRes.ok) {
+        try {
+          const pData = await projectsRes.json();
+          if (pData.success && Array.isArray(pData.data)) {
+            setProjects(pData.data);
+          }
+        } catch {
+          // ignore projects fetch error
+        }
+      }
 
       if (settingsData.success && settingsData.data) {
         const s: Settings = settingsData.data;
@@ -579,60 +606,114 @@ export default function AdminProjectsHeroCMS() {
                 </div>
               </div>
 
-              {/* CARD 2: DYNAMIC HERO IMAGE */}
+              {/* CARD 2: AUTOMATED PROJECT SHOWCASE */}
               <div className="bg-white border border-slate-200 shadow-2xs">
                 <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-construction-navy" />
+                    <Sparkles className="w-4 h-4 text-amber-500" />
                     <h2 className="text-sm font-bold font-display uppercase tracking-wider text-slate-900">
-                      2. Dynamic Hero Image &amp; Media
+                      2. Automated Project Image Showcase
                     </h2>
                   </div>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    CLOUDINARY / URL
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
+                    AUTO-ROTATING
                   </span>
                 </div>
 
                 <div className="p-5 space-y-4">
+                  {/* Status Banner */}
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 flex items-start gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-700 leading-relaxed">
+                      <strong className="text-slate-900 font-semibold block mb-0.5">
+                        Live Auto-Rotating Carousel Enabled
+                      </strong>
+                      Hero section dynamically cycles through cover images, titles, and categories from your uploaded portfolio projects. Whenever you add or edit projects in the Projects CMS, they automatically appear here!
+                    </div>
+                  </div>
+
+                  {/* Active Projects Preview Carousel Summary */}
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                      Hero Architectural Imagery
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                        Uploaded Projects ({validProjectsWithImages.length} Ready in Hero)
+                      </span>
+                      <Link
+                        href="/admin/projects"
+                        className="text-[11px] font-bold text-construction-navy hover:underline inline-flex items-center gap-1"
+                      >
+                        <span>Manage Projects</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+
+                    {validProjectsWithImages.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1.5 bg-slate-50 border border-slate-200">
+                        {validProjectsWithImages.map((p, idx) => (
+                          <div
+                            key={p.id || idx}
+                            className="bg-white border border-slate-200 p-2 flex items-center gap-2 text-left"
+                          >
+                            <div className="w-10 h-10 bg-slate-100 shrink-0 overflow-hidden relative border border-slate-200">
+                              <Image
+                                src={p.image}
+                                alt={p.title}
+                                width={40}
+                                height={40}
+                                unoptimized
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-[11px] font-bold text-slate-900 truncate">
+                                {p.title}
+                              </div>
+                              <div className="text-[9px] font-mono uppercase text-slate-500 truncate">
+                                {p.category || "Project"}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                        No projects with images found yet. Upload projects in{" "}
+                        <Link href="/admin/projects" className="font-bold underline">
+                          Projects CMS
+                        </Link>{" "}
+                        or set a fallback image below.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Fallback Static Image (Collapsible / Secondary) */}
+                  <div className="pt-3 border-t border-slate-200">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Fallback Hero Image (Used if 0 projects uploaded)
                     </label>
-                    {/* Reusable ImageUpload component */}
                     <ImageUpload
                       value={form.image}
                       onChange={(newUrl) =>
                         setForm((prev) => ({ ...prev, image: newUrl }))
                       }
                     />
-                    <p className="text-[11px] text-slate-500 mt-1.5">
-                      Upload an authentic project or construction image (supports
-                      JPG, PNG, WEBP), or paste an image URL from Cloudinary or
-                      Unsplash.
-                    </p>
-                  </div>
-
-                  {/* Image Alt */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                      Image Alt Text (Accessibility &amp; SEO)
-                    </label>
-                    <input
-                      type="text"
-                      value={form.imageAlt}
-                      onChange={(e) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          imageAlt: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. HiPRO Civil & Industrial Engineering Projects Portfolio"
-                      className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-construction-navy"
-                    />
-                    <p className="text-[11px] text-slate-400 mt-1">
-                      Descriptive alternative text for screen readers and search
-                      engine image indexing.
-                    </p>
+                    <div className="mt-3">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                        Fallback Image Alt Text
+                      </label>
+                      <input
+                        type="text"
+                        value={form.imageAlt}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            imageAlt: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g. HiPRO Civil & Industrial Engineering Projects Portfolio"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 focus:outline-none focus:border-construction-navy"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -814,6 +895,7 @@ export default function AdminProjectsHeroCMS() {
                       stats={siteStats}
                       enabled={form.enabled}
                       isPreview={true}
+                      projects={projects}
                     />
                   </div>
                 </div>
