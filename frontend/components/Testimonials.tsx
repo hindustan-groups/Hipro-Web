@@ -665,17 +665,19 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={resetModalState}
+          className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200"
         >
+          <div className="flex min-h-full items-center justify-center p-4 py-6 sm:py-10">
           <div
-            className="relative w-full max-w-lg bg-slate-900 border border-slate-700 shadow-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-lg bg-slate-900 border border-slate-700 shadow-2xl p-6 sm:p-7"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
+            {/* Close Button — sticky so always reachable */}
             <button
               type="button"
               onClick={resetModalState}
-              className="absolute top-4 right-4 w-7 h-7 border border-slate-700 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 w-7 h-7 border border-slate-700 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 flex items-center justify-center transition-colors z-10"
               aria-label="Close modal"
             >
               <X className="w-4 h-4" />
@@ -1103,6 +1105,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                 </form>
               </div>
             )}
+          </div>
           </div>
         </div>
       )}
