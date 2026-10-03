@@ -4,6 +4,7 @@ import ContactForm from "@/components/ContactForm";
 import { findAll } from "@/lib/db";
 import type { Settings, Service, ContactPageContent } from "@/lib/types";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { generateBreadcrumbSchema, generateContactPageSchema } from "@/lib/schema";
 
 export const revalidate = 60;
 
@@ -159,8 +160,22 @@ export default async function ContactPage() {
     },
   ];
 
+  const breadcrumbJsonLd = generateBreadcrumbSchema([
+    { name: "Home", url: "https://www.hindustanprojects.in" },
+    { name: "Contact", url: "https://www.hindustanprojects.in/contact" },
+  ]);
+  const contactJsonLd = generateContactPageSchema();
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+      />
       {/* ─────────────────────────────────────────────────────────────
           HERO: Technical Engineering Dispatch & Architectural Command
           ───────────────────────────────────────────────────────────── */}

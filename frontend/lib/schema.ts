@@ -1,8 +1,4 @@
-/**
- * Reusable Schema.org JSON-LD generation utilities
- * Follows schema.org standards for BreadcrumbList and Service.
- * Uses verified HiPRO business and domain information.
- */
+import { COMPANY_INFO } from "./companyData";
 
 export interface BreadcrumbItem {
   name: string;
@@ -27,11 +23,13 @@ export function generateServiceSchema({
   description,
   url,
   image,
+  serviceType,
 }: {
   name: string;
   description: string;
   url: string;
   image?: string;
+  serviceType?: string;
 }) {
   return {
     "@context": "https://schema.org",
@@ -39,22 +37,44 @@ export function generateServiceSchema({
     "name": name,
     "description": description,
     "url": url,
+    ...(serviceType ? { "serviceType": serviceType } : {}),
     ...(image ? { "image": image } : {}),
     "provider": {
-      "@type": "LocalBusiness",
+      "@type": ["LocalBusiness", "GeneralContractor"],
       "@id": "https://www.hindustanprojects.in/#organization",
-      "name": "Hindustan Projects",
+      "name": COMPANY_INFO.brandName,
+      "telephone": COMPANY_INFO.formattedPhone,
+      "email": COMPANY_INFO.email,
+      "url": "https://www.hindustanprojects.in/",
     },
     "areaServed": [
       {
-        "@type": "AdministrativeArea",
+        "@type": "City",
         "name": "Bhilwara",
+      },
+      {
+        "@type": "AdministrativeArea",
+        "name": "Bhilwara District",
       },
       {
         "@type": "AdministrativeArea",
         "name": "Rajasthan",
       },
     ],
+  };
+}
+
+export function generateContactPageSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "@id": "https://www.hindustanprojects.in/contact#webpage",
+    "url": "https://www.hindustanprojects.in/contact",
+    "name": "Contact Hindustan Projects — Engineering & Construction Office in Bhilwara",
+    "description": "Contact Hindustan Projects (HiPRO) for construction inquiries, turnkey civil contracting, architectural planning, and site evaluations in Bhilwara, Rajasthan.",
+    "mainEntity": {
+      "@id": "https://www.hindustanprojects.in/#organization",
+    },
   };
 }
 
@@ -77,4 +97,5 @@ export function generateFaqSchema(faqs: FaqItem[]) {
     })),
   };
 }
+
 

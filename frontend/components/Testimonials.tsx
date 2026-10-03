@@ -616,6 +616,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                   key={t.id || idx}
                   type="button"
                   onClick={() => changeReview(idx)}
+                  aria-label={`View story by ${t.name}`}
                   className={`px-3 py-1.5 text-xs transition-all border ${
                     idx === currentIndex
                       ? "bg-white/15 border-construction-red text-white font-bold shadow-xs"
@@ -769,6 +770,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                         type="text"
                         required
                         placeholder="e.g. Rajesh Singhal"
+                        aria-label="Full Name"
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
@@ -783,6 +785,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                         type="text"
                         required
                         placeholder="e.g. Managing Director"
+                        aria-label="Designation or Role"
                         value={formRole}
                         onChange={(e) => setFormRole(e.target.value)}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
@@ -799,6 +802,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                       <input
                         type="text"
                         placeholder="e.g. Singhal Logistics Hub"
+                        aria-label="Company or Organization"
                         value={formCompany}
                         onChange={(e) => setFormCompany(e.target.value)}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
@@ -812,6 +816,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                       <input
                         type="text"
                         placeholder="e.g. Jaipur Logistics Hub"
+                        aria-label="Project Name"
                         value={formProject}
                         onChange={(e) => setFormProject(e.target.value)}
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors"
@@ -828,6 +833,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                       required
                       rows={3}
                       placeholder="Describe your project experience with Hindustan Projects..."
+                      aria-label="Your Review or Experience"
                       value={formText}
                       onChange={(e) => setFormText(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-construction-red transition-colors resize-none"
@@ -988,6 +994,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                             <button
                               type="button"
                               onClick={() => setImageUploadError("")}
+                              aria-label="Dismiss image error"
                               className="text-red-300 hover:text-white"
                             >
                               <X className="w-3 h-3" />
@@ -1002,6 +1009,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                           <input
                             type="url"
                             placeholder="https://example.com/photo.jpg"
+                            aria-label="Photo URL"
                             value={formImage}
                             onChange={(e) => {
                               setFormImage(e.target.value);
@@ -1013,6 +1021,7 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
                             <button
                               type="button"
                               onClick={handleRemovePhoto}
+                              aria-label="Clear photo URL"
                               className="px-2.5 py-2 bg-slate-800 border border-slate-700 text-slate-400 hover:text-red-400 text-xs"
                               title="Clear URL"
                             >

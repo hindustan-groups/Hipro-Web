@@ -201,6 +201,7 @@ function ContactFormInner({
               <input
                 id="contact-custom-service"
                 type="text"
+                aria-label="Specific custom service or work required"
                 value={customService}
                 onChange={(e) => setCustomService(e.target.value)}
                 disabled={loading}
@@ -216,6 +217,7 @@ function ContactFormInner({
         <label htmlFor="contact-message" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Project Details *</label>
         <textarea
           id="contact-message"
+          aria-label="Project Details"
           name="message" value={formData.message} onChange={handleChange} required rows={4}
           disabled={loading}
           placeholder="Specify project scope, location, timeline, and estimated plot area..."

@@ -171,21 +171,9 @@ export function MarqueeRow({
 function ShowcaseCard({ item }: { item: ImageShowcaseItem }) {
   return (
     <div
-      className="group relative shrink-0 overflow-hidden rounded-md sm:rounded-lg border border-slate-700/60 bg-slate-900/90 shadow-sm transition-all duration-300 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-950/20
+      className="group relative shrink-0 overflow-hidden rounded-md sm:rounded-lg border border-slate-700/60 bg-slate-900 shadow-sm transition-all duration-300 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-950/20
                  w-[130px] h-[85px] sm:w-[175px] sm:h-[110px] md:w-[300px] md:h-[185px] lg:w-[350px] lg:h-[215px]"
     >
-      {/* Ambient background matching image color tone to eliminate empty black bars without cropping */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <Image
-          src={item.image}
-          alt=""
-          fill
-          sizes="100px"
-          className="object-cover blur-xl opacity-25 scale-125"
-          aria-hidden="true"
-        />
-      </div>
-
       {/* Main architectural photo: full aspect ratio preserved, zero cutting or distortion */}
       <div className="relative w-full h-full p-1 sm:p-2 flex items-center justify-center">
         <Image
@@ -193,6 +181,7 @@ function ShowcaseCard({ item }: { item: ImageShowcaseItem }) {
           alt={item.alt || item.title || "HiPRO Engineering Project"}
           fill
           sizes="(max-width: 640px) 140px, (max-width: 1024px) 300px, 360px"
+          quality={70}
           className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           loading="lazy"
         />

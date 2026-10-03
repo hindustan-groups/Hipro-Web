@@ -219,6 +219,7 @@ Materials BOM: Cement ${result.materials.cementBags} bags, Steel ${result.materi
                 <input
                   type="text"
                   required
+                  aria-label="Your Full Name"
                   placeholder="e.g. Ramesh Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -237,6 +238,7 @@ Materials BOM: Cement ${result.materials.cementBags} bags, Steel ${result.materi
                   <input
                     type="tel"
                     required
+                    aria-label="WhatsApp Mobile Number"
                     maxLength={10}
                     placeholder="Enter 10-digit number"
                     value={phone}
@@ -255,6 +257,7 @@ Materials BOM: Cement ${result.materials.cementBags} bags, Steel ${result.materi
                 </label>
                 <input
                   type="text"
+                  aria-label="Plot Location or City"
                   placeholder="e.g. Bhopal Ganj, Bhilwara"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}

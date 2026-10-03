@@ -40,6 +40,7 @@ export default function CareersClient({ jobs }: CareersClientProps) {
               <div className="mt-auto pt-4 border-t border-slate-100">
                 <button 
                   onClick={() => setSelectedRole(job.title)}
+                  aria-label={`Apply for ${job.title} position`}
                   className="inline-flex items-center gap-2 text-construction-navy text-xs font-bold uppercase tracking-wider hover:text-construction-red transition-colors"
                 >
                   Apply Now <ArrowRight className="w-4 h-4" />

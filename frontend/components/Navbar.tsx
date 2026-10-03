@@ -582,6 +582,8 @@ export default function Navbar({
                               alt={link.megaMenuTitle || "Services Feature"} 
                               fill
                               sizes="400px"
+                              loading="lazy"
+                              fetchPriority="low"
                               unoptimized={!isOptimizableImage(link.megaMenuImage)}
                               className="object-cover opacity-45 group-hover/feature:scale-105 group-hover/feature:opacity-55 transition-all duration-700"
                             />

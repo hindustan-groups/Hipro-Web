@@ -21,9 +21,11 @@ import {
   UserCheck,
   Sparkles,
   HelpCircle,
+  ArrowUpRight,
 } from "lucide-react";
 import type { Project, ProjectGalleryItem, ProjectHighlight, ProjectFaq, Settings } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { cleanServiceTitle, getServiceSlug } from "@/lib/companyData";
 import ProjectGalleryLightbox, { GalleryImageItem } from "@/components/projects/ProjectGalleryLightbox";
 import { findAll } from "@/lib/db";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
@@ -244,6 +246,31 @@ function getVimeoEmbedUrl(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+const KNOWN_SERVICE_SLUGS = new Set([
+  "architecture-planning",
+  "professional-construction-services",
+  "surveying-site-measurements",
+  "interior-exterior-design",
+  "water-treatment-plant-construction",
+  "project-management-consultancy",
+]);
+
+function resolveProjectServiceSlug(svc: string): string | null {
+  if (!svc) return null;
+  const clean = cleanServiceTitle(svc);
+  const slug = getServiceSlug(clean);
+  if (KNOWN_SERVICE_SLUGS.has(slug)) return slug;
+
+  const lower = svc.toLowerCase();
+  if (lower.includes("construction") || lower.includes("civil") || lower.includes("rcc")) return "professional-construction-services";
+  if (lower.includes("architect") || lower.includes("master plan") || lower.includes("blueprint") || lower.includes("designing and planning")) return "architecture-planning";
+  if (lower.includes("survey") || lower.includes("measurement")) return "surveying-site-measurements";
+  if (lower.includes("interior") || lower.includes("elevation") || lower.includes("facade")) return "interior-exterior-design";
+  if (lower.includes("water") || lower.includes("treatment") || lower.includes("etp") || lower.includes("stp")) return "water-treatment-plant-construction";
+  if (lower.includes("management") || lower.includes("consultan") || lower.includes("pmc")) return "project-management-consultancy";
+  return null;
 }
 
 export default async function ProjectDetailPage({
@@ -636,14 +663,29 @@ export default async function ProjectDetailPage({
                   </h2>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
-                  {servicesList.map((svc, idx) => (
-                    <span
-                      key={idx}
-                      className="px-4 py-2 bg-slate-100 border border-slate-200 text-slate-800 text-xs font-mono uppercase tracking-wider hover:border-slate-400 transition-colors shadow-sm"
-                    >
-                      {svc}
-                    </span>
-                  ))}
+                  {servicesList.map((svc, idx) => {
+                    const targetSlug = resolveProjectServiceSlug(svc);
+                    if (targetSlug) {
+                      return (
+                        <Link
+                          key={idx}
+                          href={`/services/${targetSlug}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-white border border-slate-200 hover:border-construction-navy text-slate-800 hover:text-construction-navy text-xs font-mono uppercase tracking-wider transition-colors shadow-sm group"
+                        >
+                          <span>{svc}</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </Link>
+                      );
+                    }
+                    return (
+                      <span
+                        key={idx}
+                        className="px-4 py-2 bg-slate-100 border border-slate-200 text-slate-800 text-xs font-mono uppercase tracking-wider shadow-sm"
+                      >
+                        {svc}
+                      </span>
+                    );
+                  })}
                 </div>
               </section>
             )}

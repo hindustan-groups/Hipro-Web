@@ -21,7 +21,7 @@ import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Construction & Engineering Services",
+  title: "Construction & Engineering Services in Bhilwara & Rajasthan",
   description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects (HiPRO).",
   alternates: {
     canonical: "/services",
@@ -42,6 +42,49 @@ export default async function ServicesPage() {
 
   return (
     <>
+      {/* JSON-LD Structured Data for Services Collection & Breadcrumb */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "CollectionPage",
+                "@id": "https://www.hindustanprojects.in/services#webpage",
+                url: "https://www.hindustanprojects.in/services",
+                name: "Construction & Engineering Services in Bhilwara & Rajasthan | HiPRO",
+                description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects.",
+                isPartOf: {
+                  "@id": "https://www.hindustanprojects.in/#website",
+                },
+                about: {
+                  "@id": "https://www.hindustanprojects.in/#organization",
+                },
+              },
+              {
+                "@type": "BreadcrumbList",
+                "@id": "https://www.hindustanprojects.in/services#breadcrumb",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Home",
+                    item: "https://www.hindustanprojects.in",
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "Services",
+                    item: "https://www.hindustanprojects.in/services",
+                  },
+                ],
+              },
+            ],
+          }),
+        }}
+      />
+
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1 — HERO: Authoritative Engineering & Execution
           ───────────────────────────────────────────────────────────── */}

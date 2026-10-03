@@ -557,13 +557,25 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 <div className="absolute top-0 right-0 w-32 h-32 bg-construction-red/20 blur-3xl rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-700" />
                 <h4 className="text-xs font-black text-construction-red uppercase tracking-[0.2em] mb-6 relative z-10">Share Article</h4>
                 <div className="flex gap-4 relative z-10">
-                  <button className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300">
+                  <button 
+                    type="button"
+                    aria-label="Share on X (Twitter)"
+                    className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300"
+                  >
                     <Twitter className="w-4 h-4" />
                   </button>
-                  <button className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300">
+                  <button 
+                    type="button"
+                    aria-label="Share on LinkedIn"
+                    className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300"
+                  >
                     <Linkedin className="w-4 h-4" />
                   </button>
-                  <button className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300">
+                  <button 
+                    type="button"
+                    aria-label="Share on Facebook"
+                    className="w-10 h-10 bg-white/10 flex items-center justify-center hover:bg-construction-red hover:scale-110 transition-all duration-300"
+                  >
                     <Facebook className="w-4 h-4" />
                   </button>
                 </div>

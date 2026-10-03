@@ -68,6 +68,7 @@ export default function CostEstimator() {
                   <button
                     key={item.label}
                     type="button"
+                    aria-label={`Select ${item.label} (${item.sqft} sq ft)`}
                     onClick={() => setSelectedSqft(item.sqft)}
                     className={`p-2 text-center text-xs font-bold border transition-all cursor-pointer ${
                       selectedSqft === item.sqft
@@ -92,6 +93,7 @@ export default function CostEstimator() {
                   <button
                     key={fl.id}
                     type="button"
+                    aria-label={`Select ${fl.label}`}
                     onClick={() => setSelectedFloor(fl.id)}
                     className={`p-2 text-center text-xs font-bold border transition-all cursor-pointer ${
                       selectedFloor === fl.id
@@ -135,7 +137,7 @@ export default function CostEstimator() {
                     <span>{selectedSqft} sqft · {selectedFloor.toUpperCase()}</span>
                     <span className="text-emerald-400">ESTIMATE</span>
                   </div>
-                  <span className="text-white text-2xl sm:text-3xl font-extrabold tracking-tight font-display text-[#D9232A]">
+                  <span className="text-2xl sm:text-3xl font-extrabold tracking-tight font-display text-[#D9232A]">
                     {teaserEstimate}
                   </span>
                 </div>

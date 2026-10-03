@@ -75,22 +75,62 @@ export default function CostEstimatorPage() {
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
       
-      {/* JSON-LD Structured Data for FAQ & SoftwareApplication */}
+      {/* JSON-LD Structured Data for FAQ, BreadcrumbList & WebApplication */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebApplication",
-            name: "Hindustan Projects House Construction Cost Estimator",
-            applicationCategory: "RealEstateApplication",
-            operatingSystem: "All",
-            offers: {
-              "@type": "Offer",
-              price: "0",
-              priceCurrency: "INR",
-            },
-            description: "Free interactive house construction cost estimator for Bhilwara, Jaipur, Udaipur and Rajasthan. Calculate package-wise BOQ estimates instantly.",
+            "@graph": [
+              {
+                "@type": "WebApplication",
+                "@id": "https://www.hindustanprojects.in/cost-estimator#app",
+                name: "Hindustan Projects House Construction Cost Estimator",
+                url: "https://www.hindustanprojects.in/cost-estimator",
+                applicationCategory: "RealEstateApplication",
+                operatingSystem: "All",
+                provider: {
+                  "@id": "https://www.hindustanprojects.in/#organization",
+                },
+                offers: {
+                  "@type": "Offer",
+                  price: "0",
+                  priceCurrency: "INR",
+                },
+                description:
+                  "Interactive house construction cost calculator for Bhilwara and Rajasthan. Calculate package-wise BOQ estimates and material breakdowns by Hindustan Projects.",
+              },
+              {
+                "@type": "BreadcrumbList",
+                "@id": "https://www.hindustanprojects.in/cost-estimator#breadcrumb",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Home",
+                    item: "https://www.hindustanprojects.in",
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: "Cost Estimator",
+                    item: "https://www.hindustanprojects.in/cost-estimator",
+                  },
+                ],
+              },
+              {
+                "@type": "FAQPage",
+                "@id": "https://www.hindustanprojects.in/cost-estimator#faq",
+                mainEntity: FAQ_ITEMS.map((faq) => ({
+                  "@type": "Question",
+                  name: faq.q,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.a,
+                  },
+                })),
+              },
+            ],
           }),
         }}
       />

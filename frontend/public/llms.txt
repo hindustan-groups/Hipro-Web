@@ -1,31 +1,28 @@
 # Hindustan Projects (HiPRO)
 > Engineering, Turnkey Construction, and Infrastructure firm based in Bhilwara, Rajasthan, India. Founded in 2019.
 
-## Overview
 Hindustan Projects (HiPRO) is an engineering, civil construction, and infrastructure firm headquartered in Bhilwara, Rajasthan. Established in 2019 under the leadership of Founder & Director Yogesh Kharol, the firm delivers architectural planning, disciplined turnkey civil execution, precision surveying, interior design, industrial water treatment plant construction, and project management consultancy.
 
-## Leadership & Organization
-- Brand Name: Hindustan Projects (HiPRO)
-- Legal Name: Hindustan Projects
-- Founder: Yogesh Kharol — Founder & Director
-- Founded: 2019
-- Headquarters: Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India
+## Core Services
+- [Professional Construction Services](https://www.hindustanprojects.in/services/professional-construction-services): Turnkey residential, commercial, and industrial civil construction with disciplined quality control and milestone execution in Bhilwara and across Rajasthan.
+- [Architecture & Planning](https://www.hindustanprojects.in/services/architecture-planning): Master planning, 2D/3D architectural drafting, elevation design, structural drawings, and municipal sanction coordination.
+- [Surveying & Site Measurements](https://www.hindustanprojects.in/services/surveying-site-measurements): Topographical surveys, boundary demarcation, contour mapping, and digital site measurements using Total Station and modern surveying instruments.
+- [Interior & Exterior Design](https://www.hindustanprojects.in/services/interior-exterior-design): Spatial planning, bespoke residential and commercial interior fit-outs, material curation, and facade design.
+- [Water Treatment Plant Construction](https://www.hindustanprojects.in/services/water-treatment-plant-construction): Civil construction and engineering for industrial Effluent Treatment Plants (ETP), Sewage Treatment Plants (STP), and water treatment infrastructure.
+- [Project Management & Consultancy](https://www.hindustanprojects.in/services/project-management-consultancy): Site supervision, project scheduling, quality auditing, contractor coordination, and construction consultancy.
 
-## Canonical Practice Areas & Services
-- Architecture & Planning: Master planning, 2D/3D architectural drafting, elevation design, structural drawings, and municipal sanction coordination.
-- Professional Construction Services: Turnkey residential, commercial, and industrial civil construction with disciplined quality control and milestone execution.
-- Surveying & Site Measurements: Topographical surveys, boundary demarcation, contour mapping, and digital site measurements using Total Station and modern surveying instruments.
-- Interior & Exterior Design: Spatial planning, bespoke residential and commercial interior fit-outs, material curation, and facade design.
-- Water Treatment Plant Construction: Civil construction and engineering for industrial Effluent Treatment Plants (ETP), Sewage Treatment Plants (STP), and water treatment infrastructure.
-- Project Management & Consultancy: Site supervision, project scheduling, quality auditing, contractor coordination, and construction consultancy.
+## Key Portals & Tools
+- [House Construction Cost Estimator](https://www.hindustanprojects.in/cost-estimator): Free interactive construction cost calculator providing package-based BOQ estimates for residential construction in Rajasthan.
+- [Project Portfolio](https://www.hindustanprojects.in/projects): Verified turnkey residential, commercial, institutional, and industrial engineering projects.
+- [Engineering Insights & Knowledge Base](https://www.hindustanprojects.in/blogs): Practical engineering and construction guides covering construction costs, architectural planning, and bylaws in Rajasthan.
 
-## Tools & Resources
-- Instant Cost Estimator: Free interactive construction cost estimator providing package-based estimates for residential construction in Rajasthan (https://www.hindustanprojects.in/cost-estimator).
-- Insights & Knowledge Base: Practical engineering and construction guides covering construction costs, architectural planning, and local bylaws in Rajasthan (https://www.hindustanprojects.in/blogs).
+## Company Details
+- [About Hindustan Projects](https://www.hindustanprojects.in/about): Background, 8+ years history, leadership by Founder & Director Yogesh Kharol, and company philosophy.
+- [Why Choose HiPRO](https://www.hindustanprojects.in/why-us): Engineering pillars, quality assurance standards, on-time delivery guarantees, and client trust.
+- [Contact Office](https://www.hindustanprojects.in/contact): Head office location at Opposite Mukherji Park, Bhopal Ganj, Bhilwara, phone (+91 75970 00601), and email (info@hindustanprojects.in).
+- [Careers](https://www.hindustanprojects.in/careers): Engineering, site supervision, drafting, and project management career opportunities.
 
-## Contact Information
-- Website: https://www.hindustanprojects.in/
-- Email: info@hindustanprojects.in
-- Phone: +91 75970 00601
-- WhatsApp: +91 75970 00601
-- Address: Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India
+## Optional
+- [Privacy Policy](https://www.hindustanprojects.in/privacy-policy): Privacy practices and data handling policies.
+- [Terms of Service](https://www.hindustanprojects.in/terms): Website terms, service agreements, and conditions.
+- [Cookie Policy](https://www.hindustanprojects.in/cookie-policy): Cookie and local storage usage policy.

@@ -100,6 +100,11 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
     initialStats && initialStats.length > 0 ? initialStats : defaultStats
   );
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Dynamic CMS CTA Resolution
   const ctaPrimary = resolveCTA(settings, "home_hero_primary");
@@ -238,7 +243,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
       
       {/* Background Images Slider */}
       <div className="absolute inset-0 z-0 bg-slate-950">
-        {activeSlideList.map((slide, idx) => {
+        {(mounted ? activeSlideList : activeSlideList.slice(0, 1)).map((slide, idx) => {
           const validImg = slide.image && slide.image.trim() !== "" 
             ? slide.image 
             : fallbackHeroImages[idx % fallbackHeroImages.length];
@@ -255,7 +260,8 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                 alt={slide.title || "Construction Project"}
                 priority={idx === 0}
                 fill
-                sizes="100vw"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                quality={75}
                 unoptimized={!isOptimizableImage(validImg)}
                 className={`object-cover object-center transition-transform duration-[10000ms] ${
                   idx === currentSlide ? "scale-105" : "scale-100"
@@ -383,6 +389,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                     <input 
                       type="text" 
                       placeholder="Full Name *" 
+                      aria-label="Full Name"
                       value={quoteForm.name}
                       onChange={(e) => setQuoteForm((prev) => ({ ...prev, name: e.target.value }))}
                       className="w-full bg-white/5 border border-white/10 text-white px-5 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
@@ -395,6 +402,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                       <input 
                         type="email" 
                         placeholder="Email Address *" 
+                        aria-label="Email Address"
                         value={quoteForm.email}
                         onChange={(e) => setQuoteForm((prev) => ({ ...prev, email: e.target.value }))}
                         className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
@@ -405,6 +413,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                       <input 
                         type="tel" 
                         placeholder="Phone Number" 
+                        aria-label="Phone Number"
                         value={quoteForm.phone}
                         onChange={(e) => setQuoteForm((prev) => ({ ...prev, phone: e.target.value }))}
                         className="w-full bg-white/5 border border-white/10 text-white px-4 py-3 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl placeholder:text-slate-500" 
@@ -415,6 +424,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                   <div className="relative">
                     <select 
                       value={quoteForm.service}
+                      aria-label="Select Construction or Planning Service"
                       onChange={(e) => setQuoteForm((prev) => ({ ...prev, service: e.target.value }))}
                       className="w-full bg-white/5 border border-white/10 text-slate-200 px-5 py-3 pr-10 text-[14px] focus:outline-none focus:border-construction-red focus:bg-white/10 transition-colors rounded-xl appearance-none cursor-pointer"
                       required
@@ -438,6 +448,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                       <textarea
                         rows={3}
                         placeholder="Please describe your specific requirement or project inquiry..."
+                        aria-label="Specific Project Requirement"
                         value={quoteForm.customInquiry}
                         onChange={(e) => setQuoteForm((prev) => ({ ...prev, customInquiry: e.target.value }))}
                         className="w-full bg-white/10 border-2 border-construction-red text-white px-4 py-2.5 text-[14px] focus:outline-none focus:ring-2 focus:ring-construction-red/40 rounded-xl placeholder:text-slate-400 resize-none transition-all shadow-[0_0_15px_rgba(220,38,38,0.25)]"

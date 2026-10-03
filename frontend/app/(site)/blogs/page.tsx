@@ -6,6 +6,7 @@ import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 import BlogsHero from "@/components/BlogsHero";
 import PublicBlogGrid from "@/components/PublicBlogGrid";
 import { Metadata } from "next";
+import { COMPANY_INFO } from "@/lib/companyData";
 
 export const revalidate = 60;
 
@@ -54,6 +55,8 @@ export default async function BlogsPage({
     findAll<Settings>("settings"),
   ]);
   const settings = allSettings[0] || {};
+  const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
+  const phoneTel = `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/[^0-9+]/g, "")}`;
   const primaryCta = resolveCTA(settings, "blogs_cta_primary");
   const secondaryCta = resolveCTA(settings, "blogs_cta_secondary");
 
@@ -216,11 +219,11 @@ export default async function BlogsPage({
               </Link>
             )}
             <a
-              href="tel:7597000601"
+              href={phoneTel}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold px-8 py-4 text-xs uppercase tracking-wider transition-all shadow-xs text-center"
             >
               <Phone className="w-3.5 h-3.5 text-construction-navy" />
-              <span>Call +91 75970 00601</span>
+              <span>Call {phone}</span>
             </a>
           </div>
         </div>

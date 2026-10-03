@@ -92,8 +92,11 @@ export function getInternalLinks(post: Partial<BlogPost> | null | undefined): In
         url = '/' + url;
       }
 
-      // Clean trailing arrows from labels if user typed them in CMS (arrow is handled by UI icon)
-      const cleanLabel = label.replace(/\s*(?:→|->|›|>)\s*$/, '').trim();
+      // Clean trailing arrows and accidental CMS prefixes from labels
+      const cleanLabel = label
+        .replace(/^(?:body[\.:]\s*)+/i, '')
+        .replace(/\s*(?:→|->|›|>)\s*$/, '')
+        .trim();
 
       return {
         label: cleanLabel || label,

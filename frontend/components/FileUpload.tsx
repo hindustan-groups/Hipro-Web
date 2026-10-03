@@ -54,6 +54,7 @@ export default function FileUpload({ value, onChange, label = "Resume / CV Docum
             onClick={() => onChange("")}
             className="absolute top-1/2 -translate-y-1/2 right-4 w-8 h-8 bg-slate-200 hover:bg-red-100 text-slate-600 hover:text-red-600 rounded-none flex items-center justify-center transition-colors"
             title="Remove file"
+            aria-label="Remove file"
           >
             <X className="w-4 h-4" />
           </button>
@@ -71,6 +72,7 @@ export default function FileUpload({ value, onChange, label = "Resume / CV Docum
             <input
               type="url"
               placeholder="Paste link to your CV (Google Drive, Dropbox, OneDrive, etc.)"
+              aria-label="Paste link to your CV"
               value={urlInput}
               onChange={(e) => {
                 setUrlInput(e.target.value);

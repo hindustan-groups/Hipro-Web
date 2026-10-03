@@ -117,6 +117,7 @@ export default function PhoneCaptureModal({
             </label>
             <input
               type="tel"
+              aria-label="Phone Number"
               value={phone}
               onChange={(e) => {
                 setPhone(e.target.value.replace(/\D/g, ''));

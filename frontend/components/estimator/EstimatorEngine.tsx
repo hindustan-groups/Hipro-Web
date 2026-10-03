@@ -320,6 +320,7 @@ export default function EstimatorEngine({
                 <div className="flex items-center border border-slate-300 bg-white">
                   <input
                     type="number"
+                    aria-label="Custom Plot Area"
                     min={unit === "gaj" ? 30 : 250}
                     max={unit === "gaj" ? 2200 : 20000}
                     value={displayAreaValue}
@@ -339,6 +340,7 @@ export default function EstimatorEngine({
               {/* Slider */}
               <input
                 type="range"
+                aria-label="Adjust Plot Area Slider"
                 min={unit === "gaj" ? 50 : 450}
                 max={unit === "gaj" ? 1000 : 9000}
                 step={unit === "gaj" ? 5 : 50}

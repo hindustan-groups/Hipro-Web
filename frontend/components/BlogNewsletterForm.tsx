@@ -69,6 +69,7 @@ export default function BlogNewsletterForm() {
       <input
         type="email"
         placeholder="Email Address"
+        aria-label="Email Address"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         disabled={loading}

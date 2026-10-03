@@ -110,6 +110,7 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
                 <input
                   type="text"
                   required
+                  aria-label="Full Name"
                   className="w-full border border-slate-200 p-3 text-sm focus:border-construction-navy focus:ring-1 focus:ring-construction-navy outline-none bg-slate-50"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -122,6 +123,7 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
                   <input
                     type="email"
                     required
+                    aria-label="Email Address"
                     className="w-full border border-slate-200 p-3 text-sm focus:border-construction-navy focus:ring-1 focus:ring-construction-navy outline-none bg-slate-50"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -132,6 +134,7 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
                   <input
                     type="tel"
                     required
+                    aria-label="Phone Number"
                     className="w-full border border-slate-200 p-3 text-sm focus:border-construction-navy focus:ring-1 focus:ring-construction-navy outline-none bg-slate-50"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -144,6 +147,7 @@ export default function JobApplicationModal({ isOpen, onClose, roleTitle }: JobA
                 <input
                   type="text"
                   required
+                  aria-label="Years of Experience"
                   placeholder="e.g. 5 Years"
                   className="w-full border border-slate-200 p-3 text-sm focus:border-construction-navy focus:ring-1 focus:ring-construction-navy outline-none bg-slate-50"
                   value={formData.experience}

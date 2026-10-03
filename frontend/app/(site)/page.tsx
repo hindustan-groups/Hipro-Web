@@ -1,16 +1,18 @@
+import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import HomeAbout from "@/components/HomeAbout";
 import Guarantees from "@/components/Guarantees";
-import CostEstimator from "@/components/CostEstimator";
 import Services from "@/components/Services";
 import Projects from "@/components/Projects";
-import WhyUs from "@/components/WhyUs";
-import Testimonials from "@/components/Testimonials";
-import GroupEcosystem from "@/components/GroupEcosystem";
-import CTASection from "@/components/CTASection";
 import Blogs from "@/components/Blogs";
-import HomeImageShowcase from "@/components/HomeImageShowcase";
+import CTASection from "@/components/CTASection";
 import AnimateIn from "@/components/AnimateIn";
+
+// Code-split heavy below-the-fold client components while preserving full SSR for SEO
+const CostEstimator = dynamic(() => import("@/components/CostEstimator"), { ssr: true });
+const HomeImageShowcase = dynamic(() => import("@/components/HomeImageShowcase"), { ssr: true });
+const GroupEcosystem = dynamic(() => import("@/components/GroupEcosystem"), { ssr: true });
+const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: true });
 import { findAll, findLimited } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
 
@@ -83,8 +85,40 @@ export default async function Home() {
   const projectStat = statsdata.find((s) => /project/i.test(s.label));
   const projectCount = projectStat?.value || "150+";
 
+  const homeJsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://www.hindustanprojects.in/#webpage",
+      url: "https://www.hindustanprojects.in/",
+      name: "Hindustan Projects (HiPRO) | Engineering, Construction & Infrastructure in Bhilwara",
+      description: "Hindustan Projects (HiPRO) is an engineering, turnkey construction, and infrastructure firm based in Bhilwara, Rajasthan, delivering residential, commercial, and industrial developments.",
+      isPartOf: {
+        "@id": "https://www.hindustanprojects.in/#website",
+      },
+      about: {
+        "@id": "https://www.hindustanprojects.in/#organization",
+      },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://www.hindustanprojects.in/",
+          },
+        ],
+      },
+    },
+  ];
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
+      />
       <Hero initialSlides={slidedata} initialStats={statsdata} settings={settings} />
       <AnimateIn><HomeAbout pageContent={pageContent} projectCount={projectCount} settings={settings} /></AnimateIn>
       <AnimateIn><Services services={servicesData} settings={settings} /></AnimateIn>
@@ -99,3 +133,4 @@ export default async function Home() {
     </>
   );
 }
+

@@ -232,6 +232,7 @@ export default function PublicBlogGrid({
                   onClick={() => handleSelectCategory("")}
                   className="hover:text-construction-red cursor-pointer"
                   title="Remove category filter"
+                  aria-label="Remove category filter"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -244,6 +245,7 @@ export default function PublicBlogGrid({
                   onClick={() => setSearchQuery("")}
                   className="hover:text-construction-red cursor-pointer"
                   title="Remove search query"
+                  aria-label="Remove search query"
                 >
                   <X className="w-3 h-3" />
                 </button>

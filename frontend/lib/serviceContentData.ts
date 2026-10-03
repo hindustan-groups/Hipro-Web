@@ -191,14 +191,14 @@ export const SERVICE_CONTENT_MAP: Record<string, ServiceDetailContent> = {
     canonicalSlug: "professional-construction-services",
     aliases: ["professional-construction-services", "construction"],
     serviceTitle: "Professional Construction Services",
-    badge: "Turnkey Civil Construction",
-    tagline: "Turnkey Civil Execution, Heavy Structural RCC & Quality-Controlled Building",
-    metaTitle: "Turnkey Construction Services in Bhilwara & Rajasthan | Hindustan Projects",
-    metaDescription: "Professional civil construction services, heavy RCC structural works, and turnkey commercial and residential execution in Bhilwara and across Rajasthan.",
-    overviewHeading: "Engineered Construction Delivering Enduring Structural Integrity",
+    badge: "Civil Contractor & Turnkey Construction",
+    tagline: "Turnkey Civil Execution, Heavy Structural RCC & Industrial Building in Bhilwara",
+    metaTitle: "Construction Company & Civil Contractor in Bhilwara | Hindustan Projects",
+    metaDescription: "Hindustan Projects is a trusted construction company, civil contractor, and turnkey building contractor in Bhilwara, delivering residential, commercial, and industrial construction across Rajasthan.",
+    overviewHeading: "Civil Contracting & Turnkey Construction Grounded in Engineering Rigor",
     overviewParagraphs: [
-      "Hindustan Projects provides turnkey civil construction services across Bhilwara and Rajasthan, delivering residential villas, commercial complexes, and industrial infrastructure built to endure. Backed by 8+ years of engineering experience and over 150 completed projects, our construction division combines structured milestone management with rigorous on-site trade supervision.",
-      "From deep foundation excavation and reinforced cement concrete (RCC) framework to precision masonry, plastering, and weather-resistant finishes, we execute the entire civil construction lifecycle under unified accountability. We eliminate contractor fragmentation, keeping your project strictly on schedule and within verified financial parameters."
+      "Hindustan Projects provides end-to-end civil contracting and turnkey building construction across Bhilwara and the wider Rajasthan region. Backed by 8+ years of engineering experience and over 150 completed projects, our construction division combines structured milestone management with rigorous on-site trade supervision.",
+      "As a turnkey building contractor and civil contractor in Bhilwara, we manage the complete construction lifecycle—from soil assessment and deep RCC foundation casting to precision brick masonry, concealed MEP utilities, protective plastering, and architectural finishes. Whether constructing independent residential homes, commercial complexes, or industrial factory sheds along the Guwardi, Hamirgarh, and Chittorgarh Road industrial corridors, we eliminate contractor fragmentation and deliver with single-point accountability."
     ],
     detailedCapabilities: [
       {
@@ -233,15 +233,15 @@ export const SERVICE_CONTENT_MAP: Record<string, ServiceDetailContent> = {
     applications: [
       {
         title: "Turnkey Residential Homes & Villas",
-        description: "Single and multi-floor residences engineered with robust foundation depth, moisture-resistant masonry, and premium architectural finishing."
+        description: "Single and multi-floor residences engineered with robust foundation depth, moisture-resistant masonry, and premium architectural finishing across Bhilwara residential localities."
       },
       {
         title: "Commercial & Institutional Complexes",
         description: "Multi-story retail hubs, office complexes, and educational buildings designed for high footfall durability and safety compliance."
       },
       {
-        title: "Industrial Facilities & Compounds",
-        description: "Heavy equipment foundations, factory sheds, reinforced concrete shop floors, and secure perimeter infrastructure."
+        title: "Industrial Construction & PEB Facilities",
+        description: "Heavy machinery foundations, industrial warehouse sheds, pre-engineered building (PEB) plinths, reinforced concrete shop floors, and secure industrial compounds across Bhilwara's manufacturing corridors."
       }
     ],
     stagesHeading: "Sequential Construction Stages",
@@ -318,6 +318,18 @@ export const SERVICE_CONTENT_MAP: Record<string, ServiceDetailContent> = {
       {
         question: "Are the package rates on the Cost Estimator fixed for every project?",
         answer: "Rates shown on our Cost Estimator (₹1,680–₹2,270/sqft) are indicative planning benchmarks for residential builds. An accurate, binding project estimate is prepared after reviewing your architectural drawings, soil conditions, and specific material selections."
+      },
+      {
+        question: "What is the difference between hiring a civil contractor and a turnkey construction company in Bhilwara?",
+        answer: "In Bhilwara, local contractors often operate under fragmented labor-only contracts where the client bears all risks of material purchasing, transport delays, and trade disputes. Hindustan Projects acts as an engineering-driven turnkey contractor—taking complete responsibility for architectural coordination, tested raw material procurement, structural RCC safety, continuous on-site supervision, and milestone-linked billing."
+      },
+      {
+        question: "Does Hindustan Projects handle industrial and commercial construction in Bhilwara?",
+        answer: "Yes. In addition to residential homes, HiPRO executes commercial complexes, educational facilities, and industrial construction projects—including heavy machinery foundations, factory PEB sheds, reinforced concrete shop floors, and compound infrastructure across Bhilwara's industrial corridors such as Guwardi, Hamirgarh, and the Chittorgarh highway belt."
+      },
+      {
+        question: "How do local soil and climate conditions in Bhilwara affect foundation construction?",
+        answer: "Bhilwara district features varied geology, ranging from hard rock strata to expansive black cotton soils in surrounding agricultural basins. Our civil engineers calculate footing depths and reinforcement layouts based on site-specific strata, preventing plinth cracking, seasonal moisture movement, and foundation settlement."
       },
       {
         question: "Can HiPRO build on a plot if blueprints were drawn by an independent architect?",
