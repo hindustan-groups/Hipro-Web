@@ -1,10 +1,8 @@
 import { cookies } from "next/headers";
 
 let rawUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
-if (rawUrl.includes("hipro-web-1.onrender.com") || rawUrl.includes("127.0.0.1:5000") || rawUrl.includes("localhost:5000")) {
-  if (process.env.NODE_ENV === "production" || rawUrl.includes("hipro-web-1.onrender.com")) {
-    rawUrl = "https://hipro-backend-749v.onrender.com";
-  }
+if (rawUrl.includes("hipro-web-1.onrender.com")) {
+  rawUrl = "https://hipro-backend-749v.onrender.com";
 }
 if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
   rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
