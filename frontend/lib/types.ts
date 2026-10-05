@@ -522,3 +522,103 @@ export interface AboutPageContent {
   twitterDescription?: string;
   twitterImage?: string;
 }
+
+export interface HbsContent {
+  id?: string;
+  brandName: string;
+  logo?: string | null;
+  tagline?: string | null;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  address: string;
+  businessHours?: string | null;
+  socialLinks?: string | null;
+  ctaSettings?: string | null;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  heroImage?: string | null;
+  heroCtas?: string | null;
+  whyChooseUs?: string | null;
+  stats?: string | null;
+  homeFinalCta?: string | null;
+  aboutStory?: string | null;
+  mission?: string | null;
+  vision?: string | null;
+  team?: string | null;
+  whyChoosePoints?: string | null;
+  aboutImages?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
+  twitterImage?: string | null;
+  jsonLd?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface HbsService {
+  id?: string;
+  serviceNumber?: string | null;
+  title: string;
+  hindiTitle?: string | null;
+  slug: string;
+  shortDescription?: string | null;
+  fullDescription?: string | null;
+  image?: string | null;
+  icon?: string | null;
+  features?: string | string[] | null;
+  active?: boolean;
+  order?: number;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface HbsProject {
+  id?: string;
+  slug?: string | null;
+  title: string;
+  location?: string | null;
+  serviceCategory?: string | null;
+  description?: string | null;
+  images?: string | string[] | null;
+  beforeAfterImages?: string | Array<{ before: string; after: string; title?: string }> | null;
+  date?: string | null;
+  status?: string;
+  active?: boolean;
+  order?: number;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface HbsTestimonial {
+  id?: string;
+  name: string;
+  designation?: string | null;
+  content: string;
+  image?: string | null;
+  rating?: number;
+  active?: boolean;
+  order?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface HbsLead {
+  id?: string;
+  name: string;
+  phone: string;
+  email?: string | null;
+  selectedService?: string | null;
+  message?: string | null;
+  source?: string;
+  status?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
