@@ -3,6 +3,7 @@ import { prisma } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
 import { contactLimiter } from "../middleware/rateLimiter";
 import { getSessionUser } from "../lib/auth";
+import { seedHbsServicesIfEmpty, seedHbsServicesAlways } from "../lib/hbsSeedData";
 import type { HbsContent, HbsService, HbsProject, HbsTestimonial, HbsLead, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -59,9 +60,27 @@ router.patch("/content", authGuard, async (req: Request, res: Response) => {
 // 2. HBS SERVICES
 // ==================================================
 
+// POST /api/hbs/seed — Manual Idempotent Seed Trigger
+router.post("/seed", async (req: Request, res: Response) => {
+  try {
+    const totalCount = await seedHbsServicesAlways(prisma);
+    return res.json({
+      success: true,
+      message: `Successfully seeded/updated all ${totalCount} HBS services`,
+      count: totalCount,
+    });
+  } catch (err) {
+    console.error("[/api/hbs/seed POST]", err);
+    return res.status(500).json({ success: false, error: "Failed to seed HBS services" });
+  }
+});
+
 // GET /api/hbs/services — Public / Admin
 router.get("/services", async (req: Request, res: Response) => {
   try {
+    // If services table is empty, idempotently auto-seed the 19 default services
+    await seedHbsServicesIfEmpty(prisma);
+
     const includeAll = req.query.all === "true";
     if (includeAll) {
       const user = await getSessionUser(req);
