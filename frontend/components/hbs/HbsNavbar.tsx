@@ -129,7 +129,7 @@ export default function HbsNavbar({ content }: HbsNavbarProps) {
           {/* Desktop Right CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/hbs/contact"
+              href={`${prefix}/contact`}
               className="inline-flex items-center gap-2 bg-slate-900 hover:bg-amber-600 text-white text-xs uppercase tracking-wider font-bold px-4 py-2.5 rounded-none shadow-xs transition-colors group"
             >
               <Wrench className="w-3.5 h-3.5 text-amber-400 group-hover:text-white transition-colors" />
@@ -181,7 +181,7 @@ export default function HbsNavbar({ content }: HbsNavbarProps) {
 
           <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
             <Link
-              href="/hbs/contact"
+              href={`${prefix}/contact`}
               className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider py-3 shadow-xs"
             >
               <Wrench className="w-4 h-4" />

@@ -32,8 +32,9 @@ export default function HbsAdminHome() {
         setContent(json.data);
 
         try {
-          if (json.data.whyChoosePoints) {
-            setWhyChoose(JSON.parse(json.data.whyChoosePoints));
+          // whyChooseUs is the canonical field read by the public homepage
+          if (json.data.whyChooseUs) {
+            setWhyChoose(JSON.parse(json.data.whyChooseUs));
           }
         } catch {
           setWhyChoose([]);
@@ -101,6 +102,10 @@ export default function HbsAdminHome() {
 
     const payload = {
       ...content,
+      // Write to whyChooseUs — the canonical field read by the public homepage.
+      // NOTE: whyChoosePoints is kept in sync as a legacy alias to avoid orphaning
+      // any admin pages that may still reference it.
+      whyChooseUs: JSON.stringify(whyChoose),
       whyChoosePoints: JSON.stringify(whyChoose),
       stats: JSON.stringify(stats),
     };
