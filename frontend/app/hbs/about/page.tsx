@@ -7,6 +7,9 @@ export const revalidate = 60;
 export default async function HbsAboutPage() {
   const content = await fetchHbsContent();
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+
   let teamItems = [];
   try {
     if (content.team) teamItems = JSON.parse(content.team);
@@ -135,7 +138,7 @@ export default async function HbsAboutPage() {
             </p>
           </div>
           <Link
-            href="/hbs/contact"
+            href={`${prefix}/contact`}
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shrink-0 transition-colors"
           >
             <Wrench className="w-4 h-4 text-slate-950" />

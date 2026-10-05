@@ -30,6 +30,9 @@ export default async function HbsHomePage() {
   const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
   const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+
   // Parse JSON configs safely
   let whyChooseItems = [];
   try {
@@ -85,7 +88,7 @@ export default async function HbsHomePage() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
               <Link
-                href="/hbs/contact"
+                href={`${prefix}/contact`}
                 className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider shadow-lg transition-all"
               >
                 <Wrench className="w-4 h-4 text-slate-950" />
@@ -93,7 +96,7 @@ export default async function HbsHomePage() {
               </Link>
 
               <Link
-                href="/hbs/services"
+                href={`${prefix}/services`}
                 className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider font-bold transition-all"
               >
                 <span>Explore All 19 Services</span>
@@ -137,7 +140,7 @@ export default async function HbsHomePage() {
           </div>
 
           <Link
-            href="/hbs/services"
+            href={`${prefix}/services`}
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 hover:text-amber-800 shrink-0"
           >
             <span>Detailed Breakdown</span>
@@ -202,7 +205,7 @@ export default async function HbsHomePage() {
                 {/* Bottom CTA */}
                 <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <Link
-                    href={`/hbs/contact?service=${encodeURIComponent(service.title)}`}
+                    href={`${prefix}/contact?service=${encodeURIComponent(service.title)}`}
                     className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-900 group-hover:text-amber-600 transition-colors"
                   >
                     <span>Get Free Estimate</span>
@@ -339,7 +342,7 @@ export default async function HbsHomePage() {
               </h2>
             </div>
             <Link
-              href="/hbs/projects"
+              href={`${prefix}/projects`}
               className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 hover:text-amber-800"
             >
               <span>View All Projects</span>
@@ -418,7 +421,7 @@ export default async function HbsHomePage() {
 
           <div className="flex flex-col sm:flex-row items-stretch gap-3 shrink-0 w-full sm:w-auto">
             <Link
-              href="/hbs/contact"
+              href={`${prefix}/contact`}
               className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs uppercase tracking-wider shadow-md transition-colors"
             >
               <Wrench className="w-4 h-4 text-slate-950" />

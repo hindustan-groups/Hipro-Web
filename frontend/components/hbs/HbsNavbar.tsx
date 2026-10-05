@@ -28,12 +28,16 @@ export default function HbsNavbar({ content }: HbsNavbarProps) {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+  const homeHref = prefix || "/";
+
   const navLinks = [
-    { label: "Home", href: "/hbs" },
-    { label: "About", href: "/hbs/about" },
-    { label: "19 Services", href: "/hbs/services" },
-    { label: "Our Work", href: "/hbs/projects" },
-    { label: "Contact / Quote", href: "/hbs/contact" },
+    { label: "Home", href: homeHref },
+    { label: "About", href: `${prefix}/about` },
+    { label: "19 Services", href: `${prefix}/services` },
+    { label: "Our Work", href: `${prefix}/projects` },
+    { label: "Contact / Quote", href: `${prefix}/contact` },
   ];
 
   const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
@@ -80,7 +84,7 @@ export default function HbsNavbar({ content }: HbsNavbarProps) {
       <div className={`transition-all duration-200 border-b border-slate-100 ${scrolled ? "py-2.5 bg-white/95 backdrop-blur-md" : "py-3.5 bg-white"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           {/* Brand Logo */}
-          <Link href="/hbs" className="flex items-center gap-3 group">
+          <Link href={homeHref} className="flex items-center gap-3 group">
             <div className="w-10 h-10 sm:w-11 sm:h-11 bg-slate-900 border-2 border-amber-500 flex items-center justify-center text-white font-black text-base shadow-xs group-hover:bg-slate-800 transition-colors">
               <span className="tracking-tighter text-amber-400">HBS</span>
             </div>

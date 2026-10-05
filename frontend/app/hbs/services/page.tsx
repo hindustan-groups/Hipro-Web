@@ -10,6 +10,9 @@ export default async function HbsServicesPage() {
     fetchHbsContent(),
   ]);
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+
   const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
 
   return (
@@ -94,7 +97,7 @@ export default async function HbsServicesPage() {
                   {/* Right Column: Actions */}
                   <div className="lg:w-64 flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-6 border-slate-100 justify-center">
                     <Link
-                      href={`/hbs/contact?service=${encodeURIComponent(service.title)}`}
+                      href={`${prefix}/contact?service=${encodeURIComponent(service.title)}`}
                       className="w-full inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider py-3 shadow-xs transition-colors"
                     >
                       <Wrench className="w-4 h-4 text-white" />
@@ -130,7 +133,7 @@ export default async function HbsServicesPage() {
             </p>
           </div>
           <Link
-            href="/hbs/contact"
+            href={`${prefix}/contact`}
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shrink-0 transition-colors"
           >
             <span>Consult an HBS Supervisor</span>

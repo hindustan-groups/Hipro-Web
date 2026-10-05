@@ -10,6 +10,9 @@ export default async function HbsProjectsPage() {
     fetchHbsContent(),
   ]);
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+
   return (
     <div className="space-y-12 sm:space-y-16 py-12">
       {/* Header Banner */}
@@ -39,7 +42,7 @@ export default async function HbsProjectsPage() {
               Our recent repair case studies and before/after photo documentation are currently being uploaded by our site supervisors.
             </p>
             <Link
-              href="/hbs/contact"
+              href={`${prefix}/contact`}
               className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-2.5 text-xs uppercase tracking-wider transition-colors"
             >
               <span>Request Inspection For Your Site</span>
@@ -92,7 +95,7 @@ export default async function HbsProjectsPage() {
                       {project.date || "Verified Case"}
                     </span>
                     <Link
-                      href={`/hbs/contact?project=${encodeURIComponent(project.title)}`}
+                      href={`${prefix}/contact?project=${encodeURIComponent(project.title)}`}
                       className="font-bold text-amber-700 hover:text-amber-800 uppercase tracking-wider text-[11px]"
                     >
                       Inquire Similar Work →
@@ -117,7 +120,7 @@ export default async function HbsProjectsPage() {
             </p>
           </div>
           <Link
-            href="/hbs/contact"
+            href={`${prefix}/contact`}
             className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shrink-0 transition-colors"
           >
             <span>Book Engineering Inspection</span>

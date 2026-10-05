@@ -11,6 +11,10 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
   const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
   const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+  const homeHref = prefix || "/";
+
   // Display top 12 services in footer or slice
   const displayedServices = services.length > 0 ? services.slice(0, 12) : [
     { title: "Structure Repair", slug: "structure-repair" },
@@ -76,7 +80,7 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
               {displayedServices.map((s) => (
                 <li key={s.slug}>
                   <Link
-                    href={`/hbs/services#${s.slug}`}
+                    href={`${prefix}/services#${s.slug}`}
                     className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-1.5 group"
                   >
                     <span className="text-[10px] text-amber-500 opacity-60 group-hover:opacity-100">›</span>
@@ -86,7 +90,7 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
               ))}
               <li className="pt-1">
                 <Link
-                  href="/hbs/services"
+                  href={`${prefix}/services`}
                   className="text-amber-400 font-bold hover:underline inline-flex items-center gap-1 text-[11px] uppercase tracking-wider"
                 >
                   <span>View All 19 Services</span>
@@ -103,27 +107,27 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/hbs" className="text-slate-400 hover:text-white transition-colors">
+                <Link href={homeHref} className="text-slate-400 hover:text-white transition-colors">
                   HBS Home
                 </Link>
               </li>
               <li>
-                <Link href="/hbs/about" className="text-slate-400 hover:text-white transition-colors">
+                <Link href={`${prefix}/about`} className="text-slate-400 hover:text-white transition-colors">
                   About HBS
                 </Link>
               </li>
               <li>
-                <Link href="/hbs/services" className="text-slate-400 hover:text-white transition-colors">
+                <Link href={`${prefix}/services`} className="text-slate-400 hover:text-white transition-colors">
                   All 19 Services
                 </Link>
               </li>
               <li>
-                <Link href="/hbs/projects" className="text-slate-400 hover:text-white transition-colors">
+                <Link href={`${prefix}/projects`} className="text-slate-400 hover:text-white transition-colors">
                   Our Work & Case Studies
                 </Link>
               </li>
               <li>
-                <Link href="/hbs/contact" className="text-slate-400 hover:text-white transition-colors">
+                <Link href={`${prefix}/contact`} className="text-slate-400 hover:text-white transition-colors">
                   Book Site Inspection
                 </Link>
               </li>

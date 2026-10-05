@@ -15,6 +15,9 @@ export default function HbsMobileBar({
   const phoneRaw = phone.replace(/[^\d+]/g, "") || "+917597000601";
   const whatsappRaw = whatsapp.replace(/[^\d]/g, "") || "917597000601";
 
+  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const prefix = isSubdomain ? "" : "/hbs";
+
   return (
     <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-slate-950/95 backdrop-blur-md border-t border-slate-800 p-2 shadow-2xl safe-area-bottom">
       <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
@@ -40,7 +43,7 @@ export default function HbsMobileBar({
 
         {/* Get Quote */}
         <Link
-          href="/hbs/contact"
+          href={`${prefix}/contact`}
           className="flex flex-col items-center justify-center py-2 px-1 bg-amber-600 hover:bg-amber-700 text-white rounded-none text-center shadow-xs transition-colors active:scale-98"
         >
           <Wrench className="w-4 h-4 text-white mb-0.5" />
