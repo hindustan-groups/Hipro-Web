@@ -94,6 +94,21 @@ const navCategories: NavCategory[] = [
       { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },
     ],
   },
+  {
+    id: "hbs",
+    title: "Hind Building Solutions",
+    items: [
+      { href: "/admin/hbs", label: "HBS Dashboard", icon: LayoutDashboard, sectionKey: "hbs" },
+      { href: "/admin/hbs/settings", label: "General Settings", icon: Settings, sectionKey: "hbs-settings" },
+      { href: "/admin/hbs/home", label: "Home Page CMS", icon: LayoutTemplate, sectionKey: "hbs-home" },
+      { href: "/admin/hbs/about", label: "About Page CMS", icon: Info, sectionKey: "hbs-about" },
+      { href: "/admin/hbs/services", label: "Services (19)", icon: HardHat, sectionKey: "hbs-services" },
+      { href: "/admin/hbs/projects", label: "Projects / Work", icon: FolderOpen, sectionKey: "hbs-projects" },
+      { href: "/admin/hbs/testimonials", label: "Testimonials", icon: Star, sectionKey: "hbs-testimonials" },
+      { href: "/admin/hbs/leads", label: "Leads & Quotes", icon: Inbox, sectionKey: "hbs-leads" },
+      { href: "/admin/hbs/seo", label: "SEO & Meta", icon: Compass, sectionKey: "hbs-seo" },
+    ],
+  },
 ];
 
 export default function AdminSidebar({ user }: { user: any }) {
@@ -123,6 +138,7 @@ export default function AdminSidebar({ user }: { user: any }) {
     if (isAdmin) return true;
     const key = sectionKey || href.split("/")[2] || "dashboard";
     if (key === "dashboard") return true;
+    if (key.startsWith("hbs") && (userPermissions.includes("hbs") || userPermissions.includes(key))) return true;
     if (userPermissions.includes(key)) return true;
     if (
       key === "projects-hero" &&

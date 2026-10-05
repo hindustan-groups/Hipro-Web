@@ -20,6 +20,11 @@ function getModel(collection: string) {
     case "guarantees": return prisma.guarantee;
     case "blogs": return prisma.blogPost;
     case "about": return prisma.aboutPageContent;
+    case "hbs-content": return prisma.hbsContent;
+    case "hbs-services": return prisma.hbsService;
+    case "hbs-projects": return prisma.hbsProject;
+    case "hbs-testimonials": return prisma.hbsTestimonial;
+    case "hbs-leads": return prisma.hbsLead;
     default: throw new Error(`Unknown collection: ${collection}`);
   }
 }

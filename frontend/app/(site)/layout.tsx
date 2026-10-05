@@ -5,6 +5,7 @@ import MobileStickyBar from "@/components/MobileStickyBar";
 import CookieConsent from "@/components/CookieConsent";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
+import { HIPRO_JSON_LD } from "@/lib/hiproJsonLd";
 
 export const revalidate = 60;
 
@@ -21,6 +22,10 @@ export default async function SiteLayout({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(HIPRO_JSON_LD) }}
+      />
       <Navbar 
         navConfigString={settings?.navigationConfig || null} 
         services={services} 

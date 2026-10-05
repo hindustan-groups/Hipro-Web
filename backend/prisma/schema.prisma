@@ -383,3 +383,127 @@ model AboutPageContent {
   twitterImage          String?
 }
 
+// ==================================================
+// HIND BUILDING SOLUTIONS (HBS) SUB-BRAND MODELS
+// Dedicated models for complete isolation from HiPRO
+// ==================================================
+
+model HbsContent {
+  id                     String    @id @default("singleton")
+  // General Brand Settings
+  brandName              String    @default("Hind Building Solutions")
+  logo                   String?
+  tagline                String    @default("Building Repair, Maintenance, Protection & Services")
+  phone                  String    @default("+91 75970 00601")
+  whatsapp               String    @default("+91 75970 00601")
+  email                  String    @default("hbs@hindustanprojects.in")
+  address                String    @default("Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001")
+  businessHours          String    @default("Mon - Sat: 9:00 AM - 7:00 PM")
+  socialLinks            String?   @db.Text // JSON string
+  ctaSettings            String?   @db.Text // JSON string: { buttonText, phone, emergencyNotice }
+
+  // Home Page CMS
+  heroTitle              String    @default("Complete Building Repair, Maintenance & Protection")
+  heroSubtitle           String    @default("Specialized engineering care for homes, apartments, and commercial buildings across Rajasthan.")
+  heroImage              String?
+  heroCtas               String?   @db.Text // JSON string: [{ label, link, variant }]
+  whyChooseUs            String?   @db.Text // JSON string: [{ title, description, icon }]
+  stats                  String?   @db.Text // JSON string: [{ label, value, icon }]
+  homeFinalCta           String?   @db.Text // JSON string
+
+  // About Page CMS
+  aboutStory             String?   @db.Text
+  mission                String?   @db.Text
+  vision                 String?   @db.Text
+  team                   String?   @db.Text // JSON string
+  whyChoosePoints        String?   @db.Text // JSON string
+  aboutImages            String?   @db.Text // JSON string
+
+  // SEO & Social
+  metaTitle              String?
+  metaDescription        String?   @db.Text
+  canonicalUrl           String?   @default("https://hindbuilding.hindustanprojects.in")
+  ogImage                String?
+  twitterImage           String?
+  jsonLd                 String?   @db.Text
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+model HbsService {
+  id               String    @id @default(cuid())
+  serviceNumber    String?   // e.g. "01", "02" ... "19"
+  title            String
+  hindiTitle       String?
+  slug             String    @unique
+  shortDescription String?   @db.Text
+  fullDescription  String?   @db.Text
+  image            String?
+  icon             String?
+  features         String?   @db.Text // JSON array of feature points
+  active           Boolean   @default(true)
+  order            Int       @default(0)
+  metaTitle        String?
+  metaDescription  String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([order])
+  @@index([active])
+}
+
+model HbsProject {
+  id                 String    @id @default(cuid())
+  slug               String?   @unique
+  title              String
+  location           String?
+  serviceCategory    String?
+  description        String?   @db.Text
+  images             String?   @db.Text // JSON array of image URLs
+  beforeAfterImages  String?   @db.Text // JSON array: [{ before: string, after: string, title?: string }]
+  date               String?
+  status             String    @default("completed")
+  active             Boolean   @default(true)
+  order              Int       @default(0)
+  metaTitle          String?
+  metaDescription    String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([order])
+  @@index([active])
+}
+
+model HbsTestimonial {
+  id          String   @id @default(cuid())
+  name        String
+  designation String?
+  content     String   @db.Text
+  image       String?
+  rating      Int      @default(5)
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+  @@index([active])
+}
+
+model HbsLead {
+  id              String   @id @default(cuid())
+  name            String
+  phone           String
+  email           String?
+  selectedService String?
+  message         String?  @db.Text
+  source          String   @default("hbs_website") // "hbs_quote_modal", "hbs_contact_form", etc.
+  status          String   @default("new") // "new", "contacted", "in_progress", "completed", "cancelled"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
