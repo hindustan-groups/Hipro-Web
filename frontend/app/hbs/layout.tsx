@@ -8,21 +8,26 @@ export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await fetchHbsContent();
+  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const baseUrl = isSubdomainActive
+    ? "https://hindbuilding.hindustanprojects.in"
+    : "https://www.hindustanprojects.in";
+  const canonicalPath = isSubdomainActive ? "/" : "/hbs";
 
   return {
-    metadataBase: new URL("https://hindbuilding.hindustanprojects.in"),
+    metadataBase: new URL(baseUrl),
     title: {
       default: content.metaTitle || "Hind Building Solutions (HBS) | Building Repair, Maintenance & Protection",
       template: "%s | Hind Building Solutions (HBS)",
     },
     description: content.metaDescription || "Professional building repair, waterproofing, painting, termite control, electrical, and facility maintenance services by Hind Building Solutions, a Hindustan Projects company.",
     alternates: {
-      canonical: "/hbs",
+      canonical: canonicalPath,
     },
     openGraph: {
       type: "website",
       locale: "en_IN",
-      url: "https://hindbuilding.hindustanprojects.in",
+      url: isSubdomainActive ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in/hbs",
       siteName: "Hind Building Solutions (HBS)",
       title: content.metaTitle || "Hind Building Solutions (HBS) | Building Repair, Maintenance & Protection",
       description: content.metaDescription || "Specialized building repair, waterproofing, termite control and maintenance division under Hindustan Projects.",
@@ -58,10 +63,15 @@ export default async function HbsLayout({
     fetchHbsServices(),
   ]);
 
+  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
+  const hbsBaseUrl = isSubdomainActive
+    ? "https://hindbuilding.hindustanprojects.in"
+    : "https://www.hindustanprojects.in/hbs";
+
   const hbsJsonLd = {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "HomeAndConstructionBusiness", "RoofingContractor"],
-    "@id": "https://hindbuilding.hindustanprojects.in/#organization",
+    "@id": `${hbsBaseUrl}#organization`,
     name: "Hind Building Solutions",
     alternateName: "HBS",
     parentOrganization: {
@@ -69,7 +79,7 @@ export default async function HbsLayout({
       name: "Hindustan Projects (HiPRO)",
       url: "https://www.hindustanprojects.in/",
     },
-    url: "https://hindbuilding.hindustanprojects.in/",
+    url: isSubdomainActive ? "https://hindbuilding.hindustanprojects.in/" : "https://www.hindustanprojects.in/hbs",
     telephone: content.phone,
     email: content.email,
     address: {
