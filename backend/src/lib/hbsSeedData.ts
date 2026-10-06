@@ -5,7 +5,7 @@ export const HBS_SERVICES_SEED = [
     hindiTitle: "संरचना मरम्मत एवं मजबूतीकरण",
     slug: "structure-repair",
     shortDescription: "Specialized crack injection, RCC column strengthening, structural restoration, and beam reinforcement for residential and commercial structures.",
-    fullDescription: "Hind Building Solutions provides advanced structural diagnostics and rehabilitation services. Using industrial-grade epoxy injection, polymer-modified mortars, and micro-concreting, we restore load-bearing capacities and structural integrity to weathered or distressed concrete frames.",
+    fullDescription: "Hind Build provides advanced structural diagnostics and rehabilitation services. Using industrial-grade epoxy injection, polymer-modified mortars, and micro-concreting, we restore load-bearing capacities and structural integrity to weathered or distressed concrete frames.",
     icon: "ShieldAlert",
     features: JSON.stringify([
       "RCC Column & Beam Strengthening",
@@ -21,7 +21,7 @@ export const HBS_SERVICES_SEED = [
     hindiTitle: "वाटर लीकेज एवं सीलन समाधान",
     slug: "water-leakage-solution",
     shortDescription: "Permanent waterproofing and moisture barrier solutions for roofs, basements, wet walls, and bathrooms without destructive breaking.",
-    fullDescription: "Eliminate dampness, efflorescence (shora), and persistent ceiling drips permanently. HBS utilizes elastomeric polyurethane coatings, crystalline penetration barriers, and pressure grouting to seal positive and negative side leakages.",
+    fullDescription: "Eliminate dampness, efflorescence (shora), and persistent ceiling drips permanently. Hind Build utilizes elastomeric polyurethane coatings, crystalline penetration barriers, and pressure grouting to seal positive and negative side leakages.",
     icon: "Droplets",
     features: JSON.stringify([
       "Terrace Waterproofing Membranes",
@@ -85,7 +85,7 @@ export const HBS_SERVICES_SEED = [
     hindiTitle: "दीमक एवं कीट नियंत्रण",
     slug: "termite-control",
     shortDescription: "Pre-construction & post-construction drill-and-fill chemical termite barriers with comprehensive warranty guarantees.",
-    fullDescription: "Defend wooden fixtures, doors, and foundation perimeters from subterranean termite devastation. HBS deploys odorless, government-approved termiticides injected into foundation perimeters and woodwork.",
+    fullDescription: "Defend wooden fixtures, doors, and foundation perimeters from subterranean termite devastation. Hind Build deploys odorless, government-approved termiticides injected into foundation perimeters and woodwork.",
     icon: "Bug",
     features: JSON.stringify([
       "Post-Construction Drill-Inject-Seal",

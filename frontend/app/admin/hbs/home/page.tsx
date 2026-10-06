@@ -1,8 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, RefreshCw, CheckCircle2, AlertCircle, LayoutTemplate, Plus, Trash2, ShieldCheck, Sparkles } from "lucide-react";
+import {
+  Save,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  LayoutTemplate,
+  Plus,
+  Trash2,
+  ShieldCheck,
+  Sparkles,
+  Image as ImageIcon,
+  Sliders,
+  Eye,
+  SlidersHorizontal
+} from "lucide-react";
 import type { HbsContent } from "@/lib/types";
+import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
 
 interface WhyChooseItem {
   title: string;
@@ -14,8 +29,39 @@ interface StatItem {
   label: string;
 }
 
+export interface HeroConfig {
+  enabled: boolean;
+  displayMode: "TEXT_AND_IMAGE" | "TEXT_ONLY" | "IMAGE_ONLY";
+  imagePosition: "right" | "left" | "background";
+  imageFit: "cover" | "contain";
+  overlayStrength: "none" | "light" | "medium" | "dark";
+  badge: string;
+  primaryCtaLabel: string;
+  primaryCtaUrl: string;
+  secondaryCtaLabel: string;
+  secondaryCtaUrl: string;
+  mobileImage: string;
+  backgroundImage: string;
+}
+
+const DEFAULT_HERO_CONFIG: HeroConfig = {
+  enabled: true,
+  displayMode: "TEXT_AND_IMAGE",
+  imagePosition: "right",
+  imageFit: "cover",
+  overlayStrength: "medium",
+  badge: "A Specialized Division of Hindustan Projects (HiPRO)",
+  primaryCtaLabel: "Book Site Inspection",
+  primaryCtaUrl: "/contact",
+  secondaryCtaLabel: "Chat on WhatsApp",
+  secondaryCtaUrl: "",
+  mobileImage: "",
+  backgroundImage: "",
+};
+
 export default function HbsAdminHome() {
   const [content, setContent] = useState<Partial<HbsContent>>({});
+  const [heroConfig, setHeroConfig] = useState<HeroConfig>(DEFAULT_HERO_CONFIG);
   const [whyChoose, setWhyChoose] = useState<WhyChooseItem[]>([]);
   const [stats, setStats] = useState<StatItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +78,15 @@ export default function HbsAdminHome() {
         setContent(json.data);
 
         try {
-          // whyChooseUs is the canonical field read by the public homepage
+          if (json.data.heroCtas) {
+            const parsed = typeof json.data.heroCtas === "string" ? JSON.parse(json.data.heroCtas) : json.data.heroCtas;
+            setHeroConfig({ ...DEFAULT_HERO_CONFIG, ...parsed });
+          }
+        } catch {
+          setHeroConfig(DEFAULT_HERO_CONFIG);
+        }
+
+        try {
           if (json.data.whyChooseUs) {
             setWhyChoose(JSON.parse(json.data.whyChooseUs));
           }
@@ -102,9 +156,7 @@ export default function HbsAdminHome() {
 
     const payload = {
       ...content,
-      // Write to whyChooseUs — the canonical field read by the public homepage.
-      // NOTE: whyChoosePoints is kept in sync as a legacy alias to avoid orphaning
-      // any admin pages that may still reference it.
+      heroCtas: JSON.stringify(heroConfig),
       whyChooseUs: JSON.stringify(whyChoose),
       whyChoosePoints: JSON.stringify(whyChoose),
       stats: JSON.stringify(stats),
@@ -120,7 +172,7 @@ export default function HbsAdminHome() {
 
       const json = await res.json();
       if (json.success) {
-        setMessage({ text: "HBS Home page CMS saved successfully!", type: "success" });
+        setMessage({ text: "Hind Build Home page CMS saved successfully!", type: "success" });
         try {
           await fetch("/api/revalidate", {
             method: "POST",
@@ -156,10 +208,10 @@ export default function HbsAdminHome() {
             Home Page Editor
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            HBS Homepage CMS
+            Hind Build Homepage CMS
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage the hero banner headlines, value propositions, key statistics, and call-to-actions.
+            Manage the hero presentation modes, headlines, value propositions, key statistics, and call-to-actions.
           </p>
         </div>
 
@@ -191,58 +243,283 @@ export default function HbsAdminHome() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Hero Section */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <LayoutTemplate className="w-4 h-4 text-amber-600" />
-            <span>Hero Banner Content</span>
-          </h2>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Top Badge / Tagline
-            </label>
-            <input
-              type="text"
-              value={content.tagline || "Complete Building Care · Repair · Protection · Renovation"}
-              onChange={(e) => handleChange("tagline", e.target.value)}
-              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
-            />
+        <div className="bg-white border border-slate-200 p-6 space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+              <LayoutTemplate className="w-4 h-4 text-amber-600" />
+              <span>Hero Presentation &amp; Content (CMS-First)</span>
+            </h2>
+            <button
+              type="button"
+              onClick={() => setHeroConfig((prev) => ({ ...prev, enabled: !prev.enabled }))}
+              className={`px-3 py-1 text-xs font-mono font-bold uppercase transition-colors border ${
+                heroConfig.enabled
+                  ? "bg-emerald-600 text-white border-emerald-700"
+                  : "bg-slate-200 text-slate-700 border-slate-300"
+              }`}
+            >
+              {heroConfig.enabled ? "Hero: ENABLED" : "Hero: DISABLED"}
+            </button>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Main Hero Heading
-            </label>
-            <input
-              type="text"
-              value={content.heroTitle || "Precision Building Care, Repair & Protection Solutions"}
-              onChange={(e) => handleChange("heroTitle", e.target.value)}
-              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-bold"
-            />
+          {/* Display Mode & Composition Controls */}
+          <div className="p-4 bg-slate-50 border border-slate-200 space-y-4">
+            <span className="text-[11px] font-mono font-bold uppercase text-slate-600 tracking-wider block">
+              1. Hero Layout Mode &amp; Composition
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Display Mode
+                </label>
+                <select
+                  value={heroConfig.displayMode}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({
+                      ...prev,
+                      displayMode: e.target.value as any,
+                    }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-white focus:outline-amber-500 font-semibold"
+                >
+                  <option value="TEXT_AND_IMAGE">TEXT AND IMAGE (Split)</option>
+                  <option value="TEXT_ONLY">TEXT ONLY (Centered / Clean)</option>
+                  <option value="IMAGE_ONLY">IMAGE ONLY (Prominent Visual)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Image Position
+                </label>
+                <select
+                  value={heroConfig.imagePosition}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({
+                      ...prev,
+                      imagePosition: e.target.value as any,
+                    }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-white focus:outline-amber-500 font-semibold"
+                >
+                  <option value="right">Right Column (Default)</option>
+                  <option value="left">Left Column</option>
+                  <option value="background">Full Background</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Image Fit
+                </label>
+                <select
+                  value={heroConfig.imageFit}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({
+                      ...prev,
+                      imageFit: e.target.value as any,
+                    }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-white focus:outline-amber-500 font-semibold"
+                >
+                  <option value="cover">Cover (Fills container)</option>
+                  <option value="contain">Contain (Full aspect view)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Background / Image Overlay Strength
+              </label>
+              <select
+                value={heroConfig.overlayStrength}
+                onChange={(e) =>
+                  setHeroConfig((prev) => ({
+                    ...prev,
+                    overlayStrength: e.target.value as any,
+                  }))
+                }
+                className="w-full text-xs border border-slate-300 p-2 bg-white focus:outline-amber-500"
+              >
+                <option value="none">None (0% overlay)</option>
+                <option value="light">Light (30% Dark Tint)</option>
+                <option value="medium">Medium (60% Dark Tint - Recommended for readability)</option>
+                <option value="dark">Dark (85% Dark Tint - Maximum text contrast)</option>
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Hero Subtitle / Description
-            </label>
-            <textarea
-              rows={3}
-              value={
-                content.heroSubtitle ||
-                "Specialized turnkey engineering services for commercial complexes, high-rise apartments, industrial facilities, and luxury residences across Rajasthan."
-              }
-              onChange={(e) => handleChange("heroSubtitle", e.target.value)}
-              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
-            />
+          {/* Copy Controls */}
+          <div className="space-y-4">
+            <span className="text-[11px] font-mono font-bold uppercase text-slate-600 tracking-wider block">
+              2. Headlines &amp; Messaging
+            </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Hero Eyebrow / Top Badge
+                </label>
+                <input
+                  type="text"
+                  value={heroConfig.badge || ""}
+                  onChange={(e) => setHeroConfig((prev) => ({ ...prev, badge: e.target.value }))}
+                  placeholder="e.g. A Specialized Division of Hindustan Projects (HiPRO)"
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Top Tagline (Legacy / Subtitle strip)
+                </label>
+                <input
+                  type="text"
+                  value={content.tagline || ""}
+                  onChange={(e) => handleChange("tagline", e.target.value)}
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Main Hero Heading (H1)
+              </label>
+              <input
+                type="text"
+                value={content.heroTitle || ""}
+                onChange={(e) => handleChange("heroTitle", e.target.value)}
+                placeholder="Complete Building Repair, Maintenance & Protection"
+                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Hero Subtitle / Description
+              </label>
+              <textarea
+                rows={3}
+                value={content.heroSubtitle || ""}
+                onChange={(e) => handleChange("heroSubtitle", e.target.value)}
+                placeholder="Engineering-grade repair, waterproofing, electrical, pest control, and building maintenance solutions across Rajasthan."
+                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
+              />
+            </div>
+          </div>
+
+          {/* CTA Buttons Management */}
+          <div className="space-y-3">
+            <span className="text-[11px] font-mono font-bold uppercase text-slate-600 tracking-wider block">
+              3. Call-to-Action Buttons
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 border border-slate-200">
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Primary Action Button
+                </label>
+                <input
+                  type="text"
+                  placeholder="Label (e.g. Book Site Inspection)"
+                  value={heroConfig.primaryCtaLabel || ""}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({ ...prev, primaryCtaLabel: e.target.value }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2 bg-white"
+                />
+                <input
+                  type="text"
+                  placeholder="URL Destination (e.g. /contact)"
+                  value={heroConfig.primaryCtaUrl || ""}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({ ...prev, primaryCtaUrl: e.target.value }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2 bg-white font-mono"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Secondary Action Button
+                </label>
+                <input
+                  type="text"
+                  placeholder="Label (e.g. Chat on WhatsApp)"
+                  value={heroConfig.secondaryCtaLabel || ""}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({ ...prev, secondaryCtaLabel: e.target.value }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2 bg-white"
+                />
+                <input
+                  type="text"
+                  placeholder="URL (optional, left empty for auto-WhatsApp)"
+                  value={heroConfig.secondaryCtaUrl || ""}
+                  onChange={(e) =>
+                    setHeroConfig((prev) => ({ ...prev, secondaryCtaUrl: e.target.value }))
+                  }
+                  className="w-full text-xs border border-slate-300 p-2 bg-white font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Media Uploaders */}
+          <div className="space-y-4 pt-2 border-t border-slate-200">
+            <span className="text-[11px] font-mono font-bold uppercase text-slate-600 tracking-wider block">
+              4. Hero Media Management (Authenticated Cloudinary Upload / Preview / Replace)
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-3 bg-slate-50 border border-slate-200">
+                <HbsImageUploader
+                  value={content.heroImage || ""}
+                  onChange={(url) => handleChange("heroImage", url)}
+                  folder="hbs/hero"
+                  label="Primary Hero Image"
+                  description="High-resolution visual for desktop split or image-only mode."
+                  recommendedSize="1200×900px"
+                  aspectRatioHint="4:3"
+                  previewHeight="h-28"
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200">
+                <HbsImageUploader
+                  value={heroConfig.mobileImage || ""}
+                  onChange={(url) => setHeroConfig((prev) => ({ ...prev, mobileImage: url }))}
+                  folder="hbs/hero"
+                  label="Mobile Hero Image (Optional)"
+                  description="Optimized crop for mobile viewports (360px-430px)."
+                  recommendedSize="800×600px"
+                  aspectRatioHint="4:3"
+                  previewHeight="h-28"
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200">
+                <HbsImageUploader
+                  value={heroConfig.backgroundImage || ""}
+                  onChange={(url) => setHeroConfig((prev) => ({ ...prev, backgroundImage: url }))}
+                  folder="hbs/hero"
+                  label="Background Hero Image (Optional)"
+                  description="Full-bleed background when Position is set to Background."
+                  recommendedSize="1920×1080px"
+                  aspectRatioHint="16:9"
+                  previewHeight="h-28"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Why Choose HBS Points */}
+        {/* Why Choose Hind Build Points */}
         <div className="bg-white border border-slate-200 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-amber-600" />
-              <span>Why Choose HBS (Key Highlights)</span>
+              <span>Why Choose Hind Build (Key Highlights)</span>
             </h2>
             <button
               type="button"
