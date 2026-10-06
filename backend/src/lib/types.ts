@@ -382,10 +382,55 @@ export interface AdminUser {
   createdAt?: Date;
 }
 
+export interface ServiceFAQ {
+  q: string;
+  a: string;
+}
+
+export interface ServiceProcessStep {
+  step: string;
+  title: string;
+  desc: string;
+}
+
+export interface ProjectScope {
+  title: string;
+  desc?: string;
+}
+
+export interface HbsHeroHighlight {
+  label: string;
+  icon?: string;
+}
+
+export interface HbsGuarantee {
+  title?: string;
+  description?: string;
+  badge?: string;
+  partners?: string[];
+}
+
+export interface HbsInternalNote {
+  id: string;
+  author: string;
+  note: string;
+  createdAt: string;
+}
+
 export interface HbsContent {
   id?: string;
   brandName: string;
   logo?: string | null;
+  logoPrimary?: string | null;
+  logoDark?: string | null;
+  logoMark?: string | null;
+  logoMobile?: string | null;
+  favicon?: string | null;
+  ogDefaultImage?: string | null;
+  gaMeasurementId?: string | null;
+  emergencyNotice?: string | null;
+  privacyPolicyUrl?: string | null;
+  termsUrl?: string | null;
   tagline?: string | null;
   phone: string;
   whatsapp: string;
@@ -398,8 +443,11 @@ export interface HbsContent {
   heroSubtitle?: string | null;
   heroImage?: string | null;
   heroCtas?: string | null;
+  heroHighlights?: string | HbsHeroHighlight[] | null;
   whyChooseUs?: string | null;
   stats?: string | null;
+  processSteps?: string | ServiceProcessStep[] | null;
+  guaranteeSection?: string | HbsGuarantee | null;
   homeFinalCta?: string | null;
   aboutStory?: string | null;
   mission?: string | null;
@@ -427,7 +475,15 @@ export interface HbsService {
   fullDescription?: string | null;
   image?: string | null;
   icon?: string | null;
-  features?: string | null;
+  features?: string | string[] | null;
+  benefits?: string | string[] | null;
+  processSteps?: string | ServiceProcessStep[] | null;
+  warrantyDetails?: string | null;
+  pricingEstimate?: string | null;
+  faqs?: string | ServiceFAQ[] | null;
+  galleryImages?: string | string[] | null;
+  ogImage?: string | null;
+  whatsappCtaText?: string | null;
   active?: boolean;
   order?: number;
   metaTitle?: string | null;
@@ -442,11 +498,19 @@ export interface HbsProject {
   title: string;
   location?: string | null;
   serviceCategory?: string | null;
+  clientType?: string | null;
   description?: string | null;
-  images?: string | null;
-  beforeAfterImages?: string | null;
+  scopeOfWork?: string | string[] | ProjectScope[] | null;
+  problemStatement?: string | null;
+  solutionStatement?: string | null;
+  resultStatement?: string | null;
+  areaTreated?: string | null;
+  durationDays?: number | null;
+  images?: string | string[] | null;
+  beforeAfterImages?: string | any[] | null;
   date?: string | null;
   status?: string;
+  featured?: boolean;
   active?: boolean;
   order?: number;
   metaTitle?: string | null;
@@ -462,6 +526,12 @@ export interface HbsTestimonial {
   content: string;
   image?: string | null;
   rating?: number;
+  serviceSlug?: string | null;
+  serviceCategory?: string | null;
+  location?: string | null;
+  projectType?: string | null;
+  projectDate?: string | null;
+  featured?: boolean;
   active?: boolean;
   order?: number;
   createdAt?: string | Date;
@@ -477,7 +547,12 @@ export interface HbsLead {
   message?: string | null;
   source?: string;
   status?: string;
+  assignedTo?: string | null;
+  quotationAmount?: number | null;
+  priority?: string;
+  internalNotes?: string | HbsInternalNote[] | null;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
+
 

@@ -24,30 +24,33 @@ export default function HbsMobileBar({
         {/* Call Now */}
         <a
           href={`tel:${phoneRaw}`}
-          className="flex flex-col items-center justify-center py-2 px-1 bg-slate-900 hover:bg-slate-800 text-white rounded-none border border-slate-800 text-center transition-colors active:scale-98"
+          className="flex flex-col items-center justify-center py-2 px-1 bg-slate-900 hover:bg-slate-800 text-white rounded-none border border-slate-800 text-center transition-colors active:bg-slate-950 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+          aria-label={`Call Hind Build at ${phone}`}
         >
-          <Phone className="w-4 h-4 text-amber-500 mb-0.5" />
+          <Phone className="w-4 h-4 text-amber-400 mb-0.5 shrink-0" />
           <span className="text-[10px] font-bold uppercase tracking-wider">Call Now</span>
         </a>
 
         {/* WhatsApp */}
         <a
-          href={`https://wa.me/${whatsappRaw}?text=Hello%20HBS,%20I%20need%20a%20building%20repair%20quote.`}
+          href={`https://wa.me/${whatsappRaw}?text=Hello%20Hind%20Build,%20I%20need%20a%20building%20repair%20quote.`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col items-center justify-center py-2 px-1 bg-emerald-700/80 hover:bg-emerald-600 text-white rounded-none border border-emerald-600/40 text-center transition-colors active:scale-98"
+          className="flex flex-col items-center justify-center py-2 px-1 bg-emerald-700 hover:bg-emerald-600 text-white rounded-none border border-emerald-600/50 text-center transition-colors active:bg-emerald-800 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          aria-label="Chat with Hind Build on WhatsApp"
         >
-          <MessageSquare className="w-4 h-4 text-emerald-300 mb-0.5" />
+          <MessageSquare className="w-4 h-4 text-emerald-200 mb-0.5 shrink-0" />
           <span className="text-[10px] font-bold uppercase tracking-wider">WhatsApp</span>
         </a>
 
         {/* Get Quote */}
         <Link
           href={`${prefix}/contact`}
-          className="flex flex-col items-center justify-center py-2 px-1 bg-amber-600 hover:bg-amber-700 text-white rounded-none text-center shadow-xs transition-colors active:scale-98"
+          className="flex flex-col items-center justify-center py-2 px-1 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black rounded-none text-center shadow-xs transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+          aria-label="Request Free Inspection / Quote"
         >
-          <Wrench className="w-4 h-4 text-white mb-0.5" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Get Quote</span>
+          <Wrench className="w-4 h-4 text-slate-950 mb-0.5 shrink-0" />
+          <span className="text-[10px] font-black uppercase tracking-wider">Get Quote</span>
         </Link>
       </div>
     </div>

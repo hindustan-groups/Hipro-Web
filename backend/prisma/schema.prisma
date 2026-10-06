@@ -393,6 +393,16 @@ model HbsContent {
   // General Brand Settings
   brandName              String    @default("Hind Building Solutions")
   logo                   String?
+  logoPrimary            String?
+  logoDark               String?
+  logoMark               String?
+  logoMobile             String?
+  favicon                String?
+  ogDefaultImage         String?
+  gaMeasurementId        String?
+  emergencyNotice        String?
+  privacyPolicyUrl       String?   @default("/privacy-policy")
+  termsUrl               String?   @default("/terms")
   tagline                String    @default("Building Repair, Maintenance, Protection & Services")
   phone                  String    @default("+91 75970 00601")
   whatsapp               String    @default("+91 75970 00601")
@@ -407,8 +417,11 @@ model HbsContent {
   heroSubtitle           String    @default("Specialized engineering care for homes, apartments, and commercial buildings across Rajasthan.")
   heroImage              String?
   heroCtas               String?   @db.Text // JSON string: [{ label, link, variant }]
+  heroHighlights         String?   @db.Text // JSON string: Array<{ label: string, icon?: string }>
   whyChooseUs            String?   @db.Text // JSON string: [{ title, description, icon }]
   stats                  String?   @db.Text // JSON string: [{ label, value, icon }]
+  processSteps           String?   @db.Text // JSON string: Array<{ step: string, title: string, desc: string }>
+  guaranteeSection       String?   @db.Text // JSON string: { title?: string, description?: string, badge?: string, partners?: string[] }
   homeFinalCta           String?   @db.Text // JSON string
 
   // About Page CMS
@@ -442,6 +455,14 @@ model HbsService {
   image            String?
   icon             String?
   features         String?   @db.Text // JSON array of feature points
+  benefits         String?   @db.Text // JSON string: string[]
+  processSteps     String?   @db.Text // JSON string: Array<{ step: string, title: string, desc: string }>
+  warrantyDetails  String?   @db.Text
+  pricingEstimate  String?
+  faqs             String?   @db.Text // JSON string: Array<{ q: string, a: string }>
+  galleryImages    String?   @db.Text // JSON string: string[]
+  ogImage          String?
+  whatsappCtaText  String?
   active           Boolean   @default(true)
   order            Int       @default(0)
   metaTitle        String?
@@ -459,11 +480,19 @@ model HbsProject {
   title              String
   location           String?
   serviceCategory    String?
+  clientType         String?   // e.g. "Residential Villa", "Apartment Complex", "Commercial Complex", "Industrial Plant"
   description        String?   @db.Text
+  scopeOfWork        String?   @db.Text // JSON string: string[]
+  problemStatement   String?   @db.Text
+  solutionStatement  String?   @db.Text
+  resultStatement    String?   @db.Text
+  areaTreated        String?   // e.g. "12,500 sq.ft"
+  durationDays       Int?
   images             String?   @db.Text // JSON array of image URLs
   beforeAfterImages  String?   @db.Text // JSON array: [{ before: string, after: string, title?: string }]
   date               String?
   status             String    @default("completed")
+  featured           Boolean   @default(false)
   active             Boolean   @default(true)
   order              Int       @default(0)
   metaTitle          String?
@@ -473,22 +502,30 @@ model HbsProject {
 
   @@index([order])
   @@index([active])
+  @@index([featured])
 }
 
 model HbsTestimonial {
-  id          String   @id @default(cuid())
-  name        String
-  designation String?
-  content     String   @db.Text
-  image       String?
-  rating      Int      @default(5)
-  active      Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  designation     String?
+  content         String   @db.Text
+  image           String?
+  rating          Int      @default(5)
+  serviceSlug     String?
+  serviceCategory String?
+  location        String?
+  projectType     String?
+  projectDate     String?
+  featured        Boolean  @default(false)
+  active          Boolean  @default(true)
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([order])
   @@index([active])
+  @@index([featured])
 }
 
 model HbsLead {
@@ -499,11 +536,16 @@ model HbsLead {
   selectedService String?
   message         String?  @db.Text
   source          String   @default("hbs_website") // "hbs_quote_modal", "hbs_contact_form", etc.
-  status          String   @default("new") // "new", "contacted", "in_progress", "completed", "cancelled"
+  status          String   @default("NEW") // "NEW", "CONTACTED", "FOLLOW_UP", "QUOTATION_SENT", "CONVERTED", "LOST", "SPAM"
+  assignedTo      String?
+  quotationAmount Float?
+  priority        String   @default("MEDIUM") // "LOW", "MEDIUM", "HIGH", "URGENT"
+  internalNotes   String?  @db.Text // JSON string: Array<{ author: string, note: string, createdAt: string }>
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([status])
+  @@index([priority])
   @@index([createdAt])
 }
 

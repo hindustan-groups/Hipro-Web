@@ -8,11 +8,11 @@ import {
   AlertCircle,
   Compass,
   Globe,
-  Share2,
   Code2,
-  ShieldCheck
+  Share2
 } from "lucide-react";
 import type { HbsContent } from "@/lib/types";
+import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
 
 export default function HbsAdminSeo() {
   const [content, setContent] = useState<Partial<HbsContent>>({});
@@ -87,7 +87,7 @@ export default function HbsAdminSeo() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-8 max-w-5xl">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
@@ -98,12 +98,13 @@ export default function HbsAdminSeo() {
             HBS Search & Social Optimization
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage meta tags, search engine descriptions, canonical domains, and isolated HBS schema data.
+            Manage meta tags, search engine descriptions, OpenGraph share previews, and isolated HBS schema data.
           </p>
         </div>
 
         <button
           onClick={loadData}
+          type="button"
           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shrink-0"
         >
           <RefreshCw className="w-3.5 h-3.5" />
@@ -128,7 +129,7 @@ export default function HbsAdminSeo() {
         </div>
       )}
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-8">
         {/* Meta Tags */}
         <div className="bg-white border border-slate-200 p-6 space-y-4">
           <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
@@ -142,7 +143,7 @@ export default function HbsAdminSeo() {
             </label>
             <input
               type="text"
-              value={content.metaTitle || "Hind Building Solutions | Building Repair, Maintenance & Renovation Rajasthan"}
+              value={content.metaTitle || "Hind Build | Building Repair, Maintenance & Renovation Rajasthan"}
               onChange={(e) => handleChange("metaTitle", e.target.value)}
               className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-medium"
             />
@@ -159,7 +160,7 @@ export default function HbsAdminSeo() {
               rows={3}
               value={
                 content.metaDescription ||
-                "Hind Building Solutions (HBS), a division of Hindustan Projects, delivers turnkey structural repair, waterproofing, painting, electrical, bird netting, and 19 specialized building maintenance services across Rajasthan."
+                "Hind Build, an engineering division under Hindustan Projects, delivers turnkey structural repair, waterproofing, painting, electrical, bird netting, and 19 specialized building maintenance services across Rajasthan."
               }
               onChange={(e) => handleChange("metaDescription", e.target.value)}
               className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 leading-relaxed"
@@ -168,40 +169,61 @@ export default function HbsAdminSeo() {
               Optimal length: 140–160 characters. Displayed in Google search snippets.
             </span>
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Canonical Subdomain URL
+            </label>
+            <input
+              type="text"
+              value={content.canonicalUrl || "https://hindbuilding.hindustanprojects.in"}
+              onChange={(e) => handleChange("canonicalUrl", e.target.value)}
+              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
+            />
+          </div>
         </div>
 
-        {/* Canonical Subdomain & Social Preview */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Globe className="w-4 h-4 text-amber-600" />
-            <span>Subdomain & OpenGraph Social Sharing</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Social Card Images (OG & Twitter) */}
+        <div className="bg-white border border-slate-200 p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Target Subdomain URL (Post-Subdomain Activation)
-              </label>
-              <input
-                type="text"
-                disabled
-                value="https://hindbuilding.hindustanprojects.in"
-                className="w-full text-xs border border-slate-200 p-2.5 bg-slate-100 text-slate-500 font-mono cursor-not-allowed"
+              <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <Share2 className="w-4 h-4 text-amber-600" />
+                <span>Social Share Cards (OpenGraph & Twitter)</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Upload custom social banners. If left empty, HBS uses the Default OG Image from Brand Settings.
+              </p>
+            </div>
+            <span className="text-[10px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 font-bold uppercase tracking-wider self-start sm:self-auto">
+              Folder: hbs/seo
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
+              <HbsImageUploader
+                value={content.ogImage || ""}
+                onChange={(url) => handleChange("ogImage", url)}
+                folder="hbs/seo"
+                label="OpenGraph Share Image (WhatsApp / Facebook / LinkedIn)"
+                description="Preview card banner when links to HBS are shared on WhatsApp, Facebook, or LinkedIn."
+                recommendedSize="1200×630px"
+                aspectRatioHint="1.91:1"
+                previewHeight="h-36"
               />
-              <span className="text-[10px] text-slate-400 mt-1 block">
-                Reserved for Phase 3 subdomain activation. Currently operating under <code>/hbs</code>.
-              </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                OpenGraph Share Image URL
-              </label>
-              <input
-                type="text"
-                value="https://images.unsplash.com/photo-1541888946425-d0fbb186156f?auto=format&fit=crop&w=1200&q=80"
-                disabled
-                className="w-full text-xs border border-slate-200 p-2.5 bg-slate-100 text-slate-500 font-mono cursor-not-allowed"
+            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
+              <HbsImageUploader
+                value={content.twitterImage || ""}
+                onChange={(url) => handleChange("twitterImage", url)}
+                folder="hbs/seo"
+                label="Twitter / X Summary Card Image"
+                description="High-resolution banner displayed in Twitter summary_large_image cards."
+                recommendedSize="1200×600px"
+                aspectRatioHint="2:1"
+                previewHeight="h-36"
               />
             </div>
           </div>
@@ -227,8 +249,8 @@ export default function HbsAdminSeo() {
 {`{
   "@context": "https://schema.org",
   "@type": "HomeAndConstructionBusiness",
-  "name": "Hind Building Solutions",
-  "alternateName": "HBS",
+  "name": "Hind Build",
+  "alternateName": "Hind Build Rajasthan",
   "description": "Complete building maintenance, structural repair, and turnkey facility care.",
   "parentOrganization": {
     "@type": "Organization",
@@ -242,21 +264,21 @@ export default function HbsAdminSeo() {
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-4">
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-8 py-3.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
           >
             {saving ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Saving...</span>
+                <span>Saving SEO Settings...</span>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>Save SEO Settings</span>
+                <span>Save All SEO Settings</span>
               </>
             )}
           </button>

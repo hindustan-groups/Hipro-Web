@@ -30,7 +30,9 @@ import {
   X,
   Layers,
   Calculator,
-  Sparkles
+  Sparkles,
+  Palette,
+  GalleryHorizontalEnd
 } from "lucide-react";
 
 export interface NavItem {
@@ -96,9 +98,10 @@ const navCategories: NavCategory[] = [
   },
   {
     id: "hbs",
-    title: "Hind Building Solutions",
+    title: "Hind Build",
     items: [
-      { href: "/admin/hbs", label: "HBS Dashboard", icon: LayoutDashboard, sectionKey: "hbs" },
+      { href: "/admin/hbs", label: "Hind Build Dashboard", icon: LayoutDashboard, sectionKey: "hbs" },
+      { href: "/admin/hbs/branding", label: "Branding & Logos", icon: Palette, sectionKey: "hbs-branding" },
       { href: "/admin/hbs/settings", label: "General Settings", icon: Settings, sectionKey: "hbs-settings" },
       { href: "/admin/hbs/home", label: "Home Page CMS", icon: LayoutTemplate, sectionKey: "hbs-home" },
       { href: "/admin/hbs/about", label: "About Page CMS", icon: Info, sectionKey: "hbs-about" },
@@ -107,6 +110,7 @@ const navCategories: NavCategory[] = [
       { href: "/admin/hbs/testimonials", label: "Testimonials", icon: Star, sectionKey: "hbs-testimonials" },
       { href: "/admin/hbs/leads", label: "Leads & Quotes", icon: Inbox, sectionKey: "hbs-leads" },
       { href: "/admin/hbs/seo", label: "SEO & Meta", icon: Compass, sectionKey: "hbs-seo" },
+      { href: "/admin/hbs/media", label: "Media Library", icon: GalleryHorizontalEnd, sectionKey: "hbs-media" },
     ],
   },
 ];

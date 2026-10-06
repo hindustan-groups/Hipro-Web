@@ -16,7 +16,11 @@ import {
   Clock,
   ArrowRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Palette,
+  GalleryHorizontalEnd,
+  Compass,
+  LayoutTemplate
 } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
 
@@ -113,10 +117,10 @@ export default function HbsAdminDashboard() {
             Sub-Brand Architecture
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            Hind Building Solutions CMS
+            Hind Build CMS
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Dedicated management panel for HBS repair, waterproofing, and building maintenance operations.
+            Dedicated management panel for Hind Build repair, waterproofing, and building maintenance operations.
           </p>
         </div>
 
@@ -181,9 +185,10 @@ export default function HbsAdminDashboard() {
       {/* Quick Access Matrix */}
       <div className="bg-white border border-slate-200 p-6">
         <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono mb-4">
-          HBS Sub-Brand Modules
+          Hind Build CMS Modules
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
           <Link
             href="/admin/hbs/services"
             className="group p-4 border border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all"
@@ -191,12 +196,28 @@ export default function HbsAdminDashboard() {
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
                 <HardHat className="w-4 h-4 text-amber-600" />
-                <span>19 Specialized Services</span>
+                <span>Services (19)</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
             </div>
             <p className="text-xs text-slate-500">
-              Manage structure repair, water leakage, electrical, AC, CCTV, and 14 other catalog service modules.
+              Manage all 19 service catalog entries — descriptions, images, features, FAQs.
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/hbs/projects"
+            className="group p-4 border border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
+                <FolderOpen className="w-4 h-4 text-amber-600" />
+                <span>Projects & Work</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="text-xs text-slate-500">
+              Add and manage case studies, before/after images, scope of work, and testimonials.
             </p>
           </Link>
 
@@ -207,30 +228,63 @@ export default function HbsAdminDashboard() {
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
                 <Inbox className="w-4 h-4 text-amber-600" />
-                <span>Quote Inquiries & Leads</span>
+                <span>Leads & Quotes</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
             </div>
             <p className="text-xs text-slate-500">
-              View customer requests, update evaluation status, direct dial, or WhatsApp prospective clients.
+              Full CRM — 7-stage pipeline, priority, quotation amount, call/WhatsApp, notes.
             </p>
           </Link>
 
           <Link
-            href="/admin/hbs/settings"
+            href="/admin/hbs/branding"
             className="group p-4 border border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
-                <Settings className="w-4 h-4 text-amber-600" />
-                <span>HBS General Settings</span>
+                <Palette className="w-4 h-4 text-amber-600" />
+                <span>Branding & Logos</span>
               </span>
               <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
             </div>
             <p className="text-xs text-slate-500">
-              Configure emergency contact number, WhatsApp hotline, office address, and parent brand disclosure.
+              Upload primary/dark logos, logo mark, favicon, and default OG image.
             </p>
           </Link>
+
+          <Link
+            href="/admin/hbs/seo"
+            className="group p-4 border border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
+                <Compass className="w-4 h-4 text-amber-600" />
+                <span>SEO & Meta</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="text-xs text-slate-500">
+              Global meta title, description, canonical URL, OG image, Twitter card, JSON-LD.
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/hbs/media"
+            className="group p-4 border border-slate-200 hover:border-amber-500 hover:bg-amber-50/30 transition-all"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-sm text-slate-900 group-hover:text-amber-700 flex items-center gap-2">
+                <GalleryHorizontalEnd className="w-4 h-4 text-amber-600" />
+                <span>Media Library</span>
+              </span>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
+            </div>
+            <p className="text-xs text-slate-500">
+              Upload, organise, and copy URLs for Cloudinary assets across all Hind Build folders.
+            </p>
+          </Link>
+
         </div>
       </div>
 

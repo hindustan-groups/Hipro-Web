@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import HbsNavbar from "@/components/hbs/HbsNavbar";
 import HbsFooter from "@/components/hbs/HbsFooter";
 import HbsMobileBar from "@/components/hbs/HbsMobileBar";
@@ -14,13 +15,32 @@ export async function generateMetadata(): Promise<Metadata> {
     : "https://www.hindustanprojects.in";
   const canonicalPath = isSubdomainActive ? "/" : "/hbs";
 
+  const hbsOgImage =
+    content.ogImage ||
+    content.ogDefaultImage ||
+    content.logoPrimary ||
+    "/hbs-og-default.svg";
+
+  const hbsTwitterImage =
+    content.twitterImage ||
+    hbsOgImage;
+
+  const hbsFavicon =
+    content.favicon ||
+    "/hbs-icon.svg";
+
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: content.metaTitle || "Hind Building Solutions (HBS) | Building Repair, Maintenance & Protection",
-      template: "%s | Hind Building Solutions (HBS)",
+      default: content.metaTitle || "Hind Build | Building Repair, Maintenance & Protection",
+      template: "%s | Hind Build",
     },
-    description: content.metaDescription || "Professional building repair, waterproofing, painting, termite control, electrical, and facility maintenance services by Hind Building Solutions, a Hindustan Projects company.",
+    description: content.metaDescription || "Professional building repair, waterproofing, painting, termite control, electrical, and facility maintenance services by Hind Build, a Hindustan Projects company.",
+    icons: {
+      icon: hbsFavicon,
+      shortcut: hbsFavicon,
+      apple: content.logoMark || hbsFavicon,
+    },
     alternates: {
       canonical: canonicalPath,
     },
@@ -28,23 +48,23 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "en_IN",
       url: isSubdomainActive ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in/hbs",
-      siteName: "Hind Building Solutions (HBS)",
-      title: content.metaTitle || "Hind Building Solutions (HBS) | Building Repair, Maintenance & Protection",
+      siteName: "Hind Build",
+      title: content.metaTitle || "Hind Build | Building Repair, Maintenance & Protection",
       description: content.metaDescription || "Specialized building repair, waterproofing, termite control and maintenance division under Hindustan Projects.",
       images: [
         {
-          url: content.ogImage || "/logo.jpg",
+          url: hbsOgImage,
           width: 1200,
           height: 630,
-          alt: "Hind Building Solutions Logo",
+          alt: "Hind Build",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: content.metaTitle || "Hind Building Solutions (HBS)",
+      title: content.metaTitle || "Hind Build",
       description: content.metaDescription || "Specialized building repair and maintenance division.",
-      images: [content.ogImage || "/logo.jpg"],
+      images: [hbsTwitterImage],
     },
     robots: {
       index: true,
@@ -72,8 +92,8 @@ export default async function HbsLayout({
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "HomeAndConstructionBusiness", "RoofingContractor"],
     "@id": `${hbsBaseUrl}#organization`,
-    name: "Hind Building Solutions",
-    alternateName: "HBS",
+    name: "Hind Build",
+    alternateName: "Hind Build",
     parentOrganization: {
       "@type": "Organization",
       name: "Hindustan Projects (HiPRO)",
@@ -113,14 +133,36 @@ export default async function HbsLayout({
           "@type": "Service",
           name: s.title,
           description: s.shortDescription || undefined,
-          url: `https://hindbuilding.hindustanprojects.in/services#${s.slug}`,
+          url: `https://hindbuilding.hindustanprojects.in/services/${s.slug}`,
         },
       })),
     },
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-white font-sans">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-white font-sans hbs-shell">
+      {content.gaMeasurementId && (
+        <>
+          <Script
+            strategy="lazyOnload"
+            src={`https://www.googletagmanager.com/gtag/js?id=${content.gaMeasurementId}`}
+          />
+          <Script
+            id="hbs-google-analytics"
+            strategy="lazyOnload"
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${content.gaMeasurementId}', {
+                  page_path: window.location.pathname,
+                });
+              `,
+            }}
+          />
+        </>
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(hbsJsonLd) }}
