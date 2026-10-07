@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Save,
   RefreshCw,
@@ -9,19 +9,41 @@ import {
   Phone,
   Building2,
   Image as ImageIcon,
-  Share2,
   Shield,
-  BarChart3,
-  ExternalLink
+  Check,
+  X,
+  Compass,
+  ArrowRight,
+  MessageSquare,
+  Wrench,
+  RotateCcw,
+  Sliders,
+  Sparkles,
+  Accessibility,
+  Eye,
+  Smartphone,
+  Monitor
 } from "lucide-react";
-import type { HbsContent } from "@/lib/types";
+import type { HbsContent, HbsNavbarConfig, HbsNavbarItem } from "@/lib/types";
 import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
+import HbsNavbar, { DEFAULT_NAVBAR_CONFIG } from "@/components/hbs/HbsNavbar";
+
+type SettingsTab = "navbar" | "contact" | "social_legal";
+type PreviewMode = "desktop" | "mobile";
 
 export default function HbsAdminSettings() {
+  const [activeTab, setActiveTab] = useState<SettingsTab>("navbar");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const [content, setContent] = useState<Partial<HbsContent>>({});
+  const [navConfig, setNavConfig] = useState<HbsNavbarConfig>(DEFAULT_NAVBAR_CONFIG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedRecently, setSavedRecently] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" | "" }>({ text: "", type: "" });
+
+  // Initial snapshot to track unsaved changes
+  const [initialSnapshot, setInitialSnapshot] = useState<string>("");
 
   // Social links parsed state
   const [socials, setSocials] = useState<{
@@ -46,22 +68,66 @@ export default function HbsAdminSettings() {
       const json = await res.json();
       if (json.success && json.data) {
         setContent(json.data);
+
+        // Parse Navbar configuration from ctaSettings
+        let parsedNav: HbsNavbarConfig = DEFAULT_NAVBAR_CONFIG;
+        if (json.data.ctaSettings) {
+          try {
+            const parsed =
+              typeof json.data.ctaSettings === "string"
+                ? JSON.parse(json.data.ctaSettings)
+                : json.data.ctaSettings;
+            if (parsed && typeof parsed === "object") {
+              const raw = parsed.navbar || parsed;
+              parsedNav = {
+                navItems: Array.isArray(raw.navItems) ? raw.navItems : DEFAULT_NAVBAR_CONFIG.navItems,
+                primaryCta: { ...DEFAULT_NAVBAR_CONFIG.primaryCta, ...(raw.primaryCta || {}) },
+                contactActions: { ...DEFAULT_NAVBAR_CONFIG.contactActions, ...(raw.contactActions || {}) },
+                behaviour: { ...DEFAULT_NAVBAR_CONFIG.behaviour, ...(raw.behaviour || {}) },
+                animation: { ...DEFAULT_NAVBAR_CONFIG.animation, ...(raw.animation || {}) },
+                branding: { ...DEFAULT_NAVBAR_CONFIG.branding, ...(raw.branding || {}) },
+                accessibility: { ...DEFAULT_NAVBAR_CONFIG.accessibility, ...(raw.accessibility || {}) },
+              };
+            }
+          } catch {
+            parsedNav = DEFAULT_NAVBAR_CONFIG;
+          }
+        }
+        setNavConfig(parsedNav);
+
+        // Parse Socials
+        let parsedSocials = {
+          instagram: "",
+          facebook: "",
+          linkedin: "",
+          twitter: "",
+          youtube: "",
+        };
         if (json.data.socialLinks) {
           try {
-            const parsed = typeof json.data.socialLinks === "string"
-              ? JSON.parse(json.data.socialLinks)
-              : json.data.socialLinks;
-            setSocials({
+            const parsed =
+              typeof json.data.socialLinks === "string"
+                ? JSON.parse(json.data.socialLinks)
+                : json.data.socialLinks;
+            parsedSocials = {
               instagram: parsed.instagram || "",
               facebook: parsed.facebook || "",
               linkedin: parsed.linkedin || "",
               twitter: parsed.twitter || "",
               youtube: parsed.youtube || "",
-            });
-          } catch {
-            // keep defaults
-          }
+            };
+          } catch {}
         }
+        setSocials(parsedSocials);
+
+        // Store baseline snapshot
+        setInitialSnapshot(
+          JSON.stringify({
+            content: json.data,
+            navConfig: parsedNav,
+            socials: parsedSocials,
+          })
+        );
       } else {
         setMessage({ text: json.error || "Failed to load HBS settings.", type: "error" });
       }
@@ -76,27 +142,73 @@ export default function HbsAdminSettings() {
     loadSettings();
   }, []);
 
+  // Compute dirty/unsaved state
+  const isDirty = useMemo(() => {
+    if (!initialSnapshot) return false;
+    const currentSnapshot = JSON.stringify({
+      content,
+      navConfig,
+      socials,
+    });
+    return currentSnapshot !== initialSnapshot;
+  }, [initialSnapshot, content, navConfig, socials]);
+
+  // Warn user if leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
   const handleChange = (field: keyof HbsContent, value: any) => {
     setContent((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSocialChange = (network: keyof typeof socials, value: string) => {
-    const updated = { ...socials, [network]: value };
-    setSocials(updated);
-    setContent((prev) => ({
+  const handleNavItemChange = (id: string, field: keyof HbsNavbarItem, value: any) => {
+    setNavConfig((prev) => ({
       ...prev,
-      socialLinks: JSON.stringify(updated),
+      navItems: prev.navItems.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      ),
     }));
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleResetToRecommended = useCallback(() => {
+    if (window.confirm("Reset all navbar controls to recommended Apple-minimal defaults?")) {
+      setNavConfig(DEFAULT_NAVBAR_CONFIG);
+      setMessage({ text: "Navbar settings reset to recommended defaults. Click 'Save Changes' to apply.", type: "success" });
+    }
+  }, []);
+
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setSaving(true);
     setMessage({ text: "", type: "" });
 
     try {
+      let currentCtaSettings: any = {};
+      try {
+        if (content.ctaSettings) {
+          currentCtaSettings =
+            typeof content.ctaSettings === "string"
+              ? JSON.parse(content.ctaSettings)
+              : content.ctaSettings;
+        }
+      } catch {}
+
+      const updatedCtaSettings = {
+        ...currentCtaSettings,
+        navbar: navConfig,
+      };
+
       const payload = {
         ...content,
+        ctaSettings: JSON.stringify(updatedCtaSettings),
         socialLinks: JSON.stringify(socials),
       };
 
@@ -109,12 +221,25 @@ export default function HbsAdminSettings() {
 
       const json = await res.json();
       if (json.success) {
-        setMessage({ text: "HBS general settings saved successfully!", type: "success" });
+        setSavedRecently(true);
+        setTimeout(() => setSavedRecently(false), 2500);
+
+        setInitialSnapshot(
+          JSON.stringify({
+            content: json.data || content,
+            navConfig,
+            socials,
+          })
+        );
+
+        setMessage({ text: "Navbar and system settings saved successfully!", type: "success" });
         try {
           await fetch("/api/revalidate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact"] }),
+            body: JSON.stringify({
+              paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact"],
+            }),
           });
         } catch {}
       } else {
@@ -129,42 +254,72 @@ export default function HbsAdminSettings() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-slate-400 gap-2">
+      <div className="flex items-center justify-center p-16 text-slate-400 gap-2">
         <RefreshCw className="w-5 h-5 animate-spin" />
-        <span className="text-xs uppercase tracking-wider font-mono">Loading HBS Settings...</span>
+        <span className="text-xs uppercase tracking-wider font-mono">Loading Settings...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-            General Configuration
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            Hind Build Brand & Contact Settings
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage official Hind Build branding assets, contact hotlines, WhatsApp, social channels, and legal compliance.
-          </p>
-        </div>
+    <div className="space-y-6 max-w-6xl pb-24">
+      {/* Apple-minimal Header */}
+      <HbsAdminPageHeader
+        breadcrumbs={[{ label: "Settings" }]}
+        title="Navbar & System Settings"
+        description="Manage the Hind Building Solutions public navbar, brand assets, live preview, behaviour, and animations."
+      >
+        <div className="flex items-center gap-2.5">
+          {isDirty ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <span>Unsaved changes</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-500 bg-slate-50 border border-slate-200 rounded-lg">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>All changes saved</span>
+            </span>
+          )}
 
-        <button
-          onClick={loadSettings}
-          type="button"
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shrink-0"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Reload</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={loadSettings}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Reload</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs disabled:opacity-50 min-h-[36px]"
+          >
+            {saving ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : savedRecently ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Saved</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </>
+            )}
+          </button>
+        </div>
+      </HbsAdminPageHeader>
 
       {message.text && (
         <div
-          className={`p-4 text-xs flex items-center gap-2 border ${
+          className={`p-3.5 text-xs flex items-center gap-2 rounded-lg border ${
             message.type === "success"
               ? "bg-emerald-50 border-emerald-200 text-emerald-800"
               : "bg-red-50 border-red-200 text-red-800"
@@ -179,365 +334,1056 @@ export default function HbsAdminSettings() {
         </div>
       )}
 
+      {/* Tabs */}
+      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => setActiveTab("navbar")}
+          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+            activeTab === "navbar"
+              ? "border-slate-900 text-slate-950 bg-slate-100/60"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+          }`}
+        >
+          <Compass className="w-3.5 h-3.5" />
+          <span>Navbar CMS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("contact")}
+          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+            activeTab === "contact"
+              ? "border-slate-900 text-slate-950 bg-slate-100/60"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+          }`}
+        >
+          <Phone className="w-3.5 h-3.5" />
+          <span>Hotlines &amp; Identity</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("social_legal")}
+          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+            activeTab === "social_legal"
+              ? "border-slate-900 text-slate-950 bg-slate-100/60"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+          }`}
+        >
+          <Shield className="w-3.5 h-3.5" />
+          <span>Social &amp; Legal</span>
+        </button>
+      </div>
+
       <form onSubmit={handleSave} className="space-y-8">
-        {/* SECTION 1: Brand Identity & Positioning */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-amber-600" />
-            <span>Brand Identity & Positioning</span>
-          </h2>
+        {/* ========================================================
+            TAB 1: NAVBAR CMS (PHASE 3C-16 COMPLETE SPEC)
+        ======================================================== */}
+        {activeTab === "navbar" && (
+          <div className="space-y-8">
+            {/* ── SECTION 10: CMS LIVE PREVIEW ─────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-slate-900" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                    Live Navbar Preview
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    (Updates instantly from form state)
+                  </span>
+                </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Sub-Brand Name
-              </label>
-              <input
-                type="text"
-                value={content.brandName || "Hind Build"}
-                onChange={(e) => handleChange("brandName", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-medium"
-              />
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewMode("desktop")}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        previewMode === "desktop"
+                          ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span>Desktop</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewMode("mobile")}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        previewMode === "mobile"
+                          ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span>Mobile</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleResetToRecommended}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors font-medium"
+                    title="Reset to recommended Apple-minimal defaults"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset to Recommended</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Render simulated live navbar */}
+              {previewMode === "desktop" ? (
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 shadow-inner">
+                  <HbsNavbar content={content as HbsContent} previewConfig={navConfig} />
+                  <div className="p-8 text-center text-xs text-slate-400 font-mono bg-slate-100/60">
+                    [ Page Content Area — Scroll simulation ]
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-100 rounded-xl flex justify-center">
+                  <div className="w-full max-w-[390px] border-4 border-slate-800 rounded-2xl overflow-hidden shadow-xl bg-white relative min-h-[580px] flex flex-col justify-between">
+                    <div className="h-5 bg-slate-800 flex items-center justify-center">
+                      <div className="w-16 h-2 bg-slate-600 rounded-full" />
+                    </div>
+                    <HbsNavbar content={content as HbsContent} previewConfig={navConfig} previewViewport="mobile" />
+                    <div className="p-8 text-center text-xs text-slate-400 font-mono bg-slate-50">
+                      [ Mobile Viewport (390px) ]
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Parent Company Disclosure Tagline
-              </label>
-              <input
-                type="text"
-                value={content.tagline || "Complete Building Repair, Maintenance, Protection & Services"}
-                onChange={(e) => handleChange("tagline", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
-              />
+            {/* ── SECTION 1: BRANDING ──────────────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-amber-600" />
+                  <span>1. Branding &amp; Logos</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Manage the official Hind Building Solutions logo assets used across the navbar.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <HbsImageUploader
+                  label="Primary Logo (Desktop)"
+                  description="High-resolution horizontal brand logo with transparent background"
+                  value={content.logoPrimary || ""}
+                  onChange={(url) => handleChange("logoPrimary", url)}
+                  folder="hbs/branding"
+                  recommendedSize="400×90px"
+                  previewHeight="h-20"
+                />
+
+                <HbsImageUploader
+                  label="Dark / Reverse Logo"
+                  description="Light version for dark backgrounds or transparent top state"
+                  value={content.logoDark || ""}
+                  onChange={(url) => handleChange("logoDark", url)}
+                  folder="hbs/branding"
+                  recommendedSize="400×90px"
+                  previewHeight="h-20"
+                />
+
+                <HbsImageUploader
+                  label="Mobile Logo"
+                  description="Compact logo displayed on mobile viewports (<768px)"
+                  value={content.logoMobile || ""}
+                  onChange={(url) => handleChange("logoMobile", url)}
+                  folder="hbs/branding"
+                  recommendedSize="280×70px"
+                  previewHeight="h-20"
+                />
+
+                <HbsImageUploader
+                  label="Mobile Mark / Monogram"
+                  description="Square emblem icon used on compact mobile navbar"
+                  value={content.logoMark || ""}
+                  onChange={(url) => handleChange("logoMark", url)}
+                  folder="hbs/branding"
+                  recommendedSize="96×96px"
+                  previewHeight="h-20"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Logo Alt Text
+                  </label>
+                  <input
+                    type="text"
+                    value={navConfig.branding?.logoAltText || "Hind Building Solutions"}
+                    onChange={(e) =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        branding: { ...prev.branding, logoAltText: e.target.value },
+                      }))
+                    }
+                    placeholder="Hind Building Solutions"
+                    className="w-full text-xs font-medium border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    Accessibility description for screen readers.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Brand Subtitle (Desktop)
+                  </label>
+                  <input
+                    type="text"
+                    value={navConfig.branding?.brandSubtitle || "Engineering & Turnkey Solutions"}
+                    onChange={(e) =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        branding: { ...prev.branding, brandSubtitle: e.target.value },
+                      }))
+                    }
+                    placeholder="Engineering & Turnkey Solutions"
+                    className="w-full text-xs font-medium border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                  <span className="text-[11px] text-slate-400 mt-1 block">
+                    Micro-descriptor displayed below brand name when emblem is active.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── SECTION 2: NAVIGATION LINKS ─────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <Compass className="w-4 h-4 text-amber-600" />
+                  <span>2. Navigation Links</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Control label, visibility, and display sequence for main site pages.
+                </p>
+              </div>
+
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden bg-slate-50/50">
+                {navConfig.navItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 sm:p-4 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-16">
+                        <label className="block text-[10px] font-mono font-bold uppercase text-slate-400 mb-0.5">
+                          Order
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={99}
+                          value={item.order}
+                          onChange={(e) =>
+                            handleNavItemChange(item.id, "order", parseInt(e.target.value) || 1)
+                          }
+                          className="w-full text-xs font-mono font-bold text-center border border-slate-300 p-2 bg-slate-50 rounded-md focus:bg-white focus:outline-slate-900"
+                        />
+                      </div>
+
+                      <div className="flex-1 sm:w-64">
+                        <label className="block text-[10px] font-mono font-bold uppercase text-slate-400 mb-0.5">
+                          Page Label ({item.id})
+                        </label>
+                        <input
+                          type="text"
+                          value={item.label}
+                          onChange={(e) => handleNavItemChange(item.id, "label", e.target.value)}
+                          placeholder={item.id}
+                          className="w-full text-xs font-semibold border border-slate-300 p-2 bg-slate-50 rounded-md focus:bg-white focus:outline-slate-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-1 sm:pt-0">
+                      <button
+                        type="button"
+                        onClick={() => handleNavItemChange(item.id, "visible", !item.visible)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[36px] ${
+                          item.visible
+                            ? "bg-emerald-50 text-emerald-800 border border-emerald-300"
+                            : "bg-slate-100 text-slate-500 border border-slate-300"
+                        }`}
+                      >
+                        {item.visible ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Visible ✓</span>
+                          </>
+                        ) : (
+                          <>
+                            <X className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Hidden</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── SECTION 3: CALL-TO-ACTION (CTA) ──────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <Wrench className="w-4 h-4 text-amber-600" />
+                  <span>3. Conversion CTAs &amp; Actions</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Configure primary quote action, direct phone calling, and WhatsApp messaging.
+                </p>
+              </div>
+
+              {/* Primary CTA */}
+              <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                    <ArrowRight className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Primary Action Button</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        primaryCta: { ...prev.primaryCta, enabled: !prev.primaryCta.enabled },
+                      }))
+                    }
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border min-h-[34px] ${
+                      navConfig.primaryCta.enabled
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.primaryCta.enabled ? "Enabled ✓" : "Disabled"}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      Button Label
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.primaryCta.label || ""}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          primaryCta: { ...prev.primaryCta, label: e.target.value },
+                        }))
+                      }
+                      placeholder="Get Free Quote"
+                      className="w-full text-xs font-semibold border border-slate-300 p-2.5 bg-white rounded-lg focus:outline-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      Destination URL
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.primaryCta.destination || ""}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          primaryCta: { ...prev.primaryCta, destination: e.target.value },
+                        }))
+                      }
+                      placeholder="/contact"
+                      className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-white rounded-lg focus:outline-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Secondary Actions: Call & WhatsApp */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Call */}
+                <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Phone Call Action</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: {
+                            ...prev.contactActions,
+                            callEnabled: !prev.contactActions.callEnabled,
+                          },
+                        }))
+                      }
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all ${
+                        navConfig.contactActions.callEnabled
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-white text-slate-600 border-slate-300"
+                      }`}
+                    >
+                      {navConfig.contactActions.callEnabled ? "Enabled" : "Disabled"}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      Label
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.contactActions.callLabel || "Call"}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: { ...prev.contactActions, callLabel: e.target.value },
+                        }))
+                      }
+                      placeholder="Call"
+                      className="w-full text-xs border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900 mb-2"
+                    />
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      Phone Number (defaults to Hotline)
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.contactActions.phone || content.phone || ""}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: { ...prev.contactActions, phone: e.target.value },
+                        }))
+                      }
+                      placeholder="+91 75970 00601"
+                      className="w-full text-xs font-mono border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900"
+                    />
+                  </div>
+                </div>
+
+                {/* WhatsApp */}
+                <div className="p-4 bg-slate-50/70 border border-slate-200 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp Action</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: {
+                            ...prev.contactActions,
+                            whatsappEnabled: !prev.contactActions.whatsappEnabled,
+                          },
+                        }))
+                      }
+                      className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all ${
+                        navConfig.contactActions.whatsappEnabled
+                          ? "bg-emerald-600 text-white border-emerald-700"
+                          : "bg-white text-slate-600 border-slate-300"
+                      }`}
+                    >
+                      {navConfig.contactActions.whatsappEnabled ? "Enabled" : "Disabled"}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      Label
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.contactActions.whatsappLabel || "WhatsApp"}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: { ...prev.contactActions, whatsappLabel: e.target.value },
+                        }))
+                      }
+                      placeholder="WhatsApp"
+                      className="w-full text-xs border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900 mb-2"
+                    />
+                    <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                      WhatsApp Number
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.contactActions.whatsappNumber || content.whatsapp || ""}
+                      onChange={(e) =>
+                        setNavConfig((prev) => ({
+                          ...prev,
+                          contactActions: { ...prev.contactActions, whatsappNumber: e.target.value },
+                        }))
+                      }
+                      placeholder="+91 75970 00601"
+                      className="w-full text-xs font-mono border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── SECTION 4: BEHAVIOUR ─────────────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-amber-600" />
+                  <span>4. Scroll &amp; Layout Behaviour</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Tune sticky scrolling, header compacting, transparency, and active route markers.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Sticky Navbar */}
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Sticky Navbar</span>
+                    <span className="text-[11px] text-slate-500 block">Pins header to top of viewport on scroll</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        behaviour: { ...prev.behaviour, sticky: !(prev.behaviour?.sticky !== false) },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.behaviour?.sticky !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.behaviour?.sticky !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+
+                {/* Compact on Scroll */}
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Compact on Scroll</span>
+                    <span className="text-[11px] text-slate-500 block">Reduces height smoothly after scrolling 20px</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        behaviour: {
+                          ...prev.behaviour,
+                          compactOnScroll: !(prev.behaviour?.compactOnScroll !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.behaviour?.compactOnScroll !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.behaviour?.compactOnScroll !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+
+                {/* Transparent at Top */}
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Transparent at Top</span>
+                    <span className="text-[11px] text-slate-500 block">Seamless hero integration before scrolling</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        behaviour: {
+                          ...prev.behaviour,
+                          transparentAtTop: !prev.behaviour?.transparentAtTop,
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.behaviour?.transparentAtTop
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.behaviour?.transparentAtTop ? "ON" : "OFF"}
+                  </button>
+                </div>
+
+                {/* Active Indicator */}
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Active Page Indicator</span>
+                    <span className="text-[11px] text-slate-500 block">Subtle Apple-style bar below current page</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        behaviour: {
+                          ...prev.behaviour,
+                          activeIndicator: !(prev.behaviour?.activeIndicator !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.behaviour?.activeIndicator !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.behaviour?.activeIndicator !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ── SECTION 5: ANIMATION ─────────────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600" />
+                  <span>5. Animation System</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Pure CSS hardware-accelerated transitions. Respects prefers-reduced-motion automatically.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Navbar Animation</span>
+                    <span className="text-[11px] text-slate-500 block">Entrance &amp; transitions</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        animation: {
+                          ...prev.animation,
+                          navbarAnimation: !(prev.animation?.navbarAnimation !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.animation?.navbarAnimation !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.animation?.navbarAnimation !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Mobile Drawer Anim</span>
+                    <span className="text-[11px] text-slate-500 block">Staggered slide reveal</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        animation: {
+                          ...prev.animation,
+                          mobileMenuAnimation: !(prev.animation?.mobileMenuAnimation !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.animation?.mobileMenuAnimation !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.animation?.mobileMenuAnimation !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Scroll Compacting</span>
+                    <span className="text-[11px] text-slate-500 block">Smooth height transition</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        animation: {
+                          ...prev.animation,
+                          scrollAnimation: !(prev.animation?.scrollAnimation !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.animation?.scrollAnimation !== false
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.animation?.scrollAnimation !== false ? "ON" : "OFF"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Animation Speed
+                  </label>
+                  <select
+                    value={navConfig.animation?.speed || "normal"}
+                    onChange={(e) =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        animation: { ...prev.animation, speed: e.target.value as any },
+                      }))
+                    }
+                    className="w-full text-xs font-semibold border border-slate-300 p-2.5 bg-white rounded-lg focus:outline-slate-900"
+                  >
+                    <option value="fast">Fast (180ms - Snappy &amp; instant)</option>
+                    <option value="normal">Normal (240ms - Recommended Apple feel)</option>
+                    <option value="slow">Slow (360ms - Cinematic &amp; calm)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Animation Intensity
+                  </label>
+                  <select
+                    value={navConfig.animation?.intensity || "normal"}
+                    onChange={(e) =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        animation: { ...prev.animation, intensity: e.target.value as any },
+                      }))
+                    }
+                    className="w-full text-xs font-semibold border border-slate-300 p-2.5 bg-white rounded-lg focus:outline-slate-900"
+                  >
+                    <option value="subtle">Subtle (Minimal opacity change)</option>
+                    <option value="normal">Normal (Balanced opacity + translateY)</option>
+                    <option value="strong">Strong (Expressive motion)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* ── SECTION 6: ACCESSIBILITY ─────────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                  <Accessibility className="w-4 h-4 text-amber-600" />
+                  <span>6. Accessibility (WCAG AA)</span>
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Ensure screen reader announcements, keyboard navigation, and reduced motion safety.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Mobile Menu Aria-Label
+                  </label>
+                  <input
+                    type="text"
+                    value={navConfig.accessibility?.menuAriaLabel || "Navigation Menu"}
+                    onChange={(e) =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        accessibility: { ...prev.accessibility, menuAriaLabel: e.target.value },
+                      }))
+                    }
+                    placeholder="Navigation Menu"
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
+                  />
+                </div>
+
+                <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">Reduced-Motion Safe Fallback</span>
+                    <span className="text-[11px] text-slate-500 block">Bypasses animations if user prefers reduced motion</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNavConfig((prev) => ({
+                        ...prev,
+                        accessibility: {
+                          ...prev.accessibility,
+                          reducedMotionSafe: !(prev.accessibility?.reducedMotionSafe !== false),
+                        },
+                      }))
+                    }
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-all ${
+                      navConfig.accessibility?.reducedMotionSafe !== false
+                        ? "bg-emerald-600 text-white border-emerald-700"
+                        : "bg-white text-slate-600 border-slate-300"
+                    }`}
+                  >
+                    {navConfig.accessibility?.reducedMotionSafe !== false ? "Active ✓" : "Inactive"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* SECTION 2: Official Hind Build Branding Assets */}
-        <div className="bg-white border border-slate-200 p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 border-b border-slate-100">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-amber-600" />
-                <span>Official &quot;Hind Build&quot; Brand Logos &amp; Assets</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Upload and manage dedicated Hind Build branding assets. Hind Build never falls back to the parent HiPRO logo.
-              </p>
-            </div>
-            <span className="text-[10px] font-mono text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 font-bold uppercase tracking-wider self-start sm:self-auto">
-              Folder: hbs/branding
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Primary Logo */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.logoPrimary || ""}
-                onChange={(url) => handleChange("logoPrimary", url)}
-                folder="hbs/branding"
-                label="Primary Logo (Light Backgrounds)"
-                description="Official Hind Build logo rendered on navbar and main header areas."
-                recommendedSize="240×60px"
-                aspectRatioHint="4:1"
-                previewHeight="h-32"
-              />
-            </div>
-
-            {/* Dark Mode / Inverted Logo */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.logoDark || ""}
-                onChange={(url) => handleChange("logoDark", url)}
-                folder="hbs/branding"
-                label="Dark Background Logo (Footer)"
-                description="Light/white Hind Build variant optimized for dark slate-950 footer."
-                recommendedSize="240×60px"
-                aspectRatioHint="4:1"
-                previewHeight="h-32"
-              />
-            </div>
-
-            {/* Mobile Navigation Logo */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.logoMobile || ""}
-                onChange={(url) => handleChange("logoMobile", url)}
-                folder="hbs/branding"
-                label="Mobile Navbar Logo"
-                description="Compact Hind Build version shown on mobile screens (360px - 640px)."
-                recommendedSize="160×48px"
-                aspectRatioHint="3:1"
-                previewHeight="h-32"
-              />
-            </div>
-
-            {/* Symbol / Mark */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.logoMark || ""}
-                onChange={(url) => handleChange("logoMark", url)}
-                folder="hbs/branding"
-                label="Brand Icon / Symbol Mark"
-                description="Square emblem or brand symbol used in compact widgets and app icons."
-                recommendedSize="128×128px"
-                aspectRatioHint="1:1"
-                previewHeight="h-32"
-              />
-            </div>
-
-            {/* Hind Build Favicon */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.favicon || ""}
-                onChange={(url) => handleChange("favicon", url)}
-                folder="hbs/branding"
-                label="Hind Build Dedicated Favicon"
-                description="Isolated browser tab icon. Guarantees Hind Build never inherits parent HiPRO favicon."
-                recommendedSize="48×48px"
-                aspectRatioHint="1:1"
-                previewHeight="h-32"
-              />
-            </div>
-
-            {/* Default OpenGraph Share Image */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <HbsImageUploader
-                value={content.ogDefaultImage || ""}
-                onChange={(url) => handleChange("ogDefaultImage", url)}
-                folder="hbs/branding"
-                label="Default OG & Social Preview Image"
-                description="1200×630px social banner used when WhatsApp, Facebook, or Twitter cards share Hind Build."
-                recommendedSize="1200×630px"
-                aspectRatioHint="1.91:1"
-                previewHeight="h-32"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: Hotlines & Direct Communication */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Phone className="w-4 h-4 text-amber-600" />
-            <span>Direct Communication & Hotlines</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Engineering Hotline (Phone)
-              </label>
-              <input
-                type="text"
-                value={content.phone || "+91 75970 00601"}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Instant WhatsApp Support Number
-              </label>
-              <input
-                type="text"
-                value={content.whatsapp || "+91 75970 00601"}
-                onChange={(e) => handleChange("whatsapp", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Official Support Email
-              </label>
-              <input
-                type="email"
-                value={content.email || "hbs@hindustanprojects.in"}
-                onChange={(e) => handleChange("email", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Operating / Inspection Hours
-              </label>
-              <input
-                type="text"
-                value={content.businessHours || "Mon - Sat: 9:00 AM - 7:00 PM"}
-                onChange={(e) => handleChange("businessHours", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Operational Headquarters Address
-            </label>
-            <textarea
-              rows={2}
-              value={content.address || "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001"}
-              onChange={(e) => handleChange("address", e.target.value)}
-              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500"
-            />
-          </div>
-        </div>
-
-        {/* SECTION 4: Social Media Channels */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* ========================================================
+            TAB 2: HOTLINES & IDENTITY
+        ======================================================== */}
+        {activeTab === "contact" && (
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
             <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-              <Share2 className="w-4 h-4 text-amber-600" />
-              <span>Official Social Media Channels</span>
+              <Building2 className="w-4 h-4 text-amber-600" />
+              <span>Brand Identity &amp; Contact Details</span>
             </h2>
-            <span className="text-[10px] text-slate-400 font-mono">Displayed in HBS Footer</span>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Instagram Profile URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://www.instagram.com/hindustan_projects/"
-                value={socials.instagram}
-                onChange={(e) => handleSocialChange("instagram", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Public Brand Name
+                </label>
+                <input
+                  type="text"
+                  value={content.brandName || "Hind Building Solutions"}
+                  onChange={(e) => handleChange("brandName", e.target.value)}
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Tagline
+                </label>
+                <input
+                  type="text"
+                  value={content.tagline || ""}
+                  onChange={(e) => handleChange("tagline", e.target.value)}
+                  placeholder="Complete Building Repair, Maintenance, Protection & Services"
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Primary Hotline Phone
+                </label>
+                <input
+                  type="text"
+                  value={content.phone || ""}
+                  onChange={(e) => handleChange("phone", e.target.value)}
+                  placeholder="+91 75970 00601"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Official WhatsApp Number
+                </label>
+                <input
+                  type="text"
+                  value={content.whatsapp || ""}
+                  onChange={(e) => handleChange("whatsapp", e.target.value)}
+                  placeholder="+91 75970 00601"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Support Email
+                </label>
+                <input
+                  type="email"
+                  value={content.email || ""}
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  placeholder="hbs@hindustanprojects.in"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Operating Business Hours
+                </label>
+                <input
+                  type="text"
+                  value={content.businessHours || ""}
+                  onChange={(e) => handleChange("businessHours", e.target.value)}
+                  placeholder="Mon - Sat: 9:00 AM - 7:00 PM"
+                  className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Facebook Page URL
+                Office / Regional Address
               </label>
-              <input
-                type="url"
-                placeholder="https://facebook.com/hindustanprojects"
-                value={socials.facebook}
-                onChange={(e) => handleSocialChange("facebook", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
+              <textarea
+                rows={2}
+                value={content.address || ""}
+                onChange={(e) => handleChange("address", e.target.value)}
+                placeholder="Full operational address in Rajasthan"
+                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
               />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                LinkedIn Organization URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://linkedin.com/company/hindustanprojects"
-                value={socials.linkedin}
-                onChange={(e) => handleSocialChange("linkedin", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                YouTube Channel URL (Optional)
-              </label>
-              <input
-                type="url"
-                placeholder="https://youtube.com/@hindustanprojects"
-                value={socials.youtube}
-                onChange={(e) => handleSocialChange("youtube", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 5: Legal & Compliance URLs */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <Shield className="w-4 h-4 text-amber-600" />
-            <span>Legal Compliance & Terms URLs</span>
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Privacy Policy URL
-              </label>
-              <input
-                type="text"
-                placeholder="/privacy-policy"
-                value={content.privacyPolicyUrl || ""}
-                onChange={(e) => handleChange("privacyPolicyUrl", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-              <span className="text-[10px] text-slate-400 mt-1 block">
-                Leave empty to hide the Privacy Policy link from the footer.
-              </span>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Terms of Service URL
-              </label>
-              <input
-                type="text"
-                placeholder="/terms"
-                value={content.termsUrl || ""}
-                onChange={(e) => handleChange("termsUrl", e.target.value)}
-                className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-              />
-              <span className="text-[10px] text-slate-400 mt-1 block">
-                Leave empty to hide the Terms link from the footer.
-              </span>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* SECTION 6: Analytics & Measurement */}
-        <div className="bg-white border border-slate-200 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-amber-600" />
-            <span>Isolated HBS Analytics (GA4)</span>
-          </h2>
+        {/* ========================================================
+            TAB 3: SOCIAL & LEGAL
+        ======================================================== */}
+        {activeTab === "social_legal" && (
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
+            <h2 className="text-sm font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+              <Shield className="w-4 h-4 text-amber-600" />
+              <span>Social Media, Compliance &amp; Analytics</span>
+            </h2>
 
-          <div className="max-w-md">
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-              Google Analytics 4 Measurement ID
-            </label>
-            <input
-              type="text"
-              placeholder="G-XXXXXXXXXX"
-              value={content.gaMeasurementId || ""}
-              onChange={(e) => handleChange("gaMeasurementId", e.target.value)}
-              className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 font-mono"
-            />
-            <span className="text-[10px] text-slate-400 mt-1 block">
-              Dedicated measurement ID for HBS traffic isolation. Does not alter parent HiPRO GA4 setup.
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Instagram Profile URL
+                </label>
+                <input
+                  type="url"
+                  value={socials.instagram}
+                  onChange={(e) => setSocials({ ...socials, instagram: e.target.value })}
+                  placeholder="https://instagram.com/..."
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  LinkedIn Company URL
+                </label>
+                <input
+                  type="url"
+                  value={socials.linkedin}
+                  onChange={(e) => setSocials({ ...socials, linkedin: e.target.value })}
+                  placeholder="https://linkedin.com/company/..."
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Privacy Policy Link
+                </label>
+                <input
+                  type="text"
+                  value={content.privacyPolicyUrl || ""}
+                  onChange={(e) => handleChange("privacyPolicyUrl", e.target.value)}
+                  placeholder="/privacy-policy"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Terms &amp; Conditions Link
+                </label>
+                <input
+                  type="text"
+                  value={content.termsUrl || ""}
+                  onChange={(e) => handleChange("termsUrl", e.target.value)}
+                  placeholder="/terms"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                  Google Analytics 4 Measurement ID
+                </label>
+                <input
+                  type="text"
+                  value={content.gaMeasurementId || ""}
+                  onChange={(e) => handleChange("gaMeasurementId", e.target.value)}
+                  placeholder="G-XXXXXXXXXX"
+                  className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STICKY SAVE BAR ───────────────────────────────── */}
+        <div className="fixed bottom-0 inset-x-0 lg:left-auto lg:w-[calc(100%-var(--admin-sidebar-w,0px))] z-40 border-t border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3 px-4 sm:px-6 py-3">
+            <span className="text-[13px]" aria-live="polite">
+              {isDirty ? (
+                <span className="inline-flex items-center gap-2 text-amber-700 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  Unsaved changes in Navbar &amp; settings
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-slate-500 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  All changes saved
+                </span>
+              )}
             </span>
-          </div>
-        </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-end pt-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-amber-600 hover:bg-amber-500 text-white font-black text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
-          >
-            {saving ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Saving HBS Settings...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>Save All HBS Settings</span>
-              </>
-            )}
-          </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={loadSettings}
+                className="min-h-[40px] px-3.5 text-xs font-semibold text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                Reset Form
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSave()}
+                disabled={saving || !isDirty}
+                className="inline-flex items-center gap-2 min-h-[40px] px-5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+              >
+                {saving ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : savedRecently ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-300" />
+                    <span>Saved</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3.5 h-3.5" />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>

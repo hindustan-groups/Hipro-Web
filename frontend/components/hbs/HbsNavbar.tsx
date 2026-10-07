@@ -1,326 +1,657 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Phone,
-  MessageSquare,
-  Wrench,
-  Menu,
-  X,
-  ArrowRight,
-  ShieldCheck,
-  ChevronRight
-} from "lucide-react";
-import type { HbsContent } from "@/lib/types";
+import { Phone, MessageSquare, ArrowRight, ChevronRight, X } from "lucide-react";
+import type { HbsContent, HbsNavbarConfig } from "@/lib/types";
+import { cleanTelNumber, getContactWhatsAppUrl } from "@/lib/hbsWhatsApp";
+
+export const DEFAULT_NAVBAR_CONFIG: HbsNavbarConfig = {
+  navItems: [
+    { id: "home", label: "Home", visible: true, order: 1 },
+    { id: "about", label: "About", visible: true, order: 2 },
+    { id: "services", label: "Services", visible: true, order: 3 },
+    { id: "projects", label: "Projects", visible: true, order: 4 },
+  ],
+  primaryCta: {
+    enabled: true,
+    label: "Get Free Quote",
+    destination: "/contact",
+  },
+  contactActions: {
+    callEnabled: true,
+    callLabel: "Call",
+    phone: "",
+    whatsappEnabled: true,
+    whatsappLabel: "WhatsApp",
+    whatsappNumber: "",
+  },
+  behaviour: {
+    sticky: true,
+    compactOnScroll: true,
+    transparentAtTop: false,
+    activeIndicator: true,
+  },
+  animation: {
+    navbarAnimation: true,
+    mobileMenuAnimation: true,
+    scrollAnimation: true,
+    intensity: "normal",
+    speed: "normal",
+  },
+  branding: {
+    logoAltText: "Hind Building Solutions",
+    brandSubtitle: "Engineering & Turnkey Solutions",
+  },
+  accessibility: {
+    menuAriaLabel: "Navigation Menu",
+    reducedMotionSafe: true,
+  },
+};
+
+/** Viewport width (px) at which the desktop navbar takes over from the hamburger. Matches Tailwind `lg`. */
+const DESKTOP_MIN_WIDTH = 1024;
+const MOBILE_NAV_ID = "hbs-mobile-navigation";
 
 interface HbsNavbarProps {
   content: HbsContent;
+  /** Optional override config for live admin preview without saving */
+  previewConfig?: HbsNavbarConfig;
+  /** Admin preview only: force the mobile layout regardless of the real viewport width */
+  previewViewport?: "desktop" | "mobile";
 }
 
-export default function HbsNavbar({ content }: HbsNavbarProps) {
+export default function HbsNavbar({ content, previewConfig, previewViewport }: HbsNavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [drawerTop, setDrawerTop] = useState(64);
 
-  // Scroll detection for compact navbar styling
+  const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  const isPreview = Boolean(previewConfig);
+  const forceMobile = previewViewport === "mobile";
+
+  // Safely parse dynamic navbar CMS settings from content.ctaSettings or use previewConfig
+  const navConfig = useMemo<HbsNavbarConfig>(() => {
+    if (previewConfig) return previewConfig;
+
+    if (content.ctaSettings) {
+      try {
+        const parsed =
+          typeof content.ctaSettings === "string"
+            ? JSON.parse(content.ctaSettings)
+            : content.ctaSettings;
+        if (parsed && typeof parsed === "object") {
+          const raw = parsed.navbar || parsed;
+          return {
+            navItems: Array.isArray(raw.navItems)
+              ? raw.navItems
+              : DEFAULT_NAVBAR_CONFIG.navItems,
+            primaryCta: {
+              ...DEFAULT_NAVBAR_CONFIG.primaryCta,
+              ...(raw.primaryCta || {}),
+            },
+            contactActions: {
+              ...DEFAULT_NAVBAR_CONFIG.contactActions,
+              ...(raw.contactActions || {}),
+            },
+            behaviour: {
+              ...DEFAULT_NAVBAR_CONFIG.behaviour,
+              ...(raw.behaviour || {}),
+            },
+            animation: {
+              ...DEFAULT_NAVBAR_CONFIG.animation,
+              ...(raw.animation || {}),
+            },
+            branding: {
+              ...DEFAULT_NAVBAR_CONFIG.branding,
+              ...(raw.branding || {}),
+            },
+            accessibility: {
+              ...DEFAULT_NAVBAR_CONFIG.accessibility,
+              ...(raw.accessibility || {}),
+            },
+          };
+        }
+      } catch {
+        // Fall back gracefully
+      }
+    }
+    return DEFAULT_NAVBAR_CONFIG;
+  }, [content.ctaSettings, previewConfig]);
+
+  // Portal target is only available after hydration
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Scroll detection
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on page navigation
+  // ── Mobile menu state helpers (single source of truth: mobileMenuOpen) ──
+  const measureDrawerTop = useCallback(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    setDrawerTop(Math.max(0, Math.round(el.getBoundingClientRect().bottom)));
+  }, []);
+
+  const openMenu = useCallback(() => {
+    measureDrawerTop();
+    setMobileMenuOpen(true);
+  }, [measureDrawerTop]);
+
+  const closeMenu = useCallback((restoreFocus: boolean) => {
+    setMobileMenuOpen(false);
+    if (restoreFocus) {
+      requestAnimationFrame(() => menuButtonRef.current?.focus());
+    }
+  }, []);
+
+  // Close mobile menu on route change (covers link clicks + browser back/forward)
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when mobile menu is active
+  // Browser back/forward on the same path (hash/query) must also close the menu
   useEffect(() => {
-    if (mobileMenuOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
+    const onPop = () => setMobileMenuOpen(false);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // While open: lock page scroll, keep drawer anchored under header, trap focus, ESC to close
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    // ESC closes (also in admin preview)
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMenu(true);
+        return;
+      }
+      if (isPreview || e.key !== "Tab") return;
+
+      // Focus trap: hamburger + drawer focusables
+      const panel = drawerRef.current;
+      const btn = menuButtonRef.current;
+      if (!panel || !btn) return;
+      const items = [
+        btn,
+        ...Array.from(panel.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")),
+      ];
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !items.includes(active)) {
+        e.preventDefault();
+        first.focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    // Move focus into the navigation
+    const focusRaf = requestAnimationFrame(() => {
+      drawerRef.current?.querySelector<HTMLElement>("a[href]")?.focus({ preventScroll: true });
+    });
+
+    if (isPreview) {
       return () => {
-        document.body.style.overflow = originalOverflow;
+        document.removeEventListener("keydown", onKeyDown);
+        cancelAnimationFrame(focusRaf);
       };
     }
-  }, [mobileMenuOpen]);
 
-  // Escape key handler for accessible dialog closing
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape" && mobileMenuOpen) {
+    // Body scroll lock (overflow-based so the sticky header stays put)
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollbarWidth = window.innerWidth - html.clientWidth;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPaddingRight: body.style.paddingRight,
+    };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+
+    // Keep the drawer flush with the header bottom (compacting header, rotation, resize)
+    const onResize = () => {
+      if (window.innerWidth >= DESKTOP_MIN_WIDTH) {
         setMobileMenuOpen(false);
+        return;
       }
-    },
-    [mobileMenuOpen]
-  );
+      measureDrawerTop();
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    const ro =
+      typeof ResizeObserver !== "undefined" && headerRef.current
+        ? new ResizeObserver(() => measureDrawerTop())
+        : null;
+    if (ro && headerRef.current) ro.observe(headerRef.current);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      cancelAnimationFrame(focusRaf);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      ro?.disconnect();
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.paddingRight = prev.bodyPaddingRight;
+    };
+  }, [mobileMenuOpen, isPreview, closeMenu, measureDrawerTop]);
 
   const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const navLinks = [
-    { label: "Home", href: homeHref },
-    { label: "About", href: `${prefix}/about` },
-    { label: "Services", href: `${prefix}/services` },
-    { label: "Projects", href: `${prefix}/projects` },
-    { label: "Contact", href: `${prefix}/contact` },
+  const getHrefForId = (id: string) => {
+    switch (id) {
+      case "home":
+        return homeHref;
+      case "about":
+        return `${prefix}/about`;
+      case "services":
+        return `${prefix}/services`;
+      case "projects":
+        return `${prefix}/projects`;
+      default:
+        return `${prefix}/${id}`;
+    }
+  };
+
+  const dynamicLinks = [...navConfig.navItems]
+    .filter((item) => item.visible !== false)
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map((item) => ({
+      id: item.id,
+      label: item.label,
+      href: getHrefForId(item.id),
+    }));
+
+  const navLinks = dynamicLinks.length > 0 ? dynamicLinks : [
+    { id: "home", label: "Home", href: homeHref },
+    { id: "about", label: "About", href: `${prefix}/about` },
+    { id: "services", label: "Services", href: `${prefix}/services` },
+    { id: "projects", label: "Projects", href: `${prefix}/projects` },
   ];
 
-  const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
-  const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
+  // CTA destinations & enablement
+  const primaryCtaDestination = navConfig.primaryCta.destination?.startsWith("http")
+    ? navConfig.primaryCta.destination
+    : `${prefix}${navConfig.primaryCta.destination?.startsWith("/") ? "" : "/"}${navConfig.primaryCta.destination || "/contact"}`;
 
-  return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-xs">
-      {/* 1. TOP UTILITY BAR (Engineering Heritage & Urgent Contacts) */}
-      <div className="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/15 text-amber-400 font-mono text-[10px] font-bold uppercase tracking-wider border border-amber-500/30">
-              <ShieldCheck className="w-3 h-3 text-amber-400 shrink-0" />
-              <span>HiPRO Division</span>
-            </span>
-            <span className="text-[11px] text-slate-400 font-medium truncate max-w-[280px] sm:max-w-none">
-              Specialized building repair, waterproofing & protection under Hindustan Projects
-            </span>
-          </div>
+  const isPrimaryCtaEnabled = navConfig.primaryCta.enabled !== false;
+  const activePhone = navConfig.contactActions.phone || content.phone || "+91 75970 00601";
+  const activeWhatsapp = navConfig.contactActions.whatsappNumber || content.whatsapp || "+91 75970 00601";
 
-          <div className="flex items-center gap-4 text-[11px] font-mono">
-            <a
-              href={`tel:${phoneRaw}`}
-              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-              aria-label={`Call Hind Build Hotline at ${content.phone}`}
-            >
-              <Phone className="w-3 h-3 text-amber-400 shrink-0" />
-              <span className="font-semibold">{content.phone}</span>
-            </a>
-            <span className="text-slate-700 hidden sm:inline" aria-hidden="true">
-              |
+  const isCallEnabled = navConfig.contactActions.callEnabled !== false && Boolean(activePhone);
+  const isWhatsappEnabled = navConfig.contactActions.whatsappEnabled !== false && Boolean(activeWhatsapp);
+
+  const phoneRaw = cleanTelNumber(activePhone);
+  const contactWaUrl = getContactWhatsAppUrl(activeWhatsapp);
+
+  // Behaviour settings
+  const isSticky = navConfig.behaviour?.sticky !== false;
+  const compactOnScroll = navConfig.behaviour?.compactOnScroll !== false;
+  const transparentAtTop = navConfig.behaviour?.transparentAtTop === true;
+  const showActiveIndicator = navConfig.behaviour?.activeIndicator !== false;
+
+  // Animation settings
+  const animSpeedMs =
+    navConfig.animation?.speed === "fast"
+      ? "180ms"
+      : navConfig.animation?.speed === "slow"
+      ? "360ms"
+      : "240ms";
+
+  const isAnimated = navConfig.animation?.navbarAnimation !== false;
+  const isMobileAnim = navConfig.animation?.mobileMenuAnimation !== false;
+  const drawerShift =
+    navConfig.animation?.intensity === "subtle"
+      ? "4px"
+      : navConfig.animation?.intensity === "strong"
+      ? "12px"
+      : "8px";
+  const reducedMotionSafe = navConfig.accessibility?.reducedMotionSafe !== false;
+
+  // Mobile drawer CSS variables (CMS-driven). Animation OFF => instant state change.
+  const mobileNavVars = {
+    "--hbs-drawer-speed": isMobileAnim ? animSpeedMs : "0ms",
+    "--hbs-drawer-stagger": isMobileAnim ? "35ms" : "0ms",
+    "--hbs-drawer-shift": drawerShift,
+    "--hbs-drawer-top": `${drawerTop}px`,
+  } as React.CSSProperties;
+
+  // Alt text & Branding
+  const logoAlt = navConfig.branding?.logoAltText || "Hind Building Solutions";
+  const logoImageSrc = content.logoMark || content.logoPrimary || content.logo || "/hbs-icon.jpg";
+  const logoMobileSrc = content.logoMobile || logoImageSrc;
+  // Full brand name in navbar: "Hind Building Solutions"
+  const brandTitle = "Hind Building Solutions";
+  const brandSubtitle = navConfig.branding?.brandSubtitle || "Engineering & Turnkey Solutions";
+  const navLandmarkLabel = navConfig.accessibility?.menuAriaLabel || "Mobile navigation";
+
+  // Responsive class switches (admin mobile preview forces the mobile layout)
+  const desktopOnlyFlex = forceMobile ? "hidden" : "hidden lg:flex";
+  const mobileOnlyFlex = forceMobile ? "flex" : "flex lg:hidden";
+  const logoLayout = forceMobile ? "flex-1 min-w-0" : "flex-1 min-w-0 lg:flex-none lg:shrink-0";
+
+  // Check if a link is active (including nested service/project slugs)
+  const isLinkActive = (href: string) => {
+    if (href === homeHref) {
+      return pathname === homeHref;
+    }
+    return pathname === href || (Boolean(pathname) && pathname.startsWith(href + "/"));
+  };
+
+  // ── Mobile navigation drawer (shared by portal + inline preview) ──────────
+  const headerInView = drawerTop > 0;
+  const showWa = isWhatsappEnabled;
+  const showCall = isCallEnabled;
+
+  const mobileDrawer = (
+    <div
+      id={MOBILE_NAV_ID}
+      data-open={mobileMenuOpen ? "true" : "false"}
+      style={mobileNavVars}
+      className={`${isPreview ? "hbs-mnav-fullscreen-glass--inline" : "hbs-mnav-fullscreen-glass"} ${
+        reducedMotionSafe ? "hbs-mnav--rm-safe" : ""
+      }`}
+      aria-hidden={!mobileMenuOpen}
+      role="dialog"
+      aria-modal="true"
+      aria-label={navLandmarkLabel}
+    >
+      {/* ── Top Bar: Header with Brand on Left and Easy-to-tap 44x44 Close 'X' Button on Right ── */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-300/60 max-w-md mx-auto w-full shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoMobileSrc}
+            alt={logoAlt}
+            className="w-8 h-8 rounded-lg object-contain shrink-0 bg-white"
+          />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[14px] font-bold tracking-tight text-slate-900 truncate leading-tight">
+              {brandTitle}
             </span>
-            <a
-              href={`https://wa.me/${whatsappRaw}?text=Hello%20Hind%20Build,%20I%20need%20a%20repair%20inspection.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-semibold transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-              aria-label="Chat with Hind Build on WhatsApp"
-            >
-              <MessageSquare className="w-3 h-3 shrink-0" />
-              <span>WhatsApp Us</span>
-            </a>
+            <span className="text-[9px] uppercase font-semibold tracking-wider text-slate-500 leading-none mt-0.5 truncate">
+              {brandSubtitle}
+            </span>
           </div>
         </div>
+
+        {/* 44×44px circular close button — super easy to tap */}
+        <button
+          type="button"
+          onClick={() => closeMenu(true)}
+          className="w-11 h-11 rounded-full bg-slate-900/10 hover:bg-slate-900/15 active:bg-slate-900/20 border border-slate-900/10 text-slate-900 flex items-center justify-center transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 shrink-0 shadow-xs backdrop-blur-md"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5 stroke-[2.2]" aria-hidden="true" />
+        </button>
       </div>
 
-      {/* 2. MAIN NAVIGATION BAR */}
-      <div
-        className={`transition-all duration-200 border-b border-slate-200 ${
-          scrolled ? "py-2 bg-white/98 backdrop-blur-md shadow-xs" : "py-3 bg-white"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-          {/* Brand Identity / Official Hind Build Logo (Never HiPRO Fallback) */}
-          <Link
-            href={homeHref}
-            className="flex items-center gap-2.5 sm:gap-3 group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 p-1"
-            aria-label="Hind Build Home"
+      {/* ── Center Section: Everything Centered in the Middle of the Screen ("mid me aaye") ── */}
+      <div className="flex-1 flex flex-col items-center justify-center my-auto py-6 max-w-sm mx-auto w-full text-center">
+        {/* Centered Navigation Links */}
+        <nav aria-label={navLandmarkLabel} className="w-full">
+          <ul className="flex flex-col items-center gap-2 w-full">
+            {navLinks.map((link, idx) => {
+              const active = isLinkActive(link.href);
+              return (
+                <li
+                  key={link.id || link.href}
+                  className="hbs-mnav__item w-full flex justify-center"
+                  style={{ "--i": idx } as React.CSSProperties}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => closeMenu(false)}
+                    tabIndex={mobileMenuOpen ? undefined : -1}
+                    className={`inline-flex items-center justify-center gap-2.5 px-8 py-3 rounded-2xl text-[21px] tracking-tight transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 ${
+                      active
+                        ? "bg-slate-950 text-white font-extrabold shadow-lg w-full max-w-[280px]"
+                        : "text-slate-800 font-bold hover:text-slate-950 hover:bg-slate-900/5 w-full max-w-[280px]"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {active && showActiveIndicator && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400 ring-4 ring-amber-400/25 shrink-0" aria-hidden="true" />
+                    )}
+                    <span>{link.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Centered CTAs Section */}
+        {(isPrimaryCtaEnabled || showWa || showCall) && (
+          <div
+            className="hbs-mnav__item w-full max-w-[280px] mx-auto mt-6 pt-5 border-t border-slate-300/60 flex flex-col items-center gap-2.5"
+            style={{ "--i": navLinks.length } as React.CSSProperties}
           >
-            {content.logoPrimary || content.logoMobile ? (
-              <div className="flex items-center">
-                {/* Mobile-dedicated logo when configured in CMS */}
-                {content.logoMobile ? (
-                  <img
-                    src={content.logoMobile}
-                    alt={content.brandName || "Hind Build"}
-                    className="h-8 sm:hidden w-auto max-w-[140px] object-contain"
-                  />
-                ) : null}
-                {/* Primary logo for desktop, or mobile fallback if no mobile-specific logo */}
-                <img
-                  src={content.logoPrimary || content.logoMobile || ""}
-                  alt={content.brandName || "Hind Build"}
-                  className={`h-8 sm:h-9 md:h-10 w-auto max-w-[160px] sm:max-w-[210px] object-contain ${
-                    content.logoMobile ? "hidden sm:block" : ""
-                  }`}
-                />
-              </div>
-            ) : content.logoMark ? (
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <img
-                  src={content.logoMark}
-                  alt={content.brandName || "Hind Build"}
-                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain shrink-0"
-                />
-                <div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-slate-900 uppercase font-display">
-                      Hind
-                    </span>
-                    <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-amber-600 uppercase font-display">
-                      Build
-                    </span>
-                  </div>
-                  <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-widest font-semibold font-mono">
-                    Repair · Maintenance · Protection
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-950 border-2 border-amber-500 flex items-center justify-center text-white font-black text-sm sm:text-base shadow-xs group-hover:bg-slate-900 transition-colors shrink-0">
-                  <span className="tracking-tighter text-amber-400 font-mono">HB</span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-slate-900 uppercase font-display">
-                      Hind
-                    </span>
-                    <span className="text-sm sm:text-base md:text-lg font-black tracking-tight text-amber-600 uppercase font-display">
-                      Build
-                    </span>
-                  </div>
-                  <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-widest font-semibold font-mono">
-                    Repair · Maintenance · Protection
-                  </p>
-                </div>
+            {isPrimaryCtaEnabled && (
+              <Link
+                href={primaryCtaDestination}
+                data-hbs-cta="quote"
+                onClick={() => closeMenu(false)}
+                tabIndex={mobileMenuOpen ? undefined : -1}
+                className="w-full min-h-[48px] rounded-full inline-flex items-center justify-center gap-2 bg-slate-950 hover:bg-slate-850 active:bg-slate-900 text-white font-bold text-[14px] shadow-md transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+              >
+                <span>{navConfig.primaryCta.label || "Get Free Quote"}</span>
+                <ArrowRight className="w-4 h-4 shrink-0 opacity-80" aria-hidden="true" />
+              </Link>
+            )}
+
+            {(showWa || showCall) && (
+              <div className={`grid gap-2 w-full ${showWa && showCall ? "grid-cols-2" : "grid-cols-1"}`}>
+                {showWa && (
+                  <a
+                    href={contactWaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-hbs-cta="whatsapp"
+                    onClick={() => closeMenu(false)}
+                    tabIndex={mobileMenuOpen ? undefined : -1}
+                    className="min-h-[44px] rounded-full inline-flex items-center justify-center gap-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-[13px] shadow-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{navConfig.contactActions.whatsappLabel || "WhatsApp"}</span>
+                  </a>
+                )}
+                {showCall && (
+                  <a
+                    href={`tel:${phoneRaw}`}
+                    data-hbs-cta="call"
+                    onClick={() => closeMenu(false)}
+                    tabIndex={mobileMenuOpen ? undefined : -1}
+                    className="min-h-[44px] rounded-full inline-flex items-center justify-center gap-1.5 px-3 bg-white/90 hover:bg-white active:bg-slate-100 border border-slate-300/80 text-slate-900 font-semibold text-[13px] shadow-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+                    aria-label={`Call Hind Building Solutions at ${activePhone}`}
+                  >
+                    <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
+                    <span className="truncate">Call Us</span>
+                  </a>
+                )}
               </div>
             )}
-          </Link>
-
-          {/* Desktop Navigation Links */}
-          <nav
-            aria-label="Primary Navigation"
-            className="hidden md:flex items-center gap-1 lg:gap-2"
-          >
-            {navLinks.map((link) => {
-              const active = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-2.5 text-xs uppercase tracking-wider font-bold transition-all relative min-h-[44px] flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
-                    active
-                      ? "text-amber-700 font-black"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-50"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span>{link.label}</span>
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute bottom-0 left-3 right-3 h-0.5 bg-amber-500"
-                    />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Desktop Right Action CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Link
-              href={`${prefix}/contact`}
-              className="hbs-btn-primary min-h-[44px] px-4 py-2.5 text-xs uppercase tracking-wider font-black shadow-xs group"
-            >
-              <Wrench className="w-3.5 h-3.5 text-slate-950 shrink-0" />
-              <span>Book Inspection</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </Link>
           </div>
+        )}
+      </div>
 
-          {/* Mobile Action Buttons (Call + Hamburger Menu) */}
-          <div className="flex md:hidden items-center gap-1">
+      {/* ── Bottom: Centered Endorsement ── */}
+      <div className="pt-2 text-center shrink-0 max-w-sm mx-auto w-full">
+        <p className="text-[11px] text-slate-500 font-medium">
+          A Specialized Division of Hindustan Projects (HiPRO)
+        </p>
+      </div>
+    </div>
+  );
+
+  return (
+    <header
+      ref={headerRef}
+      style={{ "--hbs-nav-speed": isAnimated ? animSpeedMs : "0ms", ...mobileNavVars } as React.CSSProperties}
+      className={`w-full z-50 transition-all duration-300 ease-out border-b border-slate-200/90 bg-white/95 backdrop-blur-md shadow-xs ${
+        isSticky ? "sticky top-0" : "relative"
+      }`}
+    >
+      <div
+        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4 transition-all duration-300 ease-out ${
+          scrolled && compactOnScroll ? "h-14 sm:h-[58px]" : "h-16 sm:h-[68px]"
+        }`}
+      >
+        {/* ── LEFT: Brand Logo & Typography Lockup ──────────────── */}
+        <Link
+          href={homeHref}
+          className={`${logoLayout} flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded-lg p-1 transition-transform duration-200 active:scale-[0.98]`}
+          aria-label="Hind Building Solutions Homepage"
+        >
+          {/* Logo Visual + Typography Lockup */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {/* Visual Logo / Icon */}
+            <div className="flex items-center shrink-0">
+              {content.logoMobile && content.logoMobile !== logoImageSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={content.logoMobile}
+                  alt={logoAlt}
+                  className="h-8 w-auto max-w-[90px] sm:hidden object-contain rounded-lg"
+                />
+              ) : null}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logoImageSrc}
+                alt={logoAlt}
+                className={`h-8 sm:h-9 w-auto max-w-[120px] object-contain rounded-lg shrink-0 group-hover:scale-105 transition-transform duration-200 ${
+                  content.logoMobile && content.logoMobile !== logoImageSrc ? "hidden sm:block" : ""
+                }`}
+              />
+            </div>
+
+            {/* Typography Lockup - Always visible so brand name and subtitle NEVER disappear */}
+            <div className="flex flex-col min-w-0">
+              <span className="text-[14px] sm:text-[16px] font-bold tracking-tight text-slate-900 leading-tight truncate font-display">
+                {brandTitle}
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase text-slate-500 leading-tight mt-0.5 truncate font-mono">
+                {brandSubtitle}
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        {/* ── CENTER: Desktop Navigation Links (Line Indicator) ──────────────────── */}
+        <nav
+          aria-label="Primary Navigation"
+          className={`${desktopOnlyFlex} items-center gap-6 lg:gap-8`}
+        >
+          {navLinks.map((link) => {
+            const active = isLinkActive(link.href);
+            return (
+              <Link
+                key={link.id || link.href}
+                href={link.href}
+                className={`group relative py-1 text-xs uppercase tracking-wider transition-all duration-200 flex flex-col items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
+                  active
+                    ? "text-amber-700 font-black"
+                    : "text-slate-600 hover:text-slate-900 font-bold"
+                }`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span>{link.label}</span>
+                {active ? (
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 h-[2.5px] w-full bg-amber-500 rounded-full"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="mt-1 h-[2.5px] w-0 bg-amber-500/0 rounded-full group-hover:w-full group-hover:bg-amber-500/50 transition-all duration-200"
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* ── RIGHT: Secondary Call + Primary Get Free Quote ───── */}
+        <div className={`${desktopOnlyFlex} items-center gap-2.5`}>
+          {isCallEnabled && (
             <a
               href={`tel:${phoneRaw}`}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-800 hover:text-amber-700 active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-              aria-label="Call Hind Build Office"
+              data-hbs-cta="call"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-95 rounded-lg border border-slate-200/80 transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
+              aria-label={`Call Hind Building Solutions at ${activePhone}`}
             >
-              <Phone className="w-5 h-5 text-amber-600" />
+              <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0 group-hover:rotate-12 transition-transform duration-200" aria-hidden="true" />
+              <span>{activePhone}</span>
             </a>
+          )}
 
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-900 hover:bg-slate-100 active:bg-slate-200 rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-colors"
-              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="hbs-mobile-menu"
+          {isPrimaryCtaEnabled && (
+            <Link
+              href={primaryCtaDestination}
+              data-hbs-cta="quote"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-slate-950 hover:bg-slate-850 active:scale-95 text-white font-bold text-xs sm:text-[13px] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 group"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+              <span>{navConfig.primaryCta.label || "Get Free Quote"}</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-80 group-hover:translate-x-0.5 transition-transform duration-200" aria-hidden="true" />
+            </Link>
+          )}
+        </div>
+
+        {/* ── MOBILE: Refined Tactile Hamburger Button ──── */}
+        <div className={`${mobileOnlyFlex} items-center shrink-0`}>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            onClick={() => (mobileMenuOpen ? closeMenu(false) : openMenu())}
+            className={`hbs-burger-btn ${reducedMotionSafe ? "hbs-mnav--rm-safe" : ""} relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-lg bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200/90 text-slate-900 shadow-2xs transition-all active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900`}
+            data-open={mobileMenuOpen ? "true" : "false"}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls={MOBILE_NAV_ID}
+          >
+            <span className="hbs-burger" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* 3. ACCESSIBLE MOBILE NAVIGATION DRAWER */}
-      {mobileMenuOpen && (
-        <div
-          id="hbs-mobile-menu"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Mobile Navigation Menu"
-          className="md:hidden bg-white border-b-2 border-amber-500 px-4 pt-3 pb-6 shadow-2xl animate-in slide-in-from-top-2 duration-150"
-        >
-          {/* Navigation Links List */}
-          <nav aria-label="Mobile Menu Links" className="space-y-1">
-            {navLinks.map((link) => {
-              const active = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center justify-between px-3 py-3 text-sm font-bold uppercase tracking-wider min-h-[44px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
-                    active
-                      ? "bg-amber-50 text-amber-800 border-l-4 border-amber-600"
-                      : "text-slate-800 hover:bg-slate-50 active:bg-slate-100"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span>{link.label}</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                </Link>
-              );
-            })}
-          </nav>
+      {/* Admin preview renders the drawer inline inside the phone frame */}
+      {isPreview && mobileDrawer}
 
-          {/* Action CTAs */}
-          <div className="mt-4 pt-4 border-t border-slate-200 space-y-2.5">
-            <Link
-              href={`${prefix}/contact`}
-              className="hbs-btn-primary w-full min-h-[44px] text-xs font-black uppercase tracking-wider shadow-xs"
-            >
-              <Wrench className="w-4 h-4 shrink-0" />
-              <span>Book Site Inspection</span>
-            </Link>
-
-            <a
-              href={`https://wa.me/${whatsappRaw}?text=Hello%20Hind%20Build,%20I%20need%20a%20repair%20quote.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hbs-btn-whatsapp w-full min-h-[44px] text-xs font-bold uppercase tracking-wider shadow-xs"
-            >
-              <MessageSquare className="w-4 h-4 shrink-0" />
-              <span>Chat on WhatsApp</span>
-            </a>
-          </div>
-
-          {/* Endorsement Note */}
-          <div className="mt-4 pt-3 border-t border-slate-100 text-center">
-            <p className="text-[11px] text-slate-500 font-mono">
-              A Specialized Division of <strong className="text-slate-800">Hindustan Projects (HiPRO)</strong>
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Public site: portal to <body> so the header's backdrop-filter can't trap position:fixed */}
+      {!isPreview && isClient && createPortal(mobileDrawer, document.body)}
     </header>
   );
 }

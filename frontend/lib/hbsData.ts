@@ -15,13 +15,13 @@ const BACKEND_URL = rawUrl.replace(/\/+$/, "");
 
 export const DEFAULT_HBS_CONTENT: HbsContent = {
   id: "singleton",
-  brandName: "Hind Build",
-  logo: null,
-  logoPrimary: null,
-  logoDark: null,
-  logoMark: null,
-  logoMobile: null,
-  favicon: "/hbs-icon.svg",
+  brandName: "Hind Building Solutions",
+  logo: "/hbs-logo.jpg",
+  logoPrimary: "/hbs-logo.jpg",
+  logoDark: "/hbs-logo.jpg",
+  logoMark: "/hbs-icon.jpg",
+  logoMobile: "/hbs-logo.jpg",
+  favicon: "/hbs-favicon.jpg",
   ogDefaultImage: "/hbs-og-default.svg",
   privacyPolicyUrl: "/privacy-policy",
   termsUrl: "/terms",
@@ -70,6 +70,27 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
     { label: "Customer Satisfaction", value: "98%" },
     { label: "Engineering Heritage", value: "Since 2019" }
   ]),
+  guaranteeSection: JSON.stringify({
+    enabled: true,
+    eyebrow: "Diagnostic Principle",
+    heading: "Most building repairs fail because surface symptoms are patched while the water pathway stays active.",
+    description: "Plastering over dampness or applying generic cement offers only temporary cosmetic relief. Without identifying hydrostatic pressure points or hairline slab fractures, moisture continues to corrode embedded rebar from within.",
+    rightMode: "CARD",
+    image: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=1200&auto=format&fit=crop",
+    imageAlt: "Hind Build diagnostic site inspection and moisture tracing",
+    imageCaption: "Site Inspection & Non-Destructive Scanning",
+    approachBadge: "The Hind Build Engineering Approach",
+    approachDescription: "We deploy non-destructive electronic moisture detection, industrial-grade chemical barrier membranes, and calibrated crack injection polymers. Root causes are systematically eliminated before finishing layers are applied.",
+    features: [
+      "Non-invasive moisture tracing",
+      "Certified industrial sealants",
+      "Turnkey single-point warranty",
+      "Senior engineering sign-off"
+    ],
+    footerNote: "Backed by Hindustan Projects (HiPRO)",
+    ctaLabel: "Book Site Diagnosis",
+    ctaUrl: "/contact"
+  }),
   homeFinalCta: JSON.stringify({
     heading: "Does Your Building Suffer From Leakage, Cracks, or Aging Fixtures?",
     subheading: "Schedule a non-destructive site inspection with Hind Build today. Get transparent estimations without hidden charges.",

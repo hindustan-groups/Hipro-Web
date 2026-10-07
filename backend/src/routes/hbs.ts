@@ -595,13 +595,12 @@ router.post("/leads", contactLimiter, async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Please provide a valid contact number" } as ApiResponse);
     }
 
-    // Support both single service and multiple service selection (up to 4)
+    // Support both single service and multiple service selection without arbitrary limits
     let finalService: string | null = null;
     if (Array.isArray(selectedServices) && selectedServices.length > 0) {
       finalService = selectedServices
         .filter((s: any) => typeof s === "string" && s.trim().length > 0)
         .map((s: string) => s.trim())
-        .slice(0, 4)
         .join(", ");
     } else if (typeof selectedService === "string" && selectedService.trim()) {
       finalService = selectedService.trim();

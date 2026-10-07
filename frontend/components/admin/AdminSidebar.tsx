@@ -32,7 +32,8 @@ import {
   Calculator,
   Sparkles,
   Palette,
-  GalleryHorizontalEnd
+  GalleryHorizontalEnd,
+  LogOut
 } from "lucide-react";
 
 export interface NavItem {
@@ -42,6 +43,40 @@ export interface NavItem {
   badge?: string;
   sectionKey?: string;
 }
+
+export const HBS_NAV_SECTIONS = [
+  {
+    title: "OVERVIEW",
+    items: [
+      { href: "/admin/hbs", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "CONTENT",
+    items: [
+      { href: "/admin/hbs/home", label: "Home", icon: LayoutTemplate },
+      { href: "/admin/hbs/about", label: "About", icon: Info },
+      { href: "/admin/hbs/services", label: "Services", icon: HardHat, badge: "19" },
+      { href: "/admin/hbs/projects", label: "Projects", icon: FolderOpen },
+      { href: "/admin/hbs/testimonials", label: "Testimonials", icon: Star },
+    ],
+  },
+  {
+    title: "BUSINESS",
+    items: [
+      { href: "/admin/hbs/leads", label: "Leads", icon: Inbox },
+    ],
+  },
+  {
+    title: "SYSTEM",
+    items: [
+      { href: "/admin/hbs/branding", label: "Branding", icon: Palette },
+      { href: "/admin/hbs/media", label: "Media", icon: GalleryHorizontalEnd },
+      { href: "/admin/hbs/seo", label: "SEO", icon: Compass },
+      { href: "/admin/hbs/settings", label: "Settings", icon: Settings },
+    ],
+  },
+];
 
 export interface NavCategory {
   id: string;
@@ -232,7 +267,124 @@ export default function AdminSidebar({ user }: { user: any }) {
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* Brand Header */}
+        {pathname?.startsWith("/admin/hbs") ? (
+          <>
+            {/* 1. Hind Build Admin Header */}
+            <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <Link href="/admin/hbs" className="flex items-center gap-2.5 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/hbs-icon.jpg"
+                  alt="Hind Build"
+                  className="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white"
+                />
+                <div>
+                  <p className="text-slate-900 font-bold text-sm leading-tight uppercase font-display tracking-wide">
+                    Hind Build
+                  </p>
+                  <span className="text-[10px] text-amber-600 font-mono font-bold uppercase tracking-wider">
+                    ADMIN CMS
+                  </span>
+                </div>
+              </Link>
+            </div>
+
+            {/* 2. Switcher to HiPRO Master Admin */}
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <Link
+                href="/admin"
+                className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors"
+              >
+                <Layers className="w-3.5 h-3.5 text-slate-400" />
+                <span>← HiPRO Master Admin</span>
+              </Link>
+            </div>
+
+            {/* 3. Navigation Links (OVERVIEW, CONTENT, BUSINESS, SYSTEM) */}
+            <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+              {HBS_NAV_SECTIONS.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <p className="px-2.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                    {section.title}
+                  </p>
+                  <div className="space-y-0.5">
+                    {section.items.map(({ href, label, icon: Icon, badge }) => {
+                      const active =
+                        href === "/admin/hbs"
+                          ? pathname === "/admin/hbs"
+                          : pathname === href || (pathname ? pathname.startsWith(href) : false);
+
+                      return (
+                        <Link
+                          key={href}
+                          href={href}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all min-h-[40px] ${
+                            active
+                              ? "bg-slate-900 text-white font-bold shadow-xs"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Icon
+                              className={`w-4 h-4 shrink-0 ${
+                                active ? "text-amber-400" : "text-slate-400"
+                              }`}
+                            />
+                            <span>{label}</span>
+                          </div>
+                          {badge && (
+                            <span
+                              className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                                active
+                                  ? "bg-slate-800 text-amber-300"
+                                  : "bg-slate-100 text-slate-600"
+                              }`}
+                            >
+                              {badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* 4. Bottom System Controls */}
+            <div className="p-3 border-t border-slate-100 space-y-1 bg-slate-50/80 shrink-0">
+              <Link
+                href="/hbs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors min-h-[40px]"
+              >
+                <div className="flex items-center gap-2">
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                  <span>View Website</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">/hbs ↗</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                  } finally {
+                    window.location.href = "/admin-login";
+                  }
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left min-h-[40px]"
+              >
+                <LogOut className="w-3.5 h-3.5 text-slate-400" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Brand Header */}
         <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
           <Link href="/admin" className="flex items-center gap-3 group">
             <div className="w-9 h-9 shrink-0 bg-construction-navy border-2 border-construction-red flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
@@ -455,6 +607,8 @@ export default function AdminSidebar({ user }: { user: any }) {
             </span>
           </Link>
         </div>
+          </>
+        )}
       </aside>
     </>
   );

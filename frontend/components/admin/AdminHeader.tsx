@@ -25,6 +25,17 @@ const titles: Record<string, string> = {
   "/admin/navigation":  "Navigation Menus",
   "/admin/users":       "Users & Roles",
   "/admin/settings":    "Site Settings",
+  "/admin/hbs":             "Hind Build Dashboard",
+  "/admin/hbs/home":        "Hind Build · Homepage CMS",
+  "/admin/hbs/about":       "Hind Build · About Page CMS",
+  "/admin/hbs/services":    "Hind Build · Services (19 Modules)",
+  "/admin/hbs/projects":    "Hind Build · Projects & Case Studies",
+  "/admin/hbs/testimonials":"Hind Build · Testimonials",
+  "/admin/hbs/leads":       "Hind Build · Leads & Quotes",
+  "/admin/hbs/branding":    "Hind Build · Branding & Logos",
+  "/admin/hbs/media":       "Hind Build · Media Library",
+  "/admin/hbs/seo":         "Hind Build · SEO & Metadata",
+  "/admin/hbs/settings":    "Hind Build · Settings",
 };
 
 export default function AdminHeader({ user }: { user: any }) {
@@ -53,7 +64,16 @@ export default function AdminHeader({ user }: { user: any }) {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">{title}</h1>
+        <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">
+          {pathname?.startsWith("/admin/hbs") ? (
+            <>
+              <span className="md:hidden">Hind Build Admin</span>
+              <span className="hidden md:inline">{title}</span>
+            </>
+          ) : (
+            title
+          )}
+        </h1>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
         <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-2 border border-slate-200 w-64 focus-within:border-construction-navy transition-all">

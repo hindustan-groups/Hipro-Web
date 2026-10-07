@@ -29,6 +29,7 @@ import {
   fetchHbsProjectBySlug,
   fetchHbsServices
 } from "@/lib/hbsData";
+import { cleanTelNumber, getProjectWhatsAppUrl } from "@/lib/hbsWhatsApp";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -183,8 +184,8 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
-  const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
+  const phoneRaw = cleanTelNumber(content.phone);
+  const projectWaUrl = getProjectWhatsAppUrl(content.whatsapp, project.title);
 
   // Parse structured data safely
   const images = parseImages(project.images);
@@ -322,7 +323,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
         {/* A. BREADCRUMB NAVIGATION */}
         <nav
           aria-label="Breadcrumb"
-          className="border-b border-slate-200 bg-slate-50/75 py-3 text-xs"
+          className="border-b border-slate-200/80 bg-white/80 backdrop-blur-xs py-3 text-xs"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <ol className="flex items-center flex-wrap gap-2 text-slate-500 font-medium">
@@ -365,20 +366,20 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               <div className="lg:col-span-7 space-y-5">
                 {/* Badges */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider rounded-md">
                     <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                     <span>Verified Field Case Study</span>
                   </span>
 
                   {project.featured && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider rounded-md">
                       <Award className="w-3 h-3" />
                       <span>Featured Execution</span>
                     </span>
                   )}
 
                   {project.serviceCategory && (
-                    <span className="inline-flex items-center px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono uppercase">
+                    <span className="inline-flex items-center px-2.5 py-1 bg-slate-800 text-slate-300 border border-slate-700 text-xs font-mono uppercase rounded-md">
                       {project.serviceCategory}
                     </span>
                   )}
@@ -422,29 +423,39 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                 <div className="pt-4 flex flex-wrap items-center gap-3">
                   <Link
                     href={`${prefix}/contact?project=${encodeURIComponent(project.title)}`}
-                    className="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3.5 text-xs uppercase tracking-wider transition-colors shadow-lg min-h-[44px]"
+                    data-hbs-cta="quote"
+                    className="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-6 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 shadow-lg min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <Wrench className="w-4 h-4 text-slate-950" />
-                    <span>Inquire Similar Site Work</span>
+                    <span>Discuss Your Project</span>
                   </Link>
 
                   <a
-                    href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                      `Hello Hind Build, I am interested in your project: "${project.title}". Can you provide an inspection for a similar issue at my property?`
-                    )}`}
+                    href={projectWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3.5 text-xs uppercase tracking-wider transition-colors min-h-[44px]"
+                    data-hbs-cta="whatsapp"
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    <span>Discuss on WhatsApp</span>
+                    <span>WhatsApp</span>
+                  </a>
+
+                  <a
+                    href={`tel:${phoneRaw}`}
+                    data-hbs-cta="call"
+                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 font-bold px-5 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
+                  >
+                    <Phone className="w-4 h-4 text-amber-400" />
+                    <span>Call Hind Build</span>
                   </a>
                 </div>
               </div>
 
               {/* Right Column: Hero / Featured Project Image */}
               <div className="lg:col-span-5">
-                <div className="relative aspect-[4/3] w-full bg-slate-900 border-2 border-slate-800 shadow-2xl overflow-hidden group">
+                <div className="relative aspect-[4/3] w-full bg-slate-900 border border-slate-800/80 rounded-2xl shadow-2xl overflow-hidden group">
                   {heroImage ? (
                     <Image
                       src={heroImage}
@@ -467,7 +478,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                   )}
 
                   {/* Corner Watermark */}
-                  <div className="absolute bottom-2 right-2 px-2 py-1 bg-slate-950/80 backdrop-blur-xs text-[10px] font-mono uppercase text-slate-300 border border-slate-700 pointer-events-none">
+                  <div className="absolute bottom-2 right-2 px-2.5 py-1 bg-slate-950/80 backdrop-blur-md rounded-md text-[10px] font-mono uppercase text-slate-300 border border-slate-700 pointer-events-none">
                     Verified Execution
                   </div>
                 </div>
@@ -482,7 +493,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
           {metaDetails.length > 0 && (
             <section
               aria-labelledby="project-parameters-heading"
-              className="bg-white border border-slate-200 shadow-xs p-6 sm:p-8"
+              className="bg-white border border-slate-200/80 rounded-xl shadow-xs p-6 sm:p-8"
             >
               <div className="border-b border-slate-200 pb-4 mb-6 flex items-center justify-between">
                 <div>
@@ -496,7 +507,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                     Project Information & Parameters
                   </h2>
                 </div>
-                <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-mono font-semibold">
+                <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-mono font-semibold rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>On-Site Logged</span>
                 </div>
@@ -508,7 +519,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                   return (
                     <div
                       key={idx}
-                      className="p-4 bg-slate-50 border border-slate-200/80 space-y-1"
+                      className="p-4 bg-slate-50/80 border border-slate-200/60 rounded-lg space-y-1"
                     >
                       <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                         <Icon className="w-4 h-4 text-amber-700 shrink-0" />
@@ -532,7 +543,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {project.description && (
                 <section
                   aria-labelledby="overview-heading"
-                  className="bg-white border border-slate-200 p-6 sm:p-8 space-y-4 shadow-xs"
+                  className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-4 shadow-xs"
                 >
                   <div className="border-b border-slate-200 pb-3">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-amber-700 font-bold block">
@@ -555,7 +566,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {project.problemStatement && (
                 <section
                   aria-labelledby="problem-statement-heading"
-                  className="bg-white border-l-4 border-l-amber-600 border border-slate-200 p-6 sm:p-8 space-y-3 shadow-xs"
+                  className="bg-white border-l-4 border-l-amber-600 border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-3 shadow-xs"
                 >
                   <div className="flex items-center gap-2.5 text-amber-800">
                     <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0" />
@@ -579,7 +590,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {scopeItems.length > 0 && (
                 <section
                   aria-labelledby="scope-heading"
-                  className="bg-white border border-slate-200 p-6 sm:p-8 space-y-4 shadow-xs"
+                  className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-4 shadow-xs"
                 >
                   <div className="border-b border-slate-200 pb-3">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-amber-700 font-bold block">
@@ -597,7 +608,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                     {scopeItems.map((item, idx) => (
                       <li
                         key={idx}
-                        className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800"
+                        className="flex items-start gap-3 p-3 bg-slate-50/80 border border-slate-200/60 rounded-lg text-xs sm:text-sm text-slate-800"
                       >
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <span className="leading-snug">{item}</span>
@@ -611,7 +622,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {project.solutionStatement && (
                 <section
                   aria-labelledby="solution-heading"
-                  className="bg-white border-l-4 border-l-slate-900 border border-slate-200 p-6 sm:p-8 space-y-3 shadow-xs"
+                  className="bg-white border-l-4 border-l-slate-900 border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-3 shadow-xs"
                 >
                   <div className="flex items-center gap-2.5 text-slate-900">
                     <Lightbulb className="w-5 h-5 text-amber-600 shrink-0" />
@@ -635,7 +646,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {project.resultStatement && (
                 <section
                   aria-labelledby="results-heading"
-                  className="bg-emerald-950 text-white border-l-4 border-emerald-500 p-6 sm:p-8 space-y-3 shadow-md"
+                  className="bg-emerald-950 text-white border-l-4 border-emerald-500 rounded-xl p-6 sm:p-8 space-y-3 shadow-md"
                 >
                   <div className="flex items-center gap-2.5 text-emerald-400">
                     <Award className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -659,7 +670,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {beforeAfterImages.length > 0 && (
                 <section
                   aria-labelledby="before-after-heading"
-                  className="bg-white border border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs"
+                  className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-6 shadow-xs"
                 >
                   <div className="border-b border-slate-200 pb-3">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-amber-700 font-bold block">
@@ -677,7 +688,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                     {beforeAfterImages.map((pair, idx) => (
                       <div
                         key={idx}
-                        className="border border-slate-200 p-4 bg-slate-50 space-y-3"
+                        className="border border-slate-200/80 rounded-lg p-4 bg-slate-50/80 space-y-3"
                       >
                         {pair.title && (
                           <h3 className="text-sm font-bold uppercase font-display text-slate-900">
@@ -687,10 +698,10 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {pair.before && (
                             <div className="space-y-1.5">
-                              <span className="inline-block text-[10px] font-mono uppercase font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5">
+                              <span className="inline-block text-[10px] font-mono uppercase font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md">
                                 Before Treatment
                               </span>
-                              <div className="relative aspect-[4/3] w-full bg-slate-200 overflow-hidden border border-slate-300">
+                              <div className="relative aspect-[4/3] w-full bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
                                 <Image
                                   src={pair.before}
                                   alt={`Before treatment - ${project.title}`}
@@ -703,10 +714,10 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                           )}
                           {pair.after && (
                             <div className="space-y-1.5">
-                              <span className="inline-block text-[10px] font-mono uppercase font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
+                              <span className="inline-block text-[10px] font-mono uppercase font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
                                 After Remediation
                               </span>
-                              <div className="relative aspect-[4/3] w-full bg-slate-200 overflow-hidden border border-slate-300">
+                              <div className="relative aspect-[4/3] w-full bg-slate-200 rounded-lg overflow-hidden border border-slate-300">
                                 <Image
                                   src={pair.after}
                                   alt={`After remediation - ${project.title}`}
@@ -728,7 +739,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               {galleryImages.length > 0 && (
                 <section
                   aria-labelledby="gallery-heading"
-                  className="bg-white border border-slate-200 p-6 sm:p-8 space-y-6 shadow-xs"
+                  className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-6 shadow-xs"
                 >
                   <div className="border-b border-slate-200 pb-3">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-amber-700 font-bold block">
@@ -746,7 +757,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                     {galleryImages.map((imgUrl, idx) => (
                       <div
                         key={idx}
-                        className="relative aspect-[4/3] w-full bg-slate-100 border border-slate-200 overflow-hidden group shadow-xs"
+                        className="relative aspect-[4/3] w-full bg-slate-100 border border-slate-200/70 rounded-lg overflow-hidden group shadow-2xs"
                       >
                         <Image
                           src={imgUrl}
@@ -765,7 +776,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
             {/* RIGHT 4 COLS: STICKY SIDEBAR (J. CTA, Matched Service, Related Projects) */}
             <aside className="lg:col-span-4 space-y-6">
               {/* J. STRONG CTA CARD (Using HBS global settings) */}
-              <div className="bg-slate-900 text-white p-6 sm:p-7 border-t-4 border-amber-500 shadow-xl space-y-5">
+              <div className="bg-slate-900/95 border border-slate-800/80 rounded-xl text-white p-6 sm:p-7 border-t-4 border-amber-500 shadow-xl space-y-5">
                 <div>
                   <span className="text-amber-400 font-mono text-[10px] uppercase font-bold tracking-wider block">
                     Immediate Engineering Dispatch
@@ -781,30 +792,32 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                 <div className="space-y-3 pt-2">
                   <Link
                     href={`${prefix}/contact?project=${encodeURIComponent(project.title)}`}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-3.5 text-xs uppercase tracking-wider transition-colors min-h-[44px]"
+                    data-hbs-cta="quote"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <Wrench className="w-4 h-4 text-slate-950" />
-                    <span>Book Site Inspection</span>
+                    <span>Discuss Your Project</span>
                   </Link>
 
                   <a
-                    href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                      `Hello Hind Build, I am looking for a quote similar to your case study: "${project.title}".`
-                    )}`}
+                    href={projectWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3.5 text-xs uppercase tracking-wider transition-colors min-h-[44px]"
+                    data-hbs-cta="whatsapp"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    <span>WhatsApp Quotation</span>
+                    <span>WhatsApp</span>
                   </a>
 
                   <a
                     href={`tel:${phoneRaw}`}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-4 py-3 text-xs uppercase tracking-wider transition-colors border border-slate-700 min-h-[44px]"
+                    data-hbs-cta="call"
+                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold px-4 py-3 text-xs uppercase tracking-wider transition-all duration-200 border border-slate-700 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-amber-400" />
-                    <span>Call: {content.phone}</span>
+                    <span>Call Hind Build</span>
                   </a>
                 </div>
 
@@ -816,7 +829,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
 
               {/* 12. INTERNAL LINKING: CONNECTED SERVICE CARD (If serviceCategory matches) */}
               {matchedService && (
-                <div className="bg-white border border-slate-200 p-6 shadow-xs space-y-3">
+                <div className="bg-white border border-slate-200/80 rounded-xl p-6 shadow-xs space-y-3">
                   <div className="flex items-center gap-2 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider">
                     <Layers className="w-3.5 h-3.5 text-amber-700" />
                     <span>Related Hind Build Service</span>
@@ -841,7 +854,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
               )}
 
               {/* 12. INTERNAL LINKING: EXPLORE ALL SERVICES */}
-              <div className="bg-slate-50 border border-slate-200 p-6 space-y-3">
+              <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-6 space-y-3">
                 <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                   Full Spectrum Maintenance
                 </h4>
@@ -861,7 +874,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
 
               {/* OTHER RECENT CASE STUDIES */}
               {otherProjects.length > 0 && (
-                <div className="bg-white border border-slate-200 p-6 shadow-xs space-y-4">
+                <div className="bg-white border border-slate-200/80 rounded-xl p-6 shadow-xs space-y-4">
                   <div className="border-b border-slate-200 pb-2 flex items-center justify-between">
                     <h4 className="text-xs font-mono font-bold text-slate-900 uppercase tracking-wider">
                       More Case Studies
@@ -879,7 +892,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                       <Link
                         key={op.id}
                         href={`${prefix}/projects/${op.slug}`}
-                        className="block p-3 border border-slate-100 hover:border-amber-300 hover:bg-slate-50/50 transition-colors"
+                        className="block p-3 border border-slate-100 rounded-lg hover:border-amber-300 hover:bg-slate-50/70 transition-colors"
                       >
                         <span className="text-[10px] font-mono text-amber-700 uppercase font-bold block mb-0.5">
                           {op.location || "Rajasthan"}

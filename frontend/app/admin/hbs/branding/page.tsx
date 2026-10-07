@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { HbsContent } from "@/lib/types";
 import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 interface SaveMsg {
   text: string;
@@ -136,28 +137,21 @@ export default function HbsAdminBranding() {
   }
 
   return (
-    <div className="space-y-8 max-w-4xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-            Brand Identity
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            Hind Build Branding
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage logos, favicon, OG images, and brand identity assets. Changes affect all public-facing Hind Build pages.
-          </p>
-        </div>
+    <div className="space-y-7 max-w-4xl">
+      {/* Apple-minimal Header */}
+      <HbsAdminPageHeader
+        breadcrumbs={[{ label: "Branding" }]}
+        title="Branding & Logos"
+        description="Manage logos, favicon, OG images, and visual brand identity assets."
+      >
         <button
           onClick={loadData}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Reload</span>
         </button>
-      </div>
+      </HbsAdminPageHeader>
 
       {/* Save Message */}
       {message.text && (

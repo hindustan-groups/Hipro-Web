@@ -551,11 +551,104 @@ export interface HbsGuarantee {
   partners?: string[];
 }
 
+export interface HbsDiagnosticSection {
+  enabled?: boolean;
+  eyebrow?: string;
+  heading?: string;
+  description?: string;
+  rightMode?: "CARD" | "IMAGE" | "IMAGE_OVERLAY";
+  image?: string;
+  imageAlt?: string;
+  imageCaption?: string;
+  approachBadge?: string;
+  approachDescription?: string;
+  features?: string[];
+  footerNote?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+}
+
 export interface HbsInternalNote {
   id: string;
   author: string;
   note: string;
   createdAt: string;
+}
+
+export interface HbsNavbarItem {
+  id: "home" | "about" | "services" | "projects" | string;
+  label: string;
+  visible: boolean;
+  order: number;
+}
+
+export interface HbsNavbarConfig {
+  navItems: HbsNavbarItem[];
+  primaryCta: {
+    enabled: boolean;
+    label: string;
+    destination: string;
+  };
+  contactActions: {
+    callEnabled: boolean;
+    callLabel?: string;
+    phone?: string;
+    whatsappEnabled: boolean;
+    whatsappLabel?: string;
+    whatsappNumber?: string;
+  };
+  behaviour?: {
+    sticky?: boolean;
+    compactOnScroll?: boolean;
+    transparentAtTop?: boolean;
+    activeIndicator?: boolean;
+  };
+  animation?: {
+    navbarAnimation?: boolean;
+    mobileMenuAnimation?: boolean;
+    scrollAnimation?: boolean;
+    intensity?: "subtle" | "normal" | "strong";
+    speed?: "slow" | "normal" | "fast";
+  };
+  branding?: {
+    logoAltText?: string;
+    brandSubtitle?: string;
+  };
+  accessibility?: {
+    menuAriaLabel?: string;
+    reducedMotionSafe?: boolean;
+  };
+}
+
+export interface HbsHeroConfig {
+  enabled: boolean;
+  displayMode: "TEXT_AND_IMAGE" | "TEXT_ONLY" | "IMAGE_ONLY";
+  badge: string;
+  primaryCtaLabel: string;
+  primaryCtaUrl: string;
+  secondaryCtaLabel: string;
+  secondaryCtaUrl: string;
+  mobileImage?: string;
+  altText?: string;
+  // Modern Layout & Presentation Presets
+  layoutPreset?: "split" | "centered" | "minimal";
+  headlineAccent?: string;
+  emergencyPhone?: string;
+  showCadGrid?: boolean;
+  showAmbientGlow?: boolean;
+  showFloatingBadges?: boolean;
+  floatingBadge1Title?: string;
+  floatingBadge1Sub?: string;
+  floatingBadge2Title?: string;
+  floatingBadge2Sub?: string;
+  coordinatesTag?: string;
+  backgroundColor?: string;
+  highlights?: Array<{ label: string; icon?: string }>;
+  // Optional compatibility fields
+  imagePosition?: "right" | "left" | "background";
+  imageFit?: "cover" | "contain";
+  overlayStrength?: "none" | "light" | "medium" | "dark";
+  backgroundImage?: string;
 }
 
 export interface HbsContent {
@@ -588,7 +681,7 @@ export interface HbsContent {
   whyChooseUs?: string | null;
   stats?: string | null;
   processSteps?: string | ServiceProcessStep[] | null;
-  guaranteeSection?: string | HbsGuarantee | null;
+  guaranteeSection?: string | HbsGuarantee | HbsDiagnosticSection | null;
   homeFinalCta?: string | null;
   aboutStory?: string | null;
   mission?: string | null;

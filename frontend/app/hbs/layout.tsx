@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const hbsFavicon =
     content.favicon ||
-    "/hbs-icon.svg";
+    "/hbs-favicon.jpg";
 
   return {
     metadataBase: new URL(baseUrl),

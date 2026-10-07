@@ -21,6 +21,7 @@ import {
   fetchHbsServices,
   fetchHbsServiceBySlug
 } from "@/lib/hbsData";
+import { cleanTelNumber, getServiceWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsFaqAccordion from "@/components/hbs/HbsFaqAccordion";
 
 interface ServicePageProps {
@@ -157,8 +158,8 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
-  const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
+  const phoneRaw = cleanTelNumber(content.phone);
+  const serviceWaUrl = getServiceWhatsAppUrl(content.whatsapp, service.title);
 
   // Parse structured CMS lists safely
   const features = parseStringList(service.features);
@@ -235,7 +236,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
       {/* A. Breadcrumb Bar */}
       <nav
         aria-label="Breadcrumb"
-        className="bg-white border-b border-slate-200 py-3 px-4 sm:px-6"
+        className="bg-white/80 backdrop-blur-xs border-b border-slate-200/80 py-3 px-4 sm:px-6"
       >
         <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs text-slate-500 font-medium overflow-x-auto whitespace-nowrap">
           <Link href={homeHref} className="hover:text-amber-700 transition-colors">
@@ -262,7 +263,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
             {/* Left Column: Title & CTAs */}
             <div className="lg:col-span-7 space-y-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/20 text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider border border-amber-500/30">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider border border-amber-500/20 rounded-md">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Service #{service.serviceNumber || "19"}
                 </span>
@@ -289,22 +290,32 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
                 <Link
                   href={`${prefix}/contact?service=${encodeURIComponent(service.title)}`}
-                  className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider transition-colors shadow-md min-h-[44px]"
+                  data-hbs-cta="quote"
+                  className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider transition-all duration-200 shadow-md min-h-[44px] rounded-lg active:scale-[0.98]"
                 >
                   <Wrench className="w-4 h-4 text-slate-950" />
-                  <span>Book Free Inspection</span>
+                  <span>Get Free Quote</span>
                 </Link>
 
                 <a
-                  href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                    service.whatsappCtaText || `Hello Hind Build, I would like to inquire about ${service.title}.`
-                  )}`}
+                  href={serviceWaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider transition-colors min-h-[44px]"
+                  data-hbs-cta="whatsapp"
+                  className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 font-bold px-6 py-3.5 text-xs sm:text-sm uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                 >
                   <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  <span>WhatsApp Inquiry</span>
+                  <span>WhatsApp</span>
+                </a>
+
+                <a
+                  href={`tel:${phoneRaw}`}
+                  data-hbs-cta="call"
+                  aria-label={`Call Hind Build at ${content.phone}`}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold px-5 py-3.5 text-xs sm:text-sm uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
+                >
+                  <Phone className="w-4 h-4 text-amber-400" />
+                  <span>Call Hind Build</span>
                 </a>
               </div>
             </div>
@@ -312,21 +323,21 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
             {/* Right Column: Hero Visual or Highlight Card */}
             <div className="lg:col-span-5">
               {service.image ? (
-                <div className="relative aspect-4/3 w-full bg-slate-950 border-2 border-slate-800 overflow-hidden shadow-xl">
+                <div className="relative aspect-4/3 w-full bg-slate-950 border border-slate-800/80 rounded-2xl overflow-hidden shadow-2xl">
                   <img
                     src={service.image}
                     alt={service.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 text-xs text-slate-300 font-mono">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-3 left-3 right-3 text-xs text-slate-300 font-mono bg-slate-950/80 backdrop-blur-md rounded-lg border border-slate-800/60 px-3 py-1.5 inline-block">
                     Official Hind Build Engineering Execution
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-950 border border-slate-800 p-6 sm:p-8 space-y-4">
+                <div className="bg-slate-950/90 border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl">
                   <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-                    <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                    <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400">
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
@@ -367,11 +378,11 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Main Column */}
-          <main className="lg:col-span-8 space-y-12">
+          <main className="lg:col-span-8 space-y-10 sm:space-y-12">
             {/* C. Service Overview */}
-            <section className="bg-white border border-slate-200 p-6 sm:p-8 space-y-5 shadow-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-amber-600" />
+            <section className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-5 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2.5 h-2.5 rounded-xs bg-amber-600" />
                 <h2 className="text-lg sm:text-xl font-black uppercase font-display tracking-tight text-slate-900">
                   Service Overview &amp; Technical Scope
                 </h2>
@@ -395,7 +406,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                     {features.map((feat, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-2 p-2.5 bg-slate-50 border border-slate-200 text-xs text-slate-800"
+                        className="flex items-start gap-2.5 p-3 bg-slate-50/80 border border-slate-200/60 rounded-lg text-xs text-slate-800"
                       >
                         <CheckCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                         <span className="font-medium leading-snug">{feat}</span>
@@ -408,8 +419,8 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
 
             {/* D. Benefits Section (rendered only if present) */}
             {benefits.length > 0 && (
-              <section className="bg-white border border-slate-200 p-6 sm:p-8 space-y-5 shadow-xs">
-                <div className="flex items-center gap-2">
+              <section className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-5 shadow-xs">
+                <div className="flex items-center gap-2.5">
                   <Award className="w-5 h-5 text-amber-700" />
                   <h2 className="text-lg sm:text-xl font-black uppercase font-display tracking-tight text-slate-900">
                     Core Benefits &amp; Advantages
@@ -420,9 +431,9 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                   {benefits.map((benefit, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 bg-amber-50/40 border border-amber-200 text-xs sm:text-sm text-slate-800 flex items-start gap-2.5"
+                      className="p-3.5 bg-amber-50/40 border border-amber-200/70 rounded-lg text-xs sm:text-sm text-slate-800 flex items-start gap-2.5"
                     >
-                      <span className="w-5 h-5 rounded-none bg-amber-600 text-white font-mono font-bold flex items-center justify-center shrink-0 text-[10px]">
+                      <span className="w-5 h-5 rounded-md bg-amber-600 text-white font-mono font-bold flex items-center justify-center shrink-0 text-[10px]">
                         {idx + 1}
                       </span>
                       <span className="leading-relaxed font-medium">{benefit}</span>
@@ -434,21 +445,21 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
 
             {/* E. Process Section (rendered only if present) */}
             {processSteps.length > 0 && (
-              <section className="bg-white border border-slate-200 p-6 sm:p-8 space-y-5 shadow-xs">
-                <div className="flex items-center gap-2">
+              <section className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-5 shadow-xs">
+                <div className="flex items-center gap-2.5">
                   <Layers className="w-5 h-5 text-amber-700" />
                   <h2 className="text-lg sm:text-xl font-black uppercase font-display tracking-tight text-slate-900">
                     Execution Methodology &amp; Process
                   </h2>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {processSteps.map((step, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-slate-50 border border-slate-200 relative"
+                      className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-slate-50/80 border border-slate-200/60 rounded-lg relative"
                     >
-                      <div className="w-8 h-8 bg-slate-900 text-amber-400 font-mono font-bold flex items-center justify-center shrink-0 text-xs border border-slate-800">
+                      <div className="w-8 h-8 rounded-md bg-slate-900 text-amber-400 font-mono font-bold flex items-center justify-center shrink-0 text-xs border border-slate-800">
                         {step.step || String(idx + 1).padStart(2, "0")}
                       </div>
                       <div className="space-y-1 flex-1">
@@ -469,7 +480,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
             {(service.warrantyDetails || service.pricingEstimate) && (
               <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {service.warrantyDetails && (
-                  <div className="bg-white border border-slate-200 p-6 space-y-3 shadow-xs border-t-4 border-t-amber-600">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-6 space-y-3 shadow-xs border-t-4 border-t-amber-500">
                     <div className="flex items-center gap-2 text-amber-700">
                       <ShieldCheck className="w-5 h-5" />
                       <h3 className="text-xs font-bold uppercase tracking-wider font-mono">
@@ -483,7 +494,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                 )}
 
                 {service.pricingEstimate && (
-                  <div className="bg-white border border-slate-200 p-6 space-y-3 shadow-xs border-t-4 border-t-slate-900">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-6 space-y-3 shadow-xs border-t-4 border-t-slate-900">
                     <div className="flex items-center gap-2 text-slate-900">
                       <Clock className="w-5 h-5 text-amber-700" />
                       <h3 className="text-xs font-bold uppercase tracking-wider font-mono">
@@ -500,8 +511,8 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
 
             {/* H. Service Gallery (rendered only if present) */}
             {galleryImages.length > 0 && (
-              <section className="bg-white border border-slate-200 p-6 sm:p-8 space-y-5 shadow-xs">
-                <div className="flex items-center gap-2">
+              <section className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-5 shadow-xs">
+                <div className="flex items-center gap-2.5">
                   <ImageIcon className="w-5 h-5 text-amber-700" />
                   <h2 className="text-lg sm:text-xl font-black uppercase font-display tracking-tight text-slate-900">
                     Work Gallery &amp; Project Photos
@@ -512,7 +523,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                   {galleryImages.map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-4/3 bg-slate-100 border border-slate-200 overflow-hidden group"
+                      className="relative aspect-4/3 bg-slate-100 border border-slate-200/70 rounded-lg overflow-hidden group shadow-2xs"
                     >
                       <img
                         src={imgUrl}
@@ -528,8 +539,8 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
 
             {/* I. FAQs Section (rendered only if present) */}
             {faqs.length > 0 && (
-              <section className="bg-white border border-slate-200 p-6 sm:p-8 space-y-5 shadow-xs">
-                <div className="flex items-center gap-2">
+              <section className="bg-white border border-slate-200/80 rounded-xl p-6 sm:p-8 space-y-5 shadow-xs">
+                <div className="flex items-center gap-2.5">
                   <HelpCircle className="w-5 h-5 text-amber-700" />
                   <h2 className="text-lg sm:text-xl font-black uppercase font-display tracking-tight text-slate-900">
                     Frequently Asked Questions
@@ -541,7 +552,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
             )}
 
             {/* J. Strong Bottom CTA Banner */}
-            <section className="bg-slate-950 text-white p-8 sm:p-10 border-l-4 border-amber-500 space-y-4 shadow-md">
+            <section className="bg-slate-950 text-white p-8 sm:p-10 border-l-8 border-amber-500 border border-slate-850 rounded-2xl space-y-4 shadow-xl">
               <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest block">
                 Direct Engineering Dispatch
               </span>
@@ -555,15 +566,29 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <Link
                   href={`${prefix}/contact?service=${encodeURIComponent(service.title)}`}
-                  className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs uppercase tracking-wider transition-colors min-h-[44px]"
+                  data-hbs-cta="quote"
+                  className="inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-black px-6 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg shadow-md active:scale-[0.98]"
                 >
                   <Wrench className="w-4 h-4 text-slate-950" />
-                  <span>Request Inspection</span>
+                  <span>Get Free Quote</span>
                 </Link>
 
                 <a
+                  href={serviceWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-hbs-cta="whatsapp"
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-slate-700 font-bold px-6 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>WhatsApp</span>
+                </a>
+
+                <a
                   href={`tel:${phoneRaw}`}
-                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 font-bold px-6 py-3.5 text-xs uppercase tracking-wider transition-colors min-h-[44px] font-mono"
+                  data-hbs-cta="call"
+                  aria-label={`Call Hind Build at ${content.phone}`}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white border border-slate-700 font-bold px-6 py-3.5 text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] font-mono rounded-lg active:scale-[0.98]"
                 >
                   <Phone className="w-4 h-4 text-amber-400" />
                   <span>Call {content.phone}</span>
@@ -575,7 +600,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
           {/* Right Sidebar: Contact, Trust & Related Services */}
           <aside className="lg:col-span-4 space-y-6">
             {/* Quick Contact Card */}
-            <div className="bg-white border border-slate-200 p-6 space-y-4 shadow-xs sticky top-24">
+            <div className="bg-white border border-slate-200/80 rounded-xl p-6 space-y-4 shadow-xs sticky top-24">
               <div className="border-b border-slate-100 pb-3">
                 <span className="text-[10px] font-mono font-bold text-amber-700 uppercase tracking-wider block mb-1">
                   Rapid Assistance
@@ -586,7 +611,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3 bg-amber-50/60 border border-amber-200 text-slate-800 space-y-1">
+                <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-800 space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-amber-800 text-xs">
                     <ShieldCheck className="w-4 h-4 text-amber-700" />
                     <span>Parent Company Oversight</span>
@@ -599,22 +624,22 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                 <div className="space-y-2 pt-1">
                   <Link
                     href={`${prefix}/contact?service=${encodeURIComponent(service.title)}`}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider py-3 shadow-xs transition-colors min-h-[44px]"
+                    data-hbs-cta="quote"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs uppercase tracking-wider py-3 shadow-xs transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <Wrench className="w-4 h-4" />
-                    <span>Get Free Estimation</span>
+                    <span>Get Free Quote</span>
                   </Link>
 
                   <a
-                    href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                      `Hello Hind Build, I need a site visit for: ${service.title}`
-                    )}`}
+                    href={serviceWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 font-bold text-xs uppercase tracking-wider py-2.5 transition-colors min-h-[44px]"
+                    data-hbs-cta="whatsapp"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 font-bold text-xs uppercase tracking-wider py-2.5 transition-all duration-200 min-h-[44px] rounded-lg active:scale-[0.98]"
                   >
                     <MessageSquare className="w-4 h-4 text-emerald-400" />
-                    <span>WhatsApp Engineer</span>
+                    <span>WhatsApp</span>
                   </a>
                 </div>
 
@@ -625,7 +650,12 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Direct Helpline:</span>
-                    <a href={`tel:${phoneRaw}`} className="font-mono text-amber-700 font-bold hover:underline">
+                    <a
+                      href={`tel:${phoneRaw}`}
+                      data-hbs-cta="call"
+                      aria-label={`Call Hind Build helpline at ${content.phone}`}
+                      className="font-mono text-amber-700 font-bold hover:underline"
+                    >
                       {content.phone}
                     </a>
                   </div>
@@ -643,7 +673,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                       <li key={rel.slug}>
                         <Link
                           href={`${prefix}/services/${rel.slug}`}
-                          className="flex items-center justify-between p-2 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 border border-slate-200 text-xs text-slate-700 hover:text-amber-800 transition-colors group"
+                          className="flex items-center justify-between p-2.5 bg-slate-50/80 hover:bg-amber-50 hover:border-amber-200 border border-slate-200/70 rounded-lg text-xs text-slate-700 hover:text-amber-800 transition-all group"
                         >
                           <span className="font-semibold truncate">{rel.title}</span>
                           <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-700 group-hover:translate-x-0.5 transition-all shrink-0" />

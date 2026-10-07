@@ -65,9 +65,12 @@ export default function HbsQuoteModal({
         {/* Header */}
         <div className="bg-slate-900 p-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-amber-500 text-slate-950 flex items-center justify-center font-black text-xs font-mono">
-              HB
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hbs-icon.jpg"
+              alt="Hind Build"
+              className="w-8 h-8 rounded-sm object-contain bg-white p-0.5 shadow-xs"
+            />
             <div>
               <h3 className="font-bold text-sm sm:text-base uppercase tracking-wider font-display">
                 Request Free Inspection & Quote

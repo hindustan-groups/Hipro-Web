@@ -22,9 +22,11 @@ import {
   Plus,
   Send,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  MapPin
 } from "lucide-react";
 import type { HbsLead, HbsInternalNote } from "@/lib/types";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 const LEAD_STATUSES = [
   "NEW",
@@ -303,6 +305,28 @@ export default function HbsAdminLeads() {
       .filter(Boolean);
   };
 
+  const parseLeadMeta = (message?: string | null) => {
+    if (!message) return { location: null, preferredContact: null, cleanMessage: "" };
+    const match = message.match(/^\[([^\]]+)\]\s*/);
+    let location: string | null = null;
+    let preferredContact: string | null = null;
+    let cleanMessage = message;
+
+    if (match) {
+      cleanMessage = message.slice(match[0].length).trim();
+      const parts = match[1].split("|");
+      for (const p of parts) {
+        const trimmed = p.trim();
+        if (trimmed.toLowerCase().startsWith("location:")) {
+          location = trimmed.slice("location:".length).trim();
+        } else if (trimmed.toLowerCase().startsWith("preferred contact:")) {
+          preferredContact = trimmed.slice("preferred contact:".length).trim();
+        }
+      }
+    }
+    return { location, preferredContact, cleanMessage };
+  };
+
   const getStatusBadge = (st?: string) => {
     const s = (st || "NEW").toUpperCase();
     switch (s) {
@@ -343,43 +367,33 @@ export default function HbsAdminLeads() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-            CRM &amp; Quote Inquiries
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            Hind Build Customer Leads &amp; CRM
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Inquiries generated from public Hind Build quote forms, service booking popups, and phone callbacks.
-          </p>
-        </div>
+      {/* Apple-minimal Header */}
+      <HbsAdminPageHeader
+        breadcrumbs={[{ label: "Leads" }]}
+        title="Customer Leads & Quotes"
+        description="Review incoming quote inquiries, manage CRM stage progression, and trigger client communications."
+      >
+        <button
+          onClick={loadLeads}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          <span>Reload</span>
+        </button>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={loadLeads}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Reload</span>
-          </button>
-
-          <button
-            onClick={exportCSV}
-            disabled={leads.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors uppercase tracking-wider disabled:opacity-50"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
-          </button>
-        </div>
-      </div>
+        <button
+          onClick={exportCSV}
+          disabled={leads.length === 0}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition-colors disabled:opacity-50"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Export CSV</span>
+        </button>
+      </HbsAdminPageHeader>
 
       {message.text && (
         <div
-          className={`p-4 text-xs flex items-center gap-2 border ${
+          className={`p-4 text-xs flex items-center gap-2 border rounded-xl ${
             message.type === "success"
               ? "bg-emerald-50 border-emerald-200 text-emerald-800"
               : "bg-red-50 border-red-200 text-red-800"
@@ -395,7 +409,7 @@ export default function HbsAdminLeads() {
       )}
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 border border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 border border-slate-200/80 rounded-xl shadow-xs">
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
@@ -403,7 +417,7 @@ export default function HbsAdminLeads() {
             placeholder="Search by customer, phone, service, assignee..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 bg-slate-50 focus:bg-white focus:outline-amber-500"
+            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 bg-slate-50 rounded-lg focus:bg-white focus:outline-amber-500 transition-all"
           />
         </div>
 
@@ -412,9 +426,9 @@ export default function HbsAdminLeads() {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 text-[11px] font-mono uppercase font-bold transition-colors whitespace-nowrap ${
+              className={`px-2.5 py-1 text-[11px] font-mono uppercase font-bold transition-all rounded-md whitespace-nowrap ${
                 statusFilter.toUpperCase() === st.toUpperCase()
-                  ? "bg-slate-900 text-white"
+                  ? "bg-slate-900 text-white shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -425,7 +439,7 @@ export default function HbsAdminLeads() {
       </div>
 
       {/* Leads Table */}
-      <div className="bg-white border border-slate-200 overflow-x-auto shadow-xs">
+      <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden overflow-x-auto shadow-xs">
         <table className="w-full text-left text-xs text-slate-600">
           <thead className="bg-slate-50 text-slate-700 uppercase font-mono text-[10px] tracking-wider border-b border-slate-200">
             <tr>
@@ -455,9 +469,30 @@ export default function HbsAdminLeads() {
                   <tr key={lead.id} className="hover:bg-slate-50/50">
                     <td className="p-3">
                       <div className="font-bold text-slate-900 text-sm">{lead.name}</div>
+                      <div className="text-[10px] font-mono text-amber-800 font-bold">
+                        #HB-{(lead.id || "").slice(-6).toUpperCase()}
+                      </div>
                       {lead.email && (
                         <div className="text-slate-400 text-[11px] font-mono">{lead.email}</div>
                       )}
+                      {(() => {
+                        const { location, preferredContact } = parseLeadMeta(lead.message);
+                        return (
+                          <div className="space-y-0.5 mt-1">
+                            {location && (
+                              <div className="text-slate-600 text-[10px] font-mono flex items-center gap-1">
+                                <MapPin className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                                <span className="truncate max-w-[160px]">{location}</span>
+                              </div>
+                            )}
+                            {preferredContact && (
+                              <div className="text-[10px] text-slate-500 font-mono">
+                                Prefers: <strong className="text-slate-700">{preferredContact}</strong>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     <td className="p-3 font-mono">
@@ -588,15 +623,18 @@ export default function HbsAdminLeads() {
       {/* Viewing / Editing Lead Modal */}
       {viewingLead && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-slate-300 w-full max-w-2xl my-8 p-6 shadow-2xl space-y-6">
+          <div className="bg-white border border-slate-300 rounded-2xl w-full max-w-2xl my-8 p-6 sm:p-8 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-black uppercase text-slate-900 font-display">
                     {viewingLead.name}
                   </h3>
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded-md font-mono text-xs font-bold">
+                    #HB-{(viewingLead.id || "").slice(-6).toUpperCase()}
+                  </span>
                   <span
-                    className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase border ${getStatusBadge(
+                    className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase border rounded-md ${getStatusBadge(
                       editStatus
                     )}`}
                   >
@@ -604,7 +642,7 @@ export default function HbsAdminLeads() {
                   </span>
                 </div>
                 <span className="text-[11px] font-mono text-slate-400">
-                  Inquiry ID: {viewingLead.id || "—"} · Received:{" "}
+                  Reference: #HB-{(viewingLead.id || "").slice(-6).toUpperCase()} · Received:{" "}
                   {viewingLead.createdAt
                     ? new Date(String(viewingLead.createdAt)).toLocaleString("en-IN")
                     : "—"}
@@ -613,84 +651,100 @@ export default function HbsAdminLeads() {
               <button
                 type="button"
                 onClick={() => setViewingLead(null)}
-                className="p-1 text-slate-400 hover:text-slate-700"
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Customer Information Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 border border-slate-200 space-y-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
-                  Direct Phone
-                </span>
-                <a
-                  href={`tel:${viewingLead.phone}`}
-                  className="font-mono font-bold text-amber-700 hover:underline flex items-center gap-1"
-                >
-                  <Phone className="w-3 h-3" />
-                  <span>{viewingLead.phone}</span>
-                </a>
-              </div>
+            {(() => {
+              const { location, preferredContact, cleanMessage } = parseLeadMeta(viewingLead.message);
+              return (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-1">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
+                        Direct Phone
+                      </span>
+                      <a
+                        href={`tel:${viewingLead.phone}`}
+                        className="font-mono font-bold text-amber-700 hover:underline flex items-center gap-1"
+                      >
+                        <Phone className="w-3 h-3" />
+                        <span>{viewingLead.phone}</span>
+                      </a>
+                    </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 space-y-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
-                  Email Address
-                </span>
-                <span className="font-mono text-slate-800 truncate block">
-                  {viewingLead.email || "Not Provided"}
-                </span>
-              </div>
+                    <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-1">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
+                        Email Address
+                      </span>
+                      <span className="font-mono text-slate-800 truncate block">
+                        {viewingLead.email || "Not Provided"}
+                      </span>
+                    </div>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 space-y-1">
-                <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
-                  Lead Source
-                </span>
-                <span className="font-mono text-slate-800 truncate block">
-                  {viewingLead.source || "hbs_website"}
-                </span>
-              </div>
-            </div>
+                    <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-1">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
+                        Site Location
+                      </span>
+                      <span className="font-mono text-slate-800 truncate block">
+                        {location || "Bhilwara / Rajasthan"}
+                      </span>
+                    </div>
 
-            {/* Selected Services Multi-Service Display */}
-            <div className="p-4 bg-slate-50 border border-slate-200 space-y-2">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                <span className="text-xs font-bold text-slate-900 uppercase font-mono flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>
-                    Selected Services ({parseSelectedServices(viewingLead.selectedService).length})
-                  </span>
-                </span>
-                <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 border border-amber-200 uppercase">
-                  Hind Build Trades
-                </span>
-              </div>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                {parseSelectedServices(viewingLead.selectedService).map((srv, idx) => (
-                  <li
-                    key={idx}
-                    className="flex items-center gap-2 p-2 bg-white border border-slate-200 text-xs font-bold text-slate-900 shadow-2xs"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">{srv}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                    <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-1">
+                      <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
+                        Preferred Contact
+                      </span>
+                      <span className="font-mono text-amber-800 font-bold truncate block">
+                        {preferredContact || "Phone Call"}
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Problem Description / Message */}
-            <div className="p-3 bg-slate-50 border border-slate-200 space-y-1 text-xs">
-              <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
-                Customer Message / Project Scope
-              </span>
-              <p className="text-slate-700 leading-relaxed italic bg-white p-3 border border-slate-200">
-                {viewingLead.message || "No additional message provided."}
-              </p>
-            </div>
+                  {/* Selected Services Multi-Service Display */}
+                  <div className="p-4 bg-slate-50/80 border border-slate-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span className="text-xs font-bold text-slate-900 uppercase font-mono flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>
+                          Selected Services ({parseSelectedServices(viewingLead.selectedService).length}/4)
+                        </span>
+                      </span>
+                      <span className="text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 border border-amber-200 rounded-md uppercase">
+                        Hind Build Trades
+                      </span>
+                    </div>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {parseSelectedServices(viewingLead.selectedService).map((srv, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900 shadow-2xs"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span className="truncate">{srv}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Problem Description / Message */}
+                  <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-1 text-xs">
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase font-mono">
+                      Customer Message / Project Scope
+                    </span>
+                    <p className="text-slate-700 leading-relaxed italic bg-white p-3 border border-slate-200 rounded-lg">
+                      {cleanMessage || "No additional message provided."}
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
 
             {/* CRM Workflow Parameters Form */}
-            <div className="p-4 bg-amber-50/40 border border-amber-200 space-y-4">
+            <div className="p-4 bg-amber-50/40 border border-amber-200 rounded-xl space-y-4">
               <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-amber-700" />
                 <span>Lead Workflow &amp; Quotation Controls</span>
@@ -704,7 +758,7 @@ export default function HbsAdminLeads() {
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value)}
-                    className="w-full border border-slate-300 p-2 bg-white font-mono font-bold uppercase focus:outline-amber-500"
+                    className="w-full border border-slate-300 p-2 bg-white rounded-lg font-mono font-bold uppercase focus:outline-amber-500"
                   >
                     {LEAD_STATUSES.map((st) => (
                       <option key={st} value={st}>
@@ -721,7 +775,7 @@ export default function HbsAdminLeads() {
                   <select
                     value={editPriority}
                     onChange={(e) => setEditPriority(e.target.value)}
-                    className="w-full border border-slate-300 p-2 bg-white font-mono font-bold uppercase focus:outline-amber-500"
+                    className="w-full border border-slate-300 p-2 bg-white rounded-lg font-mono font-bold uppercase focus:outline-amber-500"
                   >
                     {LEAD_PRIORITIES.map((pr) => (
                       <option key={pr} value={pr}>
@@ -740,7 +794,7 @@ export default function HbsAdminLeads() {
                     placeholder="e.g. Er. Sharma (Site Lead)"
                     value={editAssignedTo}
                     onChange={(e) => setEditAssignedTo(e.target.value)}
-                    className="w-full border border-slate-300 p-2 bg-white focus:outline-amber-500"
+                    className="w-full border border-slate-300 p-2 bg-white rounded-lg focus:outline-amber-500"
                   />
                 </div>
 
@@ -753,7 +807,7 @@ export default function HbsAdminLeads() {
                     placeholder="e.g. 45000"
                     value={editQuotationAmount}
                     onChange={(e) => setEditQuotationAmount(e.target.value)}
-                    className="w-full border border-slate-300 p-2 bg-white font-mono focus:outline-amber-500"
+                    className="w-full border border-slate-300 p-2 bg-white rounded-lg font-mono focus:outline-amber-500"
                   />
                 </div>
               </div>
@@ -763,7 +817,7 @@ export default function HbsAdminLeads() {
                   type="button"
                   onClick={saveLeadDetails}
                   disabled={savingDetails}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 shadow-xs"
                 >
                   {savingDetails ? "Saving Details..." : "Update CRM Parameters"}
                 </button>
@@ -780,14 +834,14 @@ export default function HbsAdminLeads() {
               {/* Notes Timeline */}
               <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                 {parseNotes(viewingLead.internalNotes).length === 0 ? (
-                  <p className="text-xs text-slate-400 italic p-3 bg-slate-50 border border-slate-200">
+                  <p className="text-xs text-slate-400 italic p-3 bg-slate-50 border border-slate-200 rounded-xl">
                     No internal notes yet. Use the field below to document site inspection findings, client callbacks, or quotation revisions.
                   </p>
                 ) : (
                   parseNotes(viewingLead.internalNotes).map((note, idx) => (
                     <div
                       key={note.id || idx}
-                      className="p-3 bg-slate-50 border border-slate-200 text-xs space-y-1"
+                      className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1"
                     >
                       <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
                         <span className="font-bold text-slate-800">{note.author || "Supervisor"}</span>
@@ -812,13 +866,13 @@ export default function HbsAdminLeads() {
                       submitNote();
                     }
                   }}
-                  className="flex-1 text-xs border border-slate-300 p-2 bg-slate-50 focus:bg-white focus:outline-amber-500"
+                  className="flex-1 text-xs border border-slate-300 p-2 bg-slate-50 rounded-lg focus:bg-white focus:outline-amber-500 transition-all"
                 />
                 <button
                   type="button"
                   onClick={submitNote}
                   disabled={addingNote || !newNote.trim()}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shrink-0 inline-flex items-center gap-1"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg transition-all active:scale-[0.98] disabled:opacity-50 shrink-0 inline-flex items-center gap-1 shadow-xs"
                 >
                   <Send className="w-3 h-3" />
                   <span>{addingNote ? "Adding..." : "Add Note"}</span>
@@ -834,7 +888,7 @@ export default function HbsAdminLeads() {
               <button
                 type="button"
                 onClick={() => setViewingLead(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase rounded-lg transition-all"
               >
                 Close
               </button>

@@ -16,6 +16,7 @@ import {
   Search,
   Filter
 } from "lucide-react";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 interface UploadedAsset {
   url: string;
@@ -142,25 +143,18 @@ export default function HbsAdminMedia() {
   });
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-            Asset Management
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            Media Library
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Upload, organise and copy URLs for images used across Hind Build pages. Assets are stored on Cloudinary.
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 text-xs font-mono border border-slate-200">
-          <GalleryHorizontalEnd className="w-4 h-4" />
-          {uploads.length} asset{uploads.length !== 1 ? "s" : ""} this session
+    <div className="space-y-7 max-w-5xl">
+      {/* Apple-minimal Header */}
+      <HbsAdminPageHeader
+        breadcrumbs={[{ label: "Media" }]}
+        title="Media Library"
+        description="Upload, organise and copy Cloudinary URLs for images used across Hind Build pages."
+      >
+        <span className="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 text-xs font-mono border border-slate-200/80 rounded-lg">
+          <GalleryHorizontalEnd className="w-3.5 h-3.5 text-slate-500" />
+          <span>{uploads.length} asset{uploads.length !== 1 ? "s" : ""} this session</span>
         </span>
-      </div>
+      </HbsAdminPageHeader>
 
       {/* Info notice */}
       <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 text-xs flex items-start gap-2">

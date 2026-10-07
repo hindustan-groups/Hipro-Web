@@ -143,7 +143,7 @@ export default async function HbsContactPage() {
           </nav>
 
           <div className="max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider rounded-md">
               <HardHat className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Rapid Field Engineering Helpdesk</span>
             </div>
@@ -173,7 +173,7 @@ export default async function HbsContactPage() {
           <div className="lg:col-span-7">
             <Suspense
               fallback={
-                <div className="p-8 text-center text-xs text-slate-400 bg-white border border-slate-200">
+                <div className="p-8 text-center text-xs text-slate-400 bg-white border border-slate-200/80 rounded-2xl shadow-xs">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-700" />
                   Loading form...
                 </div>
@@ -186,7 +186,7 @@ export default async function HbsContactPage() {
           {/* Right Column: Contact Details & Office */}
           <div className="lg:col-span-5 space-y-6">
             {/* Quick Contact Card */}
-            <div className="bg-slate-900 text-white p-6 sm:p-8 space-y-6 border-t-4 border-amber-500 shadow-xs">
+            <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl text-white p-6 sm:p-8 space-y-6 border-t-4 border-t-amber-500 shadow-xl backdrop-blur-xs">
               <h2 className="text-lg font-bold uppercase font-display border-b border-slate-800 pb-3">
                 Central Helpdesk &amp; Dispatch
               </h2>
@@ -194,7 +194,7 @@ export default async function HbsContactPage() {
               <div className="space-y-4 text-xs text-slate-300">
                 {/* Phone */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400 shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
@@ -203,6 +203,7 @@ export default async function HbsContactPage() {
                     </span>
                     <a
                       href={`tel:${phoneRaw}`}
+                      data-hbs-cta="call"
                       className="text-white hover:text-amber-400 font-bold text-sm transition-colors"
                     >
                       {phone}
@@ -212,7 +213,7 @@ export default async function HbsContactPage() {
 
                 {/* WhatsApp */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center justify-center text-emerald-400 shrink-0">
                     <MessageSquare className="w-4 h-4" />
                   </div>
                   <div>
@@ -220,9 +221,10 @@ export default async function HbsContactPage() {
                       WhatsApp Quick Help
                     </span>
                     <a
-                      href={`https://wa.me/${whatsappRaw}?text=Hello%20Hind%20Build,%20I%20would%20like%20to%20schedule%20an%20inspection.`}
+                      href={`https://wa.me/${whatsappRaw}?text=Hi%20Hind%20Build,%20I%20would%20like%20to%20request%20a%20quotation.`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-hbs-cta="whatsapp"
                       className="text-emerald-400 hover:text-emerald-300 font-bold text-sm transition-colors"
                     >
                       {whatsapp} (Click to Chat)
@@ -232,7 +234,7 @@ export default async function HbsContactPage() {
 
                 {/* Email */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400 shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div>
@@ -250,7 +252,7 @@ export default async function HbsContactPage() {
 
                 {/* Address */}
                 <div className="flex items-start gap-3">
-                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400 shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
@@ -263,27 +265,21 @@ export default async function HbsContactPage() {
 
                 {/* Hours */}
                 <div className="flex items-start gap-3 pt-2 border-t border-slate-800">
-                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <div className="min-w-[44px] min-h-[44px] w-11 h-11 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400 shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-[11px] text-slate-400 uppercase tracking-widest block font-bold">
                       Working Hours
                     </span>
-                    <p className="text-slate-300 leading-snug">
-                      {workingHours}
-                      <br />
-                      <span className="text-amber-400 font-semibold">
-                        Emergency repair response on call
-                      </span>
-                    </p>
+                    <p className="text-slate-300 leading-snug">{workingHours}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Parent company attribution card */}
-            <div className="bg-amber-50 border border-amber-200 p-5 text-xs text-amber-900 space-y-1.5">
+            {/* Corporate Entity note */}
+            <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-5 text-xs text-amber-900 space-y-1.5">
               <span className="font-bold uppercase tracking-wider block">Corporate Entity</span>
               <p className="leading-relaxed">
                 Hind Build is an official engineering brand under{" "}

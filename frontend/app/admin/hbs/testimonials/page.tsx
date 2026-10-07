@@ -16,6 +16,7 @@ import {
   Save
 } from "lucide-react";
 import type { HbsTestimonial } from "@/lib/types";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 const EMPTY_TESTIMONIAL: Partial<HbsTestimonial> = {
   name: "",
@@ -161,38 +162,28 @@ export default function HbsAdminTestimonials() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-200">
-        <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-            Client Feedback CMS
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
-            HBS Testimonials & Reviews
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage endorsements from apartment society presidents, facility managers, and home owners.
-          </p>
-        </div>
+      {/* Apple-minimal Header */}
+      <HbsAdminPageHeader
+        breadcrumbs={[{ label: "Testimonials" }]}
+        title="Testimonials & Reviews"
+        description="Manage endorsements from apartment society presidents, facility managers, and verified clients."
+      >
+        <button
+          onClick={loadData}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          <span>Reload</span>
+        </button>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={loadData}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-colors"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Reload</span>
-          </button>
-
-          <button
-            onClick={() => openEditModal(EMPTY_TESTIMONIAL)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-500 transition-colors uppercase tracking-wider"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Testimonial</span>
-          </button>
-        </div>
-      </div>
+        <button
+          onClick={() => openEditModal(EMPTY_TESTIMONIAL)}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add Testimonial</span>
+        </button>
+      </HbsAdminPageHeader>
 
       {message.text && (
         <div

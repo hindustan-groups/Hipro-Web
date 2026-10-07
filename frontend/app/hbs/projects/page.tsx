@@ -16,6 +16,7 @@ import {
   fetchHbsContent,
   fetchHbsServices,
 } from "@/lib/hbsData";
+import { cleanTelNumber, cleanWhatsAppNumber, buildHbsWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsProjectsDirectory from "@/components/hbs/HbsProjectsDirectory";
 
 export const revalidate = 60;
@@ -77,8 +78,16 @@ export default async function HbsProjectsPage() {
   const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
   const prefix = isSubdomain ? "" : "/hbs";
 
-  const phoneRaw = content.phone.replace(/[^\d+]/g, "") || "+917597000601";
-  const whatsappRaw = content.whatsapp.replace(/[^\d]/g, "") || "917597000601";
+  const phoneRaw = cleanTelNumber(content.phone);
+  const whatsappRaw = cleanWhatsAppNumber(content.whatsapp);
+  const heroWaUrl = buildHbsWhatsAppUrl(
+    content.whatsapp,
+    "Hi Hind Build, I would like to inquire about your completed project records and site capabilities."
+  );
+  const bottomWaUrl = buildHbsWhatsAppUrl(
+    content.whatsapp,
+    "Hi Hind Build, I would like to schedule an engineering assessment for my site."
+  );
 
   // Safely parse process steps if configured
   let processSteps: Array<{ step: string; title: string; desc: string }> = [];
@@ -153,7 +162,7 @@ export default async function HbsProjectsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               {/* Left Column: Heading, Value Prop, CTAs */}
               <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider rounded-md">
                   <HardHat className="w-3.5 h-3.5" aria-hidden="true" />
                   <span>Field Records &amp; Project Portfolio</span>
                 </div>
@@ -178,37 +187,39 @@ export default async function HbsProjectsPage() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                   <Link
                     href={`${prefix}/contact`}
-                    className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md"
+                    data-hbs-cta="quote"
+                    className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
                   >
                     <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                    <span>Book Site Inspection</span>
+                    <span>Get Free Quote</span>
                   </Link>
 
                   <a
-                    href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                      "Hello Hind Build, I would like to inquire about your completed project records and site capabilities."
-                    )}`}
+                    href={heroWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md"
+                    data-hbs-cta="whatsapp"
+                    className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
                   >
                     <MessageSquare className="w-4 h-4 shrink-0" />
-                    <span>Inquire via WhatsApp</span>
+                    <span>WhatsApp</span>
                   </a>
 
                   <a
                     href={`tel:${phoneRaw}`}
-                    className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider"
+                    data-hbs-cta="call"
+                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider rounded-lg active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>Call: {content.phone}</span>
+                    <span>Call Hind Build</span>
                   </a>
                 </div>
               </div>
 
               {/* Right Column: Industrial Technical Strip Box */}
               <div className="lg:col-span-5">
-                <div className="bg-slate-900 border-2 border-slate-800 p-6 sm:p-8 space-y-6 relative shadow-2xl">
+                <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-6 relative shadow-2xl backdrop-blur-xs">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                     <span className="text-[11px] font-mono text-amber-400 uppercase tracking-widest font-bold">
                       PORTFOLIO METRICS
@@ -221,7 +232,7 @@ export default async function HbsProjectsPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-slate-950 border border-slate-800">
+                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
                       <div className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
                         {projects.length}
                       </div>
@@ -232,7 +243,7 @@ export default async function HbsProjectsPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800">
+                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
                       <div className="text-2xl sm:text-3xl font-mono font-black text-white">
                         HiPRO
                       </div>
@@ -241,7 +252,7 @@ export default async function HbsProjectsPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800">
+                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
                       <div className="text-2xl sm:text-3xl font-mono font-black text-white">
                         100%
                       </div>
@@ -250,7 +261,7 @@ export default async function HbsProjectsPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 bg-slate-950 border border-slate-800">
+                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
                       <div className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
                         Written
                       </div>
@@ -283,9 +294,9 @@ export default async function HbsProjectsPage() {
           aria-labelledby="portfolio-archive-heading"
           className="max-w-7xl mx-auto px-4 sm:px-6"
         >
-          <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200">
+          <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200/80">
             <div>
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 border border-amber-200 inline-block mb-2">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 border border-amber-200 inline-block mb-2 rounded-md">
                 Field Execution Documentation
               </span>
               <h2
@@ -320,10 +331,10 @@ export default async function HbsProjectsPage() {
             aria-labelledby="process-heading"
             className="max-w-7xl mx-auto px-4 sm:px-6"
           >
-            <div className="bg-slate-900 text-white p-8 sm:p-12 border border-slate-800 shadow-xl space-y-8">
+            <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl text-white p-8 sm:p-12 shadow-xl space-y-8 backdrop-blur-xs">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-800">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md">
                     <ClipboardCheck className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Standardized Engineering Protocol</span>
                   </div>
@@ -345,7 +356,7 @@ export default async function HbsProjectsPage() {
                 {processSteps.map((step, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-950 p-5 border border-slate-800 space-y-2.5 relative group hover:border-amber-500/60 transition-colors"
+                    className="bg-slate-950 p-5 border border-slate-800 rounded-xl space-y-2.5 relative group hover:border-amber-500/60 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xl font-black text-amber-400">
@@ -375,7 +386,7 @@ export default async function HbsProjectsPage() {
           aria-labelledby="cta-heading"
           className="max-w-7xl mx-auto px-4 sm:px-6 pb-6"
         >
-          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white p-8 sm:p-12 border-l-8 border-amber-500 shadow-xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8">
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white p-8 sm:p-12 border-l-8 border-amber-500 border border-slate-850 rounded-2xl shadow-xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8">
             <div className="space-y-3 max-w-2xl">
               <span className="text-amber-400 font-mono text-xs uppercase tracking-wider font-bold block">
                 Turnkey Engineering Support
@@ -396,30 +407,32 @@ export default async function HbsProjectsPage() {
             <div className="flex flex-col sm:flex-row flex-wrap items-stretch gap-3 shrink-0 w-full xl:w-auto">
               <Link
                 href={`${prefix}/contact`}
-                className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md"
+                data-hbs-cta="quote"
+                className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
               >
                 <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                <span>Book Site Inspection</span>
+                <span>Get Free Quote</span>
               </Link>
 
               <a
-                href={`https://wa.me/${whatsappRaw}?text=${encodeURIComponent(
-                  "Hello Hind Build, I would like to schedule an engineering assessment for my site."
-                )}`}
+                href={bottomWaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md"
+                data-hbs-cta="whatsapp"
+                className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
               >
                 <MessageSquare className="w-4 h-4 shrink-0" />
-                <span>Chat on WhatsApp</span>
+                <span>WhatsApp</span>
               </a>
 
               <a
                 href={`tel:${phoneRaw}`}
-                className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider"
+                data-hbs-cta="call"
+                aria-label={`Call Hind Build at ${content.phone}`}
+                className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider rounded-lg active:scale-[0.98]"
               >
                 <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Call: {content.phone}</span>
+                <span>Call Hind Build</span>
               </a>
             </div>
           </div>
