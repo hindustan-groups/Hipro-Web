@@ -30,6 +30,7 @@ import {
 } from "@/lib/hbsData";
 import { cleanTelNumber, getHomeWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsHero from "@/components/hbs/HbsHero";
+import HbsHomeServicesShowcase from "@/components/hbs/HbsHomeServicesShowcase";
 import AnimateIn from "@/components/AnimateIn";
 import type { HbsHeroConfig, HbsDiagnosticSection } from "@/lib/types";
 
@@ -104,10 +105,6 @@ export default async function HbsHomePage() {
       heroConfig = { ...heroConfig, ...parsed };
     }
   } catch {}
-
-  // Curate featured service (e.g. Service 01 or 02) and remaining services
-  const featuredService = services[0] || null;
-  const secondaryFeatured = services[1] || null;
 
   // Default process steps if none in CMS
   const processList = [
@@ -420,178 +417,14 @@ export default async function HbsHomePage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────
-          4. SERVICES — ANIMATED 19-SERVICE SYSTEM & FEATURED DUO
+          4. SERVICES — ULTRA-MODERN 19-SERVICE INTERACTIVE SHOWCASE
       ───────────────────────────────────────────────────────────────── */}
-      <section aria-labelledby="services-system-heading" className="py-16 sm:py-24 border-b border-slate-200/80 bg-slate-50/40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-10 sm:space-y-12">
-          {/* Header */}
-          <AnimateIn delay={40}>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div className="space-y-2 max-w-2xl">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-amber-700">
-                  19 Specialist Trades
-                </span>
-                <h2
-                  id="services-system-heading"
-                  className="text-2xl sm:text-4xl font-semibold tracking-tight text-slate-900 font-display"
-                >
-                  Comprehensive Building Maintenance
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-                  From foundation waterproofing to structural rehabilitation, facade work, and facility upkeep. All 19 trades execute under one unified warranty.
-                </p>
-              </div>
-
-              <Link
-                href={`${prefix}/services`}
-                className="group inline-flex items-center gap-1 text-xs font-semibold text-slate-900 hover:text-amber-700 uppercase tracking-wider shrink-0 transition-colors"
-              >
-                <span>View All 19 Services</span>
-                <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-            </div>
-          </AnimateIn>
-
-          {/* Featured Highlight Duo */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {featuredService && (
-              <AnimateIn delay={100}>
-                <div className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden flex flex-col justify-between hover:border-amber-400/80 hover:shadow-hbs-crisp hover:-translate-y-1.5 transition-all duration-300 h-full">
-                  <div className="relative aspect-[16/10] w-full bg-slate-100 overflow-hidden">
-                    <Image
-                      src={
-                        featuredService.image ||
-                        "https://images.unsplash.com/photo-1541888946425-d0fbb18615f8?q=80&w=800&auto=format&fit=crop"
-                      }
-                      alt={featuredService.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 550px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-slate-950/85 backdrop-blur-md rounded-md text-[10px] font-mono font-bold text-amber-400 border border-amber-500/30">
-                      SERVICE #{featuredService.serviceNumber || "01"}
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-3">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
-                        <Link href={`${prefix}/services/${featuredService.slug}`}>
-                          {featuredService.title}
-                        </Link>
-                      </h3>
-                      {featuredService.hindiTitle && (
-                        <p className="text-xs text-slate-400 font-medium">{featuredService.hindiTitle}</p>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                      {featuredService.shortDescription ||
-                        "Specialized diagnosis, certified chemical barriers, and guaranteed restoration."}
-                    </p>
-                    <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100">
-                      <span className="font-mono text-[11px] text-slate-400">Turnkey Civil Protocol</span>
-                      <Link
-                        href={`${prefix}/services/${featuredService.slug}`}
-                        className="font-semibold text-slate-900 hover:text-amber-700 inline-flex items-center gap-1 transition-colors"
-                      >
-                        <span>Explore</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </AnimateIn>
-            )}
-
-            {secondaryFeatured && (
-              <AnimateIn delay={180}>
-                <div className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden flex flex-col justify-between hover:border-amber-400/80 hover:shadow-hbs-crisp hover:-translate-y-1.5 transition-all duration-300 h-full">
-                  <div className="relative aspect-[16/10] w-full bg-slate-100 overflow-hidden">
-                    <Image
-                      src={
-                        secondaryFeatured.image ||
-                        "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=800&auto=format&fit=crop"
-                      }
-                      alt={secondaryFeatured.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 550px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-slate-950/85 backdrop-blur-md rounded-md text-[10px] font-mono font-bold text-amber-400 border border-amber-500/30">
-                      SERVICE #{secondaryFeatured.serviceNumber || "02"}
-                    </div>
-                  </div>
-
-                  <div className="p-6 space-y-3">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
-                        <Link href={`${prefix}/services/${secondaryFeatured.slug}`}>
-                          {secondaryFeatured.title}
-                        </Link>
-                      </h3>
-                      {secondaryFeatured.hindiTitle && (
-                        <p className="text-xs text-slate-400 font-medium">{secondaryFeatured.hindiTitle}</p>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                      {secondaryFeatured.shortDescription ||
-                        "High-polymer elastomeric membranes and injection grouts for permanent waterproofing."}
-                    </p>
-                    <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100">
-                      <span className="font-mono text-[11px] text-slate-400">Turnkey Civil Protocol</span>
-                      <Link
-                        href={`${prefix}/services/${secondaryFeatured.slug}`}
-                        className="font-semibold text-slate-900 hover:text-amber-700 inline-flex items-center gap-1 transition-colors"
-                      >
-                        <span>Explore</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </AnimateIn>
-            )}
-          </div>
-
-          {/* Compact 19-Trade Directory Strip */}
-          <AnimateIn delay={140}>
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-7 space-y-4 hover:border-slate-300 transition-colors shadow-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-semibold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  <span>Full 19-Service Trade Index</span>
-                </span>
-                <span className="text-[11px] font-mono text-slate-400">
-                  Click any trade to view specifications
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
-                {services.map((svc, idx) => {
-                  const sNumber = svc.serviceNumber || String(idx + 1).padStart(2, "0");
-                  return (
-                    <Link
-                      key={svc.slug || idx}
-                      href={`${prefix}/services/${svc.slug}`}
-                      className="group p-2.5 rounded-lg hover:bg-amber-50/70 border border-transparent hover:border-amber-200/80 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-between min-h-[44px]"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                        <span className="font-mono text-[11px] font-semibold text-amber-700 bg-amber-50 group-hover:bg-amber-100 px-1.5 py-0.5 rounded transition-colors">
-                          #{sNumber}
-                        </span>
-                        <span className="text-xs font-medium text-slate-800 group-hover:text-amber-800 transition-colors truncate">
-                          {svc.title}
-                        </span>
-                      </div>
-                      <ArrowRight className="w-3 h-3 text-slate-300 group-hover:text-amber-700 group-hover:translate-x-1 transition-all shrink-0" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </AnimateIn>
-        </div>
-      </section>
+      <HbsHomeServicesShowcase
+        services={services}
+        prefix={prefix}
+        whatsappNumber={content.whatsapp}
+        phoneNumber={content.phone}
+      />
 
       {/* ─────────────────────────────────────────────────────────────────
           5. PROCESS — ANIMATED 5-STAGE EDITORIAL TIMELINE
