@@ -65,16 +65,24 @@ export default function AdminHeader({ user }: { user: any }) {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">
-          {pathname?.startsWith("/admin/hbs") ? (
-            <>
-              <span className="md:hidden">Hind Build Admin</span>
-              <span className="hidden md:inline">{title}</span>
-            </>
-          ) : (
-            title
-          )}
-        </h1>
+        <div className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={pathname?.startsWith("/admin/hbs") ? "/hibuild-brand-logo.png" : "/logo.jpg"}
+            alt="Brand Logo"
+            className="h-7 w-auto object-contain md:hidden mix-blend-multiply"
+          />
+          <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">
+            {pathname?.startsWith("/admin/hbs") ? (
+              <>
+                <span className="md:hidden">Hind Build Admin</span>
+                <span className="hidden md:inline">{title}</span>
+              </>
+            ) : (
+              title
+            )}
+          </h1>
+        </div>
       </div>
       <div className="flex items-center gap-2 md:gap-4">
         <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-2 border border-slate-200 w-64 focus-within:border-construction-navy transition-all">

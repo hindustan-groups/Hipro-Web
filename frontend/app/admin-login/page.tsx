@@ -42,8 +42,13 @@ export default function LoginPage() {
         
         {/* Header */}
         <div className="bg-construction-navy p-8 text-center text-white">
-          <div className="w-12 h-12 mx-auto rounded-none bg-white border-2 border-construction-red flex items-center justify-center shadow-sm mb-4">
-            <span className="text-construction-red font-black text-xl tracking-tighter">Hi</span>
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-white p-2 border-2 border-construction-red flex items-center justify-center shadow-md mb-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.jpg"
+              alt="Hindustan Projects HiPRO Logo"
+              className="w-full h-full object-contain mix-blend-multiply"
+            />
           </div>
           <h1 className="text-2xl font-bold font-display uppercase tracking-tight">Hindustan Projects</h1>
           <p className="text-blue-200 text-sm mt-1 uppercase tracking-wider font-semibold">Admin Portal</p>
