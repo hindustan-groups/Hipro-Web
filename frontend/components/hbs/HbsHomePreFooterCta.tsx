@@ -27,6 +27,22 @@ export default function HbsHomePreFooterCta({
   const whatsappNumber = propWhatsappNumber || cleanWhatsAppNumber(content?.whatsapp);
   const prefix = propPrefix ?? (isSubdomain ? "" : "/hbs");
 
+  let ctaConfig = {
+    headline: "Need Professional Building Services?",
+    subheadline: "Let's take care of your property. Fast doorstep site inspection across Bhilwara & Rajasthan.",
+    callLabel: "Call",
+    whatsappLabel: "WhatsApp Us",
+  };
+  if (content?.homeFinalCta) {
+    try {
+      const parsed =
+        typeof content.homeFinalCta === "string" ? JSON.parse(content.homeFinalCta) : content.homeFinalCta;
+      if (parsed && typeof parsed === "object") {
+        ctaConfig = { ...ctaConfig, ...parsed };
+      }
+    } catch {}
+  }
+
   const waUrl = buildHbsWhatsAppUrl(
     whatsappNumber,
     "Hello Hind Build Team, I want to inquire about building repair and maintenance services for my property."
@@ -51,10 +67,10 @@ export default function HbsHomePreFooterCta({
         {/* Left: Clean Heading & Subtitle */}
         <div className="space-y-1.5 text-center md:text-left max-w-2xl">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white font-display tracking-tight">
-            Need Professional Building Services?
+            {ctaConfig.headline}
           </h2>
           <p className="text-xs sm:text-sm text-blue-100/90 font-sans">
-            Let&apos;s take care of your property. Fast doorstep site inspection across Bhilwara &amp; Rajasthan.
+            {ctaConfig.subheadline}
           </p>
         </div>
 
@@ -66,7 +82,7 @@ export default function HbsHomePreFooterCta({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
           >
             <Phone className="w-4 h-4 stroke-[2.2]" />
-            <span>Call: {phoneDisplay || "+91 94625 77757"}</span>
+            <span>{ctaConfig.callLabel}: {phoneDisplay || "+91 94625 77757"}</span>
             <ArrowRight className="w-4 h-4" />
           </a>
 
@@ -78,7 +94,7 @@ export default function HbsHomePreFooterCta({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>WhatsApp Us</span>
+            <span>{ctaConfig.whatsappLabel}</span>
           </a>
         </div>
       </div>

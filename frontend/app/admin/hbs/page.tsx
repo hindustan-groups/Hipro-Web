@@ -24,6 +24,7 @@ import {
   Info,
   Scale,
   Sparkles,
+  MapPin,
   MessageSquare,
   Zap,
   Building2,
@@ -336,12 +337,12 @@ export default function HbsAdminDashboard() {
             </p>
           </div>
           <span className="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">
-            10 Modules Active
+            12 Modules Active
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Module 1: Home Page */}
+          {/* Module 1: Home Page (All 8 Sections) */}
           <Link
             href="/admin/hbs/home"
             className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
@@ -352,10 +353,10 @@ export default function HbsAdminDashboard() {
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-                  Home Page CMS
+                  Home Page (All 8 Sections)
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  Hero banner, stats counter &amp; pre-footer
+                  Hero, 5 Categories, Services, Bento, Stats, 6 Benefits, Projects &amp; CTA
                 </div>
               </div>
             </div>
@@ -488,9 +489,51 @@ export default function HbsAdminDashboard() {
             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
-          {/* Module 8: Settings & Contact */}
+          {/* Module 8: Header & Navbar */}
           <Link
-            href="/admin/hbs/settings"
+            href="/admin/hbs/settings?tab=navbar"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Compass className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Header &amp; Navbar CMS
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Sticky header, navigation items, CTA buttons &amp; mobile menu
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 9: Footer & Legal CMS */}
+          <Link
+            href="/admin/hbs/settings?tab=footer"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Footer &amp; Legal CMS
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  4 Columns, regional address, engineer hotline, WhatsApp &amp; 4 trust pillars
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 10: Settings & Contact */}
+          <Link
+            href="/admin/hbs/settings?tab=contact"
             className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
@@ -499,10 +542,10 @@ export default function HbsAdminDashboard() {
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-                  Contact &amp; Global Settings
+                  Hotlines, WhatsApp &amp; Hours
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  Phone numbers, WhatsApp &amp; address
+                  Phone numbers, WhatsApp, business hours &amp; contact card
                 </div>
               </div>
             </div>

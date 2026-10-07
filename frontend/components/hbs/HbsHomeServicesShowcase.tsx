@@ -10,6 +10,13 @@ interface HbsHomeServicesShowcaseProps {
   prefix: string;
   whatsappNumber?: string | null;
   phoneNumber?: string | null;
+  headingConfig?: {
+    badge?: string;
+    title?: string;
+    highlightText?: string;
+    description?: string;
+    ctaText?: string;
+  };
 }
 
 const BADGE_COLORS: Record<string, { bg: string; text: string; hindiText: string }> = {
@@ -34,9 +41,18 @@ const BADGE_COLORS: Record<string, { bg: string; text: string; hindiText: string
 export default function HbsHomeServicesShowcase({
   services,
   prefix,
+  headingConfig,
 }: HbsHomeServicesShowcaseProps) {
   // Take up to 16 services
   const displayedServices = services.slice(0, 16);
+
+  const badge = headingConfig?.badge || "OUR SERVICES";
+  const titleLead = headingConfig?.title || "Complete";
+  const titleHighlight = headingConfig?.highlightText || "Building Care Services";
+  const description =
+    headingConfig?.description ||
+    "From small repairs to complete renovation, HiBUILD provides all building maintenance and construction support services under one roof.";
+  const ctaText = headingConfig?.ctaText || "View All Services";
 
   return (
     <section aria-labelledby="services-showcase-heading" className="py-16 sm:py-24 bg-white relative">
@@ -47,17 +63,17 @@ export default function HbsHomeServicesShowcase({
             <div className="flex items-center gap-2">
               <span className="w-4 h-0.5 bg-red-600" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
-                OUR SERVICES
+                {badge}
               </span>
             </div>
             <h2
               id="services-showcase-heading"
               className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 font-display"
             >
-              Complete <span className="text-blue-700">Building Care Services</span>
+              {titleLead} <span className="text-blue-700">{titleHighlight}</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
-              From small repairs to complete renovation, HiBUILD provides all building maintenance and construction support services under one roof.
+              {description}
             </p>
           </div>
 
@@ -65,7 +81,7 @@ export default function HbsHomeServicesShowcase({
             href={`${prefix}/services`}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-blue-900 text-blue-900 hover:bg-blue-50 font-bold text-xs uppercase tracking-wider transition-all self-start md:self-end shrink-0"
           >
-            <span>View All Services</span>
+            <span>{ctaText}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

@@ -630,8 +630,10 @@ router.post("/leads", contactLimiter, async (req: Request, res: Response) => {
         selectedService: finalService || null,
         message: finalMessage || null,
         source: source || "hbs_website",
-        status: "NEW",
-        priority: "MEDIUM",
+        status: req.body.status ? normalizeLeadStatus(req.body.status) : "NEW",
+        priority: req.body.priority ? String(req.body.priority).toUpperCase() : "MEDIUM",
+        assignedTo: req.body.assignedTo ? String(req.body.assignedTo).trim() : null,
+        quotationAmount: req.body.quotationAmount !== undefined && req.body.quotationAmount !== null ? Number(req.body.quotationAmount) : null,
       },
     });
 
@@ -792,11 +794,23 @@ router.post("/leads/:id/notes", authGuard, async (req: Request, res: Response) =
 router.patch("/leads/:id", authGuard, async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
-    const { status, message, assignedTo, quotationAmount, priority } = req.body;
+    const { status, message, assignedTo, quotationAmount, priority, name, phone, email, selectedService } = req.body;
 
     const data: any = {};
     if (status !== undefined) {
       data.status = normalizeLeadStatus(status);
+    }
+    if (name !== undefined) {
+      data.name = String(name).trim();
+    }
+    if (phone !== undefined) {
+      data.phone = String(phone).trim();
+    }
+    if (email !== undefined) {
+      data.email = email ? String(email).trim().toLowerCase() : null;
+    }
+    if (selectedService !== undefined) {
+      data.selectedService = selectedService ? String(selectedService).trim() : null;
     }
     if (message !== undefined) {
       data.message = message;

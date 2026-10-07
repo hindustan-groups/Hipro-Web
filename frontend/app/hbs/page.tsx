@@ -170,6 +170,62 @@ export default async function HbsHomePage() {
     }
   }
 
+  // Parse 5 Building Categories Ribbon from CMS
+  let categoryRibbon = [
+    { icon: "Home", title: "Residential", subtitle: "Homes & Apartments" },
+    { icon: "Building2", title: "Commercial", subtitle: "Offices & Showrooms" },
+    { icon: "Building", title: "Societies", subtitle: "Apartments & Gated Communities" },
+    { icon: "Factory", title: "Industrial", subtitle: "Factories & Warehouses" },
+    { icon: "Home", title: "Independent House", subtitle: "From Repair to Renovation" },
+  ];
+  if (content.processSteps) {
+    try {
+      const parsedCat = typeof content.processSteps === "string" ? JSON.parse(content.processSteps) : content.processSteps;
+      if (Array.isArray(parsedCat) && parsedCat.length > 0) {
+        categoryRibbon = parsedCat;
+      }
+    } catch {}
+  }
+
+  // Parse Services showcase header from CMS
+  let servicesHeadingConfig = undefined;
+  if (content.guaranteeSection) {
+    try {
+      const parsedServices =
+        typeof content.guaranteeSection === "string" ? JSON.parse(content.guaranteeSection) : content.guaranteeSection;
+      if (parsedServices && typeof parsedServices === "object") {
+        servicesHeadingConfig = parsedServices;
+      }
+    } catch {}
+  }
+
+  // Parse Projects showcase header from CMS
+  let projectsHeadingConfig = undefined;
+  if (content.heroHighlights) {
+    try {
+      const parsedProjects =
+        typeof content.heroHighlights === "string" ? JSON.parse(content.heroHighlights) : content.heroHighlights;
+      if (parsedProjects && typeof parsedProjects === "object" && !Array.isArray(parsedProjects)) {
+        projectsHeadingConfig = parsedProjects;
+      }
+    } catch {}
+  }
+
+  // Parse Bento Collage 3 images from CMS
+  let aboutCollageImages = {
+    leftImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop",
+    rightTopImage: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=600&auto=format&fit=crop",
+    rightBottomImage: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop",
+  };
+  if (content.aboutImages) {
+    try {
+      const parsedImgs = typeof content.aboutImages === "string" ? JSON.parse(content.aboutImages) : content.aboutImages;
+      if (parsedImgs && typeof parsedImgs === "object") {
+        aboutCollageImages = { ...aboutCollageImages, ...parsedImgs };
+      }
+    } catch {}
+  }
+
   return (
     <div className="bg-white text-slate-900 selection:bg-red-100 selection:text-red-900 overflow-x-hidden">
       {/* ─────────────────────────────────────────────────────────────────
@@ -189,50 +245,26 @@ export default async function HbsHomePage() {
       <section aria-label="Building Categories" className="bg-[#0D2D5E] text-white py-5 sm:py-6 border-b border-black/15 shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-center">
-            {/* Category 1 */}
-            <div className="flex items-center gap-3">
-              <Home className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">Residential</h3>
-                <p className="text-[11px] text-slate-200 truncate">Homes &amp; Apartments</p>
-              </div>
-            </div>
+            {categoryRibbon.map((cat, idx) => {
+              let IconComp = Home;
+              if (cat.icon === "Building2") IconComp = Building2;
+              else if (cat.icon === "Building") IconComp = Building;
+              else if (cat.icon === "Factory") IconComp = Factory;
 
-            {/* Category 2 */}
-            <div className="flex items-center gap-3">
-              <Building2 className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">Commercial</h3>
-                <p className="text-[11px] text-slate-200 truncate">Offices &amp; Showrooms</p>
-              </div>
-            </div>
+              const isLastCol = idx === 4 ? "col-span-2 sm:col-span-1" : "";
 
-            {/* Category 3 */}
-            <div className="flex items-center gap-3">
-              <Building className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">Societies</h3>
-                <p className="text-[11px] text-slate-200 truncate">Apartments &amp; Gated Communities</p>
-              </div>
-            </div>
-
-            {/* Category 4 */}
-            <div className="flex items-center gap-3">
-              <Factory className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">Industrial</h3>
-                <p className="text-[11px] text-slate-200 truncate">Factories &amp; Warehouses</p>
-              </div>
-            </div>
-
-            {/* Category 5 */}
-            <div className="flex items-center gap-3 col-span-2 sm:col-span-1">
-              <Home className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
-              <div className="min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">Independent House</h3>
-                <p className="text-[11px] text-slate-200 truncate">From Repair to Renovation</p>
-              </div>
-            </div>
+              return (
+                <div key={idx} className={`flex items-center gap-3 ${isLastCol}`}>
+                  <IconComp className="w-6 h-6 text-white shrink-0 stroke-[1.8]" />
+                  <div className="min-w-0">
+                    <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">
+                      {cat.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-200 truncate">{cat.subtitle}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -245,6 +277,7 @@ export default async function HbsHomePage() {
         prefix={prefix}
         whatsappNumber={content.whatsapp}
         phoneNumber={content.phone}
+        headingConfig={servicesHeadingConfig}
       />
 
       {/* ─────────────────────────────────────────────────────────────────
@@ -257,7 +290,7 @@ export default async function HbsHomePage() {
             <div className="lg:col-span-6 grid grid-cols-2 gap-3.5 sm:gap-4">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg border border-slate-200/80 bg-slate-900 group">
                 <Image
-                  src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop"
+                  src={aboutCollageImages.leftImage}
                   alt="Technician inspecting building repair"
                   fill
                   sizes="(max-width: 1024px) 50vw, 300px"
@@ -268,7 +301,7 @@ export default async function HbsHomePage() {
               <div className="space-y-3.5 sm:space-y-4 flex flex-col justify-between">
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-900 group">
                   <Image
-                    src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=600&auto=format&fit=crop"
+                    src={aboutCollageImages.rightTopImage}
                     alt="Structural inspection"
                     fill
                     sizes="(max-width: 1024px) 50vw, 250px"
@@ -277,7 +310,7 @@ export default async function HbsHomePage() {
                 </div>
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-md border border-slate-200/80 bg-slate-900 group">
                   <Image
-                    src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600&auto=format&fit=crop"
+                    src={aboutCollageImages.rightBottomImage}
                     alt="Modern protected architecture"
                     fill
                     sizes="(max-width: 1024px) 50vw, 250px"
@@ -431,7 +464,11 @@ export default async function HbsHomePage() {
       {/* ─────────────────────────────────────────────────────────────────
           6. OUR RECENT WORK (PROJECTS) — 5-CARD FILTERABLE GRID
       ───────────────────────────────────────────────────────────────── */}
-      <HbsHomeProjectsShowcase projects={projects} prefix={prefix} />
+      <HbsHomeProjectsShowcase
+        projects={projects}
+        prefix={prefix}
+        headingConfig={projectsHeadingConfig}
+      />
 
       {/* ─────────────────────────────────────────────────────────────────
           7. CLIENT TESTIMONIALS — DYNAMIC AUTOPLAY CAROUSEL
@@ -446,6 +483,7 @@ export default async function HbsHomePage() {
         phoneDisplay={content.phone || "+91 94625 77757"}
         whatsappNumber={content.whatsapp || "919462577757"}
         prefix={prefix}
+        content={content}
       />
     </div>
   );

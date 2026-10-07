@@ -57,7 +57,7 @@ export default function AdminHeader({ user }: { user: any }) {
   const title = getTitle();
 
   return (
-    <header className="h-[72px] shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 md:px-8 z-20 sticky top-0">
+    <header className="h-[70px] shrink-0 bg-white/60 backdrop-blur-2xl border-b border-white/80 flex items-center justify-between px-4 md:px-8 z-20 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
       <div className="flex items-center gap-3">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}

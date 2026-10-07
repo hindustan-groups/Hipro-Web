@@ -102,7 +102,8 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
             </Link>
 
             <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed max-w-sm">
-              Complete care for your building. Engineering-grade non-destructive diagnostics, chemical waterproofing, structural rehabilitation, painting, and turnkey facility maintenance across Rajasthan.
+              {content.tagline ||
+                "Complete care for your building. Engineering-grade non-destructive diagnostics, chemical waterproofing, structural rehabilitation, painting, and turnkey facility maintenance across Rajasthan."}
             </p>
 
             {/* Parent Company Heritage Card (Clean Light Style) */}

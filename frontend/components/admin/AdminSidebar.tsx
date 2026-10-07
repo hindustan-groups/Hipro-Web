@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   BarChart2,
@@ -33,8 +33,17 @@ import {
   Sparkles,
   Palette,
   GalleryHorizontalEnd,
-  LogOut
+  LogOut,
+  Phone,
+  Globe,
 } from "lucide-react";
+
+export interface SubNavItem {
+  href: string;
+  label: string;
+  badge?: string;
+  tabKey?: string;
+}
 
 export interface NavItem {
   href: string;
@@ -42,39 +51,72 @@ export interface NavItem {
   icon: any;
   badge?: string;
   sectionKey?: string;
+  subItems?: SubNavItem[];
 }
 
-export const HBS_NAV_SECTIONS = [
+export interface HbsNavSection {
+  title: string;
+  items: NavItem[];
+}
+
+export const HBS_NAV_SECTIONS: HbsNavSection[] = [
   {
     title: "OVERVIEW",
     items: [
-      { href: "/admin/hbs", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/admin/hbs", label: "Dashboard Overview", icon: LayoutDashboard },
     ],
   },
   {
-    title: "CONTENT",
+    title: "CLIENT CRM & PIPELINE",
     items: [
-      { href: "/admin/hbs/home", label: "Home", icon: LayoutTemplate },
-      { href: "/admin/hbs/about", label: "About", icon: Info },
-      { href: "/admin/hbs/why-choose-us", label: "Why Choose Us", icon: ShieldCheck },
-      { href: "/admin/hbs/services", label: "Services", icon: HardHat, badge: "19" },
-      { href: "/admin/hbs/projects", label: "Projects", icon: FolderOpen },
-      { href: "/admin/hbs/testimonials", label: "Testimonials", icon: Star },
+      { href: "/admin/hbs/leads", label: "Customer Leads & CRM", icon: Inbox, badge: "Pipeline" },
     ],
   },
   {
-    title: "BUSINESS",
+    title: "HOMEPAGE SECTIONS",
     items: [
-      { href: "/admin/hbs/leads", label: "Leads", icon: Inbox },
+      {
+        href: "/admin/hbs/home",
+        label: "Home Page (8 Sections)",
+        icon: LayoutTemplate,
+        badge: "8 Sec",
+        subItems: [
+          { href: "/admin/hbs/home?tab=hero", label: "1. Hero Banner", tabKey: "hero" },
+          { href: "/admin/hbs/home?tab=categories", label: "2. Categories Ribbon (5)", tabKey: "categories" },
+          { href: "/admin/hbs/home?tab=services_showcase", label: "3. Services Showcase", tabKey: "services_showcase" },
+          { href: "/admin/hbs/home?tab=about_preview", label: "4. About & Bento Collage", tabKey: "about_preview" },
+          { href: "/admin/hbs/home?tab=stats", label: "5. 4 Stat Counters", tabKey: "stats" },
+          { href: "/admin/hbs/home?tab=benefits", label: "6. Why Choose Us (6)", tabKey: "benefits" },
+          { href: "/admin/hbs/home?tab=projects_showcase", label: "7. Projects Showcase", tabKey: "projects_showcase" },
+          { href: "/admin/hbs/home?tab=prefooter_cta", label: "8. Pre-Footer Master CTA", tabKey: "prefooter_cta" },
+        ],
+      },
     ],
   },
   {
-    title: "SYSTEM",
+    title: "HEADER & FOOTER",
     items: [
-      { href: "/admin/hbs/branding", label: "Branding", icon: Palette },
-      { href: "/admin/hbs/media", label: "Media", icon: GalleryHorizontalEnd },
-      { href: "/admin/hbs/seo", label: "SEO", icon: Compass },
-      { href: "/admin/hbs/settings", label: "Settings", icon: Settings },
+      { href: "/admin/hbs/settings?tab=navbar", label: "Header & Navbar CMS", icon: Compass, badge: "Nav" },
+      { href: "/admin/hbs/settings?tab=footer", label: "Footer & Legal CMS", icon: MapPin, badge: "4 Cols" },
+    ],
+  },
+  {
+    title: "PAGES & CATALOG",
+    items: [
+      { href: "/admin/hbs/about", label: "About Page CMS", icon: Info },
+      { href: "/admin/hbs/why-choose-us", label: "Why Choose Us & FAQs", icon: ShieldCheck },
+      { href: "/admin/hbs/services", label: "19 Services Catalog", icon: HardHat, badge: "19" },
+      { href: "/admin/hbs/projects", label: "Projects / Case Studies", icon: FolderOpen },
+      { href: "/admin/hbs/testimonials", label: "Client Reviews", icon: Star },
+    ],
+  },
+  {
+    title: "SETTINGS & BRANDING",
+    items: [
+      { href: "/admin/hbs/branding", label: "Logos & Brand Identity", icon: Palette },
+      { href: "/admin/hbs/settings?tab=contact", label: "Hotlines, WhatsApp & Hours", icon: Phone },
+      { href: "/admin/hbs/seo", label: "SEO & Social Meta", icon: Globe },
+      { href: "/admin/hbs/media", label: "Media & Asset Library", icon: GalleryHorizontalEnd },
     ],
   },
 ];
@@ -132,28 +174,12 @@ const navCategories: NavCategory[] = [
       { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },
     ],
   },
-  {
-    id: "hbs",
-    title: "HiBUILD (Hind Build)",
-    items: [
-      { href: "/admin/hbs", label: "HiBUILD Dashboard", icon: LayoutDashboard, sectionKey: "hbs" },
-      { href: "/admin/hbs/services", label: "19 Services Catalog", icon: HardHat, badge: "19", sectionKey: "hbs-services" },
-      { href: "/admin/hbs/why-choose-us", label: "Why Choose Us", icon: ShieldCheck, sectionKey: "hbs-why-choose-us" },
-      { href: "/admin/hbs/projects", label: "Projects / Work", icon: FolderOpen, sectionKey: "hbs-projects" },
-      { href: "/admin/hbs/leads", label: "Leads & Quotes", icon: Inbox, badge: "New", sectionKey: "hbs-leads" },
-      { href: "/admin/hbs/testimonials", label: "Testimonials", icon: Star, sectionKey: "hbs-testimonials" },
-      { href: "/admin/hbs/home", label: "Home Page CMS", icon: LayoutTemplate, sectionKey: "hbs-home" },
-      { href: "/admin/hbs/about", label: "About Page CMS", icon: Info, sectionKey: "hbs-about" },
-      { href: "/admin/hbs/branding", label: "Branding & Logos", icon: Palette, sectionKey: "hbs-branding" },
-      { href: "/admin/hbs/settings", label: "General Settings", icon: Settings, sectionKey: "hbs-settings" },
-      { href: "/admin/hbs/seo", label: "SEO & Meta", icon: Compass, sectionKey: "hbs-seo" },
-      { href: "/admin/hbs/media", label: "Media Library", icon: GalleryHorizontalEnd, sectionKey: "hbs-media" },
-    ],
-  },
 ];
 
 export default function AdminSidebar({ user }: { user: any }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams?.get("tab");
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -265,87 +291,140 @@ export default function AdminSidebar({ user }: { user: any }) {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col h-full shadow-2xl md:shadow-none transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 shrink-0 bg-white/75 backdrop-blur-2xl border-r border-white/80 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         {pathname?.startsWith("/admin/hbs") ? (
           <>
-            {/* 1. Hind Build Admin Header */}
-            <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+            {/* 1. Hind Build Admin Header (Frosted Glass) */}
+            <div className="h-16 px-4 border-b border-white/80 flex items-center justify-between bg-white/50 backdrop-blur-md shrink-0">
               <Link href="/admin/hbs" className="flex items-center gap-2.5 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/hbs-icon.jpg"
-                  alt="Hind Build"
-                  className="w-8 h-8 rounded-lg object-contain shadow-xs border border-slate-200 bg-white"
+                  src="/hibuild-logo.png"
+                  alt="HiBUILD"
+                  className="h-9 w-auto object-contain group-hover:scale-[1.02] transition-transform"
                 />
-                <div>
-                  <p className="text-slate-900 font-bold text-sm leading-tight uppercase font-display tracking-wide">
-                    Hind Build
-                  </p>
-                  <span className="text-[10px] text-amber-600 font-mono font-bold uppercase tracking-wider">
-                    ADMIN CMS
-                  </span>
-                </div>
+                <span className="text-[10px] bg-red-500/10 text-red-700 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border border-red-500/20 backdrop-blur-xs shadow-2xs">
+                  CMS
+                </span>
               </Link>
             </div>
 
-            {/* 2. Switcher to HiPRO Master Admin */}
-            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-              <Link
-                href="/admin"
-                className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1.5 transition-colors"
-              >
-                <Layers className="w-3.5 h-3.5 text-slate-400" />
-                <span>← HiPRO Master Admin</span>
-              </Link>
+            {/* 2. Dual Brand Switcher: HiPRO Master vs Hind Build CMS */}
+            <div className="px-3 py-2.5 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
+              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
+                <Link
+                  href="/admin"
+                  className="py-1.5 px-2 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1"
+                >
+                  <span>🏢 HiPRO</span>
+                </Link>
+                <Link
+                  href="/admin/hbs"
+                  className="py-1.5 px-2 text-center rounded-lg bg-gradient-to-r from-[#0D2D5E] to-[#123974] text-white shadow-md shadow-[#0D2D5E]/25 flex items-center justify-center gap-1 font-extrabold border border-blue-400/25"
+                >
+                  <span>🏗️ HiBUILD</span>
+                </Link>
+              </div>
             </div>
 
-            {/* 3. Navigation Links (OVERVIEW, CONTENT, BUSINESS, SYSTEM) */}
-            <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+            {/* 3. Navigation Links (OVERVIEW, PAGES, HEADER & FOOTER, LEADS, SETTINGS) */}
+            <nav className="flex-1 px-3 py-3 space-y-3.5 overflow-y-auto">
               {HBS_NAV_SECTIONS.map((section) => (
                 <div key={section.title} className="space-y-1">
-                  <p className="px-2.5 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                  <p className="px-2.5 text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400/90">
                     {section.title}
                   </p>
                   <div className="space-y-0.5">
-                    {section.items.map(({ href, label, icon: Icon, badge }) => {
-                      const active =
-                        href === "/admin/hbs"
-                          ? pathname === "/admin/hbs"
-                          : pathname === href || (pathname ? pathname.startsWith(href) : false);
+                    {section.items.map(({ href, label, icon: Icon, badge, subItems }) => {
+                      const [pathOnly, queryString] = href.split("?");
+                      const targetTab = queryString ? new URLSearchParams(queryString).get("tab") : null;
+
+                      let active = false;
+                      if (targetTab) {
+                        active =
+                          pathname === pathOnly &&
+                          (currentTab === targetTab ||
+                            (!currentTab && targetTab === "navbar" && pathOnly === "/admin/hbs/settings"));
+                      } else if (href === "/admin/hbs") {
+                        active = pathname === "/admin/hbs";
+                      } else {
+                        active = pathname === pathOnly && !currentTab;
+                      }
+
+                      const isParentOfCurrent = pathname === pathOnly || pathname.startsWith(pathOnly + "/");
 
                       return (
-                        <Link
-                          key={href}
-                          href={href}
-                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all min-h-[40px] ${
-                            active
-                              ? "bg-slate-900 text-white font-bold shadow-xs"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <Icon
-                              className={`w-4 h-4 shrink-0 ${
-                                active ? "text-amber-400" : "text-slate-400"
-                              }`}
-                            />
-                            <span>{label}</span>
-                          </div>
-                          {badge && (
-                            <span
-                              className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
-                                active
-                                  ? "bg-slate-800 text-amber-300"
-                                  : "bg-slate-100 text-slate-600"
-                              }`}
-                            >
-                              {badge}
-                            </span>
+                        <div key={href} className="space-y-0.5">
+                          <Link
+                            href={href}
+                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all min-h-[38px] ${
+                              active && !subItems
+                                ? "bg-gradient-to-r from-[#0D2D5E] via-[#0E356E] to-[#123E82] text-white font-bold shadow-md shadow-[#0D2D5E]/25 border border-white/20"
+                                : isParentOfCurrent && subItems
+                                ? "bg-white/80 backdrop-blur-md text-slate-900 font-extrabold border border-white/90 shadow-2xs"
+                                : "text-slate-600 hover:text-slate-950 hover:bg-white/70 hover:backdrop-blur-xs hover:border hover:border-white/70"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon
+                                className={`w-4 h-4 shrink-0 transition-colors ${
+                                  active && !subItems
+                                    ? "text-red-400"
+                                    : isParentOfCurrent && subItems
+                                    ? "text-red-600"
+                                    : "text-slate-400"
+                                }`}
+                              />
+                              <span>{label}</span>
+                            </div>
+                            {badge && (
+                              <span
+                                className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                                  active && !subItems
+                                    ? "bg-red-500/25 text-white border border-red-400/30"
+                                    : "backdrop-blur-xs bg-slate-100/80 text-slate-600 border border-slate-200/60"
+                                }`}
+                              >
+                                {badge}
+                              </span>
+                            )}
+                          </Link>
+
+                          {/* Expandable Sub-items (All 8 Homepage Sections) */}
+                          {subItems && isParentOfCurrent && (
+                            <div className="pl-3.5 pr-1 py-1 space-y-1 border-l-2 border-red-400/40 ml-4 my-1.5">
+                              {subItems.map((sub) => {
+                                const isSubActive =
+                                  pathname === pathOnly &&
+                                  (currentTab === sub.tabKey || (!currentTab && sub.tabKey === "hero"));
+
+                                return (
+                                  <Link
+                                    key={sub.href}
+                                    href={sub.href}
+                                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                                      isSubActive
+                                        ? "bg-gradient-to-r from-[#0D2D5E] to-[#143973] text-white font-bold shadow-xs border border-white/20"
+                                        : "text-slate-600 hover:text-slate-950 hover:bg-white/70 hover:backdrop-blur-xs"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                          isSubActive ? "bg-red-400 animate-pulse shadow-xs" : "bg-slate-300"
+                                        }`}
+                                      />
+                                      <span className="truncate">{sub.label}</span>
+                                    </div>
+                                  </Link>
+                                );
+                              })}
+                            </div>
                           )}
-                        </Link>
+                        </div>
                       );
                     })}
                   </div>
@@ -354,12 +433,12 @@ export default function AdminSidebar({ user }: { user: any }) {
             </nav>
 
             {/* 4. Bottom System Controls */}
-            <div className="p-3 border-t border-slate-100 space-y-1 bg-slate-50/80 shrink-0">
+            <div className="p-3 border-t border-white/80 space-y-1 bg-white/40 backdrop-blur-xl shrink-0">
               <Link
                 href="/hbs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors min-h-[40px]"
+                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-950 hover:bg-white/80 rounded-xl transition-all min-h-[38px] hover:shadow-2xs"
               >
                 <div className="flex items-center gap-2">
                   <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
@@ -377,7 +456,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                     window.location.href = "/admin-login";
                   }
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left min-h-[40px]"
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-500/10 rounded-xl transition-all text-left min-h-[38px]"
               >
                 <LogOut className="w-3.5 h-3.5 text-slate-400" />
                 <span>Logout</span>
@@ -386,8 +465,8 @@ export default function AdminSidebar({ user }: { user: any }) {
           </>
         ) : (
           <>
-            {/* Brand Header */}
-        <div className="h-16 px-5 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+            {/* Brand Header (Frosted Glass) */}
+        <div className="h-16 px-5 border-b border-white/80 flex items-center justify-between bg-white/50 backdrop-blur-md shrink-0">
           <Link href="/admin" className="flex items-center gap-3 group">
             <div className="w-9 h-9 shrink-0 bg-construction-navy border-2 border-construction-red flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
               <span className="text-white font-black text-xs tracking-tighter">Hi</span>
@@ -400,12 +479,31 @@ export default function AdminSidebar({ user }: { user: any }) {
                 <span className="text-construction-navy font-bold text-[10px] leading-tight uppercase tracking-widest font-display">
                   Projects
                 </span>
-                <span className="inline-block px-1 py-0.2 bg-construction-red/10 text-construction-red text-[8px] font-mono font-bold tracking-tight rounded-none">
+                <span className="inline-block px-1.5 py-0.5 bg-construction-red/10 text-construction-red text-[8px] font-mono font-bold tracking-tight rounded-md border border-construction-red/20">
                   ADMIN
                 </span>
               </div>
             </div>
           </Link>
+        </div>
+
+        {/* Dual Brand Switcher: HiPRO Master vs Hind Build CMS */}
+        <div className="px-3 py-2.5 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
+            <Link
+              href="/admin"
+              className="py-1.5 px-2 text-center rounded-lg bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1 font-bold border border-slate-200/60"
+            >
+              <span>🏢 HiPRO</span>
+            </Link>
+            <Link
+              href="/admin/hbs"
+              className="py-1.5 px-2 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1 group font-semibold"
+            >
+              <span>🏗️ Hind Build</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            </Link>
+          </div>
         </div>
 
         {/* Quick Filter Box */}

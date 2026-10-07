@@ -22,18 +22,29 @@ import {
   Accessibility,
   Eye,
   Smartphone,
-  Monitor
+  Monitor,
+  MapPin,
+  Globe,
 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import type { HbsContent, HbsNavbarConfig, HbsNavbarItem } from "@/lib/types";
 import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 import HbsNavbar, { DEFAULT_NAVBAR_CONFIG } from "@/components/hbs/HbsNavbar";
 
-type SettingsTab = "navbar" | "contact" | "social_legal";
+type SettingsTab = "navbar" | "footer" | "contact" | "social_legal";
 type PreviewMode = "desktop" | "mobile";
 
 export default function HbsAdminSettings() {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("navbar");
+  const searchParams = useSearchParams();
+  const tabFromQuery = searchParams?.get("tab") as SettingsTab | null;
+  const [activeTab, setActiveTab] = useState<SettingsTab>(tabFromQuery || "navbar");
+
+  useEffect(() => {
+    if (tabFromQuery && ["navbar", "footer", "contact", "social_legal"].includes(tabFromQuery)) {
+      setActiveTab(tabFromQuery);
+    }
+  }, [tabFromQuery]);
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const [content, setContent] = useState<Partial<HbsContent>>({});
   const [navConfig, setNavConfig] = useState<HbsNavbarConfig>(DEFAULT_NAVBAR_CONFIG);
@@ -347,6 +358,19 @@ export default function HbsAdminSettings() {
         >
           <Compass className="w-3.5 h-3.5" />
           <span>Navbar CMS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("footer")}
+          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+            activeTab === "footer"
+              ? "border-slate-900 text-slate-950 bg-slate-100/60 font-black"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5 text-red-600" />
+          <span>Footer &amp; Legal CMS</span>
         </button>
 
         <button
@@ -1152,7 +1176,312 @@ export default function HbsAdminSettings() {
         )}
 
         {/* ========================================================
-            TAB 2: HOTLINES & IDENTITY
+            TAB 2: FOOTER CMS (COMPLETE 4-COLUMN SPEC & LIVE PREVIEW)
+        ======================================================== */}
+        {activeTab === "footer" && (
+          <div className="space-y-8">
+            {/* ── 1. LIVE FOOTER PREVIEW CARD ──────────────────── */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-slate-900" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono">
+                    Live Footer Preview
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    (Mirrors live frontend layout &amp; tokens)
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 font-medium">
+                  Matches Public Component: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-800">components/hbs/HbsFooter.tsx</code>
+                </div>
+              </div>
+
+              {/* Preview Wrapper */}
+              <div className="rounded-xl border border-slate-200/80 bg-slate-50 p-6 sm:p-8 space-y-8 overflow-hidden">
+                {/* Brand Accent Ribbon */}
+                <div className="h-1 w-full bg-gradient-to-r from-[#0D2D5E] via-red-600 to-[#0D2D5E] rounded-full" />
+
+                {/* 4 Column Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 text-xs text-slate-600">
+                  {/* Col 1 */}
+                  <div className="lg:col-span-4 space-y-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/hibuild-logo.png" alt="HiBUILD" className="h-10 w-auto object-contain" />
+                    <p className="text-[11px] leading-relaxed text-slate-600">
+                      {content.tagline ||
+                        "Complete care for your building. Engineering-grade non-destructive diagnostics, chemical waterproofing, structural rehabilitation, painting, and turnkey facility maintenance across Rajasthan."}
+                    </p>
+                    <div className="p-2.5 bg-white border border-slate-200 rounded-xl space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-[11px] text-slate-900">
+                        <Shield className="w-3.5 h-3.5 text-red-600" />
+                        <span>A Brand Under Hindustan Projects</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Backed by the civil engineering heritage of Hindustan Projects (HiPRO).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Col 2 */}
+                  <div className="lg:col-span-2 space-y-2">
+                    <h4 className="font-black text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                      <span>Quick Links</span>
+                    </h4>
+                    <ul className="space-y-1 text-[11px] text-slate-600">
+                      <li>• Home Page</li>
+                      <li>• About HiBUILD</li>
+                      <li>• All 19 Services</li>
+                      <li>• Our Projects</li>
+                      <li>• Why Choose Us</li>
+                      <li>• Book Free Inspection</li>
+                    </ul>
+                  </div>
+
+                  {/* Col 3 */}
+                  <div className="lg:col-span-3 space-y-2">
+                    <h4 className="font-black text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                      <span>Core Services</span>
+                    </h4>
+                    <ul className="space-y-1 text-[11px] text-slate-600">
+                      <li>• Roof &amp; Terrace Waterproofing</li>
+                      <li>• Structure Repair &amp; Grouting</li>
+                      <li>• Building Painting &amp; Damp Wall</li>
+                      <li>• Plumbing &amp; Electrical Networks</li>
+                      <li>• Anti-Termite Soil Treatment</li>
+                      <li>• Tile &amp; Precision Stone Work</li>
+                    </ul>
+                  </div>
+
+                  {/* Col 4 */}
+                  <div className="lg:col-span-3 space-y-2.5">
+                    <h4 className="font-black text-slate-900 uppercase text-[11px] border-b border-slate-200 pb-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                      <span>Contact &amp; Support</span>
+                    </h4>
+                    <div className="space-y-2 text-[11px]">
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
+                        <span>{content.address || "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara 311001"}</span>
+                      </div>
+                      <div className="p-2 bg-white border border-slate-200 rounded-lg">
+                        <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">Priority Hotline</span>
+                        <span className="font-black text-slate-900 text-xs">{content.phone || "+91 94625 77757"}</span>
+                      </div>
+                      <div className="text-emerald-700 font-bold">
+                        WhatsApp: {content.whatsapp || "+91 94625 77757"}
+                      </div>
+                      <div className="text-slate-500 text-[10px]">
+                        Hours: {content.businessHours || "Mon – Sat: 8:00 AM – 8:00 PM"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4 Trust Pillars strip */}
+                <div className="pt-4 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[10px] font-bold text-slate-800">
+                  <div className="p-2 bg-white rounded-lg border border-slate-200">🛡️ Up to 10-Yr Warranty</div>
+                  <div className="p-2 bg-white rounded-lg border border-slate-200">👷 Civil Engineer Supervision</div>
+                  <div className="p-2 bg-white rounded-lg border border-slate-200">✓ ISI Certified Materials</div>
+                  <div className="p-2 bg-white rounded-lg border border-slate-200">📍 Doorstep Rajasthan Reach</div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 2. FORM: BRAND STORY & COLUMN 1 ─────────────── */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600" />
+                <span>Column 1: Company Overview &amp; Social Channels</span>
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Footer Narrative / Company Tagline
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={content.tagline || ""}
+                    onChange={(e) => handleChange("tagline", e.target.value)}
+                    placeholder="Complete care for your building. Engineering-grade non-destructive diagnostics, chemical waterproofing, structural rehabilitation, painting, and turnkey facility maintenance across Rajasthan."
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg leading-relaxed font-sans"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Appears directly beneath the HiBUILD logo in Column 1.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      Instagram Profile URL
+                    </label>
+                    <input
+                      type="url"
+                      value={socials.instagram}
+                      onChange={(e) => setSocials({ ...socials, instagram: e.target.value })}
+                      placeholder="https://instagram.com/hindbuild"
+                      className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      Facebook Page URL
+                    </label>
+                    <input
+                      type="url"
+                      value={socials.facebook}
+                      onChange={(e) => setSocials({ ...socials, facebook: e.target.value })}
+                      placeholder="https://facebook.com/hindbuild"
+                      className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      LinkedIn Page URL
+                    </label>
+                    <input
+                      type="url"
+                      value={socials.linkedin}
+                      onChange={(e) => setSocials({ ...socials, linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/company/hindbuild"
+                      className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                      YouTube Channel URL
+                    </label>
+                    <input
+                      type="url"
+                      value={socials.youtube}
+                      onChange={(e) => setSocials({ ...socials, youtube: e.target.value })}
+                      placeholder="https://youtube.com/@hindbuild"
+                      className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 3. FORM: COLUMN 4 CONTACT & RAJASTHAN SUPPORT ─ */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600" />
+                <span>Column 4: Contact, Address &amp; Dispatch Hours</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Regional Office Street Address
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={content.address || ""}
+                    onChange={(e) => handleChange("address", e.target.value)}
+                    placeholder="Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001"
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Engineer Priority Line (Phone)
+                  </label>
+                  <input
+                    type="text"
+                    value={content.phone || ""}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    placeholder="+91 94625 77757"
+                    className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    WhatsApp Direct Consultation
+                  </label>
+                  <input
+                    type="text"
+                    value={content.whatsapp || ""}
+                    onChange={(e) => handleChange("whatsapp", e.target.value)}
+                    placeholder="919462577757"
+                    className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Support Email
+                  </label>
+                  <input
+                    type="email"
+                    value={content.email || ""}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    placeholder="hindbuild@hindustanprojects.in"
+                    className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Business Hours
+                  </label>
+                  <input
+                    type="text"
+                    value={content.businessHours || ""}
+                    onChange={(e) => handleChange("businessHours", e.target.value)}
+                    placeholder="Mon – Sat: 8:00 AM – 8:00 PM (Emergency Dispatch)"
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── 4. FORM: LEGAL & COMPLIANCE URLS ────────────── */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600" />
+                <span>Bottom Bar: Legal Policies &amp; Copyright</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Privacy Policy URL
+                  </label>
+                  <input
+                    type="text"
+                    value={content.privacyPolicyUrl || ""}
+                    onChange={(e) => handleChange("privacyPolicyUrl", e.target.value)}
+                    placeholder="/privacy-policy"
+                    className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Terms of Service URL
+                  </label>
+                  <input
+                    type="text"
+                    value={content.termsUrl || ""}
+                    onChange={(e) => handleChange("termsUrl", e.target.value)}
+                    placeholder="/terms"
+                    className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 3: HOTLINES & IDENTITY
         ======================================================== */}
         {activeTab === "contact" && (
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">

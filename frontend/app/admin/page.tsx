@@ -59,8 +59,8 @@ export default function AdminDashboard() {
     setError("");
     try {
       const [dashRes, blogsRes] = await Promise.allSettled([
-        fetch("/api/dashboard"),
-        fetch("/api/blogs"),
+        fetch("/api/dashboard", { credentials: "include", cache: "no-store" }),
+        fetch("/api/blogs", { cache: "no-store" }),
       ]);
 
       let dashData: any = null;
@@ -90,7 +90,12 @@ export default function AdminDashboard() {
         }
         setData(dashData);
       } else if (dashRes.status === "fulfilled" && !dashRes.value.ok) {
-        setError("Failed to load dashboard data from server.");
+        if (dashRes.value.status === 401) {
+          setError("Your admin session has expired. Redirecting to login...");
+          window.location.href = "/admin-login";
+        } else {
+          setError("Failed to load dashboard data from server.");
+        }
       }
     } catch {
       setError("Network error — could not reach the server.");

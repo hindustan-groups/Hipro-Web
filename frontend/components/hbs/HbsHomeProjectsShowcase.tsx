@@ -9,6 +9,12 @@ import type { HbsProject } from "@/lib/types";
 interface HbsHomeProjectsShowcaseProps {
   projects: HbsProject[];
   prefix: string;
+  headingConfig?: {
+    badge?: string;
+    title?: string;
+    highlightText?: string;
+    description?: string;
+  };
 }
 
 const CATEGORIES = ["All", "Repair", "Waterproofing", "Painting", "Renovation"];
@@ -16,8 +22,13 @@ const CATEGORIES = ["All", "Repair", "Waterproofing", "Painting", "Renovation"];
 export default function HbsHomeProjectsShowcase({
   projects,
   prefix,
+  headingConfig,
 }: HbsHomeProjectsShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const badge = headingConfig?.badge || "OUR PROJECTS";
+  const titleLead = headingConfig?.title || "Our Recent";
+  const titleHighlight = headingConfig?.highlightText || "Work";
 
   const filteredProjects = selectedCategory === "All"
     ? projects.slice(0, 5)
@@ -38,14 +49,14 @@ export default function HbsHomeProjectsShowcase({
             <div className="flex items-center gap-2">
               <span className="w-4 h-0.5 bg-red-600" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-red-600">
-                OUR PROJECTS
+                {badge}
               </span>
             </div>
             <h2
               id="projects-showcase-heading"
               className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 font-display"
             >
-              Our Recent <span className="text-blue-700">Work</span>
+              {titleLead} <span className="text-blue-700">{titleHighlight}</span>
             </h2>
           </div>
 
