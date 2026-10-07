@@ -525,7 +525,9 @@ export interface HbsTestimonial {
   designation?: string | null;
   content: string;
   image?: string | null;
+  avatar?: string | null;
   rating?: number;
+  service?: string | null;
   serviceSlug?: string | null;
   serviceCategory?: string | null;
   location?: string | null;

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 72" width="220" height="72" fill="none">
+  <!-- HiBUILD Dark-Mode Transparent Vector Logo -->
+  <g id="hibuild-logo-white">
+    <!-- Capital Red Serif 'H' -->
+    <path d="M12 12 H26 V18 H22 V31 H36 V18 H32 V12 H46 V18 H42 V46 H46 V52 H32 V46 H36 V36 H22 V46 H26 V52 H12 V46 H16 V18 H12 V12 Z" fill="#E31B23" />
+    
+    <!-- Red 'i' -->
+    <!-- Dot on top -->
+    <circle cx="53" cy="18" r="4.8" fill="#E31B23" />
+    <!-- Rounded vertical stem below -->
+    <rect x="48.5" y="27" width="9" height="24" rx="4.5" fill="#E31B23" />
+    
+    <!-- Crisp White 'BUILD' -->
+    <g fill="#FFFFFF" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="34" letter-spacing="-0.5px">
+      <text x="64" y="51">BUILD</text>
+    </g>
+    
+    <!-- Subtitle: HIND BUILDING SOLUTIONS -->
+    <g fill="#E2E8F0" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="9.5" letter-spacing="2.6px">
+      <text x="12" y="67">HIND BUILDING SOLUTIONS</text>
+    </g>
+  </g>
+</svg>

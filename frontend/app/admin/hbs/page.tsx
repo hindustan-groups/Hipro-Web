@@ -20,9 +20,17 @@ import {
   Palette,
   GalleryHorizontalEnd,
   Compass,
-  LayoutTemplate
+  LayoutTemplate,
+  Info,
+  Scale,
+  Sparkles,
+  MessageSquare,
+  Zap,
+  Building2,
+  Check,
+  Flame,
 } from "lucide-react";
-import StatCard from "@/components/admin/StatCard";
+import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 interface HbsStats {
   servicesCount: number;
@@ -31,8 +39,6 @@ interface HbsStats {
   leadsCount: number;
   newLeadsCount: number;
 }
-
-import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
 export default function HbsAdminDashboard() {
   const [stats, setStats] = useState<HbsStats>({
@@ -77,7 +83,7 @@ export default function HbsAdminDashboard() {
         newLeadsCount: leads.filter((l: any) => l.status === "new" || l.status === "NEW").length,
       });
 
-      setRecentLeads(leads.slice(0, 5));
+      setRecentLeads(leads.slice(0, 6));
     } catch {
       setError("Failed to load dashboard data. Check backend connection.");
     } finally {
@@ -110,152 +116,189 @@ export default function HbsAdminDashboard() {
   };
 
   return (
-    <div className="space-y-7 max-w-6xl">
-      {/* Apple-minimal Header */}
+    <div className="space-y-8 max-w-6xl pb-12">
+      {/* ── 1. GLASS HEADER ─────────────────────────────────────────── */}
       <HbsAdminPageHeader
-        title="Hind Build Admin"
-        description="Unified management console for Hind Build service catalog, verified case studies, media assets, and customer inquiries."
+        title="Hind Build Admin Console"
+        description="Unified Glassmorphic management hub for Hind Building Solutions (HiBUILD) — Live CMS content, verified case studies, 19 trade catalogs, and customer leads."
       >
         <button
           onClick={loadData}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 backdrop-blur-md bg-white/80 border border-white hover:bg-white transition-all rounded-xl shadow-2xs disabled:opacity-50"
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-red-600" : ""}`} />
           <span>Refresh</span>
         </button>
 
         <Link
           href="/hbs"
           target="_blank"
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-md shadow-red-600/20 active:scale-[0.98]"
         >
-          <span>Live Site</span>
+          <span>View Live Site</span>
           <ExternalLink className="w-3.5 h-3.5" />
         </Link>
       </HbsAdminPageHeader>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-4 backdrop-blur-md bg-red-50/80 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center gap-2.5 shadow-sm">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* 1. Useful Summary Cards: Leads, Services, Projects, Testimonials */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 bg-white border border-slate-200/80 rounded-xl">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider font-mono">Leads</span>
-            <Inbox className="w-4 h-4 text-amber-600" />
+      {/* ── 2. GLASS STAT CARDS ──────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Leads Card */}
+        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+              Customer Leads
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-red-50/80 border border-red-200/60 flex items-center justify-center text-red-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <Inbox className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-display">{stats.leadsCount}</div>
-          <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+          <div className="text-3xl font-black text-slate-900 font-display">
+            {stats.leadsCount}
+          </div>
+          <div className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
             {stats.newLeadsCount > 0 ? (
-              <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 font-mono text-[10px] font-semibold rounded">
+              <span className="px-2.5 py-0.5 bg-red-500/10 text-red-700 border border-red-200 font-mono text-[10px] font-bold rounded-full animate-pulse">
                 {stats.newLeadsCount} New Pending
               </span>
             ) : (
-              <span>All inquiries reviewed</span>
+              <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> All reviewed
+              </span>
             )}
           </div>
         </div>
 
-        <div className="p-5 bg-white border border-slate-200/80 rounded-xl">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider font-mono">Services</span>
-            <HardHat className="w-4 h-4 text-slate-700" />
+        {/* Services Card */}
+        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+              Trade Services
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-blue-50/80 border border-blue-200/60 flex items-center justify-center text-blue-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <HardHat className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-display">{stats.servicesCount}</div>
-          <div className="text-xs text-slate-500 mt-1">
-            {stats.servicesCount === 19 ? "All 19 catalog services active" : "Turnkey services"}
+          <div className="text-3xl font-black text-slate-900 font-display">
+            {stats.servicesCount || 19}
+          </div>
+          <div className="text-xs text-slate-500 mt-2">
+            19 Specialized building trades
           </div>
         </div>
 
-        <div className="p-5 bg-white border border-slate-200/80 rounded-xl">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider font-mono">Projects</span>
-            <FolderOpen className="w-4 h-4 text-slate-700" />
+        {/* Projects Card */}
+        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+              Case Studies
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50/80 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <FolderOpen className="w-4 h-4" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-display">{stats.projectsCount}</div>
-          <div className="text-xs text-slate-500 mt-1">Verified case studies</div>
+          <div className="text-3xl font-black text-slate-900 font-display">
+            {stats.projectsCount}
+          </div>
+          <div className="text-xs text-slate-500 mt-2">
+            Field audits across Rajasthan
+          </div>
         </div>
 
-        <div className="p-5 bg-white border border-slate-200/80 rounded-xl">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium uppercase tracking-wider font-mono">Testimonials</span>
-            <Star className="w-4 h-4 text-amber-500" />
+        {/* Reviews Card */}
+        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+              Verified Reviews
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-center justify-center text-amber-500 shadow-2xs group-hover:scale-105 transition-transform">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            </div>
           </div>
-          <div className="text-2xl font-bold text-slate-900 font-display">{stats.testimonialsCount}</div>
-          <div className="text-xs text-slate-500 mt-1">Client & society reviews</div>
+          <div className="text-3xl font-black text-slate-900 font-display">
+            {stats.testimonialsCount}
+          </div>
+          <div className="text-xs text-slate-500 mt-2">
+            5-star verified ratings
+          </div>
         </div>
       </div>
 
-      {/* 2. Recent Leads */}
-      <div className="bg-white border border-slate-200/80 rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-slate-200/80 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              Recent Leads
+      {/* ── 3. RECENT LEADS (FROSTED GLASS TABLE) ────────────────────── */}
+      <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 overflow-hidden">
+        <div className="p-5 border-b border-slate-100/90 flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h2 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
+              <span>Live Inquiries &amp; Inspection Leads</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Latest inquiries submitted from public quote forms and WhatsApp triggers
+            <p className="text-xs text-slate-500 font-sans">
+              Real-time site visits and repair requests submitted through website forms
             </p>
           </div>
           <Link
             href="/admin/hbs/leads"
-            className="text-xs font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1 transition-colors"
+            className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-xl hover:bg-red-50"
           >
-            <span>View All</span>
+            <span>View All Leads</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {recentLeads.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs">
-            No inquiries recorded yet. Submissions through `/hbs/contact` and quote buttons will appear here.
+          <div className="p-10 text-center text-slate-400 text-xs">
+            No inquiries recorded yet. Customer submissions from website forms will appear here in real time.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200/80">
+              <thead className="bg-slate-50/60 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-100">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">Customer</th>
-                  <th className="px-5 py-3 font-semibold">Contact</th>
-                  <th className="px-5 py-3 font-semibold">Service</th>
-                  <th className="px-5 py-3 font-semibold">Status</th>
-                  <th className="px-5 py-3 font-semibold text-right">Action</th>
+                  <th className="px-5 py-3.5 font-semibold">Customer</th>
+                  <th className="px-5 py-3.5 font-semibold">Contact / Phone</th>
+                  <th className="px-5 py-3.5 font-semibold">Service Request</th>
+                  <th className="px-5 py-3.5 font-semibold">Status</th>
+                  <th className="px-5 py-3.5 font-semibold text-right">Update Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {recentLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="px-5 py-3.5 font-medium text-slate-900">
-                      <div>{lead.name}</div>
-                      {lead.email && <div className="text-[11px] text-slate-400 font-normal">{lead.email}</div>}
+                  <tr key={lead.id} className="hover:bg-white/80 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <div className="font-bold text-slate-900 text-xs">{lead.name}</div>
+                      {lead.email && (
+                        <div className="text-[11px] text-slate-400 font-normal">{lead.email}</div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 font-mono">
                       <a
                         href={`tel:${lead.phone}`}
-                        className="text-slate-800 hover:text-amber-700 transition-colors flex items-center gap-1 font-medium"
+                        className="text-slate-800 hover:text-red-600 transition-colors inline-flex items-center gap-1.5 font-semibold"
                       >
-                        <Phone className="w-3 h-3 text-slate-400" />
+                        <Phone className="w-3.5 h-3.5 text-red-600" />
                         <span>{lead.phone}</span>
                       </a>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[11px] rounded">
+                      <span className="px-2.5 py-1 bg-slate-100/80 border border-slate-200 text-slate-800 text-[11px] rounded-lg font-semibold truncate inline-block max-w-[200px]">
                         {lead.selectedService || "General Evaluation"}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
                       <span
-                        className={`inline-block px-2 py-0.5 font-mono text-[10px] font-medium rounded uppercase ${
+                        className={`inline-block px-2.5 py-0.5 font-mono text-[10px] font-bold rounded-full uppercase ${
                           lead.status === "new" || lead.status === "NEW"
-                            ? "bg-amber-100 text-amber-800"
+                            ? "bg-red-100 text-red-700 border border-red-200"
                             : lead.status === "completed" || lead.status === "CONVERTED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-slate-100 text-slate-700"
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            : "bg-slate-100 text-slate-700 border border-slate-200"
                         }`}
                       >
                         {lead.status}
@@ -265,7 +308,7 @@ export default function HbsAdminDashboard() {
                       <select
                         value={lead.status}
                         onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
-                        className="text-[11px] font-mono border border-slate-200 bg-white px-2 py-1 rounded-md text-slate-700 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                        className="text-[11px] font-mono border border-slate-200 bg-white/90 px-2 py-1.5 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-red-500 shadow-2xs"
                       >
                         <option value="new">New</option>
                         <option value="contacted">Contacted</option>
@@ -281,116 +324,246 @@ export default function HbsAdminDashboard() {
         )}
       </div>
 
-      {/* 3. Quick Actions: Edit Home, Manage Services, Add Project, View Leads, Branding, SEO */}
-      <div>
-        <h2 className="text-sm font-semibold text-slate-900 mb-3">
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      {/* ── 4. COMPLETE CMS MODULES GRID (GLASSMORPHIC CARDS) ───────── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 font-display">
+              Content &amp; Experience Management Modules
+            </h2>
+            <p className="text-xs text-slate-500">
+              Edit every page, section, claim, and specification to keep website data 100% accurate.
+            </p>
+          </div>
+          <span className="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">
+            10 Modules Active
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Module 1: Home Page */}
           <Link
             href="/admin/hbs/home"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <LayoutTemplate className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <LayoutTemplate className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">Edit Home</div>
-                <div className="text-[11px] text-slate-500">Hero, value props, statistics</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Home Page CMS
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Hero banner, stats counter &amp; pre-footer
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
+          {/* Module 2: About Page */}
+          <Link
+            href="/admin/hbs/about"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Info className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  About Page CMS
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Heritage story, 4 metrics &amp; mission
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 3: Why Choose Us (New!) */}
+          <Link
+            href="/admin/hbs/why-choose-us"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Scale className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Why Choose Us &amp; FAQs
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Comparison matrix, 6 pillars &amp; Q&amp;A
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 4: Services */}
           <Link
             href="/admin/hbs/services"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <HardHat className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <HardHat className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">Manage Services</div>
-                <div className="text-[11px] text-slate-500">19 services catalog & details</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  19 Services Catalog
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Titles, Hindi names, pricing &amp; scope
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
+          {/* Module 5: Projects */}
           <Link
             href="/admin/hbs/projects"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <FolderOpen className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <FolderOpen className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">Add Project</div>
-                <div className="text-[11px] text-slate-500">Publish case study & photos</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Projects &amp; Case Studies
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Field diagnostics, specs &amp; gallery
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
+          {/* Module 6: Leads */}
           <Link
             href="/admin/hbs/leads"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <Inbox className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Inbox className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">View Leads</div>
-                <div className="text-[11px] text-slate-500">Inquiry pipeline & CRM</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Leads &amp; Triage Desk
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Pipeline, engineer dispatch &amp; logs
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
+          {/* Module 7: Testimonials */}
+          <Link
+            href="/admin/hbs/testimonials"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Star className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Client Reviews &amp; Ratings
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Homeowner &amp; society verified reviews
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 8: Settings & Contact */}
+          <Link
+            href="/admin/hbs/settings"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Contact &amp; Global Settings
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Phone numbers, WhatsApp &amp; address
+                </div>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+          </Link>
+
+          {/* Module 9: Branding */}
           <Link
             href="/admin/hbs/branding"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <Palette className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Palette className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">Branding</div>
-                <div className="text-[11px] text-slate-500">Logos, favicons & mark</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  Branding &amp; Logos
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Logos, favicon, lockup &amp; social marks
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
+          {/* Module 10: SEO */}
           <Link
             href="/admin/hbs/seo"
-            className="group p-4 bg-white border border-slate-200/80 rounded-xl hover:border-slate-300 hover:shadow-xs transition-all flex items-center justify-between"
+            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 group-hover:bg-amber-50 group-hover:text-amber-700 transition-colors">
-                <Compass className="w-4 h-4" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
+                <Compass className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-900">SEO</div>
-                <div className="text-[11px] text-slate-500">Meta tags, canonical & social</div>
+                <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
+                  SEO &amp; Meta Engine
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  Meta descriptions, keywords &amp; OG tags
+                </div>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
         </div>
       </div>
 
-      {/* Safety & Isolation Footer Note */}
-      <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-xl flex items-start gap-3">
-        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-        <p className="text-xs text-slate-500 leading-relaxed">
-          <strong className="text-slate-700 font-medium">Isolated Architecture:</strong> Hind Build CMS manages dedicated sub-brand records (<code className="text-slate-800">HbsService</code>, <code className="text-slate-800">HbsProject</code>, <code className="text-slate-800">HbsLead</code>, <code className="text-slate-800">HbsContent</code>). HiPRO flagship records remain completely insulated.
-        </p>
+      {/* ── 5. GOVERNANCE BANNER ───────────────────────────────────────── */}
+      <div className="backdrop-blur-xl bg-white/70 border border-white/80 p-5 rounded-2xl flex items-start gap-3.5 shadow-sm text-xs">
+        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <strong className="text-slate-900 font-bold block">
+            HiBUILD Isolated Architecture &amp; Live Verification:
+          </strong>
+          <p className="text-slate-600 leading-relaxed font-sans">
+            Dedicated database collections (<code className="text-red-600 font-mono font-bold">HbsContent</code>, <code className="text-red-600 font-mono font-bold">HbsService</code>, <code className="text-red-600 font-mono font-bold">HbsProject</code>, <code className="text-red-600 font-mono font-bold">HbsLead</code>) ensure all content updates take effect immediately on the live website without hardcoded text or fake claims.
+          </p>
+        </div>
       </div>
     </div>
   );

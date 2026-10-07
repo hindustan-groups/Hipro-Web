@@ -624,6 +624,9 @@ export interface HbsHeroConfig {
   enabled: boolean;
   displayMode: "TEXT_AND_IMAGE" | "TEXT_ONLY" | "IMAGE_ONLY";
   badge: string;
+  headline?: string;
+  subheadline?: string;
+  heroImage?: string;
   primaryCtaLabel: string;
   primaryCtaUrl: string;
   secondaryCtaLabel: string;
@@ -759,7 +762,9 @@ export interface HbsTestimonial {
   designation?: string | null;
   content: string;
   image?: string | null;
+  avatar?: string | null;
   rating?: number;
+  service?: string | null;
   serviceSlug?: string | null;
   serviceCategory?: string | null;
   location?: string | null;

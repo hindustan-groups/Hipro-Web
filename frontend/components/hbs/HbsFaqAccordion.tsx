@@ -31,8 +31,10 @@ export default function HbsFaqAccordion({ faqs }: HbsFaqAccordionProps) {
         return (
           <div
             key={idx}
-            className={`border transition-colors ${
-              isOpen ? "border-amber-500 bg-amber-50/20" : "border-slate-200 bg-white hover:border-slate-300"
+            className={`rounded-xl border transition-all duration-200 overflow-hidden ${
+              isOpen
+                ? "border-red-200 bg-red-50/20 shadow-xs"
+                : "border-slate-200/90 bg-white hover:border-slate-300"
             }`}
           >
             <button
@@ -41,14 +43,18 @@ export default function HbsFaqAccordion({ faqs }: HbsFaqAccordionProps) {
               onClick={() => toggle(idx)}
               aria-expanded={isOpen}
               aria-controls={panelId}
-              className="w-full py-4 px-5 text-left flex items-center justify-between gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              className="w-full py-4 px-5 text-left flex items-center justify-between gap-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-xl"
             >
-              <span className="text-sm sm:text-base font-bold text-slate-900 font-display">
+              <span className={`text-sm sm:text-base font-bold transition-colors ${
+                isOpen ? "text-red-700" : "text-slate-900"
+              }`}>
                 {faq.q}
               </span>
               <span
-                className={`p-1.5 rounded-none shrink-0 transition-transform duration-200 ${
-                  isOpen ? "rotate-180 text-amber-600 bg-amber-100" : "text-slate-400 bg-slate-100"
+                className={`p-1.5 rounded-lg shrink-0 transition-transform duration-200 ${
+                  isOpen
+                    ? "rotate-180 text-red-600 bg-red-100/70"
+                    : "text-slate-400 bg-slate-100"
                 }`}
               >
                 <ChevronDown className="w-4 h-4" />
@@ -60,7 +66,7 @@ export default function HbsFaqAccordion({ faqs }: HbsFaqAccordionProps) {
                 id={panelId}
                 role="region"
                 aria-labelledby={buttonId}
-                className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100"
+                className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-red-100/70"
               >
                 {faq.a}
               </div>
@@ -71,3 +77,4 @@ export default function HbsFaqAccordion({ faqs }: HbsFaqAccordionProps) {
     </div>
   );
 }
+

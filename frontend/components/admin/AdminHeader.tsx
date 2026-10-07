@@ -28,6 +28,7 @@ const titles: Record<string, string> = {
   "/admin/hbs":             "Hind Build Dashboard",
   "/admin/hbs/home":        "Hind Build · Homepage CMS",
   "/admin/hbs/about":       "Hind Build · About Page CMS",
+  "/admin/hbs/why-choose-us":"Hind Build · Why Choose Us",
   "/admin/hbs/services":    "Hind Build · Services (19 Modules)",
   "/admin/hbs/projects":    "Hind Build · Projects & Case Studies",
   "/admin/hbs/testimonials":"Hind Build · Testimonials",

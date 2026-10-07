@@ -15,9 +15,12 @@ import {
   Eye,
   Check,
   Cpu,
+  Sparkles,
+  MapPin,
 } from "lucide-react";
 import { fetchHbsContent } from "@/lib/hbsData";
 import { cleanTelNumber, getContactWhatsAppUrl } from "@/lib/hbsWhatsApp";
+import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
 
 export const revalidate = 60;
 
@@ -64,7 +67,7 @@ const DEFAULT_ABOUT_DATA: AboutCmsData = {
       desc: "Electronic moisture scanners to identify root cause before treatment.",
     },
     {
-      value: "Written",
+      value: "10-Year",
       label: "Documented Warranty",
       desc: "Formal certificate issued with post-execution quality test sign-off.",
     },
@@ -160,8 +163,8 @@ export default async function HbsAboutPage() {
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const phoneRaw = cleanTelNumber(content.phone);
-  const contactWaUrl = getContactWhatsAppUrl(content.whatsapp);
+  const phoneRaw = cleanTelNumber(content.phone || "+919462577757");
+  const contactWaUrl = getContactWhatsAppUrl(content.whatsapp || "919462577757");
 
   const aboutData = parseAboutImagesData(content.aboutImages);
 
@@ -183,31 +186,25 @@ export default async function HbsAboutPage() {
   } catch {}
 
   return (
-    <div className="space-y-14 sm:space-y-20 lg:space-y-24 py-6 sm:py-10 pb-28 lg:pb-16 bg-white overflow-hidden">
+    <div className="space-y-12 sm:space-y-16 lg:space-y-20 bg-white overflow-hidden">
       {/* ─────────────────────────────────────────────────────────────────
-          1. HERO SECTION (Light Architectural Composition with Image Showcase)
+          1. HERO SECTION (Clean Architectural Canvas)
       ───────────────────────────────────────────────────────────────── */}
       <section
         aria-labelledby="about-hero-heading"
-        className="relative bg-gradient-to-b from-amber-50/40 via-white to-slate-50/60 border-b border-slate-200/80 -mt-6 sm:-mt-10 overflow-hidden py-8 sm:py-14 lg:py-18"
+        className="relative bg-slate-50/70 border-b border-slate-200/80 overflow-hidden py-10 sm:py-16 lg:py-20"
       >
-        {/* Subtle Architectural Dot Matrix Grid */}
-        <div
-          className="absolute inset-0 opacity-[0.035] pointer-events-none"
-          style={{
-            backgroundImage: "radial-gradient(#0f172a 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-          aria-hidden="true"
-        />
+        {/* Subtle Ambient Radial Glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10">
           {/* Breadcrumb Navigation */}
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-2 text-xs text-slate-500 mb-4 sm:mb-6 font-medium"
+            className="flex items-center gap-2 text-xs text-slate-500 font-medium"
           >
-            <Link href={homeHref} className="hover:text-amber-600 transition-colors">
+            <Link href={homeHref} className="hover:text-red-600 transition-colors">
               Home
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -216,9 +213,9 @@ export default async function HbsAboutPage() {
 
           {aboutData.heroMode === "IMAGE_ONLY" ? (
             <div className="space-y-6">
-              <div className="max-w-3xl space-y-3">
-                <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider rounded-full shadow-2xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
+              <div className="max-w-3xl space-y-3.5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-bold tracking-wide">
+                  <ShieldCheck className="w-3.5 h-3.5 text-red-600 shrink-0" aria-hidden="true" />
                   <span className="truncate">
                     {aboutData.heroBadge || "Specialized Division of Hindustan Projects (HiPRO)"}
                   </span>
@@ -226,14 +223,14 @@ export default async function HbsAboutPage() {
 
                 <h1
                   id="about-hero-heading"
-                  className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase font-display tracking-tight text-slate-950 leading-[1.12]"
+                  className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase font-display tracking-tight text-slate-900 leading-[1.14]"
                 >
                   {aboutData.heroTitle ? (
                     aboutData.heroTitle
                   ) : (
                     <>
                       Engineering Heritage &amp;{" "}
-                      <span className="text-amber-600">About Hind Build</span>
+                      <span className="text-red-600">About Hind Build</span>
                     </>
                   )}
                 </h1>
@@ -244,40 +241,35 @@ export default async function HbsAboutPage() {
                 </p>
 
                 {/* Primary Actions */}
-                <div className="space-y-2 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:gap-3 pt-2">
-                  <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-row sm:gap-3">
-                    <Link
-                      href={`${prefix}/contact`}
-                      data-hbs-cta="quote"
-                      className="hbs-btn-primary min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md rounded-lg active:scale-[0.98] justify-center"
-                    >
-                      <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                      <span>Get Free Quote</span>
-                    </Link>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link
+                    href={`${prefix}/contact`}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    <Wrench className="w-4 h-4 text-white shrink-0" />
+                    <span>Get Free Quote</span>
+                  </Link>
 
-                    <Link
-                      href={`${prefix}/services`}
-                      className="hbs-btn-secondary min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 text-xs font-bold uppercase tracking-wider shadow-2xs rounded-lg active:scale-[0.98] justify-center"
-                    >
-                      <span>19 Services</span>
-                      <ArrowRight className="w-4 h-4 text-amber-600 shrink-0" />
-                    </Link>
-                  </div>
+                  <Link
+                    href={`${prefix}/services`}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#0D2D5E] hover:bg-[#091F42] active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    <span>19 Services</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
 
                   <a
                     href={`tel:${phoneRaw}`}
-                    data-hbs-cta="call"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 min-h-[44px] sm:min-h-[48px] border border-slate-300 hover:border-slate-400 bg-white text-slate-800 hover:text-slate-950 text-xs font-mono font-semibold transition-all rounded-lg active:scale-[0.98] shadow-2xs"
-                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="inline-flex items-center gap-2 px-5 py-3.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-800 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-[0.98]"
                   >
-                    <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>{content.phone || "+91 75970 00601"}</span>
+                    <Phone className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>{content.phone || "+91 94625 77757"}</span>
                   </a>
                 </div>
               </div>
 
-              {/* Single Full-Width Banner Image */}
-              <div className="relative aspect-[16/10] sm:aspect-[21/9] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl bg-slate-100 group">
+              {/* Full Width Photo Banner */}
+              <div className="relative aspect-[16/10] sm:aspect-[21/9] w-full rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-slate-200/90 shadow-xl bg-slate-100 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={aboutData.heroImage || DEFAULT_ABOUT_DATA.heroImage}
@@ -286,17 +278,15 @@ export default async function HbsAboutPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
 
-                {/* Coordinates Badge */}
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 px-3 py-1 bg-slate-950/80 backdrop-blur-md rounded-full text-amber-400 font-mono text-[10px] sm:text-xs font-semibold border border-amber-500/30 shadow-md">
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 px-3 py-1 bg-[#0D2D5E]/90 backdrop-blur-md rounded-full text-white font-mono text-[10px] sm:text-xs font-semibold border border-white/20 shadow-md">
                   BHILWARA · RAJASTHAN [25.3463° N, 74.6360° E]
                 </div>
 
-                {/* Floating Bottom Badge */}
-                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-950/80 backdrop-blur-md rounded-xl border border-white/10 text-[10px] sm:text-xs font-mono text-slate-300 flex items-center gap-2 shadow-lg">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="font-semibold text-white">Hind Build Engineering</span>
-                  <span className="text-slate-500">|</span>
-                  <span className="text-amber-300">Turnkey Civil Execution · Rajasthan</span>
+                <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 px-3 py-2 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200/80 text-xs text-slate-800 flex items-center gap-2 shadow-lg">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-bold text-slate-900">Hind Build Engineering</span>
+                  <span className="text-slate-300">|</span>
+                  <span className="text-[#0D2D5E] font-medium">Turnkey Civil Execution Across Rajasthan</span>
                 </div>
               </div>
             </div>
@@ -304,8 +294,8 @@ export default async function HbsAboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Heading, Value Prop, CTAs */}
               <div className="lg:col-span-7 space-y-5 sm:space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-900 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider rounded-full shadow-2xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" aria-hidden="true" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-bold tracking-wide">
+                  <ShieldCheck className="w-3.5 h-3.5 text-red-600 shrink-0" aria-hidden="true" />
                   <span className="truncate">
                     {aboutData.heroBadge || "Specialized Division of Hindustan Projects (HiPRO)"}
                   </span>
@@ -314,14 +304,14 @@ export default async function HbsAboutPage() {
                 <div className="space-y-3 sm:space-y-4">
                   <h1
                     id="about-hero-heading"
-                    className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase font-display tracking-tight text-slate-950 leading-[1.12]"
+                    className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase font-display tracking-tight text-slate-900 leading-[1.14]"
                   >
                     {aboutData.heroTitle ? (
                       aboutData.heroTitle
                     ) : (
                       <>
                         Engineering Heritage &amp;{" "}
-                        <span className="text-amber-600">About Hind Build</span>
+                        <span className="text-red-600">About Hind Build</span>
                       </>
                     )}
                   </h1>
@@ -332,55 +322,50 @@ export default async function HbsAboutPage() {
                   </p>
                 </div>
 
-                {/* Quick Trust Highlights */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 pt-1 max-w-xl">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                {/* 4 Trust Highlights with Green Checkmarks */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 max-w-xl">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Senior Civil Engineering Oversight</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Non-Destructive Thermal &amp; Moisture NDT</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Itemized Digital BOQs with Zero Hidden Costs</span>
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Itemized Digital BOQs with 0 Hidden Costs</span>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Written Performance Warranties Handover</span>
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Up to 10-Year Documented Warranties</span>
                   </div>
                 </div>
 
-                {/* Primary Actions (Mobile-tuned 2-col or desktop flex) */}
-                <div className="space-y-2 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:gap-3 pt-2">
-                  <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-row sm:gap-3">
-                    <Link
-                      href={`${prefix}/contact`}
-                      data-hbs-cta="quote"
-                      className="hbs-btn-primary min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md rounded-lg active:scale-[0.98] justify-center"
-                    >
-                      <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                      <span>Get Free Quote</span>
-                    </Link>
+                {/* Primary Actions */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link
+                    href={`${prefix}/contact`}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    <Wrench className="w-4 h-4 text-white shrink-0" />
+                    <span>Get Free Quote</span>
+                  </Link>
 
-                    <Link
-                      href={`${prefix}/services`}
-                      className="hbs-btn-secondary min-h-[44px] sm:min-h-[48px] px-4 sm:px-6 text-xs font-bold uppercase tracking-wider shadow-2xs rounded-lg active:scale-[0.98] justify-center"
-                    >
-                      <span>19 Services</span>
-                      <ArrowRight className="w-4 h-4 text-amber-600 shrink-0" />
-                    </Link>
-                  </div>
+                  <Link
+                    href={`${prefix}/services`}
+                    className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#0D2D5E] hover:bg-[#091F42] active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
+                  >
+                    <span>19 Services</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
 
                   <a
                     href={`tel:${phoneRaw}`}
-                    data-hbs-cta="call"
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 min-h-[44px] sm:min-h-[48px] border border-slate-300 hover:border-slate-400 bg-white text-slate-800 hover:text-slate-950 text-xs font-mono font-semibold transition-all rounded-lg active:scale-[0.98] shadow-2xs"
-                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="inline-flex items-center gap-2 px-5 py-3.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-800 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-[0.98]"
                   >
-                    <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>{content.phone || "+91 75970 00601"}</span>
+                    <Phone className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>{content.phone || "+91 94625 77757"}</span>
                   </a>
                 </div>
               </div>
@@ -388,10 +373,7 @@ export default async function HbsAboutPage() {
               {/* Right Column: Hero Photographic Showcase */}
               <div className="lg:col-span-5">
                 <div className="relative group">
-                  {/* Decorative Amber Glow */}
-                  <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/20 to-amber-600/10 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-2xl overflow-hidden border border-slate-200/90 shadow-xl bg-slate-100">
+                  <div className="relative aspect-[4/3] sm:aspect-[16/11] rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-slate-200/90 shadow-xl bg-slate-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={aboutData.heroImage || DEFAULT_ABOUT_DATA.heroImage}
@@ -399,33 +381,30 @@ export default async function HbsAboutPage() {
                       className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700"
                     />
 
-                    {/* Gradient Vignette */}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20" />
 
-                    {/* Coordinates Badge */}
-                    <div className="absolute top-3 right-3 px-3 py-1 bg-slate-950/80 backdrop-blur-md rounded-full text-amber-400 font-mono text-[10px] font-semibold border border-amber-500/30 shadow-md">
+                    <div className="absolute top-3 right-3 px-3 py-1 bg-[#0D2D5E]/90 backdrop-blur-md rounded-full text-white font-mono text-[10px] font-semibold border border-white/20 shadow-md">
                       BHILWARA · RAJASTHAN [25.3463° N, 74.6360° E]
                     </div>
 
-                    {/* Floating Bottom Card */}
                     <div className="absolute bottom-3 left-3 right-3 p-3 sm:p-3.5 bg-white/95 backdrop-blur-md rounded-xl border border-slate-200/80 shadow-lg flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src="/hbs-icon.jpg"
+                          src="/hibuild-logo.png"
                           alt="Hind Build"
-                          className="w-8 h-8 rounded-lg object-contain shrink-0 border border-slate-200 bg-white"
+                          className="h-7 w-auto object-contain shrink-0"
                         />
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-900 truncate font-display uppercase tracking-tight">
                             Engineering Site Care
                           </p>
-                          <p className="text-[10px] font-mono text-slate-500 truncate">
+                          <p className="text-[10px] text-slate-500 truncate font-medium">
                             Non-Destructive Testing · Certified Materials
                           </p>
                         </div>
                       </div>
-                      <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-50 border border-amber-200 text-amber-800 font-mono font-bold text-[10px] rounded-md uppercase">
+                      <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-blue-50 border border-blue-200 text-[#0D2D5E] font-bold text-[10px] rounded-md uppercase">
                         Parent Supervised
                       </span>
                     </div>
@@ -436,19 +415,19 @@ export default async function HbsAboutPage() {
           )}
 
           {/* 4-Key Metrics Strip (2x2 on Mobile, 4-col on Desktop) */}
-          <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-slate-200/80 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="pt-8 border-t border-slate-200/90 grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
             {(aboutData.keyMetrics || DEFAULT_ABOUT_DATA.keyMetrics || []).map((km, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200/80 rounded-xl p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-amber-400/50 transition-all group"
+                className="bg-white border-2 border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-[#0D2D5E]/30 transition-all group"
               >
-                <span className="text-amber-600 font-mono text-xl sm:text-2xl font-black block group-hover:translate-x-0.5 transition-transform">
+                <span className="text-[#0D2D5E] font-display text-xl sm:text-2xl font-black block group-hover:translate-x-0.5 transition-transform">
                   {km.value}
                 </span>
-                <h3 className="text-[11px] sm:text-xs uppercase font-mono font-bold tracking-wider text-slate-900 mt-1">
+                <h3 className="text-xs uppercase font-bold tracking-wider text-slate-900 mt-1">
                   {km.label}
                 </h3>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-normal mt-0.5 sm:mt-1">
+                <p className="text-[11px] text-slate-500 leading-normal mt-1">
                   {km.desc}
                 </p>
               </div>
@@ -458,25 +437,28 @@ export default async function HbsAboutPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────
-          2. STORY & GENESIS (Symmetrical, Balanced 2-Column Section)
+          2. STORY & GENESIS (Symmetrical 2-Column Section)
       ───────────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Narrative & Heritage */}
           <div className="lg:col-span-7 space-y-5">
             <div className="space-y-1.5">
-              <span className="text-amber-700 font-mono text-xs uppercase tracking-widest font-bold block">
-                Engineering Heritage &amp; Genesis
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-0.75 bg-red-600 rounded-full" />
+                <span className="text-xs font-black uppercase tracking-widest text-red-600">
+                  Engineering Heritage &amp; Genesis
+                </span>
+              </div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 uppercase font-display tracking-tight leading-tight">
                 {aboutData.storyTitle || "Why We Founded Hind Build"}
               </h2>
             </div>
 
-            <div className="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-3.5">
+            <div className="text-xs sm:text-sm text-slate-700 leading-relaxed space-y-3.5 font-medium">
               <p>
                 {content.aboutStory ||
-                  "Hind Build was founded under Hindustan Projects (HiPRO) to bridge the massive gap between informal local handymen and large civil contractors. Modern buildings represent substantial investments, yet minor moisture ingress, foundation settlements, and electrical wear frequently turn into catastrophic structural hazards. Hind Build brings certified engineering discipline, non-destructive diagnosis, and turnkey accountability to building maintenance across Rajasthan."}
+                  "Hind Build was founded under Hindustan Projects (HiPRO) to bridge the massive gap between informal local handymen and large civil contractors. Modern buildings represent substantial investments, yet minor moisture ingress, foundation settlements, and structural cracks frequently turn into catastrophic hazards. Hind Build brings certified engineering discipline, non-destructive diagnosis, and turnkey accountability to building maintenance across Rajasthan."}
               </p>
               <p>
                 Every site inspection is carried out with digital moisture sensors, thermal imaging,
@@ -485,21 +467,25 @@ export default async function HbsAboutPage() {
               </p>
             </div>
 
-            <div className="p-4 sm:p-5 bg-gradient-to-br from-amber-50/80 to-amber-100/40 text-slate-900 border-l-4 border-amber-500 rounded-xl border border-amber-200/80 space-y-1.5 shadow-2xs">
-              <div className="flex items-center gap-2 text-amber-800 font-bold text-xs uppercase tracking-wider font-mono">
-                <ShieldCheck className="w-4 h-4 shrink-0 text-amber-600" />
+            {/* Parent Company Card */}
+            <div className="p-4 sm:p-5 bg-slate-50 border-2 border-slate-200/90 rounded-2xl space-y-1.5 shadow-2xs">
+              <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 shrink-0 text-red-600" />
                 <span>Parent Company Engineering Supervision</span>
               </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                Operating with the rigorous technical standards, bulk chemical procurement power, and
-                senior structural engineering oversight of Hindustan Projects (HiPRO).
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Operating with the technical rigor, bulk chemical procurement, and senior structural engineering governance of{" "}
+                <Link href="/" className="text-[#0D2D5E] font-bold underline hover:text-red-600">
+                  Hindustan Projects (HiPRO)
+                </Link>
+                .
               </p>
             </div>
           </div>
 
-          {/* Right Column: Story Photo Showcase + Inspection Specs */}
+          {/* Right Column: Story Photo + 3 Specs Chips */}
           <div className="lg:col-span-5 space-y-3">
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-100 aspect-[4/3] group">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-slate-200/90 shadow-md bg-slate-100 aspect-[4/3] group">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={aboutData.storyImage || DEFAULT_ABOUT_DATA.storyImage}
@@ -516,16 +502,16 @@ export default async function HbsAboutPage() {
             {/* Quick 3 Specs Chips below photo */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-                <span className="block text-[10px] font-mono font-bold text-amber-700 uppercase">IS Codes</span>
-                <span className="block text-xs font-semibold text-slate-800">Compliant</span>
+                <span className="block text-[10px] font-bold text-red-600 uppercase">IS Codes</span>
+                <span className="block text-xs font-bold text-slate-900">Compliant</span>
               </div>
               <div className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-                <span className="block text-[10px] font-mono font-bold text-amber-700 uppercase">Chemicals</span>
-                <span className="block text-xs font-semibold text-slate-800">Industrial</span>
+                <span className="block text-[10px] font-bold text-[#0D2D5E] uppercase">Chemicals</span>
+                <span className="block text-xs font-bold text-slate-900">ISI Certified</span>
               </div>
               <div className="p-2 sm:p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-                <span className="block text-[10px] font-mono font-bold text-amber-700 uppercase">Pricing</span>
-                <span className="block text-xs font-semibold text-slate-800">Itemized BOQ</span>
+                <span className="block text-[10px] font-bold text-emerald-600 uppercase">Pricing</span>
+                <span className="block text-xs font-bold text-slate-900">Itemized BOQ</span>
               </div>
             </div>
           </div>
@@ -533,56 +519,56 @@ export default async function HbsAboutPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────
-          3. CORPORATE MISSION & VISION (Balanced 2-Column Side-by-Side Grid)
+          3. CORPORATE MISSION & VISION (Side-by-Side Cards)
       ───────────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
           {/* Corporate Mission */}
-          <div className="bg-gradient-to-br from-white to-amber-50/20 border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs space-y-3 hover:border-amber-400/60 transition-all flex flex-col justify-between">
+          <div className="bg-white border-2 border-slate-200/90 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs space-y-4 hover:border-red-300 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-700 shrink-0">
-                  <Target className="w-4 h-4" />
+                <span className="w-9 h-9 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 shrink-0">
+                  <Target className="w-5 h-5" />
                 </span>
-                <span className="text-xs font-mono font-bold text-amber-800 uppercase tracking-wider">
+                <span className="text-xs font-black text-red-700 uppercase tracking-wider">
                   Corporate Mission
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 uppercase font-display tracking-tight">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 uppercase font-display tracking-tight">
                 Extend Structural Longevity &amp; Protect Investments
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
                 {content.mission ||
                   "To extend the functional life, aesthetic dignity, and structural safety of every residential, commercial, and industrial property through dependable, engineering-grade maintenance."}
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] font-mono text-amber-700 font-semibold uppercase">
-              <Check className="w-3.5 h-3.5 text-amber-600" />
+            <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-red-700 font-bold uppercase">
+              <Check className="w-4 h-4 text-red-600" />
               <span>Turnkey Execution · Engineering Standards</span>
             </div>
           </div>
 
           {/* Corporate Vision */}
-          <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200/90 rounded-2xl p-6 sm:p-7 shadow-xs space-y-3 hover:border-slate-300 transition-all flex flex-col justify-between">
+          <div className="bg-white border-2 border-slate-200/90 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xs space-y-4 hover:border-blue-300 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 shrink-0">
-                  <Eye className="w-4 h-4" />
+                <span className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#0D2D5E] shrink-0">
+                  <Eye className="w-5 h-5" />
                 </span>
-                <span className="text-xs font-mono font-bold text-slate-800 uppercase tracking-wider">
+                <span className="text-xs font-black text-[#0D2D5E] uppercase tracking-wider">
                   Corporate Vision
                 </span>
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 uppercase font-display tracking-tight">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 uppercase font-display tracking-tight">
                 Rajasthan&apos;s Most Dependable Single-Window Brand
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
                 {content.vision ||
                   "To be Rajasthan's most trusted single-window building maintenance and protection brand, synonymous with integrity, speed, and lasting craftsmanship."}
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-[11px] font-mono text-slate-700 font-semibold uppercase">
-              <Check className="w-3.5 h-3.5 text-slate-600" />
+            <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-[#0D2D5E] font-bold uppercase">
+              <Check className="w-4 h-4 text-[#0D2D5E]" />
               <span>Statewide Reach · Written Assurance</span>
             </div>
           </div>
@@ -590,19 +576,22 @@ export default async function HbsAboutPage() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────────
-          4. WHY CHOOSE HIND BUILD (Core Guiding Principles - Light Theme)
+          4. WHY CHOOSE HIND BUILD (Core Guiding Principles)
       ───────────────────────────────────────────────────────────────── */}
       {whyChooseItems.length > 0 && (
-        <section className="bg-slate-50 py-14 sm:py-20 border-y border-slate-200/80">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="bg-slate-50/70 py-14 sm:py-20 border-y border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mb-10 sm:mb-12 space-y-2">
-              <span className="text-amber-700 font-mono text-xs uppercase tracking-wider font-bold block">
-                The Engineering Standard
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-black uppercase font-display tracking-tight text-slate-950">
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-0.75 bg-red-600 rounded-full" />
+                <span className="text-xs font-black uppercase tracking-wider text-red-600">
+                  The Engineering Standard
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-black uppercase font-display tracking-tight text-slate-900">
                 Core Guiding Principles
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
                 Built on engineering accuracy, certified materials, and institutional accountability.
               </p>
             </div>
@@ -611,15 +600,15 @@ export default async function HbsAboutPage() {
               {whyChooseItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-3 shadow-2xs hover:shadow-md hover:border-amber-400/50 transition-all group"
+                  className="bg-white border-2 border-slate-200/90 rounded-2xl p-5 sm:p-6 space-y-3 shadow-2xs hover:shadow-md hover:border-red-300 transition-all group"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-700 font-mono font-bold text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 font-display font-black text-sm shrink-0 group-hover:scale-105 transition-transform">
                     0{idx + 1}
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 uppercase font-display tracking-tight leading-snug">
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase font-display tracking-tight leading-snug">
                     {item.title}
                   </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
                     {item.description}
                   </p>
                 </div>
@@ -633,15 +622,15 @@ export default async function HbsAboutPage() {
           5. TEAM / SUPERVISORY STRUCTURE (Rendered only when CMS contains team)
       ───────────────────────────────────────────────────────────────── */}
       {teamItems.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-8 sm:mb-10 space-y-1.5">
-            <span className="text-amber-700 font-mono text-xs uppercase tracking-wider font-bold block">
+            <span className="text-red-600 text-xs uppercase tracking-wider font-black block">
               Operational Backbone
             </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase font-display tracking-tight">
               Execution &amp; Supervisory Standards
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 font-medium">
               Structured engineering governance ensuring code-compliant site handover.
             </p>
           </div>
@@ -650,18 +639,18 @@ export default async function HbsAboutPage() {
             {teamItems.map((member, idx) => (
               <div
                 key={idx}
-                className="bg-white p-5 sm:p-6 border border-slate-200 rounded-2xl space-y-2.5 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all"
+                className="bg-white p-5 sm:p-6 border-2 border-slate-200/90 rounded-2xl space-y-2.5 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all"
               >
-                <div className="w-8 h-8 rounded-lg bg-slate-950 text-amber-400 flex items-center justify-center font-mono font-bold text-xs shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-[#0D2D5E] text-white flex items-center justify-center font-bold text-xs shrink-0">
                   {idx + 1}
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-900 uppercase font-display tracking-tight pt-1">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase font-display tracking-tight pt-1">
                   {member.name}
                 </h3>
-                <p className="text-xs font-semibold text-amber-700 uppercase font-mono tracking-wider">
+                <p className="text-xs font-bold text-red-600 uppercase tracking-wider">
                   {member.role}
                 </p>
-                <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                <p className="text-xs text-slate-600 leading-relaxed pt-1 font-medium">
                   {member.desc}
                 </p>
               </div>
@@ -671,50 +660,14 @@ export default async function HbsAboutPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────
-          6. CALL TO ACTION (Direct Site Evaluation Action)
-          [CRITICAL USER CONSTRAINT: footer ke uper wale 1 jo cta wala hai usko kuch mat kerna]
+          6. PRE-FOOTER CTA BANNER (Unified Brand Theme)
       ───────────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="bg-slate-900/95 text-white p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-6 border-l-8 border-l-amber-500 border border-slate-800 rounded-2xl shadow-xl">
-          <div className="space-y-2 max-w-2xl">
-            <h3 className="text-xl sm:text-3xl font-black uppercase font-display">
-              Have Questions About A Repair or Renovation?
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-400">
-              Speak directly with a Hind Build engineer or request a non-destructive site evaluation.
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <Link
-              href={`${prefix}/contact`}
-              data-hbs-cta="quote"
-              className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
-            >
-              <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-              <span>Get Free Quote</span>
-            </Link>
-            <a
-              href={contactWaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-hbs-cta="whatsapp"
-              className="hbs-btn-whatsapp min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
-            >
-              <MessageSquare className="w-4 h-4 shrink-0" />
-              <span>WhatsApp</span>
-            </a>
-            <a
-              href={`tel:${phoneRaw}`}
-              data-hbs-cta="call"
-              aria-label={`Call Hind Build at ${content.phone}`}
-              className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 rounded-lg active:scale-[0.98]"
-            >
-              <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>Call Hind Build</span>
-            </a>
-          </div>
-        </div>
-      </section>
+      <HbsHomePreFooterCta
+        phoneRaw={phoneRaw}
+        phoneDisplay={content.phone || "+91 94625 77757"}
+        whatsappNumber={content.whatsapp || "919462577757"}
+        prefix={prefix}
+      />
     </div>
   );
 }

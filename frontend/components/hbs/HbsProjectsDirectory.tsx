@@ -97,23 +97,23 @@ export default function HbsProjectsDirectory({
   }, [projects, searchQuery]);
 
   // ─────────────────────────────────────────────────────────────────
-  // ZERO-PROJECT EMPTY STATE (Current Production Condition: projects = 0)
+  // ZERO-PROJECT EMPTY STATE (When no projects exist in CMS)
   // ─────────────────────────────────────────────────────────────────
   if (!projects || projects.length === 0) {
     return (
-      <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-8 sm:p-14 text-center space-y-6 max-w-4xl mx-auto shadow-xs">
-        <div className="w-16 h-16 rounded-xl bg-slate-900 text-amber-400 border border-slate-700 mx-auto flex items-center justify-center shadow-md">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-8 sm:p-14 text-center space-y-6 max-w-4xl mx-auto shadow-xs">
+        <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-600 border border-red-200/80 mx-auto flex items-center justify-center shadow-xs">
           <FolderKanban className="w-8 h-8" aria-hidden="true" />
         </div>
 
         <div className="space-y-2 max-w-xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 font-mono text-[10px] font-bold uppercase tracking-wider rounded-md">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 border border-red-200/70 text-red-600 font-mono text-xs font-bold uppercase tracking-wider rounded-full">
             <span>Portfolio Archive</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 uppercase font-display tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Field Records Are Being Prepared
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
             Project case studies, non-destructive audit reports, and technical
             documentation will appear here as they are published through the Hind Build
             project management system.
@@ -122,9 +122,9 @@ export default function HbsProjectsDirectory({
 
         {/* Technical Guarantee Note */}
         <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-4.5 max-w-lg mx-auto text-left flex items-start gap-3">
-          <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />
+          <ShieldCheck className="w-5 h-5 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
           <div className="space-y-1">
-            <span className="text-[11px] font-mono uppercase text-slate-700 font-bold block">
+            <span className="text-[11px] font-mono uppercase text-slate-800 font-bold block">
               Standardized Quality Protocol
             </span>
             <p className="text-xs text-slate-600 leading-relaxed">
@@ -140,19 +140,19 @@ export default function HbsProjectsDirectory({
           <Link
             href={`${prefix}/contact`}
             data-hbs-cta="quote"
-            className="hbs-btn-primary min-h-[44px] px-6 text-xs font-black uppercase tracking-wider w-full sm:w-auto rounded-lg active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider w-full sm:w-auto rounded-xl shadow-md transition-all active:scale-[0.98]"
           >
-            <Wrench className="w-3.5 h-3.5 text-slate-950" aria-hidden="true" />
+            <Wrench className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Book a Site Inspection</span>
           </Link>
 
           <Link
             href={`${prefix}/contact`}
             data-hbs-cta="quote"
-            className="hbs-btn-secondary min-h-[44px] px-6 text-xs font-bold uppercase tracking-wider w-full sm:w-auto rounded-lg active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#0D2D5E] hover:bg-[#0A2349] text-white text-xs font-bold uppercase tracking-wider w-full sm:w-auto rounded-xl shadow-xs transition-all active:scale-[0.98]"
           >
-            <FileText className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
-            <span>Request an Itemized Quote</span>
+            <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Request Itemized Quote</span>
           </Link>
 
           <a
@@ -163,7 +163,7 @@ export default function HbsProjectsDirectory({
             target="_blank"
             rel="noopener noreferrer"
             data-hbs-cta="whatsapp"
-            className="hbs-btn-whatsapp min-h-[44px] px-6 text-xs font-bold uppercase tracking-wider w-full sm:w-auto rounded-lg active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider w-full sm:w-auto rounded-xl shadow-xs transition-all active:scale-[0.98]"
           >
             <MessageSquare className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Chat on WhatsApp</span>
@@ -179,7 +179,7 @@ export default function HbsProjectsDirectory({
   return (
     <div className="space-y-8">
       {/* Search & Results Filter Bar */}
-      <div className="bg-slate-900/95 backdrop-blur-md text-white p-5 sm:p-6 border border-slate-800/80 rounded-2xl shadow-xl">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-2xl">
             <label htmlFor="hbs-project-search" className="sr-only">
@@ -187,7 +187,7 @@ export default function HbsProjectsDirectory({
             </label>
             <div className="relative">
               <Search
-                className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
                 aria-hidden="true"
               />
               <input
@@ -196,14 +196,14 @@ export default function HbsProjectsDirectory({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by project name, location, client, or scope..."
-                className="w-full bg-slate-950/80 border border-slate-700/80 text-white placeholder-slate-400 text-xs sm:text-sm pl-10 pr-10 py-3 rounded-lg focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 text-sm pl-12 pr-12 py-3.5 rounded-xl focus:outline-none focus:bg-white focus:border-red-600 focus:ring-4 focus:ring-red-500/10 shadow-xs transition-all"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
                   aria-label="Clear search input"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 focus:outline-none transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -212,9 +212,9 @@ export default function HbsProjectsDirectory({
           </div>
 
           <div className="flex items-center justify-between md:justify-end gap-3 text-xs">
-            <span className="text-slate-400 font-mono">
+            <span className="text-slate-500 font-mono">
               Showing{" "}
-              <strong className="text-amber-400 font-bold">
+              <strong className="text-red-600 font-bold">
                 {filteredProjects.length}
               </strong>{" "}
               of {projects.length} field records
@@ -224,7 +224,7 @@ export default function HbsProjectsDirectory({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="inline-flex items-center gap-1 text-[11px] font-mono text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:underline cursor-pointer"
               >
                 <span>Reset</span>
               </button>
@@ -278,61 +278,48 @@ export default function HbsProjectsDirectory({
               <article
                 key={project.id || project.slug || index}
                 id={project.slug || `record-${index}`}
-                className={`bg-white border rounded-xl overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col justify-between group scroll-mt-28 ${
-                  project.featured
-                    ? "border-amber-400 ring-1 ring-amber-400/40"
-                    : "border-slate-200/80 hover:border-amber-400"
-                }`}
+                className="group relative flex flex-col justify-between bg-white border border-slate-200/90 hover:border-slate-300 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 scroll-mt-28"
               >
                 <div>
                   {/* Top Image or Technical Blueprint Frame */}
                   {primaryImage ? (
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900 border-b border-slate-200/80">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 border-b border-slate-200/80">
                       <Image
                         src={primaryImage}
                         alt={`${project.title} - Hind Build`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                       />
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                        <span className="bg-slate-950/90 backdrop-blur-xs text-amber-400 font-mono text-[10px] font-bold px-2 py-0.5 border border-amber-500/40 rounded-md">
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                        <span className="bg-[#0D2D5E]/90 backdrop-blur-md text-white font-mono text-[10px] font-bold px-2.5 py-1 rounded-md shadow-xs">
                           RECORD #{projectNo}
                         </span>
                         {project.featured && (
-                          <span className="bg-amber-500 text-slate-950 font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-md">
+                          <span className="bg-red-600 text-white font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs">
                             Featured
                           </span>
                         )}
                       </div>
                     </div>
                   ) : (
-                    <div className="relative h-28 bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border-b border-slate-200/80 p-4 flex items-center justify-between overflow-hidden">
-                      <div
-                        className="absolute inset-0 opacity-10 pointer-events-none"
-                        style={{
-                          backgroundImage:
-                            "radial-gradient(#ffffff 1px, transparent 1px)",
-                          backgroundSize: "16px 16px",
-                        }}
-                        aria-hidden="true"
-                      />
+                    <div className="relative h-32 bg-gradient-to-br from-slate-50 to-slate-100 border-b border-slate-200/80 p-5 flex items-center justify-between overflow-hidden">
                       <div className="relative z-10 space-y-1">
-                        <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-bold">
+                        <span className="text-[10px] font-mono text-red-600 uppercase tracking-widest font-bold">
                           FIELD RECORD
                         </span>
-                        <div className="text-xl font-mono font-black text-white">
+                        <div className="text-2xl font-mono font-black text-slate-900">
                           #{projectNo}
                         </div>
                       </div>
                       <div className="relative z-10 flex items-center gap-2">
                         {project.featured && (
-                          <span className="bg-amber-500 text-slate-950 font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-md">
+                          <span className="bg-red-600 text-white font-mono text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs">
                             Featured
                           </span>
                         )}
-                        <div className="w-10 h-10 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-center text-amber-400">
+                        <div className="w-11 h-11 rounded-xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-center text-red-600">
                           <HardHat className="w-5 h-5" aria-hidden="true" />
                         </div>
                       </div>
@@ -340,49 +327,49 @@ export default function HbsProjectsDirectory({
                   )}
 
                   {/* Card Content Body */}
-                  <div className="p-6 space-y-3">
+                  <div className="p-5 sm:p-6 space-y-3">
                     {/* Header Row: Category Badge & Location */}
                     <div className="flex items-center justify-between gap-2 text-xs">
                       {project.serviceCategory ? (
                         matchedSlug ? (
                           <Link
                             href={`${prefix}/services/${matchedSlug}`}
-                            className="font-mono text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2 py-0.5 border border-amber-200 hover:bg-amber-100 transition-colors rounded-md"
+                            className="font-mono text-[11px] uppercase font-bold text-red-700 bg-red-50 px-2.5 py-0.5 border border-red-200/70 hover:bg-red-100 transition-colors rounded-md"
                           >
                             {project.serviceCategory}
                           </Link>
                         ) : (
-                          <span className="font-mono text-[10px] uppercase font-bold text-amber-800 bg-amber-50 px-2 py-0.5 border border-amber-200 rounded-md">
+                          <span className="font-mono text-[11px] uppercase font-bold text-red-700 bg-red-50 px-2.5 py-0.5 border border-red-200/70 rounded-md">
                             {project.serviceCategory}
                           </span>
                         )
                       ) : (
-                        <span className="font-mono text-[10px] uppercase font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                        <span className="font-mono text-[11px] uppercase font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md">
                           Engineering Record
                         </span>
                       )}
 
                       {project.location && (
                         <span className="flex items-center gap-1 font-mono text-xs text-slate-600">
-                          <MapPin className="w-3.5 h-3.5 text-amber-700 shrink-0" aria-hidden="true" />
-                          <span className="truncate max-w-[130px]">{project.location}</span>
+                          <MapPin className="w-3.5 h-3.5 text-red-600 shrink-0" aria-hidden="true" />
+                          <span className="truncate max-w-[140px]">{project.location}</span>
                         </span>
                       )}
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-lg sm:text-xl font-black text-slate-900 uppercase font-display tracking-tight group-hover:text-amber-700 transition-colors">
+                    <h3 className="text-lg font-bold text-slate-900 tracking-tight group-hover:text-red-600 transition-colors leading-snug">
                       {project.slug ? (
                         <Link
                           href={`${prefix}/projects/${project.slug}`}
-                          className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                          className="focus-visible:outline-none focus-visible:underline underline-offset-4"
                         >
                           {project.title}
                         </Link>
                       ) : (
                         project.title
                       )}
-                    </h2>
+                    </h3>
 
                     {/* Optional Client / Date Row */}
                     {(project.clientType || project.date) && (
@@ -404,7 +391,7 @@ export default function HbsProjectsDirectory({
 
                     {/* Description */}
                     {project.description && (
-                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-2 font-sans">
                         {project.description}
                       </p>
                     )}
@@ -417,9 +404,9 @@ export default function HbsProjectsDirectory({
                         </p>
                         <ul className="space-y-1 text-xs text-slate-700">
                           {scopeItems.slice(0, 2).map((item, sIdx) => (
-                            <li key={sIdx} className="flex items-center gap-1.5 line-clamp-1">
+                            <li key={sIdx} className="flex items-center gap-1.5 line-clamp-1 font-medium">
                               <CheckCircle2
-                                className="w-3.5 h-3.5 text-amber-600 shrink-0"
+                                className="w-3.5 h-3.5 text-emerald-600 shrink-0"
                                 aria-hidden="true"
                               />
                               <span className="truncate">{item}</span>
@@ -434,13 +421,13 @@ export default function HbsProjectsDirectory({
                       <div className="flex items-center gap-3 pt-2 text-[11px] font-mono text-slate-600">
                         {project.areaTreated && (
                           <span className="flex items-center gap-1">
-                            <Maximize2 className="w-3 h-3 text-amber-700" aria-hidden="true" />
+                            <Maximize2 className="w-3 h-3 text-red-600" aria-hidden="true" />
                             <span>Area: {project.areaTreated}</span>
                           </span>
                         )}
                         {project.durationDays && (
                           <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 text-amber-700" aria-hidden="true" />
+                            <Clock className="w-3 h-3 text-[#0D2D5E]" aria-hidden="true" />
                             <span>{project.durationDays} Days</span>
                           </span>
                         )}
@@ -450,8 +437,8 @@ export default function HbsProjectsDirectory({
                 </div>
 
                 {/* Card Action Link */}
-                <div className="p-4 bg-slate-50/80 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-600 font-mono">
+                <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-slate-500 font-mono font-medium">
                     {project.status ? `Status: ${project.status}` : "Verified Field Work"}
                   </span>
 
@@ -459,7 +446,7 @@ export default function HbsProjectsDirectory({
                     <Link
                       href={`${prefix}/projects/${project.slug}`}
                       data-hbs-cta="explore"
-                      className="min-h-[44px] inline-flex items-center gap-1 font-bold text-amber-800 hover:text-amber-900 uppercase tracking-wider text-xs px-2.5 py-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                      className="min-h-[40px] inline-flex items-center gap-1 font-bold text-slate-900 group-hover:text-red-600 transition-colors uppercase tracking-wider text-xs px-2.5 py-1 rounded-lg focus-visible:outline-none"
                     >
                       <span>Explore Case Study</span>
                       <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" aria-hidden="true" />
@@ -468,7 +455,7 @@ export default function HbsProjectsDirectory({
                     <Link
                       href={`${prefix}/contact?project=${encodeURIComponent(project.title)}`}
                       data-hbs-cta="quote"
-                      className="min-h-[44px] inline-flex items-center gap-1 font-bold text-amber-800 hover:text-amber-900 uppercase tracking-wider text-xs px-2.5 py-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                      className="min-h-[40px] inline-flex items-center gap-1 font-bold text-red-600 hover:text-red-700 uppercase tracking-wider text-xs px-2.5 py-1 rounded-lg"
                     >
                       <span>Inquire About Scope</span>
                       <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -481,12 +468,12 @@ export default function HbsProjectsDirectory({
         </div>
       ) : (
         /* Empty search results */
-        <div className="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-8 sm:p-12 text-center space-y-4">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-center space-y-4 shadow-xs">
           <div className="space-y-1 max-w-md mx-auto">
-            <h3 className="text-lg font-bold text-slate-900 uppercase font-display">
+            <h3 className="text-lg font-bold text-slate-900">
               No Matching Field Records Found
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600">
+            <p className="text-xs sm:text-sm text-slate-600 font-sans">
               No project records match &ldquo;{searchQuery}&rdquo;. Try another term
               or reset the search filter.
             </p>
@@ -494,7 +481,7 @@ export default function HbsProjectsDirectory({
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="hbs-btn-primary min-h-[44px] px-5 text-xs font-bold uppercase tracking-wider rounded-lg"
+            className="min-h-[44px] px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm cursor-pointer"
           >
             Reset Search &amp; View All {projects.length} Records
           </button>
@@ -503,3 +490,4 @@ export default function HbsProjectsDirectory({
     </div>
   );
 }
+

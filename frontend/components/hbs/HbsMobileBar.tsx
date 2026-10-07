@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Phone, MessageSquare, Wrench } from "lucide-react";
+import { Phone, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
 import { cleanTelNumber, getHomeWhatsAppUrl } from "@/lib/hbsWhatsApp";
 
 interface HbsMobileBarProps {
@@ -20,43 +20,53 @@ export default function HbsMobileBar({
   const prefix = isSubdomain ? "" : "/hbs";
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-slate-950/90 backdrop-blur-md border-t border-slate-800/80 p-2 shadow-2xl safe-area-bottom">
-      <div className="grid grid-cols-3 gap-2 max-w-md mx-auto">
-        {/* Call Now */}
+    <aside
+      aria-label="Quick Contact & Booking"
+      className="fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 sm:bottom-4 sm:inset-x-6 max-w-md mx-auto z-50 md:hidden pointer-events-none"
+    >
+      <div className="pointer-events-auto p-1.5 rounded-2xl bg-[#0B1528]/95 backdrop-blur-2xl border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.7),0_0_24px_rgba(220,38,38,0.2)] flex items-center gap-2 ring-1 ring-white/10">
+        {/* 1. Quick Phone Call */}
         <a
           href={`tel:${phoneRaw}`}
           data-hbs-cta="call"
-          className="flex flex-col items-center justify-center py-2 px-1 bg-slate-900/90 hover:bg-slate-800 text-white rounded-lg border border-slate-700/60 text-center transition-all duration-150 active:scale-[0.97] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-          aria-label={`Call Hind Build at ${phone}`}
+          aria-label={`Call HiBUILD at ${phone}`}
+          className="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/15 flex items-center justify-center transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          title="Call Directly"
         >
-          <Phone className="w-4 h-4 text-amber-400 mb-0.5 shrink-0" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Call Now</span>
+          <Phone className="w-4 h-4 text-white" />
         </a>
 
-        {/* WhatsApp */}
+        {/* 2. Direct WhatsApp with Live Status Ping */}
         <a
           href={mobileWaUrl}
           target="_blank"
           rel="noopener noreferrer"
           data-hbs-cta="whatsapp"
-          className="flex flex-col items-center justify-center py-2 px-1 bg-emerald-700/90 hover:bg-emerald-600 text-white rounded-lg border border-emerald-600/50 text-center transition-all duration-150 active:scale-[0.97] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-          aria-label="Chat with Hind Build on WhatsApp"
+          aria-label="Chat with HiBUILD on WhatsApp"
+          className="w-11 h-11 shrink-0 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-95 text-emerald-400 border border-emerald-500/40 flex items-center justify-center transition-all relative shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          title="Chat on WhatsApp"
         >
-          <MessageSquare className="w-4 h-4 text-emerald-200 mb-0.5 shrink-0" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">WhatsApp</span>
+          <MessageSquare className="w-4 h-4 text-emerald-300" />
+          <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+          </span>
         </a>
 
-        {/* Get Quote */}
+        {/* 3. Primary CTA: Free Site Visit / Consultation */}
         <Link
           href={`${prefix}/contact`}
           data-hbs-cta="quote"
-          className="flex flex-col items-center justify-center py-2 px-1 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black rounded-lg border border-amber-400/40 text-center shadow-xs transition-all duration-150 active:scale-[0.97] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-          aria-label="Request Free Inspection / Quote"
+          aria-label="Book Free Site Visit"
+          className="flex-1 h-11 px-3.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white font-black text-xs uppercase tracking-wider flex items-center justify-between shadow-[0_2px_14px_rgba(220,38,38,0.4)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
-          <Wrench className="w-4 h-4 text-slate-950 mb-0.5 shrink-0" />
-          <span className="text-[10px] font-black uppercase tracking-wider">Get Quote</span>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 text-white shrink-0" />
+            <span className="font-black truncate">Free Site Visit</span>
+          </div>
+          <ArrowRight className="w-3.5 h-3.5 text-white shrink-0" />
         </Link>
       </div>
-    </div>
+    </aside>
   );
 }

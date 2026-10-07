@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Phone, MessageSquare, ArrowRight, ChevronRight, X } from "lucide-react";
+import { Phone, MessageSquare, ArrowRight, ChevronRight, X, MapPin } from "lucide-react";
 import type { HbsContent, HbsNavbarConfig } from "@/lib/types";
 import { cleanTelNumber, getContactWhatsAppUrl } from "@/lib/hbsWhatsApp";
 
@@ -14,10 +14,13 @@ export const DEFAULT_NAVBAR_CONFIG: HbsNavbarConfig = {
     { id: "about", label: "About", visible: true, order: 2 },
     { id: "services", label: "Services", visible: true, order: 3 },
     { id: "projects", label: "Projects", visible: true, order: 4 },
+    { id: "why-choose-us", label: "Why Choose Us", visible: true, order: 5 },
+    { id: "gallery", label: "Gallery", visible: true, order: 6 },
+    { id: "contact", label: "Contact", visible: true, order: 7 },
   ],
   primaryCta: {
     enabled: true,
-    label: "Get Free Quote",
+    label: "Get a Free Consultation",
     destination: "/contact",
   },
   contactActions: {
@@ -276,6 +279,12 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
         return `${prefix}/services`;
       case "projects":
         return `${prefix}/projects`;
+      case "why-choose-us":
+        return `${prefix}/why-choose-us`;
+      case "gallery":
+        return `${prefix}/projects`;
+      case "contact":
+        return `${prefix}/contact`;
       default:
         return `${prefix}/${id}`;
     }
@@ -295,6 +304,9 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
     { id: "about", label: "About", href: `${prefix}/about` },
     { id: "services", label: "Services", href: `${prefix}/services` },
     { id: "projects", label: "Projects", href: `${prefix}/projects` },
+    { id: "why-choose-us", label: "Why Choose Us", href: `${prefix}/why-choose-us` },
+    { id: "gallery", label: "Gallery", href: `${prefix}/projects` },
+    { id: "contact", label: "Contact", href: `${prefix}/contact` },
   ];
 
   // CTA destinations & enablement
@@ -303,8 +315,8 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
     : `${prefix}${navConfig.primaryCta.destination?.startsWith("/") ? "" : "/"}${navConfig.primaryCta.destination || "/contact"}`;
 
   const isPrimaryCtaEnabled = navConfig.primaryCta.enabled !== false;
-  const activePhone = navConfig.contactActions.phone || content.phone || "+91 75970 00601";
-  const activeWhatsapp = navConfig.contactActions.whatsappNumber || content.whatsapp || "+91 75970 00601";
+  const activePhone = navConfig.contactActions.phone || content.phone || "+91 9482877757";
+  const activeWhatsapp = navConfig.contactActions.whatsappNumber || content.whatsapp || "+91 9482877757";
 
   const isCallEnabled = navConfig.contactActions.callEnabled !== false && Boolean(activePhone);
   const isWhatsappEnabled = navConfig.contactActions.whatsappEnabled !== false && Boolean(activeWhatsapp);
@@ -389,18 +401,10 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
         <div className="flex items-center gap-2.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={logoMobileSrc}
+            src="/hibuild-logo.png"
             alt={logoAlt}
-            className="w-8 h-8 rounded-lg object-contain shrink-0 bg-white"
+            className="h-9 w-auto object-contain shrink-0"
           />
-          <div className="flex flex-col min-w-0">
-            <span className="text-[14px] font-bold tracking-tight text-slate-900 truncate leading-tight">
-              {brandTitle}
-            </span>
-            <span className="text-[9px] uppercase font-semibold tracking-wider text-slate-500 leading-none mt-0.5 truncate">
-              {brandSubtitle}
-            </span>
-          </div>
         </div>
 
         {/* 44×44px circular close button — super easy to tap */}
@@ -520,52 +524,50 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
         isSticky ? "sticky top-0" : "relative"
       }`}
     >
+      {/* ── TOP ANNOUNCEMENT BAR (Deep Elegant Blue) ── */}
+      <div className="w-full bg-[#0D2D5E] text-white text-[11px] sm:text-xs py-2 px-4 sm:px-6 lg:px-8 border-b border-white/10 hidden sm:block">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2 text-white/90 font-medium">
+            <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+            <span>A Brand Under Hindustan Projects</span>
+          </div>
+          <div className="flex items-center gap-5 text-white/90">
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-white" />
+              <span>Our Locations: Rajasthan</span>
+            </span>
+            <span className="text-white/30">|</span>
+            <a
+              href={`tel:${phoneRaw}`}
+              className="flex items-center gap-1.5 text-white hover:text-red-200 font-semibold transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5 text-white" />
+              <span>Call Now: {activePhone}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div
         className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4 transition-all duration-300 ease-out ${
           scrolled && compactOnScroll ? "h-14 sm:h-[58px]" : "h-16 sm:h-[68px]"
         }`}
       >
-        {/* ── LEFT: Brand Logo & Typography Lockup ──────────────── */}
+        {/* ── LEFT: HiBUILD Brand Logo ──────────────── */}
         <Link
           href={homeHref}
-          className={`${logoLayout} flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 rounded-lg p-1 transition-transform duration-200 active:scale-[0.98]`}
+          className={`${logoLayout} flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 rounded-lg p-1 transition-transform duration-200 active:scale-[0.98]`}
           aria-label="Hind Building Solutions Homepage"
         >
-          {/* Logo Visual + Typography Lockup */}
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            {/* Visual Logo / Icon */}
-            <div className="flex items-center shrink-0">
-              {content.logoMobile && content.logoMobile !== logoImageSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={content.logoMobile}
-                  alt={logoAlt}
-                  className="h-8 w-auto max-w-[90px] sm:hidden object-contain rounded-lg"
-                />
-              ) : null}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logoImageSrc}
-                alt={logoAlt}
-                className={`h-8 sm:h-9 w-auto max-w-[120px] object-contain rounded-lg shrink-0 group-hover:scale-105 transition-transform duration-200 ${
-                  content.logoMobile && content.logoMobile !== logoImageSrc ? "hidden sm:block" : ""
-                }`}
-              />
-            </div>
-
-            {/* Typography Lockup - Always visible so brand name and subtitle NEVER disappear */}
-            <div className="flex flex-col min-w-0">
-              <span className="text-[14px] sm:text-[16px] font-bold tracking-tight text-slate-900 leading-tight truncate font-display">
-                {brandTitle}
-              </span>
-              <span className="text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase text-slate-500 leading-tight mt-0.5 truncate font-mono">
-                {brandSubtitle}
-              </span>
-            </div>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hibuild-logo.png"
+            alt="HiBUILD - Hind Building Solutions"
+            className="h-10 sm:h-12 w-auto object-contain"
+          />
         </Link>
 
-        {/* ── CENTER: Desktop Navigation Links (Line Indicator) ──────────────────── */}
+        {/* ── CENTER: Desktop Navigation Links ──────────────────── */}
         <nav
           aria-label="Primary Navigation"
           className={`${desktopOnlyFlex} items-center gap-6 lg:gap-8`}
@@ -576,10 +578,10 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
               <Link
                 key={link.id || link.href}
                 href={link.href}
-                className={`group relative py-1 text-xs uppercase tracking-wider transition-all duration-200 flex flex-col items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
+                className={`group relative py-1 text-[15px] tracking-normal transition-all duration-200 flex flex-col items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                   active
-                    ? "text-amber-700 font-black"
-                    : "text-slate-600 hover:text-slate-900 font-bold"
+                    ? "text-red-600 font-bold"
+                    : "text-slate-800 hover:text-red-600 font-semibold"
                 }`}
                 aria-current={active ? "page" : undefined}
               >
@@ -587,12 +589,12 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
                 {active ? (
                   <span
                     aria-hidden="true"
-                    className="mt-1 h-[2.5px] w-full bg-amber-500 rounded-full"
+                    className="mt-1 h-[2.5px] w-full bg-red-600 rounded-full"
                   />
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="mt-1 h-[2.5px] w-0 bg-amber-500/0 rounded-full group-hover:w-full group-hover:bg-amber-500/50 transition-all duration-200"
+                    className="mt-1 h-[2.5px] w-0 bg-red-600/0 rounded-full group-hover:w-full group-hover:bg-red-600/50 transition-all duration-200"
                   />
                 )}
               </Link>
@@ -600,28 +602,16 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
           })}
         </nav>
 
-        {/* ── RIGHT: Secondary Call + Primary Get Free Quote ───── */}
+        {/* ── RIGHT: Secondary Call + Primary Get Free Consultation ───── */}
         <div className={`${desktopOnlyFlex} items-center gap-2.5`}>
-          {isCallEnabled && (
-            <a
-              href={`tel:${phoneRaw}`}
-              data-hbs-cta="call"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-mono font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-950 active:scale-95 rounded-lg border border-slate-200/80 transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
-              aria-label={`Call Hind Building Solutions at ${activePhone}`}
-            >
-              <Phone className="w-3.5 h-3.5 text-amber-600 shrink-0 group-hover:rotate-12 transition-transform duration-200" aria-hidden="true" />
-              <span>{activePhone}</span>
-            </a>
-          )}
-
           {isPrimaryCtaEnabled && (
             <Link
               href={primaryCtaDestination}
               data-hbs-cta="quote"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2 bg-slate-950 hover:bg-slate-850 active:scale-95 text-white font-bold text-xs sm:text-[13px] rounded-lg shadow-sm hover:shadow-md transition-all duration-200 uppercase tracking-wider focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 group"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 tracking-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 group"
             >
-              <span>{navConfig.primaryCta.label || "Get Free Quote"}</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-80 group-hover:translate-x-0.5 transition-transform duration-200" aria-hidden="true" />
+              <span>{navConfig.primaryCta.label || "Get a Free Consultation"}</span>
+              <ArrowRight className="w-4 h-4 shrink-0 opacity-90 group-hover:translate-x-0.5 transition-transform duration-200" aria-hidden="true" />
             </Link>
           )}
         </div>

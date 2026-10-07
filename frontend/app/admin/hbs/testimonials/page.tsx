@@ -211,7 +211,7 @@ export default function HbsAdminTestimonials() {
             placeholder="Search by client name, society, review..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 bg-slate-50 focus:bg-white focus:outline-amber-500"
+            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 bg-slate-50 focus:bg-white focus:outline-red-500 rounded-lg"
           />
         </div>
         <div className="text-xs font-mono text-slate-500">
@@ -420,7 +420,7 @@ export default function HbsAdminTestimonials() {
                   onChange={(e) =>
                     setEditingItem((prev) => ({ ...prev, active: e.target.checked }))
                   }
-                  className="h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
+                  className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
                 />
                 <label htmlFor="testActive" className="text-xs font-bold text-slate-700 uppercase">
                   Active & Visible on Public Site
@@ -438,7 +438,7 @@ export default function HbsAdminTestimonials() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center gap-2 px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-sm transition-all disabled:opacity-50"
                 >
                   {saving ? (
                     <>

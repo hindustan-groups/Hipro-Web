@@ -23,12 +23,14 @@ export default function HbsAdminPageHeader({
   children,
 }: HbsAdminPageHeaderProps) {
   return (
-    <div className="pb-5 mb-6 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="backdrop-blur-xl bg-white/75 border border-white/80 p-5 sm:p-6 rounded-2xl shadow-lg shadow-slate-200/40 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div className="space-y-1 max-w-2xl">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
-          <Link href="/admin/hbs" className="hover:text-slate-800 transition-colors">
-            Hind Build Admin
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 font-mono">
+          <Link href="/admin/hbs" className="hover:text-red-600 transition-colors inline-flex items-center gap-1 font-semibold">
+            <span className="text-red-600 font-black">Hi</span>
+            <span className="text-slate-900 font-extrabold">BUILD</span>
+            <span className="text-slate-500 font-normal">Admin</span>
           </Link>
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={idx}>
@@ -43,7 +45,7 @@ export default function HbsAdminPageHeader({
             </React.Fragment>
           ))}
           {badge && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.2 text-[9px] font-bold font-mono uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200 rounded-md">
+            <span className="ml-1 inline-flex items-center px-2 py-0.5 text-[9px] font-bold font-mono uppercase tracking-wider bg-red-50 text-red-700 border border-red-200/80 rounded-md">
               {badge}
             </span>
           )}

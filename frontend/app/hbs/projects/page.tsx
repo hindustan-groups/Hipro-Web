@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ShieldCheck,
   ClipboardCheck,
+  Award,
 } from "lucide-react";
 import {
   fetchHbsProjects,
@@ -18,6 +19,7 @@ import {
 } from "@/lib/hbsData";
 import { cleanTelNumber, cleanWhatsAppNumber, buildHbsWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsProjectsDirectory from "@/components/hbs/HbsProjectsDirectory";
+import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
 
 export const revalidate = 60;
 
@@ -41,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     "Documented civil engineering, structural rehabilitation, and waterproofing field records by Hind Build. Turnkey execution with written warranties.";
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,
@@ -83,10 +85,6 @@ export default async function HbsProjectsPage() {
   const heroWaUrl = buildHbsWhatsAppUrl(
     content.whatsapp,
     "Hi Hind Build, I would like to inquire about your completed project records and site capabilities."
-  );
-  const bottomWaUrl = buildHbsWhatsAppUrl(
-    content.whatsapp,
-    "Hi Hind Build, I would like to schedule an engineering assessment for my site."
   );
 
   // Safely parse process steps if configured
@@ -140,46 +138,43 @@ export default async function HbsProjectsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="space-y-16 sm:space-y-24 py-8 sm:py-12">
+      <div className="bg-white text-slate-900 pb-0 space-y-12 sm:space-y-16">
         {/* ─────────────────────────────────────────────────────────────────
-            1. PORTFOLIO HERO (Asymmetric Dark Industrial Composition)
+            1. PORTFOLIO HERO (Modern Architectural Composition)
         ───────────────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="projects-hero-heading"
-          className="relative bg-slate-950 text-white border-b border-slate-800 -mt-8 sm:-mt-12 overflow-hidden"
+          className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50/50 border-b border-slate-200/80 pt-12 sm:pt-20 pb-12 sm:pb-16"
         >
-          {/* Subtle Engineering Grid Backdrop */}
-          <div
-            className="absolute inset-0 opacity-15 pointer-events-none"
-            style={{
-              backgroundImage: "radial-gradient(#f59e0b 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-            aria-hidden="true"
-          />
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               {/* Left Column: Heading, Value Prop, CTAs */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold uppercase tracking-wider rounded-md">
-                  <HardHat className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span>Field Records &amp; Project Portfolio</span>
+              <div className="lg:col-span-7 space-y-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-50 text-red-600 border border-red-200/80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                    Field Records &amp; Project Portfolio
+                  </span>
+                  <span className="text-xs font-mono text-slate-500 font-semibold uppercase tracking-wider">
+                    {projects.length} Documented Works
+                  </span>
                 </div>
 
                 <div className="space-y-3">
                   <h1
                     id="projects-hero-heading"
-                    className="text-3xl sm:text-5xl lg:text-5xl font-black uppercase font-display tracking-tight text-white leading-tight"
+                    className="text-3xl sm:text-5xl lg:text-[52px] font-black tracking-tight text-slate-900 leading-[1.12]"
                   >
-                    Projects &amp; <span className="text-amber-400">Field Work</span>
+                    Projects &amp; Proven Field Work
+                    <span className="block text-slate-400 font-bold mt-1 text-2xl sm:text-3xl lg:text-4xl">
+                      Executed Under Coordinated Civil Engineers
+                    </span>
                   </h1>
 
-                  <p className="text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-                    Documented structural rehabilitations, positive-side
-                    waterproofing treatments, and specialized civil engineering
-                    works. Turnkey execution with material certifications and
-                    post-completion handover audits.
+                  <p className="text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed font-sans">
+                    Documented structural rehabilitations, positive-side waterproofing treatments,
+                    and specialized civil engineering works across Rajasthan. Turnkey execution with material certifications
+                    and post-completion handover audits.
                   </p>
                 </div>
 
@@ -188,96 +183,109 @@ export default async function HbsProjectsPage() {
                   <Link
                     href={`${prefix}/contact`}
                     data-hbs-cta="quote"
-                    className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
+                    className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all active:scale-[0.98]"
                   >
-                    <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                    <span>Get Free Quote</span>
+                    <Wrench className="w-4 h-4 text-white shrink-0" />
+                    <span>Get Free Inspection Quote</span>
+                    <ArrowRight className="w-4 h-4 ml-1" aria-hidden="true" />
                   </Link>
+
+                  <a
+                    href={`tel:${phoneRaw}`}
+                    data-hbs-cta="call"
+                    aria-label={`Call Hind Build at ${content.phone}`}
+                    className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl bg-[#0D2D5E] hover:bg-[#0A2349] text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
+                  >
+                    <Phone className="w-4 h-4 text-white shrink-0" />
+                    <span>Call: {content.phone || "+91 94625 77757"}</span>
+                  </a>
 
                   <a
                     href={heroWaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     data-hbs-cta="whatsapp"
-                    className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
+                    className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl border border-emerald-300 bg-white text-emerald-700 text-xs sm:text-sm font-bold hover:bg-emerald-50 shadow-xs transition-colors active:scale-[0.98]"
                   >
-                    <MessageSquare className="w-4 h-4 shrink-0" />
+                    <MessageSquare className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>WhatsApp</span>
-                  </a>
-
-                  <a
-                    href={`tel:${phoneRaw}`}
-                    data-hbs-cta="call"
-                    aria-label={`Call Hind Build at ${content.phone}`}
-                    className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider rounded-lg active:scale-[0.98]"
-                  >
-                    <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>Call Hind Build</span>
                   </a>
                 </div>
               </div>
 
-              {/* Right Column: Industrial Technical Strip Box */}
+              {/* Right Column: Architectural Technical Metrics Card */}
               <div className="lg:col-span-5">
-                <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-6 sm:p-8 space-y-6 relative shadow-2xl backdrop-blur-xs">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                    <span className="text-[11px] font-mono text-amber-400 uppercase tracking-widest font-bold">
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-7 space-y-5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <span className="text-[11px] font-mono text-red-600 uppercase tracking-widest font-bold">
                       PORTFOLIO METRICS
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-slate-500 font-medium">
                       {projects.length === 0
                         ? "STATUS: PUBLICATION PENDING"
                         : "STATUS: ACTIVE ARCHIVE"}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
-                      <div className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
-                        {projects.length}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="p-4 bg-slate-50/80 border border-slate-200/70 rounded-xl">
+                      <div className="text-2xl sm:text-3xl font-mono font-black text-red-600">
+                        {projects.length}+
                       </div>
-                      <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider mt-1">
+                      <div className="text-[11px] font-mono uppercase text-slate-600 tracking-wider mt-1 font-bold">
                         {projects.length === 0
                           ? "Documented Records"
                           : "Published Works"}
                       </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        Verified site reports
+                      </div>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
-                      <div className="text-2xl sm:text-3xl font-mono font-black text-white">
+                    <div className="p-4 bg-slate-50/80 border border-slate-200/70 rounded-xl">
+                      <div className="text-2xl sm:text-3xl font-mono font-black text-[#0D2D5E]">
                         HiPRO
                       </div>
-                      <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider mt-1">
+                      <div className="text-[11px] font-mono uppercase text-slate-600 tracking-wider mt-1 font-bold">
                         Civil Heritage
                       </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        Established engineering
+                      </div>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
-                      <div className="text-2xl sm:text-3xl font-mono font-black text-white">
+                    <div className="p-4 bg-slate-50/80 border border-slate-200/70 rounded-xl">
+                      <div className="text-2xl sm:text-3xl font-mono font-black text-[#0D2D5E]">
                         100%
                       </div>
-                      <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider mt-1">
+                      <div className="text-[11px] font-mono uppercase text-slate-600 tracking-wider mt-1 font-bold">
                         Itemized BOQ
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        Transparent accounting
                       </div>
                     </div>
 
-                    <div className="p-3.5 bg-slate-950/90 border border-slate-800/80 rounded-xl">
-                      <div className="text-2xl sm:text-3xl font-mono font-black text-amber-400">
+                    <div className="p-4 bg-slate-50/80 border border-slate-200/70 rounded-xl">
+                      <div className="text-2xl sm:text-3xl font-mono font-black text-red-600">
                         Written
                       </div>
-                      <div className="text-[10px] font-mono uppercase text-slate-400 tracking-wider mt-1">
+                      <div className="text-[11px] font-mono uppercase text-slate-600 tracking-wider mt-1 font-bold">
                         Work Warranty
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
+                        Certified execution
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-800 space-y-2 text-xs text-slate-300">
+                  <div className="pt-3 border-t border-slate-100 space-y-2 text-xs text-slate-600">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Non-destructive root cause diagnostics</span>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Non-destructive root cause diagnostics before quotation</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                       <span>Zero subcontractor dilution — dedicated Hind Build supervisors</span>
                     </div>
                   </div>
@@ -296,7 +304,7 @@ export default async function HbsProjectsPage() {
         >
           <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-slate-200/80">
             <div>
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 border border-amber-200 inline-block mb-2 rounded-md">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-red-700 bg-red-50 px-2.5 py-1 border border-red-200/70 inline-block mb-2 rounded-md">
                 Field Execution Documentation
               </span>
               <h2
@@ -331,45 +339,45 @@ export default async function HbsProjectsPage() {
             aria-labelledby="process-heading"
             className="max-w-7xl mx-auto px-4 sm:px-6"
           >
-            <div className="bg-slate-900/95 border border-slate-800/80 rounded-2xl text-white p-8 sm:p-12 shadow-xl space-y-8 backdrop-blur-xs">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-800">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-10 shadow-xs space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-100">
                 <div className="space-y-2">
-                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md">
+                  <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-red-50 border border-red-200/70 text-red-600 text-[10px] font-mono font-bold uppercase tracking-wider rounded-md">
                     <ClipboardCheck className="w-3.5 h-3.5" aria-hidden="true" />
                     <span>Standardized Engineering Protocol</span>
                   </div>
                   <h2
                     id="process-heading"
-                    className="text-2xl sm:text-3xl font-black uppercase font-display text-white"
+                    className="text-2xl sm:text-3xl font-black uppercase font-display text-slate-900"
                   >
                     How Hind Build Executes Every Project
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-400 max-w-md">
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md">
                   A disciplined 5-step engineering lifecycle ensuring
                   non-destructive root cause identification, certified
                   materials, and transparent deliverables.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
                 {processSteps.map((step, idx) => (
                   <div
                     key={idx}
-                    className="bg-slate-950 p-5 border border-slate-800 rounded-xl space-y-2.5 relative group hover:border-amber-500/60 transition-colors"
+                    className="bg-slate-50/70 p-5 border border-slate-200/80 rounded-xl space-y-2.5 relative group hover:border-red-400 hover:bg-white hover:shadow-md transition-all duration-200"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xl font-black text-amber-400">
+                      <span className="font-mono text-xl font-black text-red-600">
                         {step.step || String(idx + 1).padStart(2, "0")}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-semibold">
                         PHASE
                       </span>
                     </div>
-                    <h3 className="text-sm font-bold text-white uppercase font-display pt-1">
+                    <h3 className="text-sm font-bold text-slate-900 uppercase font-display pt-1">
                       {step.title}
                     </h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed font-sans">
                       {step.desc}
                     </p>
                   </div>
@@ -380,63 +388,12 @@ export default async function HbsProjectsPage() {
         )}
 
         {/* ─────────────────────────────────────────────────────────────────
-            4. FINAL STRONG CONVERSION CTA
+            4. UNIFIED HIND BUILD PRE-FOOTER CTA
         ───────────────────────────────────────────────────────────────── */}
-        <section
-          aria-labelledby="cta-heading"
-          className="max-w-7xl mx-auto px-4 sm:px-6 pb-6"
-        >
-          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white p-8 sm:p-12 border-l-8 border-amber-500 border border-slate-850 rounded-2xl shadow-xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-8">
-            <div className="space-y-3 max-w-2xl">
-              <span className="text-amber-400 font-mono text-xs uppercase tracking-wider font-bold block">
-                Turnkey Engineering Support
-              </span>
-              <h2
-                id="cta-heading"
-                className="text-2xl sm:text-4xl font-black uppercase font-display leading-tight text-white"
-              >
-                Need An Engineering Assessment For Your Site?
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                From structural crack diagnostics and basement waterproofing to
-                turnkey property renovation. Dedicated site supervisors, itemized
-                BOQ, and written guarantees.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row flex-wrap items-stretch gap-3 shrink-0 w-full xl:w-auto">
-              <Link
-                href={`${prefix}/contact`}
-                data-hbs-cta="quote"
-                className="hbs-btn-primary min-h-[48px] px-6 text-xs font-black uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
-              >
-                <Wrench className="w-4 h-4 text-slate-950 shrink-0" />
-                <span>Get Free Quote</span>
-              </Link>
-
-              <a
-                href={bottomWaUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-hbs-cta="whatsapp"
-                className="hbs-btn-whatsapp min-h-[48px] px-6 text-xs font-bold uppercase tracking-wider shadow-md rounded-lg active:scale-[0.98]"
-              >
-                <MessageSquare className="w-4 h-4 shrink-0" />
-                <span>WhatsApp</span>
-              </a>
-
-              <a
-                href={`tel:${phoneRaw}`}
-                data-hbs-cta="call"
-                aria-label={`Call Hind Build at ${content.phone}`}
-                className="hbs-btn-secondary min-h-[48px] px-5 text-xs font-bold uppercase tracking-wider rounded-lg active:scale-[0.98]"
-              >
-                <Phone className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Call Hind Build</span>
-              </a>
-            </div>
-          </div>
-        </section>
+        <HbsHomePreFooterCta
+          content={content}
+          isSubdomain={isSubdomain}
+        />
       </div>
     </>
   );
