@@ -954,7 +954,7 @@ export default function HbsAdminHome() {
             <div className="border-b border-slate-100 pb-4">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-red-600" />
-                <span>Homepage Brand Responsibility Section ("Your Building, Our Responsibility")</span>
+                <span>Homepage Brand Responsibility Section (&quot;Your Building, Our Responsibility&quot;)</span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Controls the narrative, heading, and 4 feature check badges right above the counter statistics on the homepage.
