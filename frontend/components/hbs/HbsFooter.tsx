@@ -114,12 +114,14 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed">
                 Backed by the civil engineering heritage of{" "}
-                <Link
-                  href="/"
+                <a
+                  href="https://www.hindustanprojects.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-slate-900 underline decoration-red-600/50 hover:text-red-600 font-semibold transition-colors"
                 >
                   Hindustan Projects (HiPRO)
-                </Link>
+                </a>
                 . Bringing industrial civil rigor to property repair and maintenance.
               </p>
             </div>
@@ -242,13 +244,15 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                 </Link>
               </li>
               <li className="pt-2 border-t border-slate-200">
-                <Link
-                  href="/"
+                <a
+                  href="https://www.hindustanprojects.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-900 font-medium transition-colors py-0.5"
                 >
                   <span>Parent Portal (HiPRO)</span>
                   <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-red-600" />
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
@@ -400,9 +404,15 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                 Terms of Service
               </Link>
             )}
-            <span className="text-slate-600 font-semibold">
-              An Enterprise of Hindustan Projects
-            </span>
+            <a
+              href="https://www.hindustanprojects.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-600 hover:text-red-600 font-semibold transition-colors inline-flex items-center gap-1"
+            >
+              <span>An Enterprise of Hindustan Projects</span>
+              <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+            </a>
           </div>
         </div>
       </div>
