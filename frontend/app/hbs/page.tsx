@@ -60,12 +60,16 @@ export default async function HbsHomePage() {
     primaryCtaUrl: "/contact",
     secondaryCtaLabel: "Our Services",
     secondaryCtaUrl: "/services",
+    heroImage: content.heroImage || "/hibuild-hero-full.png",
   };
   if (content.heroCtas) {
     try {
       const parsed = typeof content.heroCtas === "string" ? JSON.parse(content.heroCtas) : content.heroCtas;
       heroConfig = { ...heroConfig, ...parsed };
     } catch {}
+  }
+  if (content.heroImage && (!heroConfig.heroImage || heroConfig.heroImage === "/hibuild-hero-full.png")) {
+    heroConfig.heroImage = content.heroImage;
   }
 
   // Parse 4 counter stats dynamically from CMS (zero fake claims!)

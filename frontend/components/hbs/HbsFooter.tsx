@@ -102,7 +102,9 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
       : [];
 
   const footerLogo =
+    content?.logoDark ||
     content?.logoPrimary ||
+    content?.logo ||
     "/hibuild-logo.png";
 
   return (

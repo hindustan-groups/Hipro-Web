@@ -23,8 +23,39 @@ export interface HbsHeroProps {
 
 export default function HbsHero({
   content,
+  heroConfig,
   prefix = "/hbs",
 }: HbsHeroProps) {
+  const heroImageSrc =
+    (heroConfig?.heroImage && heroConfig.heroImage !== "/hibuild-hero-full.png"
+      ? heroConfig.heroImage
+      : content?.heroImage) ||
+    heroConfig?.heroImage ||
+    content?.heroImage ||
+    "/hibuild-hero-full.png";
+
+  const mobileImageSrc = heroConfig?.mobileImage || heroImageSrc;
+  const isDefaultImage = heroImageSrc === "/hibuild-hero-full.png";
+
+  const badgeText = heroConfig?.badge || "COMPLETE CARE FOR YOUR BUILDING";
+  const headline = heroConfig?.headline;
+  const subheadline =
+    heroConfig?.subheadline ||
+    content?.heroSubtitle ||
+    "Hind Building Solutions (HiBUILD) provides professional building repair, waterproofing, painting, plumbing, electrical, renovation and all maintenance services for homes, apartments, offices and commercial buildings.";
+  const primaryCtaLabel = heroConfig?.primaryCtaLabel || "Get a Free Site Visit";
+  const primaryCtaUrl = heroConfig?.primaryCtaUrl
+    ? (heroConfig.primaryCtaUrl.startsWith("http")
+        ? heroConfig.primaryCtaUrl
+        : `${prefix}${heroConfig.primaryCtaUrl.replace(/^\/hbs/, "")}`)
+    : `${prefix}/contact`;
+  const secondaryCtaLabel = heroConfig?.secondaryCtaLabel || "Our Services";
+  const secondaryCtaUrl = heroConfig?.secondaryCtaUrl
+    ? (heroConfig.secondaryCtaUrl.startsWith("http")
+        ? heroConfig.secondaryCtaUrl
+        : `${prefix}${heroConfig.secondaryCtaUrl.replace(/^\/hbs/, "")}`)
+    : `${prefix}/services`;
+
   return (
     <section
       aria-label="HiBUILD Hero"
@@ -35,12 +66,13 @@ export default function HbsHero({
       <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[48%] xl:w-[50%] h-full pointer-events-none select-none z-0">
         <div className="relative w-full h-full">
           <Image
-            src="/hibuild-hero-full.png"
-            alt="HiBUILD Expert Building Care & Maintenance"
+            src={heroImageSrc}
+            alt={heroConfig?.altText || "HiBUILD Expert Building Care & Maintenance"}
             fill
             priority
+            unoptimized={heroImageSrc.startsWith("http")}
             sizes="(min-width: 1280px) 50vw, 48vw"
-            className="object-cover object-bottom"
+            className={`object-cover ${isDefaultImage ? "object-bottom" : "object-center"}`}
           />
           {/* Subtle horizontal gradient blend on left edge so photo melts smoothly into pure white */}
           <div
@@ -58,20 +90,42 @@ export default function HbsHero({
             <div className="flex items-center gap-2.5">
               <span className="w-5 sm:w-6 h-0.75 bg-red-600 rounded-full shrink-0" />
               <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-widest text-red-600">
-                COMPLETE CARE FOR YOUR BUILDING
+                {badgeText}
               </span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-[44px] xl:text-[48px] font-black tracking-tight text-slate-900 leading-[1.12]">
-              Repair. Protect.
-              <br />
-              Maintain. <span className="text-[#0D50B8]">Build Better.</span>
+              {headline ? (
+                headline.includes("\n") ? (
+                  headline.split("\n").map((line, idx) => (
+                    <React.Fragment key={idx}>
+                      {idx > 0 && <br />}
+                      {line.includes("Build Better") ? (
+                        <>
+                          {line.replace("Build Better", "")}
+                          <span className="text-[#0D50B8]">Build Better.</span>
+                        </>
+                      ) : (
+                        line
+                      )}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  headline
+                )
+              ) : (
+                <>
+                  Repair. Protect.
+                  <br />
+                  Maintain. <span className="text-[#0D50B8]">Build Better.</span>
+                </>
+              )}
             </h1>
 
             {/* Description Subtitle */}
             <p className="text-sm sm:text-[14px] text-slate-600 leading-relaxed max-w-lg">
-              Hind Building Solutions (HiBUILD) provides professional building repair, waterproofing, painting, plumbing, electrical, renovation and all maintenance services for homes, apartments, offices and commercial buildings.
+              {subheadline}
             </p>
 
             {/* 4 Trust Badges in a Row (Matching Mockup with blue icons & bold labels, no box) */}
@@ -97,19 +151,19 @@ export default function HbsHero({
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Link
-                href={`${prefix}/contact`}
+                href={primaryCtaUrl}
                 data-hbs-cta="quote"
                 className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all"
               >
-                <span>Get a Free Site Visit</span>
+                <span>{primaryCtaLabel}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
               <Link
-                href={`${prefix}/services`}
+                href={secondaryCtaUrl}
                 className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 bg-white hover:bg-slate-50 active:scale-[0.98] text-[#0D50B8] font-bold text-xs sm:text-sm rounded-xl border-2 border-[#0D50B8] transition-all"
               >
-                <span>Our Services</span>
+                <span>{secondaryCtaLabel}</span>
               </Link>
             </div>
           </div>
@@ -122,12 +176,13 @@ export default function HbsHero({
       {/* ── Mobile Artwork: Edge-to-Edge full width right below the buttons (touches ribbon directly) ── */}
       <div className="lg:hidden relative w-full mt-6 aspect-[730/602] overflow-hidden">
         <Image
-          src="/hibuild-hero-full.png"
-          alt="HiBUILD Expert Building Care & Maintenance"
+          src={mobileImageSrc}
+          alt={heroConfig?.altText || "HiBUILD Expert Building Care & Maintenance"}
           fill
           priority
+          unoptimized={mobileImageSrc.startsWith("http")}
           sizes="100vw"
-          className="object-cover object-bottom"
+          className={`object-cover ${isDefaultImage ? "object-bottom" : "object-center"}`}
         />
       </div>
     </section>

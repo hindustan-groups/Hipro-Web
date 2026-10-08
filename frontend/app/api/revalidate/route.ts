@@ -19,9 +19,10 @@ export async function POST(request: Request) {
     const expectedSecret = process.env.REVALIDATE_SECRET;
 
     const isAuthorized =
+      process.env.NODE_ENV === "development" ||
       (user && (user.role === "admin" || user.role === "manager")) ||
       (expectedSecret && providedSecret === expectedSecret) ||
-      (!expectedSecret && user); // In dev/default, requires logged-in user
+      (!expectedSecret && user); // In dev/default, allows development or logged-in user
 
     if (!isAuthorized) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });

@@ -38,7 +38,13 @@ export default function HbsHomePreFooterCta({
       const parsed =
         typeof content.homeFinalCta === "string" ? JSON.parse(content.homeFinalCta) : content.homeFinalCta;
       if (parsed && typeof parsed === "object") {
-        ctaConfig = { ...ctaConfig, ...parsed };
+        ctaConfig = {
+          ...ctaConfig,
+          ...parsed,
+          headline: parsed.headline || parsed.heading || ctaConfig.headline,
+          subheadline: parsed.subheadline || parsed.subheading || ctaConfig.subheadline,
+          callLabel: parsed.callLabel || parsed.buttonText || ctaConfig.callLabel,
+        };
       }
     } catch {}
   }

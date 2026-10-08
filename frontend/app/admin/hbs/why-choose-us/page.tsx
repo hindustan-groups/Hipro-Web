@@ -177,6 +177,7 @@ export default function HbsWhyChooseUsAdmin() {
   const [pillars, setPillars] = useState<PillarItem[]>(DEFAULT_PILLARS);
   const [faqs, setFaqs] = useState<FaqItem[]>(DEFAULT_FAQS);
   const [protocol, setProtocol] = useState<ProtocolStage[]>(DEFAULT_PROTOCOL);
+  const [rawContent, setRawContent] = useState<any>({});
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -192,6 +193,7 @@ export default function HbsWhyChooseUsAdmin() {
       const res = await fetch("/api/hbs/content", { credentials: "include", cache: "no-store" });
       const json = await res.json();
       if (json.success && json.data) {
+        setRawContent(json.data);
         if (json.data.whyChooseUs) {
           try {
             const parsed =
@@ -230,7 +232,20 @@ export default function HbsWhyChooseUsAdmin() {
     setSaving(true);
     setMessage({ text: "", type: "" });
     try {
+      let existingWhyChooseUsObj: any = {};
+      try {
+        if (rawContent.whyChooseUs) {
+          existingWhyChooseUsObj =
+            typeof rawContent.whyChooseUs === "string"
+              ? JSON.parse(rawContent.whyChooseUs)
+              : rawContent.whyChooseUs;
+        }
+      } catch {}
+
       const payload = {
+        ...(typeof existingWhyChooseUsObj === "object" && !Array.isArray(existingWhyChooseUsObj)
+          ? existingWhyChooseUsObj
+          : {}),
         comparisonRows,
         pillars,
         faqs,
@@ -242,6 +257,7 @@ export default function HbsWhyChooseUsAdmin() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          ...rawContent,
           whyChooseUs: JSON.stringify(payload),
         }),
       });

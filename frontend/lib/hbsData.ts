@@ -137,7 +137,7 @@ export async function fetchHbsContent(): Promise<HbsContent> {
   }
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/content`, {
-      next: { revalidate: 60, tags: ["hbs-content"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: ["hbs-content"] },
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -335,7 +335,7 @@ export async function fetchHbsServices(): Promise<HbsService[]> {
   }
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/services`, {
-      next: { revalidate: 60, tags: ["hbs-services"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: ["hbs-services"] },
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -514,7 +514,7 @@ export async function fetchHbsProjects(): Promise<HbsProject[]> {
   }
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/projects`, {
-      next: { revalidate: 60, tags: ["hbs-projects"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: ["hbs-projects"] },
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -533,7 +533,7 @@ export async function fetchHbsTestimonials(): Promise<HbsTestimonial[]> {
   }
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/testimonials`, {
-      next: { revalidate: 60, tags: ["hbs-testimonials"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: ["hbs-testimonials"] },
       signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
@@ -549,7 +549,7 @@ export async function fetchHbsTestimonials(): Promise<HbsTestimonial[]> {
 export async function fetchHbsServiceBySlug(slug: string): Promise<HbsService | null> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/services/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60, tags: [`hbs-service-${slug}`, "hbs-services"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: [`hbs-service-${slug}`, "hbs-services"] },
       signal: AbortSignal.timeout(10000),
     });
     if (res.ok) {
@@ -572,7 +572,7 @@ export async function fetchHbsServiceBySlug(slug: string): Promise<HbsService | 
 export async function fetchHbsProjectBySlug(slug: string): Promise<HbsProject | null> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/projects/${encodeURIComponent(slug)}`, {
-      next: { revalidate: 60, tags: [`hbs-project-${slug}`, "hbs-projects"] },
+      next: { revalidate: process.env.NODE_ENV === "development" ? 0 : 60, tags: [`hbs-project-${slug}`, "hbs-projects"] },
       signal: AbortSignal.timeout(10000),
     });
     if (res.ok) {

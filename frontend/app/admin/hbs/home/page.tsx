@@ -288,10 +288,22 @@ export default function HbsAdminHome() {
         if (d.heroCtas) {
           try {
             const parsedHero = typeof d.heroCtas === "string" ? JSON.parse(d.heroCtas) : d.heroCtas;
-            setHeroConfig({ ...DEFAULT_HERO_CONFIG, ...parsedHero });
+            setHeroConfig({
+              ...DEFAULT_HERO_CONFIG,
+              ...parsedHero,
+              heroImage: parsedHero.heroImage || d.heroImage || DEFAULT_HERO_CONFIG.heroImage,
+            });
           } catch {
-            setHeroConfig(DEFAULT_HERO_CONFIG);
+            setHeroConfig({
+              ...DEFAULT_HERO_CONFIG,
+              heroImage: d.heroImage || DEFAULT_HERO_CONFIG.heroImage,
+            });
           }
+        } else if (d.heroImage) {
+          setHeroConfig({
+            ...DEFAULT_HERO_CONFIG,
+            heroImage: d.heroImage,
+          });
         }
 
         // 2. Categories Ribbon
@@ -488,7 +500,8 @@ export default function HbsAdminHome() {
           await fetch("/api/revalidate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paths: ["/hbs"] }),
+            credentials: "include",
+            body: JSON.stringify({ paths: ["/hbs"], tags: ["hbs-content"] }),
           });
         } catch {}
       } else {
