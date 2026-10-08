@@ -266,6 +266,17 @@ export default function HbsWhyChooseUsAdmin() {
       if (json.success) {
         setMessage({ text: "Why Choose Us content updated successfully!", type: "success" });
         setTimeout(() => setMessage({ text: "", type: "" }), 4000);
+        try {
+          await fetch("/api/revalidate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              paths: ["/hbs", "/hbs/why-choose-us"],
+              tags: ["hbs-content"],
+            }),
+          });
+        } catch {}
       } else {
         setMessage({ text: json.error || "Failed to save content", type: "error" });
       }

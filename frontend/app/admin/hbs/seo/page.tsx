@@ -65,7 +65,11 @@ export default function HbsAdminSeo() {
           await fetch("/api/revalidate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact"] }),
+            credentials: "include",
+            body: JSON.stringify({
+              paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact", "/hbs/why-choose-us"],
+              tags: ["hbs-content"],
+            }),
           });
         } catch {}
       } else {

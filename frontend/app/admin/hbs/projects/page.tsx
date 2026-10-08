@@ -376,8 +376,10 @@ export default function HbsAdminProjects() {
       fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           paths: ["/hbs", "/hbs/projects", `/hbs/projects/${project.slug}`],
+          tags: ["hbs-projects", `hbs-project-${project.slug}`],
         }),
       }).catch(() => {});
     } catch {
@@ -407,8 +409,10 @@ export default function HbsAdminProjects() {
       fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           paths: ["/hbs", "/hbs/projects", `/hbs/projects/${projectToDelete.slug}`],
+          tags: ["hbs-projects", `hbs-project-${projectToDelete.slug}`],
         }),
       }).catch(() => {});
       setProjectToDelete(null);
@@ -464,8 +468,10 @@ export default function HbsAdminProjects() {
         fetch("/api/revalidate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             paths: ["/hbs", "/hbs/projects", `/hbs/projects/${payload.slug}`],
+            tags: ["hbs-projects", `hbs-project-${payload.slug}`],
           }),
         }).catch(() => {});
       } else {

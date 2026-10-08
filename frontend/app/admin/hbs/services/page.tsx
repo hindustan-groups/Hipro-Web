@@ -478,7 +478,11 @@ export default function HbsAdminServices() {
       fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paths: ["/hbs", "/hbs/services", `/hbs/services/${service.slug}`] }),
+        credentials: "include",
+        body: JSON.stringify({
+          paths: ["/hbs", "/hbs/services", `/hbs/services/${service.slug}`],
+          tags: ["hbs-services", `hbs-service-${service.slug}`],
+        }),
       }).catch(() => {});
     } catch {
       setServices((prev) => prev.map((s) => (s.id === service.id ? { ...s, active: service.active } : s)));
@@ -531,7 +535,11 @@ export default function HbsAdminServices() {
       fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paths: ["/hbs", "/hbs/services", `/hbs/services/${saved.slug}`] }),
+        credentials: "include",
+        body: JSON.stringify({
+          paths: ["/hbs", "/hbs/services", `/hbs/services/${saved.slug}`],
+          tags: ["hbs-services", `hbs-service-${saved.slug}`],
+        }),
       }).catch(() => {});
     } catch {
       setEditorError("Network error while saving.");
@@ -558,7 +566,11 @@ export default function HbsAdminServices() {
       fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paths: ["/hbs", "/hbs/services", `/hbs/services/${form.slug}`] }),
+        credentials: "include",
+        body: JSON.stringify({
+          paths: ["/hbs", "/hbs/services", `/hbs/services/${form.slug}`],
+          tags: ["hbs-services", `hbs-service-${form.slug}`],
+        }),
       }).catch(() => {});
       setForm(null);
       setBaseline("");

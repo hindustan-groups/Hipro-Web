@@ -306,8 +306,10 @@ export default function HbsAdminSettings() {
           await fetch("/api/revalidate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({
-              paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact"],
+              paths: ["/hbs", "/hbs/about", "/hbs/services", "/hbs/projects", "/hbs/contact", "/hbs/why-choose-us"],
+              tags: ["hbs-content"],
             }),
           });
         } catch {}
