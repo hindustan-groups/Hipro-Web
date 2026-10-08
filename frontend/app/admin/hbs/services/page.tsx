@@ -23,10 +23,37 @@ import {
   Globe,
   Info,
   X,
+  Edit,
+  Eye,
+  Building2,
+  Droplets,
+  Layers,
+  Hammer,
+  Sparkles,
+  Compass,
+  HardHat,
+  Ruler,
+  Paintbrush,
+  Home,
 } from "lucide-react";
 import type { HbsService } from "@/lib/types";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
+
+const POPULAR_ICONS = [
+  "Wrench",
+  "ShieldCheck",
+  "Building2",
+  "Droplets",
+  "Layers",
+  "Hammer",
+  "Sparkles",
+  "Compass",
+  "HardHat",
+  "Ruler",
+  "Paintbrush",
+  "Home",
+];
 
 /* ────────────────────────────────────────────────────────────────
    Types & helpers
@@ -335,6 +362,36 @@ export default function HbsAdminServices() {
   const [saving, setSaving] = useState(false);
   const [savedRecently, setSavedRecently] = useState(false);
   const [editorError, setEditorError] = useState("");
+  const [serviceToDelete, setServiceToDelete] = useState<HbsService | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const confirmDeleteService = async () => {
+    if (!serviceToDelete) return;
+    setDeletingId(serviceToDelete.id ?? "");
+    try {
+      const res = await fetch(`/api/hbs/services/${serviceToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (!json.success) {
+        setListMessage({ text: json.error || "Failed to delete service.", type: "error" });
+        return;
+      }
+      setServices((prev) => prev.filter((s) => s.id !== serviceToDelete.id));
+      setListMessage({ text: `"${serviceToDelete.title}" deleted permanently.`, type: "success" });
+      fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: ["/hbs", "/hbs/services", `/hbs/services/${serviceToDelete.slug}`] }),
+      }).catch(() => {});
+      setServiceToDelete(null);
+    } catch {
+      setListMessage({ text: "Network error while deleting service.", type: "error" });
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const loadServices = async () => {
     setLoading(true);
@@ -497,7 +554,12 @@ export default function HbsAdminServices() {
         return;
       }
       setServices((prev) => prev.filter((s) => s.id !== form.id));
-      setListMessage({ text: `"${form.title}" deleted.`, type: "success" });
+      setListMessage({ text: `"${form.title}" deleted permanently.`, type: "success" });
+      fetch("/api/revalidate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: ["/hbs", "/hbs/services", `/hbs/services/${form.slug}`] }),
+      }).catch(() => {});
       setForm(null);
       setBaseline("");
     } catch {
@@ -579,53 +641,163 @@ export default function HbsAdminServices() {
           ) : (
             <ul className="divide-y divide-slate-100">
               {filtered.map((s) => (
-                <li key={s.id} className="flex items-center gap-3 pr-3 hover:bg-slate-50/70">
-                  <button
-                    type="button"
+                <li
+                  key={s.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:px-4 sm:py-3.5 hover:bg-slate-50/70 transition-colors"
+                >
+                  <div
                     onClick={() => openEditor(s)}
-                    className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4 pl-3 sm:pl-4 py-3 text-left focus-visible:outline-none focus-visible:bg-slate-50"
+                    className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4 cursor-pointer group"
                   >
-                    <div className="w-14 h-11 shrink-0 rounded-md bg-slate-100 overflow-hidden">
-                      {s.image && (
+                    <div className="w-14 h-11 shrink-0 rounded-md bg-slate-100 overflow-hidden border border-slate-200">
+                      {s.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={s.image} alt="" loading="lazy" className="w-full h-full object-cover" />
+                        <img
+                          src={s.image}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <Building2 className="w-5 h-5" />
+                        </div>
                       )}
                     </div>
                     <span className="w-7 text-[12px] font-mono text-slate-400 shrink-0">
                       {s.serviceNumber || "—"}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium text-slate-900 truncate">{s.title}</span>
-                      <span className="block text-xs text-slate-500 font-mono truncate">/{s.slug}</span>
-                    </span>
-                  </button>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="block text-sm font-semibold text-slate-900 group-hover:text-red-600 transition-colors truncate">
+                          {s.title}
+                        </span>
+                        {s.hindiTitle && (
+                          <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 shrink-0">
+                            {s.hindiTitle}
+                          </span>
+                        )}
+                      </div>
+                      <span className="block text-xs text-slate-500 font-mono truncate">
+                        /hbs/services/{s.slug}
+                      </span>
+                    </div>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleToggleActive(s)}
-                    aria-label={`${s.active ? "Hide" : "Show"} ${s.title}`}
-                    className={`shrink-0 inline-flex items-center gap-1.5 min-h-[32px] px-2.5 text-[12px] font-medium rounded-full border ${
-                      s.active
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-200 text-slate-500"
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${s.active ? "bg-emerald-500" : "bg-slate-400"}`} />
-                    {s.active ? "Live" : "Hidden"}
-                  </button>
-                  <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block" aria-hidden="true" />
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleActive(s)}
+                      aria-label={`${s.active ? "Hide" : "Show"} ${s.title}`}
+                      className={`inline-flex items-center gap-1.5 min-h-[32px] px-2.5 text-[12px] font-medium rounded-full border transition-colors ${
+                        s.active
+                          ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                          : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${s.active ? "bg-emerald-500" : "bg-slate-400"}`}
+                      />
+                      {s.active ? "Live" : "Hidden"}
+                    </button>
+
+                    <a
+                      href={`/hbs/services/${s.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 min-h-[32px] px-2.5 text-[12px] font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      title="View public live page"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="hidden sm:inline">View</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => openEditor(s)}
+                      className="inline-flex items-center gap-1 min-h-[32px] px-2.5 text-[12px] font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                      title="Edit service details"
+                    >
+                      <Edit className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setServiceToDelete(s)}
+                      className="inline-flex items-center gap-1 min-h-[32px] px-2.5 text-[12px] font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors"
+                      title="Delete service"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
           )}
         </div>
+
+        {/* Delete Confirmation Modal */}
+        {serviceToDelete && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-md animate-in fade-in duration-150">
+            <div className="w-full max-w-md bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200/90 p-6 space-y-4 animate-in zoom-in-95 duration-150">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-100">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-slate-900">Delete Service?</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Are you sure you want to permanently delete{" "}
+                <strong className="text-slate-900">&ldquo;{serviceToDelete.title}&rdquo;</strong>? It will be removed from Hind Build services and its live URL (
+                <code className="text-xs bg-slate-100 px-1 py-0.5 rounded text-slate-700">
+                  /hbs/services/{serviceToDelete.slug}
+                </code>
+                ) will no longer be accessible.
+              </p>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setServiceToDelete(null)}
+                  disabled={Boolean(deletingId)}
+                  className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteService}
+                  disabled={Boolean(deletingId)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+                >
+                  {deletingId ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Permanently
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
   /* ── EDITOR VIEW ───────────────────────────────────────────── */
   const isNew = !form.id;
-  const publicPath = `/services/${form.slug || "…"}`;
+  const publicPath = `/hbs/services/${form.slug || "…"}`;
 
   return (
     <div className="max-w-6xl pb-28">
@@ -649,17 +821,29 @@ export default function HbsAdminServices() {
             </p>
           )}
         </div>
-        {!isNew && form.active && (
-          <a
-            href={`/hbs/services/${form.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 min-h-[40px] px-3 text-[13px] font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 self-start sm:self-auto"
-          >
-            View live page
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        )}
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+          {!isNew && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="inline-flex items-center gap-1.5 min-h-[40px] px-3 text-[13px] font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete service
+            </button>
+          )}
+          {!isNew && form.active && (
+            <a
+              href={`/hbs/services/${form.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 min-h-[40px] px-3 text-[13px] font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+            >
+              View live page
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[200px_minmax(0,1fr)] gap-6 lg:gap-8">
@@ -774,6 +958,37 @@ export default function HbsAdminServices() {
                     </span>
                   </button>
                 </div>
+              </div>
+
+              <div>
+                <label className="block mb-1.5 text-[13px] font-medium text-slate-700">
+                  Service Icon
+                </label>
+                <p className="text-xs text-slate-500 mb-2">
+                  Choose a popular construction icon or type any Lucide icon name:
+                </p>
+                <div className="flex flex-wrap gap-1.5 mb-2.5">
+                  {POPULAR_ICONS.map((iconName) => (
+                    <button
+                      key={iconName}
+                      type="button"
+                      onClick={() => update("icon", iconName)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md border transition-all ${
+                        form.icon === iconName
+                          ? "bg-red-50 border-red-500 text-red-700 font-semibold shadow-xs"
+                          : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300"
+                      }`}
+                    >
+                      {iconName}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  className={`${inputCls} font-mono text-xs`}
+                  value={form.icon}
+                  placeholder="e.g. Wrench, ShieldCheck, Building2"
+                  onChange={(e) => update("icon", e.target.value)}
+                />
               </div>
               {!isNew && (
                 <div className="pt-4 border-t border-slate-100">

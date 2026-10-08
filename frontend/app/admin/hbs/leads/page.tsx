@@ -860,7 +860,7 @@ export default function HbsAdminLeads() {
               onChange={(e) => setServiceFilter(e.target.value)}
               className="px-2.5 py-2 text-xs font-semibold border border-slate-200 bg-white/90 rounded-xl focus:outline-none text-slate-700 max-w-[180px] truncate"
             >
-              <option value="all">All 19 Trade Services</option>
+              <option value="all">All Services</option>
               {TRADE_SERVICES_LIST.map((srv) => (
                 <option key={srv} value={srv}>
                   {srv}
@@ -946,7 +946,7 @@ export default function HbsAdminLeads() {
 
       {/* ── 4. PIPELINE KANBAN BOARD VIEW ──────────────────────────────── */}
       {viewMode === "pipeline" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3.5 items-start">
           {PIPELINE_STAGES.map((col) => {
             const columnLeads = filteredLeads.filter(
               (l) => (l.status || "NEW").toUpperCase() === col.id
@@ -959,7 +959,7 @@ export default function HbsAdminLeads() {
             return (
               <div
                 key={col.id}
-                className="backdrop-blur-xl bg-white/70 border border-white/80 rounded-2xl p-3 shadow-md shadow-slate-200/25 flex flex-col min-h-[580px] max-h-[820px]"
+                className="backdrop-blur-xl bg-white/75 border border-slate-200/70 rounded-2xl p-3 shadow-xs flex flex-col min-h-[580px] max-h-[820px]"
               >
                 {/* Column Header */}
                 <div className="pb-3 mb-3 border-b border-slate-100 flex items-center justify-between">
@@ -998,15 +998,15 @@ export default function HbsAdminLeads() {
                       return (
                         <div
                           key={lead.id}
-                          className="group backdrop-blur-md bg-white/90 hover:bg-white border border-white/95 hover:border-amber-400/80 rounded-xl p-3 shadow-sm hover:shadow-md transition-all duration-200 space-y-2.5 relative"
+                          className="group backdrop-blur-md bg-white hover:bg-white border border-slate-200/90 hover:border-amber-400/90 rounded-2xl p-3.5 pb-3 shadow-xs hover:shadow-md transition-all duration-200 space-y-2.5 relative"
                         >
                           {/* Card Header: Client Name, ID & Priority */}
-                          <div className="flex items-start justify-between gap-1">
-                            <div>
+                          <div className="flex items-start justify-between gap-1.5">
+                            <div className="min-w-0 flex-1">
                               <button
                                 type="button"
                                 onClick={() => openLeadModal(lead)}
-                                className="font-bold text-xs text-slate-900 hover:text-amber-700 text-left line-clamp-1 group-hover:underline"
+                                className="font-bold text-xs text-slate-900 hover:text-amber-700 text-left line-clamp-1 group-hover:underline block w-full truncate"
                               >
                                 {lead.name}
                               </button>
@@ -1036,13 +1036,13 @@ export default function HbsAdminLeads() {
                           {/* Services Tags */}
                           <div className="flex flex-wrap gap-1">
                             <span
-                              className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded text-[10px] font-medium truncate max-w-full"
+                              className="px-2 py-0.5 bg-slate-100 text-slate-800 rounded-md text-[10px] font-medium truncate max-w-full"
                               title={services[0]}
                             >
                               {services[0] || "General Assessment"}
                             </span>
                             {services.length > 1 && (
-                              <span className="px-1.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/80 rounded text-[9px] font-bold">
+                              <span className="px-1.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-md text-[9px] font-bold shrink-0">
                                 +{services.length - 1}
                               </span>
                             )}
@@ -1051,7 +1051,7 @@ export default function HbsAdminLeads() {
                           {/* Quotation & Supervisor Indicator */}
                           <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
                             {lead.quotationAmount ? (
-                              <span className="font-bold font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60">
+                              <span className="font-bold font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60 text-[10px]">
                                 {formatCurrency(lead.quotationAmount)}
                               </span>
                             ) : (
@@ -1061,9 +1061,9 @@ export default function HbsAdminLeads() {
                             )}
 
                             {lead.assignedTo ? (
-                              <span className="text-[10px] text-slate-600 flex items-center gap-1 font-medium">
-                                <User className="w-2.5 h-2.5 text-slate-400" />
-                                <span className="truncate max-w-[80px]">
+                              <span className="text-[10px] text-slate-600 flex items-center gap-1 font-medium truncate max-w-[85px]">
+                                <User className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                <span className="truncate">
                                   {lead.assignedTo.replace(/Er\.\s*/i, "")}
                                 </span>
                               </span>
@@ -1075,12 +1075,12 @@ export default function HbsAdminLeads() {
                           </div>
 
                           {/* Quick Communication & Advance Buttons */}
-                          <div className="pt-2 flex items-center justify-between gap-1 border-t border-slate-100">
-                            <div className="flex items-center gap-1">
+                          <div className="pt-2.5 mt-0.5 flex items-center justify-between gap-1.5 border-t border-slate-100/90">
+                            <div className="flex items-center gap-1 shrink-0">
                               {/* Direct Phone Call */}
                               <a
                                 href={`tel:${lead.phone}`}
-                                className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors"
+                                className="w-7 h-7 flex items-center justify-center bg-amber-50/80 hover:bg-amber-100 text-amber-700 border border-amber-200/50 rounded-lg transition-all duration-150 hover:scale-105 shrink-0"
                                 title={`Call ${lead.phone}`}
                               >
                                 <Phone className="w-3 h-3 text-amber-600" />
@@ -1091,7 +1091,7 @@ export default function HbsAdminLeads() {
                                 href={getWhatsAppLink(lead, col.id === "FOLLOW_UP" ? "site_visit" : col.id === "QUOTATION_SENT" ? "quote" : "intro")}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors"
+                                className="w-7 h-7 flex items-center justify-center bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/50 rounded-lg transition-all duration-150 hover:scale-105 shrink-0"
                                 title="Open WhatsApp Chat"
                               >
                                 <MessageSquare className="w-3 h-3 text-emerald-600" />
@@ -1101,7 +1101,7 @@ export default function HbsAdminLeads() {
                               <button
                                 type="button"
                                 onClick={() => openLeadModal(lead)}
-                                className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                                className="w-7 h-7 flex items-center justify-center bg-slate-100/80 hover:bg-slate-200 text-slate-600 border border-slate-200/60 rounded-lg transition-all duration-150 hover:scale-105 shrink-0"
                                 title="View details"
                               >
                                 <Eye className="w-3 h-3" />
@@ -1113,11 +1113,11 @@ export default function HbsAdminLeads() {
                               <button
                                 type="button"
                                 onClick={() => advanceStage(lead.id || "", col.id)}
-                                className="px-2 py-1 text-[10px] font-bold text-slate-700 hover:text-white bg-slate-100 hover:bg-[#0D2D5E] rounded-lg transition-colors flex items-center gap-1 shadow-2xs"
+                                className="h-7 px-2 text-[10px] font-bold text-slate-700 hover:text-white bg-slate-100/90 hover:bg-[#0D2D5E] border border-slate-200/70 hover:border-[#0D2D5E] rounded-lg transition-all duration-150 flex items-center gap-1 shrink-0 shadow-2xs group/adv"
                                 title={`Advance to ${col.nextLabel}`}
                               >
-                                <span>Advance</span>
-                                <ArrowRight className="w-2.5 h-2.5" />
+                                <span>Next</span>
+                                <ArrowRight className="w-2.5 h-2.5 transition-transform duration-150 group-hover/adv:translate-x-0.5" />
                               </button>
                             )}
                           </div>
@@ -1332,9 +1332,9 @@ export default function HbsAdminLeads() {
 
       {/* ── 6. MODAL: + NEW INBOUND LEAD CREATION ──────────────────────── */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="backdrop-blur-2xl bg-white border border-white/90 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto my-auto p-6 sm:p-7 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-[100] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
+          <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto my-auto p-6 sm:p-7 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 font-display flex items-center gap-2">
                   <Plus className="w-5 h-5 text-amber-600" />
@@ -1573,10 +1573,10 @@ export default function HbsAdminLeads() {
 
       {/* ── 7. LEAD DETAIL & CRM WORKFLOW DRAWER / MODAL ─────────────────── */}
       {viewingLead && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="backdrop-blur-2xl bg-white border border-white/90 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto my-auto p-6 sm:p-7 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-[100] bg-slate-950/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-150">
+          <div className="bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto my-auto p-6 sm:p-7 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] space-y-5 animate-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-slate-200 pb-4">
+            <div className="flex items-start justify-between border-b border-slate-200/80 pb-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <h3 className="text-xl font-black text-slate-900 font-display">

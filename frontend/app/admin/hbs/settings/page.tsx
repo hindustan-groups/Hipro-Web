@@ -26,7 +26,7 @@ import {
   MapPin,
   Globe,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { HbsContent, HbsNavbarConfig, HbsNavbarItem } from "@/lib/types";
 import HbsImageUploader from "@/components/hbs/admin/HbsImageUploader";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
@@ -36,9 +36,15 @@ type SettingsTab = "navbar" | "footer" | "contact" | "social_legal";
 type PreviewMode = "desktop" | "mobile";
 
 export default function HbsAdminSettings() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromQuery = searchParams?.get("tab") as SettingsTab | null;
   const [activeTab, setActiveTab] = useState<SettingsTab>(tabFromQuery || "navbar");
+
+  const switchTab = (tab: SettingsTab) => {
+    setActiveTab(tab);
+    router.replace(`/admin/hbs/settings?tab=${tab}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (tabFromQuery && ["navbar", "footer", "contact", "social_legal"].includes(tabFromQuery)) {
@@ -48,6 +54,34 @@ export default function HbsAdminSettings() {
   const [previewMode, setPreviewMode] = useState<PreviewMode>("desktop");
   const [content, setContent] = useState<Partial<HbsContent>>({});
   const [navConfig, setNavConfig] = useState<HbsNavbarConfig>(DEFAULT_NAVBAR_CONFIG);
+  const [footerConfig, setFooterConfig] = useState<{
+    pillars: Array<{ label: string; icon: string }>;
+    heritageCard: {
+      badge: string;
+      text: string;
+      linkText: string;
+      linkUrl: string;
+    };
+    copyrightText: string;
+    enterpriseText: string;
+    enterpriseUrl: string;
+  }>({
+    pillars: [
+      { label: "Up to 10-Yr Warranty", icon: "ShieldCheck" },
+      { label: "Civil Engineer Supervision", icon: "HardHat" },
+      { label: "ISI Certified Branded Materials", icon: "CheckCircle2" },
+      { label: "Doorstep Rajasthan Service", icon: "Sparkles" },
+    ],
+    heritageCard: {
+      badge: "A Brand Under Hindustan Projects",
+      text: "Backed by the civil engineering heritage of Hindustan Projects (HiPRO). Bringing industrial civil rigor to property repair and maintenance.",
+      linkText: "Hindustan Projects (HiPRO)",
+      linkUrl: "https://www.hindustanprojects.in",
+    },
+    copyrightText: "© 2026 Hind Building Solutions (HiBUILD). All rights reserved.",
+    enterpriseText: "An Enterprise of Hindustan Projects",
+    enterpriseUrl: "https://www.hindustanprojects.in",
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedRecently, setSavedRecently] = useState(false);
@@ -106,6 +140,27 @@ export default function HbsAdminSettings() {
         }
         setNavConfig(parsedNav);
 
+        // Parse Footer configuration from ctaSettings
+        if (json.data.ctaSettings) {
+          try {
+            const parsed =
+              typeof json.data.ctaSettings === "string"
+                ? JSON.parse(json.data.ctaSettings)
+                : json.data.ctaSettings;
+            if (parsed && typeof parsed === "object" && parsed.footer) {
+              setFooterConfig((prev) => ({
+                ...prev,
+                ...parsed.footer,
+                pillars:
+                  Array.isArray(parsed.footer.pillars) && parsed.footer.pillars.length > 0
+                    ? parsed.footer.pillars
+                    : prev.pillars,
+                heritageCard: { ...prev.heritageCard, ...(parsed.footer.heritageCard || {}) },
+              }));
+            }
+          } catch {}
+        }
+
         // Parse Socials
         let parsedSocials = {
           instagram: "",
@@ -136,6 +191,7 @@ export default function HbsAdminSettings() {
           JSON.stringify({
             content: json.data,
             navConfig: parsedNav,
+            footerConfig,
             socials: parsedSocials,
           })
         );
@@ -215,6 +271,7 @@ export default function HbsAdminSettings() {
       const updatedCtaSettings = {
         ...currentCtaSettings,
         navbar: navConfig,
+        footer: footerConfig,
       };
 
       const payload = {
@@ -239,6 +296,7 @@ export default function HbsAdminSettings() {
           JSON.stringify({
             content: json.data || content,
             navConfig,
+            footerConfig,
             socials,
           })
         );
@@ -306,7 +364,7 @@ export default function HbsAdminSettings() {
             type="button"
             onClick={() => handleSave()}
             disabled={saving}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors shadow-xs disabled:opacity-50 min-h-[36px]"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 rounded-xl transition-all shadow-[0_4px_14px_rgba(239,68,68,0.35)] disabled:opacity-50 min-h-[38px]"
           >
             {saving ? (
               <>
@@ -315,7 +373,7 @@ export default function HbsAdminSettings() {
               </>
             ) : savedRecently ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <Check className="w-3.5 h-3.5 text-emerald-200" />
                 <span>Saved</span>
               </>
             ) : (
@@ -330,10 +388,10 @@ export default function HbsAdminSettings() {
 
       {message.text && (
         <div
-          className={`p-3.5 text-xs flex items-center gap-2 rounded-lg border ${
+          className={`p-4 text-xs flex items-center gap-2.5 rounded-2xl border transition-all ${
             message.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-red-50 border-red-200 text-red-800"
+              ? "bg-emerald-50/90 border-emerald-200 text-emerald-800 shadow-sm"
+              : "bg-red-50/90 border-red-200 text-red-800 shadow-sm"
           }`}
         >
           {message.type === "success" ? (
@@ -341,62 +399,62 @@ export default function HbsAdminSettings() {
           ) : (
             <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           )}
-          <span>{message.text}</span>
+          <span className="font-semibold">{message.text}</span>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-1 overflow-x-auto">
+      {/* Apple Segmented Tabs Bar */}
+      <div className="p-1.5 bg-slate-200/50 backdrop-blur-2xl rounded-2xl border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] flex flex-wrap gap-1">
         <button
           type="button"
-          onClick={() => setActiveTab("navbar")}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+          onClick={() => switchTab("navbar")}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === "navbar"
-              ? "border-slate-900 text-slate-950 bg-slate-100/60"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Compass className="w-3.5 h-3.5" />
-          <span>Navbar CMS</span>
+          <Compass className="w-3.5 h-3.5 text-blue-600" />
+          <span>Header & Navbar CMS</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab("footer")}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+          onClick={() => switchTab("footer")}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === "footer"
-              ? "border-slate-900 text-slate-950 bg-slate-100/60 font-black"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
           <MapPin className="w-3.5 h-3.5 text-red-600" />
-          <span>Footer &amp; Legal CMS</span>
+          <span>Footer & Legal CMS</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab("contact")}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+          onClick={() => switchTab("contact")}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === "contact"
-              ? "border-slate-900 text-slate-950 bg-slate-100/60"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Phone className="w-3.5 h-3.5" />
-          <span>Hotlines &amp; Identity</span>
+          <Phone className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Hotlines & WhatsApp</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab("social_legal")}
-          className={`px-4 py-2.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 whitespace-nowrap min-h-[44px] ${
+          onClick={() => switchTab("social_legal")}
+          className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
             activeTab === "social_legal"
-              ? "border-slate-900 text-slate-950 bg-slate-100/60"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Shield className="w-3.5 h-3.5" />
-          <span>Social &amp; Legal</span>
+          <Globe className="w-3.5 h-3.5 text-purple-600" />
+          <span>Social Media & Legal</span>
         </button>
       </div>
 
@@ -1232,7 +1290,7 @@ export default function HbsAdminSettings() {
                     <ul className="space-y-1 text-[11px] text-slate-600">
                       <li>• Home Page</li>
                       <li>• About HiBUILD</li>
-                      <li>• All 19 Services</li>
+                      <li>• All Services</li>
                       <li>• Our Projects</li>
                       <li>• Why Choose Us</li>
                       <li>• Book Free Inspection</li>
@@ -1442,7 +1500,132 @@ export default function HbsAdminSettings() {
               </div>
             </div>
 
-            {/* ── 4. FORM: LEGAL & COMPLIANCE URLS ────────────── */}
+            {/* ── 4. FORM: TRUST ASSURANCE PILLARS STRIP ─────── */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600" />
+                <span>Trust Assurance Pillars Strip (4 Cards)</span>
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                These 4 trust badge cards appear across the full-width strip right above the footer copyright bar.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+                {footerConfig.pillars.map((pillar, idx) => (
+                  <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                      Pillar #{idx + 1}
+                    </span>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Pillar Title
+                      </label>
+                      <input
+                        type="text"
+                        value={pillar.label}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFooterConfig((prev) => ({
+                            ...prev,
+                            pillars: prev.pillars.map((p, j) => (j === idx ? { ...p, label: val } : p)),
+                          }));
+                        }}
+                        className="w-full text-xs font-medium border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Badge Icon
+                      </label>
+                      <select
+                        value={pillar.icon}
+                        onChange={(e) => {
+                          const iconVal = e.target.value;
+                          setFooterConfig((prev) => ({
+                            ...prev,
+                            pillars: prev.pillars.map((p, j) => (j === idx ? { ...p, icon: iconVal } : p)),
+                          }));
+                        }}
+                        className="w-full text-xs font-medium border border-slate-300 p-2 bg-white rounded-lg focus:outline-slate-900"
+                      >
+                        <option value="ShieldCheck">🛡️ ShieldCheck (Warranty)</option>
+                        <option value="HardHat">👷 HardHat (Civil Engineer)</option>
+                        <option value="CheckCircle2">✓ CheckCircle2 (Branded ISI)</option>
+                        <option value="Sparkles">✨ Sparkles (Service Reach)</option>
+                        <option value="Clock">⏱️ Clock (Turnaround)</option>
+                        <option value="Award">🏆 Award (Certified)</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── 5. FORM: PARENT COMPANY HERITAGE CARD ───────── */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+              <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600" />
+                <span>Parent Company Heritage Card (Column 1)</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Badge Title
+                  </label>
+                  <input
+                    type="text"
+                    value={footerConfig.heritageCard.badge}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFooterConfig((prev) => ({
+                        ...prev,
+                        heritageCard: { ...prev.heritageCard, badge: v },
+                      }));
+                    }}
+                    placeholder="A Brand Under Hindustan Projects"
+                    className="w-full text-xs font-medium border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Parent Link Text
+                  </label>
+                  <input
+                    type="text"
+                    value={footerConfig.heritageCard.linkText}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFooterConfig((prev) => ({
+                        ...prev,
+                        heritageCard: { ...prev.heritageCard, linkText: v },
+                      }));
+                    }}
+                    placeholder="Hindustan Projects (HiPRO)"
+                    className="w-full text-xs font-medium border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Heritage Narrative Description
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={footerConfig.heritageCard.text}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFooterConfig((prev) => ({
+                        ...prev,
+                        heritageCard: { ...prev.heritageCard, text: v },
+                      }));
+                    }}
+                    placeholder="Backed by the civil engineering heritage of Hindustan Projects (HiPRO). Bringing industrial civil rigor to property repair and maintenance."
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* ── 6. FORM: LEGAL & COMPLIANCE URLS ────────────── */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
               <h3 className="text-xs font-bold text-slate-900 uppercase font-mono tracking-wider flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-600" />
@@ -1473,6 +1656,38 @@ export default function HbsAdminSettings() {
                     onChange={(e) => handleChange("termsUrl", e.target.value)}
                     placeholder="/terms"
                     className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Copyright Line
+                  </label>
+                  <input
+                    type="text"
+                    value={footerConfig.copyrightText}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFooterConfig((prev) => ({ ...prev, copyrightText: v }));
+                    }}
+                    placeholder="© 2026 Hind Building Solutions (HiBUILD). All rights reserved."
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                    Enterprise Link Label
+                  </label>
+                  <input
+                    type="text"
+                    value={footerConfig.enterpriseText}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setFooterConfig((prev) => ({ ...prev, enterpriseText: v }));
+                    }}
+                    placeholder="An Enterprise of Hindustan Projects"
+                    className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg font-medium"
                   />
                 </div>
               </div>

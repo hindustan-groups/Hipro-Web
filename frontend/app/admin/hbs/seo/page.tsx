@@ -153,7 +153,7 @@ export default function HbsAdminSeo() {
               rows={3}
               value={
                 content.metaDescription ||
-                "Hind Build, an engineering division under Hindustan Projects, delivers turnkey structural repair, waterproofing, painting, electrical, bird netting, and 19 specialized building maintenance services across Rajasthan."
+                "Hind Build, an engineering division under Hindustan Projects, delivers turnkey structural repair, waterproofing, painting, electrical, bird netting, and turnkey specialized building maintenance services across Rajasthan."
               }
               onChange={(e) => handleChange("metaDescription", e.target.value)}
               className="w-full text-xs border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-amber-500 leading-relaxed"

@@ -76,7 +76,7 @@ const DEFAULT_COMPARISON_ROWS: ComparisonRow[] = [
   },
   {
     feature: "Service Spectrum",
-    hindBuild: "Single-window coordination for 19 specialized structural, waterproofing, electrical & civil trades.",
+    hindBuild: "Single-window coordination for comprehensive specialized structural, waterproofing, electrical & civil trades.",
     local: "Homeowner forced to coordinate 5 conflicting contractors with zero accountability between them.",
   },
 ];
@@ -137,7 +137,7 @@ const DEFAULT_FAQS: FaqItem[] = [
   },
   {
     q: "Can I hire Hind Build for multiple maintenance issues at once?",
-    a: "Yes! That is one of our greatest advantages. With 19 specialized building trades—including waterproofing, structural concrete repair, painting, plumbing, electrical, termite treatment, and civil renovation—you deal with a single project manager and one unified billing source.",
+    a: "Yes! That is one of our greatest advantages. With comprehensive specialized building trades—including waterproofing, structural concrete repair, painting, plumbing, electrical, termite treatment, and civil renovation—you deal with a single project manager and one unified billing source.",
   },
 ];
 

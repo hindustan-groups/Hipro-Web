@@ -613,7 +613,7 @@ export default function HbsAdminHome() {
             type="button"
             onClick={() => handleSave()}
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 min-h-[38px]"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 rounded-xl transition-all shadow-[0_4px_14px_rgba(239,68,68,0.35)] active:scale-95 disabled:opacity-50 min-h-[38px]"
           >
             {saving ? (
               <>
@@ -622,7 +622,7 @@ export default function HbsAdminHome() {
               </>
             ) : savedRecently ? (
               <>
-                <Check className="w-3.5 h-3.5 text-emerald-300" />
+                <Check className="w-3.5 h-3.5 text-emerald-200" />
                 <span>Saved All Sections</span>
               </>
             ) : (
@@ -637,7 +637,7 @@ export default function HbsAdminHome() {
 
       {message.text && (
         <div
-          className={`p-4 rounded-xl border text-xs flex items-center gap-2.5 transition-all ${
+          className={`p-4 rounded-2xl border text-xs flex items-center gap-2.5 transition-all ${
             message.type === "success"
               ? "bg-emerald-50/90 border-emerald-200 text-emerald-900 shadow-sm"
               : "bg-red-50/90 border-red-200 text-red-900 shadow-sm"
@@ -653,110 +653,110 @@ export default function HbsAdminHome() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────
-          8 SECTIONS TABS NAVIGATION (Matches Public Frontend 1:1)
+          8 SECTIONS TABS NAVIGATION (Apple Segmented Controller)
       ───────────────────────────────────────────────────────────────── */}
-      <div className="backdrop-blur-xl bg-white/70 border border-white/80 rounded-2xl p-1.5 shadow-md shadow-slate-200/40 flex flex-wrap gap-1">
+      <div className="p-1.5 bg-slate-200/50 backdrop-blur-2xl rounded-2xl border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => switchTab("hero")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "hero"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <LayoutTemplate className="w-3.5 h-3.5 text-red-400" />
+          <LayoutTemplate className="w-3.5 h-3.5 text-red-600" />
           <span>1. Hero Banner</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("categories")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "categories"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Layers className="w-3.5 h-3.5 text-blue-400" />
+          <Layers className="w-3.5 h-3.5 text-blue-600" />
           <span>2. Category Ribbon (5)</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("services_showcase")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "services_showcase"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <HardHat className="w-3.5 h-3.5 text-amber-400" />
+          <HardHat className="w-3.5 h-3.5 text-amber-600" />
           <span>3. Services Showcase</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("about_preview")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "about_preview"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Building2 className="w-3.5 h-3.5 text-rose-400" />
+          <Building2 className="w-3.5 h-3.5 text-rose-600" />
           <span>4. About &amp; Bento Collage</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("stats")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "stats"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+          <BarChart3 className="w-3.5 h-3.5 text-cyan-600" />
           <span>5. 4 Stat Counters</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("benefits")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "benefits"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           <span>6. Why Choose Us (6 Benefits)</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("projects_showcase")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "projects_showcase"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <FolderOpen className="w-3.5 h-3.5 text-purple-400" />
+          <FolderOpen className="w-3.5 h-3.5 text-purple-600" />
           <span>7. Projects Showcase</span>
         </button>
 
         <button
           type="button"
           onClick={() => switchTab("prefooter_cta")}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
             activeTab === "prefooter_cta"
-              ? "bg-slate-900 text-white shadow-md"
-              : "text-slate-600 hover:text-slate-900 hover:bg-white/80"
+              ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
           }`}
         >
-          <Phone className="w-3.5 h-3.5 text-red-400" />
+          <Phone className="w-3.5 h-3.5 text-red-600" />
           <span>8. Pre-Footer Master CTA</span>
         </button>
       </div>
@@ -767,19 +767,25 @@ export default function HbsAdminHome() {
       {activeTab === "hero" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-7 space-y-6">
-            <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <LayoutTemplate className="w-4 h-4 text-red-600" />
-                  <span>Hero Header Copy &amp; Badges</span>
-                </h3>
-                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-bold">
+            <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-5 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100">
+                    <LayoutTemplate className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Hero Header Copy &amp; Badges</h3>
+                    <p className="text-[11px] text-slate-400 font-sans">Primary above-the-fold brand value proposition</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
                   Section #1
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Top Red Pill Badge
                 </label>
                 <input
@@ -787,25 +793,25 @@ export default function HbsAdminHome() {
                   value={heroConfig.badge || ""}
                   onChange={(e) => setHeroConfig({ ...heroConfig, badge: e.target.value })}
                   placeholder="COMPLETE CARE FOR YOUR BUILDING"
-                  className="w-full text-xs font-semibold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white text-slate-900"
+                  className="w-full text-xs font-semibold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white text-slate-900 transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Main Headline (Use \n for line break)
                 </label>
                 <textarea
                   rows={2}
                   value={heroConfig.headline || ""}
                   onChange={(e) => setHeroConfig({ ...heroConfig, headline: e.target.value })}
-                  placeholder="Repair. Protect.\nMaintain. Build Better."
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white text-slate-900 font-display leading-tight"
+                  placeholder="Repair. Protect.&#10;Maintain. Build Better."
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white text-slate-900 font-display leading-tight transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Subheadline / Paragraph Story
                 </label>
                 <textarea
@@ -813,13 +819,13 @@ export default function HbsAdminHome() {
                   value={heroConfig.subheadline || ""}
                   onChange={(e) => setHeroConfig({ ...heroConfig, subheadline: e.target.value })}
                   placeholder="Hind Building Solutions (HiBUILD) provides professional building repair..."
-                  className="w-full text-xs p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white text-slate-600 leading-relaxed font-sans resize-none"
+                  className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white text-slate-600 leading-relaxed font-sans resize-none transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                  <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                     Primary CTA Button Label
                   </label>
                   <input
@@ -827,11 +833,11 @@ export default function HbsAdminHome() {
                     value={heroConfig.primaryCtaLabel || ""}
                     onChange={(e) => setHeroConfig({ ...heroConfig, primaryCtaLabel: e.target.value })}
                     placeholder="Get a Free Site Visit"
-                    className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white"
+                    className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                  <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                     Secondary CTA Button Label
                   </label>
                   <input
@@ -839,7 +845,7 @@ export default function HbsAdminHome() {
                     value={heroConfig.secondaryCtaLabel || ""}
                     onChange={(e) => setHeroConfig({ ...heroConfig, secondaryCtaLabel: e.target.value })}
                     placeholder="Our Services"
-                    className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white"
+                    className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -855,19 +861,22 @@ export default function HbsAdminHome() {
             </div>
           </div>
 
-          {/* Right: Live Light Hero Card Preview */}
+          {/* Right: Live Apple Window Mockup Hero Preview */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-4">
+            <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4 overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-900 font-mono flex items-center gap-2">
-                  <Eye className="w-3.5 h-3.5 text-red-600" />
-                  <span>Live Hero Preview</span>
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">Instant Render</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                  <span className="ml-2 text-xs font-bold text-slate-700 font-mono">Live Preview</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono">Instant Sync</span>
               </div>
 
-              <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4 text-left">
-                <div className="inline-block px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 rounded-full text-[10px] font-black tracking-wider uppercase font-mono">
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4 text-left">
+                <div className="inline-block px-3 py-1 bg-red-50 text-red-600 border border-red-200/80 rounded-full text-[10px] font-black tracking-wider uppercase font-mono">
                   {heroConfig.badge || "COMPLETE CARE FOR YOUR BUILDING"}
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-display whitespace-pre-line leading-tight">
@@ -877,13 +886,27 @@ export default function HbsAdminHome() {
                   {heroConfig.subheadline || "Specialized civil engineering care..."}
                 </p>
                 <div className="flex items-center gap-2 pt-2">
-                  <div className="px-3.5 py-2 bg-red-600 text-white font-bold text-xs rounded-xl shadow-sm">
+                  <div className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-xs rounded-xl shadow-xs">
                     {heroConfig.primaryCtaLabel || "Get a Free Site Visit"}
                   </div>
-                  <div className="px-3.5 py-2 border border-slate-300 text-slate-700 font-bold text-xs rounded-xl">
+                  <div className="px-4 py-2 bg-slate-50 border border-slate-300/80 text-slate-700 font-bold text-xs rounded-xl">
                     {heroConfig.secondaryCtaLabel || "Our Services"}
                   </div>
                 </div>
+
+                {heroConfig.heroImage && (
+                  <div className="mt-4 pt-4 border-t border-slate-100">
+                    <span className="text-[10px] font-mono text-slate-400 block mb-2 uppercase">Hero Visual Thumbnail:</span>
+                    <div className="w-full h-36 rounded-xl bg-slate-100 overflow-hidden border border-slate-200">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={heroConfig.heroImage}
+                        alt="Hero preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -895,28 +918,34 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "categories" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-blue-600" />
-                  <span>Section #2: Building Categories Full-Width Ribbon</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  The deep architectural blue bar directly beneath the Hero showcase displaying 5 property categories.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #2: Building Categories Full-Width Ribbon</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    The deep architectural blue bar directly beneath the Hero showcase displaying 5 property categories.
+                  </p>
+                </div>
               </div>
+              <span className="text-[10px] font-mono text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                Section #2
+              </span>
             </div>
 
             {/* Live Deep Blue Ribbon Preview */}
-            <div className="p-5 rounded-2xl bg-[#0D2D5E] text-white shadow-inner space-y-3">
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-[#0D2D5E] to-[#123974] text-white shadow-md space-y-3">
               <span className="text-[10px] font-mono uppercase tracking-wider text-blue-200 font-bold block">
                 Live Deep Blue Ribbon Preview
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 items-center">
                 {categories.map((c, idx) => (
                   <div key={idx} className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
+                    <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
                       {c.icon === "Building2" && <Building2 className="w-4 h-4 text-white" />}
                       {c.icon === "Building" && <Building className="w-4 h-4 text-white" />}
                       {c.icon === "Factory" && <Factory className="w-4 h-4 text-white" />}
@@ -934,11 +963,13 @@ export default function HbsAdminHome() {
             </div>
 
             {/* 5 Form Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               {categories.map((c, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div key={idx} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-blue-700 uppercase">Slot #{idx + 1}</span>
+                    <span className="text-[10px] font-mono font-bold text-blue-700 uppercase bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+                      Slot #{idx + 1}
+                    </span>
                   </div>
 
                   <div className="space-y-1">
@@ -946,7 +977,7 @@ export default function HbsAdminHome() {
                     <select
                       value={c.icon}
                       onChange={(e) => updateCategory(idx, "icon", e.target.value)}
-                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg text-slate-800"
+                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     >
                       {AVAILABLE_CATEGORY_ICONS.map((ic) => (
                         <option key={ic.id} value={ic.id}>
@@ -957,13 +988,13 @@ export default function HbsAdminHome() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono font-bold uppercase text-slate-700">Category Title</label>
+                    <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Category Title</label>
                     <input
                       type="text"
                       value={c.title}
                       onChange={(e) => updateCategory(idx, "title", e.target.value)}
                       placeholder="e.g. Residential"
-                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg"
+                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
 
@@ -974,7 +1005,7 @@ export default function HbsAdminHome() {
                       value={c.subtitle}
                       onChange={(e) => updateCategory(idx, "subtitle", e.target.value)}
                       placeholder="e.g. Homes & Apartments"
-                      className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg text-slate-600"
+                      className="w-full text-xs p-2 bg-white border border-slate-200 rounded-xl text-slate-600 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -989,28 +1020,31 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "services_showcase" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <HardHat className="w-4 h-4 text-amber-600" />
-                  <span>Section #3: 16-Card Services Showcase Header</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Controls the section headline and introductory narrative right above the 16 colorful service badges.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+                  <HardHat className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #3: Services Showcase Header</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Controls the section headline and introductory narrative above the service cards.
+                  </p>
+                </div>
               </div>
               <Link
                 href="/admin/hbs/services"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-all border border-red-200/60 shadow-2xs"
               >
-                <span>Edit 19 Services Catalog →</span>
+                <span>Edit Services Catalog →</span>
               </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Pill Badge
                 </label>
                 <input
@@ -1018,12 +1052,12 @@ export default function HbsAdminHome() {
                   value={servicesShowcase.badge}
                   onChange={(e) => setServicesShowcase({ ...servicesShowcase, badge: e.target.value })}
                   placeholder="OUR SERVICES"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   CTA Button Label
                 </label>
                 <input
@@ -1031,12 +1065,12 @@ export default function HbsAdminHome() {
                   value={servicesShowcase.ctaText}
                   onChange={(e) => setServicesShowcase({ ...servicesShowcase, ctaText: e.target.value })}
                   placeholder="View All Services"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Headline Lead Text
                 </label>
                 <input
@@ -1044,7 +1078,7 @@ export default function HbsAdminHome() {
                   value={servicesShowcase.title}
                   onChange={(e) => setServicesShowcase({ ...servicesShowcase, title: e.target.value })}
                   placeholder="Complete"
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-display"
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl font-display focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
@@ -1057,12 +1091,12 @@ export default function HbsAdminHome() {
                   value={servicesShowcase.highlightText}
                   onChange={(e) => setServicesShowcase({ ...servicesShowcase, highlightText: e.target.value })}
                   placeholder="Building Care Services"
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-blue-700 font-display"
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-blue-700 font-display focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="md:col-span-2 space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Subtitle / Description
                 </label>
                 <textarea
@@ -1070,7 +1104,7 @@ export default function HbsAdminHome() {
                   value={servicesShowcase.description}
                   onChange={(e) => setServicesShowcase({ ...servicesShowcase, description: e.target.value })}
                   placeholder="From small repairs to complete renovation, HiBUILD provides all building maintenance..."
-                  className="w-full text-xs p-3 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-600 leading-relaxed resize-none"
+                  className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-slate-600 leading-relaxed resize-none focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -1083,20 +1117,25 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "about_preview" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="border-b border-slate-100 pb-4">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-red-600" />
-                <span>Section #4: Brand Responsibility Narrative &amp; 3-Photo Bento Collage</span>
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Controls the story copy, 4 feature badges, and 3 gallery photos in the Bento collage.
-              </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #4: Brand Responsibility Narrative &amp; 3-Photo Bento Collage</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Controls the story copy, 4 feature badges, and 3 gallery photos in the Bento collage.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Pill Badge
                 </label>
                 <input
@@ -1104,12 +1143,12 @@ export default function HbsAdminHome() {
                   value={aboutStory.badge}
                   onChange={(e) => setAboutStory((prev) => ({ ...prev, badge: e.target.value }))}
                   placeholder="ABOUT HiBUILD"
-                  className="w-full text-xs font-semibold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white"
+                  className="w-full text-xs font-semibold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Headline (H2)
                 </label>
                 <input
@@ -1117,13 +1156,13 @@ export default function HbsAdminHome() {
                   value={aboutStory.title}
                   onChange={(e) => setAboutStory((prev) => ({ ...prev, title: e.target.value }))}
                   placeholder="Your Building, Our Responsibility"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white text-slate-900"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white text-slate-900 transition-all"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+              <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                 Detailed Brand Narrative
               </label>
               <textarea
@@ -1131,7 +1170,7 @@ export default function HbsAdminHome() {
                 value={aboutStory.description}
                 onChange={(e) => setAboutStory((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Hind Building Solutions (HiBUILD) is a specialized maintenance and repair brand..."
-                className="w-full text-xs p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 focus:bg-white text-slate-700 leading-relaxed resize-none"
+                className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white text-slate-700 leading-relaxed resize-none transition-all"
               />
             </div>
 
@@ -1139,13 +1178,13 @@ export default function HbsAdminHome() {
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-blue-700">
-                  4 Feature Check Badges (2x2 Grid)
+                  Feature Check Badges (Up to 6)
                 </label>
                 {aboutStory.features.length < 6 && (
                   <button
                     type="button"
                     onClick={addAboutFeature}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 transition-all"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Add Badge</span>
@@ -1155,8 +1194,8 @@ export default function HbsAdminHome() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {aboutStory.features.map((feat, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                  <div key={idx} className="flex items-center gap-2 p-1.5 bg-slate-50/80 rounded-2xl border border-slate-200/60 shadow-2xs">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-100">
                       <CheckCircle2 className="w-4 h-4 text-blue-700" />
                     </div>
                     <input
@@ -1164,13 +1203,13 @@ export default function HbsAdminHome() {
                       value={feat}
                       onChange={(e) => updateAboutFeature(idx, e.target.value)}
                       placeholder="e.g. Trained & Experienced Team"
-                      className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:bg-white text-slate-800"
+                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-blue-500 text-slate-800"
                     />
                     {aboutStory.features.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeAboutFeature(idx)}
-                        className="text-slate-400 hover:text-red-600 p-1 rounded-md"
+                        className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
                         title="Remove badge"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1218,21 +1257,30 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "stats" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-blue-600" />
-                  <span>Section #5: 4 Counter Statistics Bar</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Verified metric counters displayed directly beneath the brand story strip. Zero fake claims.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center border border-cyan-100">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #5: 4 Counter Statistics Bar</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Verified metric counters displayed directly beneath the brand story strip. Zero fake claims.
+                  </p>
+                </div>
               </div>
+              <span className="text-[10px] font-mono text-cyan-600 bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                Section #5
+              </span>
             </div>
 
             {/* Live Strip Preview */}
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+            <div className="p-6 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-center shadow-2xs">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block mb-3 text-left">
+                Live Metrics Strip Preview:
+              </span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {stats.map((st, idx) => (
                   <div key={idx} className="space-y-1">
@@ -1245,26 +1293,28 @@ export default function HbsAdminHome() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {stats.map((st, idx) => (
-                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">Counter #{idx + 1}</span>
+                <div key={idx} className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3 shadow-2xs">
+                  <span className="text-[10px] font-mono font-bold text-cyan-700 uppercase bg-cyan-50 border border-cyan-100 px-2 py-0.5 rounded-md inline-block">
+                    Counter #{idx + 1}
+                  </span>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono font-bold uppercase text-slate-700">Display Value</label>
+                    <label className="text-[10px] font-mono font-bold uppercase text-slate-500">Display Value</label>
                     <input
                       type="text"
                       value={st.value}
                       onChange={(e) => updateStat(idx, "value", e.target.value)}
                       placeholder="e.g. 500+"
-                      className="w-full text-base font-black p-2 bg-white border border-slate-200 rounded-lg text-blue-700 font-display"
+                      className="w-full text-base font-black p-2.5 bg-white border border-slate-200 rounded-xl text-blue-700 font-display focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Metric Label</label>
+                    <label className="text-[10px] font-mono font-bold uppercase text-slate-500">Metric Label</label>
                     <input
                       type="text"
                       value={st.label}
                       onChange={(e) => updateStat(idx, "label", e.target.value)}
                       placeholder="e.g. Projects Completed"
-                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-lg text-slate-800"
+                      className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
@@ -1279,21 +1329,24 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "benefits" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>Section #6: Why Choose HiBUILD (6 Benefits &amp; Quote Form Section)</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Controls the 6 highlight benefit cards shown inside the deep architectural blue section on the public homepage.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #6: Why Choose HiBUILD (6 Benefits &amp; Quote Form Section)</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Controls the 6 highlight benefit cards shown inside the deep architectural blue section on the public homepage.
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={addBenefit}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all shadow-2xs"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Benefit Card</span>
@@ -1304,17 +1357,17 @@ export default function HbsAdminHome() {
               {benefits.map((b, idx) => (
                 <div
                   key={idx}
-                  className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 shadow-2xs space-y-3.5 relative group"
+                  className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 shadow-2xs space-y-3.5 relative group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+                    <span className="text-[10px] font-mono font-bold text-emerald-700 uppercase bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md">
                       Benefit Card #{idx + 1}
                     </span>
                     {benefits.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeBenefit(idx)}
-                        className="text-slate-400 hover:text-red-600 p-1 rounded-md transition-colors"
+                        className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
                         title="Remove benefit"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -1323,13 +1376,13 @@ export default function HbsAdminHome() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
+                    <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
                       Icon Emblem
                     </label>
                     <select
                       value={b.icon}
                       onChange={(e) => updateBenefit(idx, "icon", e.target.value)}
-                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 text-slate-800"
+                      className="w-full text-xs font-bold p-2 bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-emerald-500 text-slate-800"
                     >
                       {AVAILABLE_ICONS.map((ic) => (
                         <option key={ic.id} value={ic.id}>
@@ -1340,7 +1393,7 @@ export default function HbsAdminHome() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                    <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600">
                       Card Title
                     </label>
                     <input
@@ -1348,12 +1401,12 @@ export default function HbsAdminHome() {
                       value={b.title}
                       onChange={(e) => updateBenefit(idx, "title", e.target.value)}
                       placeholder="e.g. Skilled Professionals"
-                      className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-red-600 text-slate-900"
+                      className="w-full text-xs font-bold p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-emerald-500 text-slate-900"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
+                    <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500">
                       Brief Description
                     </label>
                     <textarea
@@ -1361,7 +1414,7 @@ export default function HbsAdminHome() {
                       value={b.desc}
                       onChange={(e) => updateBenefit(idx, "desc", e.target.value)}
                       placeholder="e.g. Trained & background-verified technicians"
-                      className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 text-slate-600 leading-snug resize-none"
+                      className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-1 focus:ring-emerald-500 text-slate-600 leading-snug resize-none"
                     />
                   </div>
                 </div>
@@ -1376,20 +1429,23 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "projects_showcase" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <FolderOpen className="w-4 h-4 text-purple-600" />
-                  <span>Section #7: Recent Work / Projects Showcase Header</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Controls the section titles and narrative above the 5-card filterable projects gallery.
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100">
+                  <FolderOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #7: Recent Work / Projects Showcase Header</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Controls the section titles and narrative above the 5-card filterable projects gallery.
+                  </p>
+                </div>
               </div>
               <Link
                 href="/admin/hbs/projects"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 rounded-xl transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-purple-700 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 rounded-xl transition-all border border-purple-200/60 shadow-2xs"
               >
                 <span>Manage Case Studies &amp; Projects →</span>
               </Link>
@@ -1397,7 +1453,7 @@ export default function HbsAdminHome() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Pill Badge
                 </label>
                 <input
@@ -1405,12 +1461,12 @@ export default function HbsAdminHome() {
                   value={projectsShowcase.badge}
                   onChange={(e) => setProjectsShowcase({ ...projectsShowcase, badge: e.target.value })}
                   placeholder="OUR PROJECTS"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Headline Lead Text
                 </label>
                 <input
@@ -1418,7 +1474,7 @@ export default function HbsAdminHome() {
                   value={projectsShowcase.title}
                   onChange={(e) => setProjectsShowcase({ ...projectsShowcase, title: e.target.value })}
                   placeholder="Our Recent"
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-display"
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl font-display focus:outline-hidden focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 focus:bg-white transition-all"
                 />
               </div>
 
@@ -1431,12 +1487,12 @@ export default function HbsAdminHome() {
                   value={projectsShowcase.highlightText}
                   onChange={(e) => setProjectsShowcase({ ...projectsShowcase, highlightText: e.target.value })}
                   placeholder="Work"
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-blue-700 font-display"
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-blue-700 font-display focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Section Subtitle / Description
                 </label>
                 <input
@@ -1444,7 +1500,7 @@ export default function HbsAdminHome() {
                   value={projectsShowcase.description}
                   onChange={(e) => setProjectsShowcase({ ...projectsShowcase, description: e.target.value })}
                   placeholder="Browse verified field repairs and case studies..."
-                  className="w-full text-xs p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-600"
+                  className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-slate-600 focus:outline-hidden focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -1457,19 +1513,27 @@ export default function HbsAdminHome() {
       ───────────────────────────────────────────────────────────────── */}
       {activeTab === "prefooter_cta" && (
         <div className="space-y-6">
-          <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl p-6 shadow-lg shadow-slate-200/50 space-y-6">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Phone className="w-4 h-4 text-red-600" />
-                <span>Section #8: Pre-Footer Master Conversion Banner</span>
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                The high-conversion blue banner directly preceding the footer with instant Call and WhatsApp triggers.
-              </p>
+          <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Section #8: Pre-Footer Master Conversion Banner</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    The high-conversion blue banner directly preceding the footer with instant Call and WhatsApp triggers.
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                Section #8
+              </span>
             </div>
 
             {/* Live Architectural Preview */}
-            <div className="p-6 rounded-2xl bg-[#0D2D5E] text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-[#0D2D5E] to-[#123974] text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <h4 className="text-lg font-black text-white font-display">
                   {preFooterCta.headline || "Need Professional Building Services?"}
@@ -1479,11 +1543,11 @@ export default function HbsAdminHome() {
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <div className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5">
+                <div className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs">
                   <Phone className="w-3.5 h-3.5" />
                   <span>{preFooterCta.callLabel || "Call"}: {content.phone || "+91 94625 77757"}</span>
                 </div>
-                <div className="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5">
+                <div className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs">
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>{preFooterCta.whatsappLabel || "WhatsApp Us"}</span>
                 </div>
@@ -1492,7 +1556,7 @@ export default function HbsAdminHome() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Main Headline
                 </label>
                 <input
@@ -1500,12 +1564,12 @@ export default function HbsAdminHome() {
                   value={preFooterCta.headline}
                   onChange={(e) => setPreFooterCta({ ...preFooterCta, headline: e.target.value })}
                   placeholder="Need Professional Building Services?"
-                  className="w-full text-xs font-black p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-display text-slate-900"
+                  className="w-full text-xs font-black p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl font-display text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Subtitle Story
                 </label>
                 <input
@@ -1513,12 +1577,12 @@ export default function HbsAdminHome() {
                   value={preFooterCta.subheadline}
                   onChange={(e) => setPreFooterCta({ ...preFooterCta, subheadline: e.target.value })}
                   placeholder="Let's take care of your property. Fast doorstep site inspection across Bhilwara & Rajasthan."
-                  className="w-full text-xs p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-700"
+                  className="w-full text-xs p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   Call Button Prefix
                 </label>
                 <input
@@ -1526,12 +1590,12 @@ export default function HbsAdminHome() {
                   value={preFooterCta.callLabel}
                   onChange={(e) => setPreFooterCta({ ...preFooterCta, callLabel: e.target.value })}
                   placeholder="Call"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-400 focus:bg-white transition-all"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-700">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
                   WhatsApp Button Label
                 </label>
                 <input
@@ -1539,13 +1603,57 @@ export default function HbsAdminHome() {
                   value={preFooterCta.whatsappLabel}
                   onChange={(e) => setPreFooterCta({ ...preFooterCta, whatsappLabel: e.target.value })}
                   placeholder="WhatsApp Us"
-                  className="w-full text-xs font-bold p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl"
+                  className="w-full text-xs font-bold p-3 bg-slate-50/70 border border-slate-200/80 rounded-2xl focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 focus:bg-white transition-all"
                 />
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ─────────────────────────────────────────────────────────────────
+          STICKY BOTTOM FLOATING ACTION BAR
+      ───────────────────────────────────────────────────────────────── */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 max-w-xl w-[calc(100%-2rem)] bg-white/90 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] p-3 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="flex items-center gap-2 pl-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-xs font-semibold text-slate-700 truncate">
+            {savedRecently ? "All 8 sections saved to live site!" : "Homepage CMS Editor"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={loadData}
+            className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+          >
+            Reset
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            disabled={saving}
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 rounded-xl transition-all shadow-[0_4px_14px_rgba(239,68,68,0.35)] disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : savedRecently ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-200" />
+                <span>Saved</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5" />
+                <span>Save All Sections</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

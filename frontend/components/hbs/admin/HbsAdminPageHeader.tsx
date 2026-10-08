@@ -23,20 +23,21 @@ export default function HbsAdminPageHeader({
   children,
 }: HbsAdminPageHeaderProps) {
   return (
-    <div className="backdrop-blur-xl bg-white/75 border border-white/80 p-5 sm:p-6 rounded-2xl shadow-lg shadow-slate-200/40 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div className="space-y-1 max-w-2xl">
+    <div className="relative bg-white/80 backdrop-blur-2xl border border-white/90 p-6 sm:p-7 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
+      <div className="space-y-1.5 max-w-2xl relative z-10">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 font-mono">
-          <Link href="/admin/hbs" className="hover:text-red-600 transition-colors inline-flex items-center gap-1 font-semibold">
+          <Link href="/admin/hbs" scroll={false} className="hover:text-red-600 transition-colors inline-flex items-center gap-1 font-semibold">
             <span className="text-red-600 font-black">Hi</span>
             <span className="text-slate-900 font-extrabold">BUILD</span>
-            <span className="text-slate-500 font-normal">Admin</span>
+            <span className="text-slate-400 font-normal">Admin</span>
           </Link>
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={idx}>
               <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
               {crumb.href ? (
-                <Link href={crumb.href} className="hover:text-slate-800 transition-colors">
+                <Link href={crumb.href} scroll={false} className="hover:text-slate-800 transition-colors">
                   {crumb.label}
                 </Link>
               ) : (

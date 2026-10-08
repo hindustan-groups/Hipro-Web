@@ -30,6 +30,9 @@ import {
   Building2,
   Check,
   Flame,
+  Plus,
+  MessageCircle,
+  TrendingUp,
 } from "lucide-react";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 
@@ -117,11 +120,11 @@ export default function HbsAdminDashboard() {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl pb-12">
-      {/* ── 1. GLASS HEADER ─────────────────────────────────────────── */}
+    <div className="space-y-8 max-w-6xl pb-16">
+      {/* ── 1. APPLE GLASS HEADER ─────────────────────────────────────────── */}
       <HbsAdminPageHeader
         title="Hind Build Admin Console"
-        description="Unified Glassmorphic management hub for Hind Building Solutions (HiBUILD) — Live CMS content, verified case studies, 19 trade catalogs, and customer leads."
+        description="Unified Glassmorphic management hub for Hind Building Solutions (HiBUILD) — Live CMS content, verified case studies, trade catalogs, and customer leads."
       >
         <button
           onClick={loadData}
@@ -135,7 +138,7 @@ export default function HbsAdminDashboard() {
         <Link
           href="/hbs"
           target="_blank"
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all shadow-md shadow-red-600/20 active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 rounded-xl transition-all shadow-[0_4px_14px_rgba(239,68,68,0.35)] active:scale-[0.98]"
         >
           <span>View Live Site</span>
           <ExternalLink className="w-3.5 h-3.5" />
@@ -149,28 +152,29 @@ export default function HbsAdminDashboard() {
         </div>
       )}
 
-      {/* ── 2. GLASS STAT CARDS ──────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* ── 2. APPLE GLASS STAT CARDS ──────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Leads Card */}
-        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+        <div className="relative group p-6 bg-white/80 backdrop-blur-2xl hover:bg-white/95 border border-white/90 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-500">
               Customer Leads
             </span>
-            <div className="w-9 h-9 rounded-xl bg-red-50/80 border border-red-200/60 flex items-center justify-center text-red-600 shadow-2xs group-hover:scale-105 transition-transform">
-              <Inbox className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500/10 to-red-500/20 border border-red-200/60 flex items-center justify-center text-red-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <Inbox className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-display">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display">
             {stats.leadsCount}
           </div>
-          <div className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+          <div className="text-xs text-slate-500 mt-2.5 flex items-center gap-1.5">
             {stats.newLeadsCount > 0 ? (
               <span className="px-2.5 py-0.5 bg-red-500/10 text-red-700 border border-red-200 font-mono text-[10px] font-bold rounded-full animate-pulse">
                 {stats.newLeadsCount} New Pending
               </span>
             ) : (
-              <span className="text-emerald-700 font-semibold flex items-center gap-1">
+              <span className="text-emerald-700 font-semibold flex items-center gap-1 text-[11px]">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> All reviewed
               </span>
             )}
@@ -178,63 +182,112 @@ export default function HbsAdminDashboard() {
         </div>
 
         {/* Services Card */}
-        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+        <div className="relative group p-6 bg-white/80 backdrop-blur-2xl hover:bg-white/95 border border-white/90 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-500">
               Trade Services
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50/80 border border-blue-200/60 flex items-center justify-center text-blue-600 shadow-2xs group-hover:scale-105 transition-transform">
-              <HardHat className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500/10 to-indigo-500/20 border border-blue-200/60 flex items-center justify-center text-blue-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <HardHat className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-display">
-            {stats.servicesCount || 19}
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display">
+            {stats.servicesCount || 0}
           </div>
-          <div className="text-xs text-slate-500 mt-2">
-            19 Specialized building trades
+          <div className="text-xs text-slate-500 mt-2.5 text-[11px]">
+            Active building trades catalog
           </div>
         </div>
 
         {/* Projects Card */}
-        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+        <div className="relative group p-6 bg-white/80 backdrop-blur-2xl hover:bg-white/95 border border-white/90 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-500">
               Case Studies
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-50/80 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:scale-105 transition-transform">
-              <FolderOpen className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500/10 to-teal-500/20 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shadow-2xs group-hover:scale-105 transition-transform">
+              <FolderOpen className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-display">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display">
             {stats.projectsCount}
           </div>
-          <div className="text-xs text-slate-500 mt-2">
+          <div className="text-xs text-slate-500 mt-2.5 text-[11px]">
             Field audits across Rajasthan
           </div>
         </div>
 
         {/* Reviews Card */}
-        <div className="relative group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/90 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300">
+        <div className="relative group p-6 bg-white/80 backdrop-blur-2xl hover:bg-white/95 border border-white/90 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-600">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-500">
               Verified Reviews
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-center justify-center text-amber-500 shadow-2xs group-hover:scale-105 transition-transform">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500/10 to-yellow-500/20 border border-amber-200/60 flex items-center justify-center text-amber-500 shadow-2xs group-hover:scale-105 transition-transform">
+              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
             </div>
           </div>
-          <div className="text-3xl font-black text-slate-900 font-display">
+          <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-display">
             {stats.testimonialsCount}
           </div>
-          <div className="text-xs text-slate-500 mt-2">
+          <div className="text-xs text-slate-500 mt-2.5 text-[11px]">
             5-star verified ratings
           </div>
         </div>
       </div>
 
-      {/* ── 3. RECENT LEADS (FROSTED GLASS TABLE) ────────────────────── */}
-      <div className="backdrop-blur-xl bg-white/75 border border-white/80 rounded-2xl shadow-lg shadow-slate-200/40 overflow-hidden">
-        <div className="p-5 border-b border-slate-100/90 flex items-center justify-between">
+      {/* ── 3. APPLE QUICK ACTIONS BAR ────────────────────────────────────── */}
+      <div className="p-4 bg-white/70 backdrop-blur-2xl border border-white/90 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
+            Quick Actions:
+          </span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/admin/hbs/projects"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-slate-800 hover:text-slate-950 font-semibold text-xs rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-red-600" />
+            <span>+ Add Project</span>
+          </Link>
+          <Link
+            href="/admin/hbs/services"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-slate-800 hover:text-slate-950 font-semibold text-xs rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-blue-600" />
+            <span>+ Add Service</span>
+          </Link>
+          <Link
+            href="/admin/hbs/testimonials"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-slate-800 hover:text-slate-950 font-semibold text-xs rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-amber-500" />
+            <span>+ Add Review</span>
+          </Link>
+          <Link
+            href="/admin/hbs/home"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-slate-800 hover:text-slate-950 font-semibold text-xs rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all"
+          >
+            <LayoutTemplate className="w-3.5 h-3.5 text-purple-600" />
+            <span>Homepage CMS</span>
+          </Link>
+          <Link
+            href="/admin/hbs/leads"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white text-slate-800 hover:text-slate-950 font-semibold text-xs rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all"
+          >
+            <Inbox className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Open Leads Hub</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── 4. RECENT LEADS (FROSTED GLASS TABLE) ────────────────────── */}
+      <div className="backdrop-blur-2xl bg-white/80 border border-white/90 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="space-y-0.5">
             <h2 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
               <span>Live Inquiries &amp; Inspection Leads</span>
@@ -254,78 +307,103 @@ export default function HbsAdminDashboard() {
         </div>
 
         {recentLeads.length === 0 ? (
-          <div className="p-10 text-center text-slate-400 text-xs">
+          <div className="p-12 text-center text-slate-400 text-xs">
             No inquiries recorded yet. Customer submissions from website forms will appear here in real time.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50/60 text-slate-600 font-mono text-[10px] uppercase tracking-wider border-b border-slate-100">
+              <thead className="bg-slate-50/70 text-slate-500 font-mono text-[10px] uppercase tracking-wider border-b border-slate-100">
                 <tr>
                   <th className="px-5 py-3.5 font-semibold">Customer</th>
-                  <th className="px-5 py-3.5 font-semibold">Contact / Phone</th>
+                  <th className="px-5 py-3.5 font-semibold">Contact &amp; Quick Reach</th>
                   <th className="px-5 py-3.5 font-semibold">Service Request</th>
                   <th className="px-5 py-3.5 font-semibold">Status</th>
                   <th className="px-5 py-3.5 font-semibold text-right">Update Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {recentLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-white/80 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="font-bold text-slate-900 text-xs">{lead.name}</div>
-                      {lead.email && (
-                        <div className="text-[11px] text-slate-400 font-normal">{lead.email}</div>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 font-mono">
-                      <a
-                        href={`tel:${lead.phone}`}
-                        className="text-slate-800 hover:text-red-600 transition-colors inline-flex items-center gap-1.5 font-semibold"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-red-600" />
-                        <span>{lead.phone}</span>
-                      </a>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="px-2.5 py-1 bg-slate-100/80 border border-slate-200 text-slate-800 text-[11px] rounded-lg font-semibold truncate inline-block max-w-[200px]">
-                        {lead.selectedService || "General Evaluation"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 font-mono text-[10px] font-bold rounded-full uppercase ${
-                          lead.status === "new" || lead.status === "NEW"
-                            ? "bg-red-100 text-red-700 border border-red-200"
-                            : lead.status === "completed" || lead.status === "CONVERTED"
-                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                            : "bg-slate-100 text-slate-700 border border-slate-200"
-                        }`}
-                      >
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <select
-                        value={lead.status}
-                        onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
-                        className="text-[11px] font-mono border border-slate-200 bg-white/90 px-2 py-1.5 rounded-lg text-slate-700 focus:outline-none focus:ring-1 focus:ring-red-500 shadow-2xs"
-                      >
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-100/80">
+                {recentLeads.map((lead) => {
+                  const cleanPhone = lead.phone ? String(lead.phone).replace(/\D/g, "") : "";
+                  const waPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+                  return (
+                    <tr key={lead.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs font-mono shrink-0 border border-slate-200/60">
+                            {lead.name ? lead.name.charAt(0).toUpperCase() : "C"}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-slate-900 text-xs truncate max-w-[180px]">{lead.name}</div>
+                            {lead.email && (
+                              <div className="text-[11px] text-slate-400 font-normal truncate max-w-[180px]">{lead.email}</div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 font-mono">
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${lead.phone}`}
+                            className="text-slate-800 hover:text-red-600 transition-colors inline-flex items-center gap-1 font-semibold"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{lead.phone}</span>
+                          </a>
+                          {waPhone && (
+                            <a
+                              href={`https://wa.me/${waPhone}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="px-2.5 py-1 bg-slate-100 text-slate-800 text-[11px] rounded-lg font-semibold truncate inline-block max-w-[200px] border border-slate-200/60">
+                          {lead.selectedService || "General Evaluation"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span
+                          className={`inline-block px-2.5 py-0.5 font-mono text-[10px] font-bold rounded-full uppercase ${
+                            lead.status === "new" || lead.status === "NEW"
+                              ? "bg-red-50 text-red-700 border border-red-200"
+                              : lead.status === "completed" || lead.status === "CONVERTED"
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : "bg-slate-100 text-slate-700 border border-slate-200"
+                          }`}
+                        >
+                          {lead.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <select
+                          value={lead.status}
+                          onChange={(e) => updateLeadStatus(lead.id, e.target.value)}
+                          className="text-[11px] font-mono border border-slate-200 bg-white px-2 py-1.5 rounded-xl text-slate-700 focus:outline-hidden focus:ring-1 focus:ring-red-500 shadow-2xs"
+                        >
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="in_progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* ── 4. COMPLETE CMS MODULES GRID (GLASSMORPHIC CARDS) ───────── */}
+      {/* ── 5. COMPLETE CMS MODULES GRID (APPLE SQUIRCLE TILES) ───────── */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -336,7 +414,7 @@ export default function HbsAdminDashboard() {
               Edit every page, section, claim, and specification to keep website data 100% accurate.
             </p>
           </div>
-          <span className="text-[11px] font-mono font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">
+          <span className="text-[11px] font-mono font-semibold text-slate-500 bg-white/80 border border-slate-200/80 px-2.5 py-1 rounded-xl shadow-2xs">
             12 Modules Active
           </span>
         </div>
@@ -345,18 +423,18 @@ export default function HbsAdminDashboard() {
           {/* Module 1: Home Page (All 8 Sections) */}
           <Link
             href="/admin/hbs/home"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <LayoutTemplate className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-500 to-rose-400 text-white flex items-center justify-center shadow-md shadow-red-500/25 group-hover:scale-105 transition-transform">
+                <LayoutTemplate className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-                  Home Page (All 8 Sections)
+                  Homepage CMS
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  Hero, 5 Categories, Services, Bento, Stats, 6 Benefits, Projects &amp; CTA
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  All 8 dynamic landing sections
                 </div>
               </div>
             </div>
@@ -366,17 +444,17 @@ export default function HbsAdminDashboard() {
           {/* Module 2: About Page */}
           <Link
             href="/admin/hbs/about"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Info className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-500 text-white flex items-center justify-center shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+                <Info className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   About Page CMS
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Heritage story, 4 metrics &amp; mission
                 </div>
               </div>
@@ -384,20 +462,20 @@ export default function HbsAdminDashboard() {
             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
-          {/* Module 3: Why Choose Us (New!) */}
+          {/* Module 3: Why Choose Us */}
           <Link
             href="/admin/hbs/why-choose-us"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Scale className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-purple-500/25 group-hover:scale-105 transition-transform">
+                <Scale className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Why Choose Us &amp; FAQs
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Comparison matrix, 6 pillars &amp; Q&amp;A
                 </div>
               </div>
@@ -408,17 +486,17 @@ export default function HbsAdminDashboard() {
           {/* Module 4: Services */}
           <Link
             href="/admin/hbs/services"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <HardHat className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shadow-amber-500/25 group-hover:scale-105 transition-transform">
+                <HardHat className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-                  19 Services Catalog
+                  Services Catalog
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Titles, Hindi names, pricing &amp; scope
                 </div>
               </div>
@@ -429,17 +507,17 @@ export default function HbsAdminDashboard() {
           {/* Module 5: Projects */}
           <Link
             href="/admin/hbs/projects"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <FolderOpen className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/25 group-hover:scale-105 transition-transform">
+                <FolderOpen className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Projects &amp; Case Studies
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Field diagnostics, specs &amp; gallery
                 </div>
               </div>
@@ -450,17 +528,17 @@ export default function HbsAdminDashboard() {
           {/* Module 6: Leads */}
           <Link
             href="/admin/hbs/leads"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Inbox className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-md shadow-rose-500/25 group-hover:scale-105 transition-transform">
+                <Inbox className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
-                  Leads &amp; Triage Desk
+                  Customer Leads &amp; CRM
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Pipeline, engineer dispatch &amp; logs
                 </div>
               </div>
@@ -471,18 +549,18 @@ export default function HbsAdminDashboard() {
           {/* Module 7: Testimonials */}
           <Link
             href="/admin/hbs/testimonials"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Star className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-500 to-amber-500 text-white flex items-center justify-center shadow-md shadow-yellow-500/25 group-hover:scale-105 transition-transform">
+                <Star className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Client Reviews &amp; Ratings
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  Homeowner &amp; society verified reviews
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  Verified homeowner reviews
                 </div>
               </div>
             </div>
@@ -492,18 +570,18 @@ export default function HbsAdminDashboard() {
           {/* Module 8: Header & Navbar */}
           <Link
             href="/admin/hbs/settings?tab=navbar"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Compass className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-500 text-white flex items-center justify-center shadow-md shadow-cyan-500/25 group-hover:scale-105 transition-transform">
+                <Compass className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Header &amp; Navbar CMS
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  Sticky header, navigation items, CTA buttons &amp; mobile menu
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  Sticky bar, nav links &amp; buttons
                 </div>
               </div>
             </div>
@@ -513,18 +591,18 @@ export default function HbsAdminDashboard() {
           {/* Module 9: Footer & Legal CMS */}
           <Link
             href="/admin/hbs/settings?tab=footer"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <MapPin className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-green-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/25 group-hover:scale-105 transition-transform">
+                <MapPin className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Footer &amp; Legal CMS
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  4 Columns, regional address, engineer hotline, WhatsApp &amp; 4 trust pillars
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  4 Columns, regional address &amp; pillars
                 </div>
               </div>
             </div>
@@ -534,59 +612,59 @@ export default function HbsAdminDashboard() {
           {/* Module 10: Settings & Contact */}
           <Link
             href="/admin/hbs/settings?tab=contact"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Settings className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-700 to-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-700/25 group-hover:scale-105 transition-transform">
+                <Phone className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Hotlines, WhatsApp &amp; Hours
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  Phone numbers, WhatsApp, business hours &amp; contact card
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  Phone numbers, WhatsApp &amp; hours
                 </div>
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
-          {/* Module 9: Branding */}
+          {/* Module 11: Branding */}
           <Link
             href="/admin/hbs/branding"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Palette className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-fuchsia-500 to-pink-500 text-white flex items-center justify-center shadow-md shadow-fuchsia-500/25 group-hover:scale-105 transition-transform">
+                <Palette className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   Branding &amp; Logos
                 </div>
-                <div className="text-[11px] text-slate-500">
-                  Logos, favicon, lockup &amp; social marks
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                  Logos, favicon &amp; social assets
                 </div>
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
           </Link>
 
-          {/* Module 10: SEO */}
+          {/* Module 12: SEO */}
           <Link
             href="/admin/hbs/seo"
-            className="group p-5 backdrop-blur-xl bg-white/70 hover:bg-white/95 border border-white/80 hover:border-red-300 rounded-2xl shadow-lg shadow-slate-200/40 hover:shadow-xl transition-all duration-300 flex items-center justify-between"
+            className="group p-5 bg-white/80 backdrop-blur-2xl hover:bg-white border border-white/90 hover:border-red-300 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200 shadow-2xs">
-                <Compass className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-500 to-purple-600 text-white flex items-center justify-center shadow-md shadow-violet-500/25 group-hover:scale-105 transition-transform">
+                <Compass className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-red-600 transition-colors">
                   SEO &amp; Meta Engine
                 </div>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
                   Meta descriptions, keywords &amp; OG tags
                 </div>
               </div>
@@ -596,8 +674,8 @@ export default function HbsAdminDashboard() {
         </div>
       </div>
 
-      {/* ── 5. GOVERNANCE BANNER ───────────────────────────────────────── */}
-      <div className="backdrop-blur-xl bg-white/70 border border-white/80 p-5 rounded-2xl flex items-start gap-3.5 shadow-sm text-xs">
+      {/* ── 6. GOVERNANCE BANNER ───────────────────────────────────────── */}
+      <div className="backdrop-blur-2xl bg-white/80 border border-white/90 p-5 rounded-3xl flex items-start gap-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.03)] text-xs">
         <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <strong className="text-slate-900 font-bold block">

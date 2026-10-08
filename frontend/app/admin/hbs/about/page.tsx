@@ -68,7 +68,7 @@ const DEFAULT_ABOUT_CMS_DATA: AboutCmsData = {
       desc: "Supervised under senior engineering governance and quality benchmarks.",
     },
     {
-      value: "19 Trades",
+      value: "All Trades",
       label: "Turnkey Solutions",
       desc: "Single window accountability for waterproofing, cracks, and restoration.",
     },
