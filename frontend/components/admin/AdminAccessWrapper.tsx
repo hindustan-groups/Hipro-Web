@@ -65,6 +65,11 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
       userPermissions.includes("contacts") ||
       userPermissions.includes("quotes") ||
       userPermissions.includes("applications")
+    )) ||
+    (sectionKey === "automail" && (
+      userPermissions.includes("automail") ||
+      userPermissions.includes("leads") ||
+      userPermissions.includes("newsletter")
     ));
 
   if (!hasAccess) {

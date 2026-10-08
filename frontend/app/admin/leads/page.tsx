@@ -665,8 +665,9 @@ export default function AdminLeadsPage() {
                         </button>
                         {lead.email && (
                           <a
-                            href={getMailtoLink(lead)}
-                            className="p-1.5 text-blue-600 bg-blue-50 border border-blue-100"
+                            href={`/admin/automail/compose?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name || "")}&brand=${lead.source?.toLowerCase().includes("hbs") ? "hbs" : "hipro"}&template=lead_inquiry_followup`}
+                            className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
+                            title="Send Email via AutoMail Studio"
                           >
                             <Mail className="w-3.5 h-3.5" />
                           </a>
@@ -913,12 +914,14 @@ export default function AdminLeadsPage() {
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {selectedLead.email && (
-                  <a
-                    href={getMailtoLink(selectedLead)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-xs shadow-xs transition-colors"
-                  >
-                    <Mail className="w-3.5 h-3.5" /> Reply Email
-                  </a>
+                  <>
+                    <a
+                      href={`/admin/automail/compose?to=${encodeURIComponent(selectedLead.email)}&name=${encodeURIComponent(selectedLead.name || "")}&brand=${selectedLead.source?.toLowerCase().includes("hbs") ? "hbs" : "hipro"}&template=lead_inquiry_followup`}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-xs shadow-xs transition-colors"
+                    >
+                      <Mail className="w-3.5 h-3.5" /> Send AutoMail
+                    </a>
+                  </>
                 )}
 
                 {selectedLead.phone && (

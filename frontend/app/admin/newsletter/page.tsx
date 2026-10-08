@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { RefreshCw, Trash2, Users, Mail } from "lucide-react";
+import { RefreshCw, Trash2, Users, Mail, Send } from "lucide-react";
 
 interface Subscriber {
   id: string;
@@ -89,14 +89,23 @@ export default function AdminNewsletter() {
           onChange={(e) => setSearch(e.target.value)}
           className="bg-white border border-slate-200 text-slate-900 placeholder-slate-400 rounded-none-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy w-64 shadow-sm transition-all"
         />
-        <button
-          onClick={fetchSubscribers}
-          disabled={loading}
-          className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-none-none text-xs font-medium disabled:opacity-50 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/admin/automail/compose?brand=hipro&template=newsletter_digest"
+            className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 text-xs font-bold transition-all shadow-xs"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>Broadcast Newsletter via AutoMail</span>
+          </a>
+          <button
+            onClick={fetchSubscribers}
+            disabled={loading}
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-none-none text-xs font-medium disabled:opacity-50 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-sm"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error && (

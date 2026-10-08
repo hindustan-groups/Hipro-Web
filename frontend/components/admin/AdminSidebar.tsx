@@ -70,6 +70,7 @@ export const HBS_NAV_SECTIONS: HbsNavSection[] = [
     title: "INQUIRIES & LEADS",
     items: [
       { href: "/admin/hbs/leads", label: "Customer Leads", icon: Inbox, badge: "Live" },
+      { href: "/admin/automail?brand=hbs", label: "AutoMail Studio", icon: Send, badge: "HiBUILD" },
     ],
   },
   {
@@ -136,10 +137,11 @@ const navCategories: NavCategory[] = [
     title: "Leads & CRM",
     items: [
       { href: "/admin/leads", label: "Leads Hub", icon: Inbox, badge: "All", sectionKey: "leads" },
+      { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Pro", sectionKey: "automail" },
       { href: "/admin/quotes", label: "Quote Requests", icon: FileText, sectionKey: "quotes" },
       { href: "/admin/contacts", label: "Contact Inquiries", icon: Mail, sectionKey: "contacts" },
       { href: "/admin/applications", label: "Job Applications", icon: Briefcase, sectionKey: "applications" },
-      { href: "/admin/newsletter", label: "Newsletter", icon: Send, sectionKey: "newsletter" },
+      { href: "/admin/newsletter", label: "Newsletter", icon: Mail, sectionKey: "newsletter" },
     ],
   },
   {
@@ -225,6 +227,13 @@ export default function AdminSidebar({ user }: { user: any }) {
         userPermissions.includes("contacts") ||
         userPermissions.includes("quotes") ||
         userPermissions.includes("applications")
+      );
+    }
+    if (key === "automail") {
+      return (
+        userPermissions.includes("automail") ||
+        userPermissions.includes("leads") ||
+        userPermissions.includes("newsletter")
       );
     }
     return false;

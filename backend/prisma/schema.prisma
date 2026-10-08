@@ -549,3 +549,69 @@ model HbsLead {
   @@index([createdAt])
 }
 
+// ==================================================
+// AUTOMAIL BULK & CAMPAIGN ENGINE (MULTI-BRAND)
+// Supports HiPRO, Hind Build (HBS), and custom brands
+// ==================================================
+
+model AutomailContact {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  brand     String   @default("all") // "all" | "hipro" | "hbs" | custom brand tag
+  tags      String?  // comma-separated or JSON
+  source    String?  @default("manual") // "manual" | "csv_import" | "hipro_leads" | "hbs_leads" | "newsletter"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([brand])
+  @@index([source])
+}
+
+model AutomailCampaign {
+  id              String            @id @default(cuid())
+  name            String
+  subject         String
+  brand           String            @default("all") // "all" | "hipro" | "hbs" | custom
+  senderName      String?
+  senderEmail     String?
+  replyTo         String?
+  htmlBody        String            @db.Text
+  textBody        String?           @db.Text
+  template        String?           @default("custom") // "custom" | "hipro_official" | "hbs_official"
+  status          String            @default("draft") // "draft" | "queued" | "sending" | "completed" | "paused" | "failed"
+  targetAudience  String?           @default("all") // "all" | "hipro_only" | "hbs_only" | "selected"
+  totalRecipients Int               @default(0)
+  sentCount       Int               @default(0)
+  failedCount     Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  sentAt          DateTime?
+  logs            AutomailSendLog[]
+
+  @@index([brand])
+  @@index([status])
+}
+
+model AutomailSendLog {
+  id           String           @id @default(cuid())
+  campaignId   String
+  contactEmail String
+  contactName  String?
+  brand        String?          @default("all")
+  status       String           @default("queued") // "queued" | "sent" | "failed"
+  error        String?          @db.Text
+  sentAt       DateTime?
+  createdAt    DateTime         @default(now())
+  campaign     AutomailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([status])
+}
+
+model AutomailDailyStat {
+  date        String @id // YYYY-MM-DD
+  totalSent   Int    @default(0)
+  totalFailed Int    @default(0)
+}
+

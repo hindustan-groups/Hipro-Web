@@ -25,6 +25,7 @@ import aboutRouter from "./routes/about";
 import uploadRouter from "./routes/upload";
 import leadsRouter from "./routes/leads";
 import hbsRouter from "./routes/hbs";
+import automailRouter from "./routes/automail";
 import { securityHeaders } from "./middleware/securityHeaders";
 
 const app = express();
@@ -86,6 +87,7 @@ app.use("/api/about", aboutRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/hbs", hbsRouter);
+app.use("/api/automail", automailRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {
