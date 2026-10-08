@@ -11,6 +11,14 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Lock browser window scrolling when inside admin dashboard */
+body:has(.admin-root-viewport),
+html:has(.admin-root-viewport) {
+  overflow: hidden !important;
+  height: 100% !important;
+  max-height: 100vh !important;
+}
+
 body {
   background-color: #ffffff;
   color: #000000;

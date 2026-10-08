@@ -23,14 +23,14 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50/20 text-slate-900 font-sans relative">
-      {/* Subtle Ambient Glassmorphic Glow Blooms */}
-      <div className="absolute -top-32 -left-32 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-32 w-96 h-96 bg-red-100/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 left-1/3 w-80 h-80 bg-indigo-100/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="fixed inset-0 w-full h-full flex overflow-hidden bg-slate-50/90 text-slate-900 font-sans antialiased selection:bg-red-500/20 selection:text-red-900 admin-root-viewport">
+      {/* Subtle Apple-style Ambient Glow Blooms */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-300/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 -right-40 w-[450px] h-[450px] bg-red-200/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-indigo-200/15 rounded-full blur-3xl pointer-events-none" />
 
       <AdminSidebar user={user} />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         <AdminHeader user={user} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-full">
           <AdminAccessWrapper user={user}>

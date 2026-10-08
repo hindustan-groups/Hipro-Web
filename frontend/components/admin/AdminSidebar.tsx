@@ -63,60 +63,55 @@ export const HBS_NAV_SECTIONS: HbsNavSection[] = [
   {
     title: "OVERVIEW",
     items: [
-      { href: "/admin/hbs", label: "Dashboard Overview", icon: LayoutDashboard },
+      { href: "/admin/hbs", label: "Dashboard", icon: LayoutDashboard },
     ],
   },
   {
-    title: "CLIENT CRM & PIPELINE",
+    title: "INQUIRIES & LEADS",
     items: [
-      { href: "/admin/hbs/leads", label: "Customer Leads & CRM", icon: Inbox, badge: "Pipeline" },
+      { href: "/admin/hbs/leads", label: "Customer Leads", icon: Inbox, badge: "Live" },
     ],
   },
   {
-    title: "HOMEPAGE SECTIONS",
+    title: "PAGE BUILDER",
     items: [
       {
         href: "/admin/hbs/home",
-        label: "Home Page (8 Sections)",
+        label: "Homepage CMS",
         icon: LayoutTemplate,
         badge: "8 Sec",
         subItems: [
           { href: "/admin/hbs/home?tab=hero", label: "1. Hero Banner", tabKey: "hero" },
-          { href: "/admin/hbs/home?tab=categories", label: "2. Categories Ribbon (5)", tabKey: "categories" },
+          { href: "/admin/hbs/home?tab=categories", label: "2. Categories Ribbon", tabKey: "categories" },
           { href: "/admin/hbs/home?tab=services_showcase", label: "3. Services Showcase", tabKey: "services_showcase" },
           { href: "/admin/hbs/home?tab=about_preview", label: "4. About & Bento Collage", tabKey: "about_preview" },
-          { href: "/admin/hbs/home?tab=stats", label: "5. 4 Stat Counters", tabKey: "stats" },
-          { href: "/admin/hbs/home?tab=benefits", label: "6. Why Choose Us (6)", tabKey: "benefits" },
+          { href: "/admin/hbs/home?tab=stats", label: "5. Stat Counters", tabKey: "stats" },
+          { href: "/admin/hbs/home?tab=benefits", label: "6. Why Choose Us", tabKey: "benefits" },
           { href: "/admin/hbs/home?tab=projects_showcase", label: "7. Projects Showcase", tabKey: "projects_showcase" },
           { href: "/admin/hbs/home?tab=prefooter_cta", label: "8. Pre-Footer Master CTA", tabKey: "prefooter_cta" },
         ],
       },
-    ],
-  },
-  {
-    title: "HEADER & FOOTER",
-    items: [
-      { href: "/admin/hbs/settings?tab=navbar", label: "Header & Navbar CMS", icon: Compass, badge: "Nav" },
-      { href: "/admin/hbs/settings?tab=footer", label: "Footer & Legal CMS", icon: MapPin, badge: "4 Cols" },
-    ],
-  },
-  {
-    title: "PAGES & CATALOG",
-    items: [
-      { href: "/admin/hbs/about", label: "About Page CMS", icon: Info },
+      { href: "/admin/hbs/about", label: "About Page", icon: Info },
       { href: "/admin/hbs/why-choose-us", label: "Why Choose Us & FAQs", icon: ShieldCheck },
-      { href: "/admin/hbs/services", label: "19 Services Catalog", icon: HardHat, badge: "19" },
+    ],
+  },
+  {
+    title: "CATALOG & REVIEWS",
+    items: [
+      { href: "/admin/hbs/services", label: "Services Catalog", icon: HardHat },
       { href: "/admin/hbs/projects", label: "Projects / Case Studies", icon: FolderOpen },
       { href: "/admin/hbs/testimonials", label: "Client Reviews", icon: Star },
     ],
   },
   {
-    title: "SETTINGS & BRANDING",
+    title: "GLOBAL & BRANDING",
     items: [
-      { href: "/admin/hbs/branding", label: "Logos & Brand Identity", icon: Palette },
-      { href: "/admin/hbs/settings?tab=contact", label: "Hotlines, WhatsApp & Hours", icon: Phone },
+      { href: "/admin/hbs/settings?tab=navbar", label: "Header & Navbar", icon: Compass },
+      { href: "/admin/hbs/settings?tab=footer", label: "Footer & Legal CMS", icon: MapPin },
+      { href: "/admin/hbs/branding", label: "Brand & Logos", icon: Palette },
+      { href: "/admin/hbs/settings?tab=contact", label: "Hotlines & WhatsApp", icon: Phone },
       { href: "/admin/hbs/seo", label: "SEO & Social Meta", icon: Globe },
-      { href: "/admin/hbs/media", label: "Media & Asset Library", icon: GalleryHorizontalEnd },
+      { href: "/admin/hbs/media", label: "Media Library", icon: GalleryHorizontalEnd },
     ],
   },
 ];
@@ -291,33 +286,34 @@ export default function AdminSidebar({ user }: { user: any }) {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 shrink-0 bg-white/75 backdrop-blur-2xl border-r border-white/80 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-64 shrink-0 bg-white/70 backdrop-blur-2xl border-r border-slate-200/60 flex flex-col h-full shadow-[4px_0_30px_rgba(15,23,42,0.02)] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         {pathname?.startsWith("/admin/hbs") ? (
           <>
-            {/* 1. Hind Build Admin Header (Frosted Glass) */}
-            <div className="h-16 px-4 border-b border-white/80 flex items-center justify-between bg-white/50 backdrop-blur-md shrink-0">
+            {/* 1. Hind Build Admin Header (Apple Frosted Glass) */}
+            <div className="h-16 px-4 border-b border-slate-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
               <Link href="/admin/hbs" className="flex items-center gap-2.5 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/hibuild-logo.png"
                   alt="HiBUILD"
-                  className="h-9 w-auto object-contain group-hover:scale-[1.02] transition-transform"
+                  className="h-8 w-auto object-contain group-hover:scale-[1.02] transition-transform"
                 />
-                <span className="text-[10px] bg-red-500/10 text-red-700 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border border-red-500/20 backdrop-blur-xs shadow-2xs">
-                  CMS
+                <span className="text-[10px] bg-red-50 text-red-600 font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-red-200/60 shadow-2xs">
+                  Pro CMS
                 </span>
               </Link>
             </div>
 
-            {/* 2. Dual Brand Switcher: HiPRO Master vs Hind Build CMS */}
-            <div className="px-3 py-2.5 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
-              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
+            {/* 2. Apple Segmented Control: HiPRO vs HiBUILD */}
+            <div className="px-3.5 py-3 border-b border-slate-200/50">
+              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl flex items-center border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
                 <Link
                   href="/admin"
-                  className="py-1.5 px-2 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 font-semibold"
+                  scroll={false}
+                  className="flex-1 py-1.5 px-2.5 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/logo.jpg" alt="HiPRO" className="w-3.5 h-3.5 object-contain rounded-xs mix-blend-multiply" />
@@ -325,20 +321,20 @@ export default function AdminSidebar({ user }: { user: any }) {
                 </Link>
                 <Link
                   href="/admin/hbs"
-                  className="py-1.5 px-2 text-center rounded-lg bg-gradient-to-r from-[#0D2D5E] to-[#123974] text-white shadow-md shadow-[#0D2D5E]/25 flex items-center justify-center gap-1.5 font-extrabold border border-blue-400/25"
+                  scroll={false}
+                  className="flex-1 py-1.5 px-2.5 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1.5 text-xs font-bold border border-black/5"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/hbs-icon.jpg" alt="HiBUILD" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   <span>HiBUILD</span>
                 </Link>
               </div>
             </div>
 
-            {/* 3. Navigation Links (OVERVIEW, PAGES, HEADER & FOOTER, LEADS, SETTINGS) */}
-            <nav className="flex-1 px-3 py-3 space-y-3.5 overflow-y-auto">
+            {/* 3. Navigation Links (Apple macOS Sidebar List) */}
+            <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
               {HBS_NAV_SECTIONS.map((section) => (
                 <div key={section.title} className="space-y-1">
-                  <p className="px-2.5 text-[10px] font-mono font-extrabold uppercase tracking-widest text-slate-400/90">
+                  <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {section.title}
                   </p>
                   <div className="space-y-0.5">
@@ -364,32 +360,33 @@ export default function AdminSidebar({ user }: { user: any }) {
                         <div key={href} className="space-y-0.5">
                           <Link
                             href={href}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all min-h-[38px] ${
+                            scroll={false}
+                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] ${
                               active && !subItems
-                                ? "bg-gradient-to-r from-[#0D2D5E] via-[#0E356E] to-[#123E82] text-white font-bold shadow-md shadow-[#0D2D5E]/25 border border-white/20"
+                                ? "bg-white text-slate-900 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200/80 ring-1 ring-black/5"
                                 : isParentOfCurrent && subItems
-                                ? "bg-white/80 backdrop-blur-md text-slate-900 font-extrabold border border-white/90 shadow-2xs"
-                                : "text-slate-600 hover:text-slate-950 hover:bg-white/70 hover:backdrop-blur-xs hover:border hover:border-white/70"
+                                ? "bg-white/80 backdrop-blur-md text-slate-900 font-bold border border-slate-200/60 shadow-2xs"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-white/60 hover:shadow-2xs font-medium"
                             }`}
                           >
                             <div className="flex items-center gap-2.5">
                               <Icon
                                 className={`w-4 h-4 shrink-0 transition-colors ${
                                   active && !subItems
-                                    ? "text-red-400"
+                                    ? "text-red-600"
                                     : isParentOfCurrent && subItems
                                     ? "text-red-600"
                                     : "text-slate-400"
                                 }`}
                               />
-                              <span>{label}</span>
+                              <span className="truncate">{label}</span>
                             </div>
                             {badge && (
                               <span
-                                className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                                className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
                                   active && !subItems
-                                    ? "bg-red-500/25 text-white border border-red-400/30"
-                                    : "backdrop-blur-xs bg-slate-100/80 text-slate-600 border border-slate-200/60"
+                                    ? "bg-red-50 text-red-600 border border-red-200/60"
+                                    : "bg-slate-100 text-slate-500 border border-slate-200/50"
                                 }`}
                               >
                                 {badge}
@@ -397,9 +394,9 @@ export default function AdminSidebar({ user }: { user: any }) {
                             )}
                           </Link>
 
-                          {/* Expandable Sub-items (All 8 Homepage Sections) */}
+                          {/* Expandable Sub-items (Homepage Sections) */}
                           {subItems && isParentOfCurrent && (
-                            <div className="pl-3.5 pr-1 py-1 space-y-1 border-l-2 border-red-400/40 ml-4 my-1.5">
+                            <div className="pl-3.5 pr-1 py-1 space-y-0.5 border-l-2 border-red-500/30 ml-4 my-1">
                               {subItems.map((sub) => {
                                 const isSubActive =
                                   pathname === pathOnly &&
@@ -409,16 +406,17 @@ export default function AdminSidebar({ user }: { user: any }) {
                                   <Link
                                     key={sub.href}
                                     href={sub.href}
-                                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                                    scroll={false}
+                                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] transition-all ${
                                       isSubActive
-                                        ? "bg-gradient-to-r from-[#0D2D5E] to-[#143973] text-white font-bold shadow-xs border border-white/20"
-                                        : "text-slate-600 hover:text-slate-950 hover:bg-white/70 hover:backdrop-blur-xs"
+                                        ? "bg-white text-slate-900 font-bold shadow-xs border border-slate-200/70"
+                                        : "text-slate-500 hover:text-slate-900 hover:bg-white/50 font-medium"
                                     }`}
                                   >
                                     <div className="flex items-center gap-2">
                                       <span
                                         className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                          isSubActive ? "bg-red-400 animate-pulse shadow-xs" : "bg-slate-300"
+                                          isSubActive ? "bg-red-600 animate-pulse shadow-xs" : "bg-slate-300"
                                         }`}
                                       />
                                       <span className="truncate">{sub.label}</span>
@@ -437,12 +435,12 @@ export default function AdminSidebar({ user }: { user: any }) {
             </nav>
 
             {/* 4. Bottom System Controls */}
-            <div className="p-3 border-t border-white/80 space-y-1 bg-white/40 backdrop-blur-xl shrink-0">
+            <div className="p-3 border-t border-slate-200/50 space-y-1 bg-white/40 backdrop-blur-xl shrink-0">
               <Link
                 href="/hbs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-950 hover:bg-white/80 rounded-xl transition-all min-h-[38px] hover:shadow-2xs"
+                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-white/80 rounded-xl transition-all shadow-2xs hover:shadow-xs border border-transparent hover:border-slate-200/60"
               >
                 <div className="flex items-center gap-2">
                   <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
@@ -501,6 +499,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
             <Link
               href="/admin"
+              scroll={false}
               className="py-1.5 px-2 text-center rounded-lg bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 font-extrabold border border-slate-200/60"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -509,6 +508,7 @@ export default function AdminSidebar({ user }: { user: any }) {
             </Link>
             <Link
               href="/admin/hbs"
+              scroll={false}
               className="py-1.5 px-2 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 group font-semibold"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -607,6 +607,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                           <Link
                             key={href}
                             href={href}
+                            scroll={false}
                             className={`flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group relative ${
                               active
                                 ? "bg-construction-navy text-white shadow-xs"

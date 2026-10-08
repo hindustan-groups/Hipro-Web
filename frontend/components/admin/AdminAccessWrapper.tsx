@@ -1,10 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 
 export default function AdminAccessWrapper({ user, children }: { user: any, children: React.ReactNode }) {
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Lock outer browser window scroll so admin header and sidebar never scroll off-screen
+    window.scrollTo(0, 0);
+    const origBodyOverflow = document.body.style.overflow;
+    const origHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = origBodyOverflow;
+      document.documentElement.style.overflow = origHtmlOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   
   if (user?.role === "admin") {
     return <>{children}</>;
