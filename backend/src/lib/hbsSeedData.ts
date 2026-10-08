@@ -444,7 +444,7 @@ export const HBS_SERVICES_SEED = [
 export async function seedHbsServicesIfEmpty(prisma: any): Promise<number> {
   const count = await prisma.hbsService.count();
   if (count === 0) {
-    console.log("[HBS Auto-Seed] Initializing all 19 HBS services with rich content...");
+    console.log("[HBS Auto-Seed] Initializing HBS services with rich content...");
     for (const s of HBS_SERVICES_SEED) {
       await prisma.hbsService.upsert({
         where: { slug: s.slug },
@@ -460,7 +460,7 @@ export async function seedHbsServicesIfEmpty(prisma: any): Promise<number> {
 }
 
 export async function seedHbsServicesAlways(prisma: any): Promise<number> {
-  console.log("[HBS Seed] Upserting all 19 HBS services with rich content...");
+  console.log("[HBS Seed] Upserting HBS services with rich content...");
   for (const s of HBS_SERVICES_SEED) {
     await prisma.hbsService.upsert({
       where: { slug: s.slug },

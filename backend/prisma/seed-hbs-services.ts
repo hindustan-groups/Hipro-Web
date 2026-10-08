@@ -336,7 +336,7 @@ const DEFAULT_HBS_CONTENT = {
   heroImage: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1200&auto=format&fit=crop",
   heroCtas: JSON.stringify([
     { label: "Book Free Inspection", link: "/hbs/contact", variant: "primary" },
-    { label: "View All 19 Services", link: "/hbs/services", variant: "secondary" }
+    { label: "View All Services", link: "/hbs/services", variant: "secondary" }
   ]),
   whyChooseUs: JSON.stringify([
     { title: "Parent Company Engineering Oversight", description: "Backed by Hindustan Projects (HiPRO) civil engineers and certified site supervisors.", icon: "ShieldCheck" },
@@ -345,7 +345,7 @@ const DEFAULT_HBS_CONTENT = {
     { title: "Rapid Turnaround Across Rajasthan", description: "Dedicated quick-response technicians stationed in Bhilwara and central regions.", icon: "Clock" }
   ]),
   stats: JSON.stringify([
-    { label: "Repair Services", value: "19+" },
+    { label: "Repair Services", value: "Turnkey" },
     { label: "Buildings Protected", value: "350+" },
     { label: "Customer Satisfaction", value: "98%" },
     { label: "Engineering Heritage", value: "Since 2019" }
@@ -365,7 +365,7 @@ const DEFAULT_HBS_CONTENT = {
     { name: "Rapid Service Response", role: "Customer Operations & Dispatch", desc: "Ensuring timely inspections and transparent digital estimates." }
   ]),
   whyChoosePoints: JSON.stringify([
-    { title: "Single-Window Convenience", desc: "No need to juggle 5 different unverified contractors. All 19 building services under one trusted brand." },
+    { title: "Single-Window Convenience", desc: "No need to juggle 5 different unverified contractors. All specialized building services under one trusted brand." },
     { title: "Written Work Guarantee", desc: "Documented warranty on waterproofing, structural rehabilitation, and pest control treatments." },
     { title: "Transparent Pricing", desc: "Itemized estimations with clear material specifications before any work begins." }
   ]),

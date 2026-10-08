@@ -121,7 +121,7 @@ router.post("/seed", async (req: Request, res: Response) => {
 // GET /api/hbs/services — Public / Admin
 router.get("/services", async (req: Request, res: Response) => {
   try {
-    // If services table is empty, idempotently auto-seed the 19 default services
+    // If services table is empty, idempotently auto-seed default services
     await seedHbsServicesIfEmpty(prisma);
 
     const includeAll = req.query.all === "true";

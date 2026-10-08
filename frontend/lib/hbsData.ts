@@ -55,7 +55,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
     primaryCtaUrl: "/hbs/contact",
     secondaryCtaLabel: "Chat on WhatsApp",
     secondaryCtaUrl: "https://wa.me/917597000601?text=Hello%20Hind%20Build,%20I%20would%20like%20to%20schedule%20a%20site%20inspection.",
-    tertiaryCtaLabel: "19 Services Catalog",
+    tertiaryCtaLabel: "Services Catalog",
     tertiaryCtaUrl: "/hbs/services"
   }),
   whyChooseUs: JSON.stringify([
@@ -65,7 +65,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
     { title: "Rapid Turnaround Across Rajasthan", description: "Dedicated quick-response technicians stationed in Bhilwara and central regions.", icon: "Clock" }
   ]),
   stats: JSON.stringify([
-    { label: "Repair Services", value: "19+" },
+    { label: "Repair Services", value: "Turnkey" },
     { label: "Buildings Protected", value: "350+" },
     { label: "Customer Satisfaction", value: "98%" },
     { label: "Engineering Heritage", value: "Since 2019" }
@@ -106,7 +106,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
     { name: "Rapid Service Response", role: "Customer Operations & Dispatch", desc: "Ensuring timely inspections and transparent digital estimates." }
   ]),
   whyChoosePoints: JSON.stringify([
-    { title: "Single-Window Convenience", desc: "No need to juggle 5 different unverified contractors. All 19 building services under one trusted brand." },
+    { title: "Single-Window Convenience", desc: "No need to juggle multiple unverified contractors. All specialized building services under one trusted brand." },
     { title: "Written Work Guarantee", desc: "Documented warranty on waterproofing, structural rehabilitation, and pest control treatments." },
     { title: "Transparent Pricing", desc: "Itemized estimations with clear material specifications before any work begins." }
   ]),
@@ -127,8 +127,8 @@ function isBackendCircuitOpen(): boolean {
 }
 
 function tripBackendCircuit(): void {
-  // If backend is down or unreachable, bypass further fetches for 45 seconds
-  backendOfflineUntil = Date.now() + 45000;
+  // If backend is down or unreachable, bypass further fetches for 5 seconds
+  backendOfflineUntil = Date.now() + 5000;
 }
 
 export async function fetchHbsContent(): Promise<HbsContent> {
@@ -138,7 +138,7 @@ export async function fetchHbsContent(): Promise<HbsContent> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/content`, {
       next: { revalidate: 60, tags: ["hbs-content"] },
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -336,7 +336,7 @@ export async function fetchHbsServices(): Promise<HbsService[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/services`, {
       next: { revalidate: 60, tags: ["hbs-services"] },
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -515,7 +515,7 @@ export async function fetchHbsProjects(): Promise<HbsProject[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/projects`, {
       next: { revalidate: 60, tags: ["hbs-projects"] },
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
       const json = await res.json();
@@ -534,7 +534,7 @@ export async function fetchHbsTestimonials(): Promise<HbsTestimonial[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/hbs/testimonials`, {
       next: { revalidate: 60, tags: ["hbs-testimonials"] },
-      signal: AbortSignal.timeout(1000),
+      signal: AbortSignal.timeout(8000),
     });
     if (res.ok) {
       const json = await res.json();
