@@ -137,7 +137,7 @@ export default function HbsServicesDirectory({
               id="all-services-heading"
               className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900"
             >
-              {isSearching ? "Matching Solutions" : "All 19 Engineering Services"}
+              {isSearching ? "Matching Solutions" : `All ${services.length} Specialized Services`}
             </h2>
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
@@ -224,7 +224,7 @@ export default function HbsServicesDirectory({
                 onClick={() => setQuery("")}
                 className="min-h-[44px] px-5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-colors"
               >
-                Show All 19 Services
+                Show All {services.length} Services
               </button>
               <Link
                 href={`${prefix}/contact`}

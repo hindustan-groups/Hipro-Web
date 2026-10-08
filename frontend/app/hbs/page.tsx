@@ -79,10 +79,20 @@ export default async function HbsHomePage() {
     try {
       const parsedStats = typeof content.stats === "string" ? JSON.parse(content.stats) : content.stats;
       if (Array.isArray(parsedStats) && parsedStats.length > 0) {
-        statsList = parsedStats.map((st: any) => ({
-          value: st.value || "0",
-          label: st.label || "",
-        }));
+        statsList = parsedStats.map((st: any) => {
+          let val = st.value || "0";
+          const labelLower = (st.label || "").toLowerCase();
+          if (
+            (labelLower.includes("trade") || labelLower.includes("service")) &&
+            (val === "19" || val === "19+" || val === "16")
+          ) {
+            val = services.length > 0 ? `${services.length}+` : "Turnkey";
+          }
+          return {
+            value: val,
+            label: st.label || "",
+          };
+        });
       }
     } catch {}
   }
@@ -333,7 +343,19 @@ export default async function HbsHomePage() {
                   id="about-heading"
                   className="text-2xl sm:text-4xl font-black tracking-tight text-slate-900 font-display"
                 >
-                  {aboutTitle}
+                  {(() => {
+                    const match = aboutTitle.match(/(.*?\b)(Responsibility)(\b.*)/i);
+                    if (match) {
+                      return (
+                        <>
+                          {match[1]}
+                          <span className="text-blue-700">{match[2]}</span>
+                          {match[3]}
+                        </>
+                      );
+                    }
+                    return aboutTitle;
+                  })()}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                   {aboutDesc}

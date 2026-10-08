@@ -134,30 +134,30 @@ export default function HbsQuoteModal({
                   {services.length > 0 ? (
                     services.map((s, idx) => (
                       <option key={idx} value={s.title}>
-                        {s.serviceNumber ? `${s.serviceNumber}. ` : ""}{s.title}
+                        {s.title}
                       </option>
                     ))
                   ) : (
                     <>
-                      <option value="Structure Repair">01. Structure Repair</option>
-                      <option value="Water Leakage Solution">02. Water Leakage Solution</option>
-                      <option value="Plumbing & Electrical">03. Plumbing & Electrical</option>
-                      <option value="Painting & Wall Repair">04. Painting & Wall Repair</option>
-                      <option value="Terrace & Bird Protection">05. Terrace & Bird Protection</option>
-                      <option value="Termite Control">06. Termite Control</option>
-                      <option value="Tile Work">07. Tile Work</option>
-                      <option value="AC, Lift & Solar">08. AC, Lift & Solar</option>
-                      <option value="Electrical & Machine Work">09. Electrical & Machine Work</option>
-                      <option value="Safety & Compliance">10. Safety & Compliance</option>
-                      <option value="Gardening">11. Gardening</option>
-                      <option value="Cleaning Services">12. Cleaning Services</option>
-                      <option value="Packers & Movers">13. Packers & Movers</option>
-                      <option value="CCTV & Security">14. CCTV & Security</option>
-                      <option value="Smart Home Automation">15. Smart Home Automation</option>
-                      <option value="Furniture Work">16. Furniture Work</option>
-                      <option value="Wall Decor & Wallpaper">17. Wall Decor & Wallpaper</option>
-                      <option value="Facade Work (ACP & Glass)">18. Facade Work (ACP & Glass)</option>
-                      <option value="Fabrication Work">19. Fabrication Work</option>
+                      <option value="Structure Repair">Structure Repair</option>
+                      <option value="Water Leakage Solution">Water Leakage Solution</option>
+                      <option value="Plumbing & Electrical">Plumbing & Electrical</option>
+                      <option value="Painting & Wall Repair">Painting & Wall Repair</option>
+                      <option value="Terrace & Bird Protection">Terrace & Bird Protection</option>
+                      <option value="Termite Control">Termite Control</option>
+                      <option value="Tile Work">Tile Work</option>
+                      <option value="AC, Lift & Solar">AC, Lift & Solar</option>
+                      <option value="Electrical & Machine Work">Electrical & Machine Work</option>
+                      <option value="Safety & Compliance">Safety & Compliance</option>
+                      <option value="Gardening">Gardening</option>
+                      <option value="Cleaning Services">Cleaning Services</option>
+                      <option value="Packers & Movers">Packers & Movers</option>
+                      <option value="CCTV & Security">CCTV & Security</option>
+                      <option value="Smart Home Automation">Smart Home Automation</option>
+                      <option value="Furniture Work">Furniture Work</option>
+                      <option value="Wall Decor & Wallpaper">Wall Decor & Wallpaper</option>
+                      <option value="Facade Work (ACP & Glass)">Facade Work (ACP & Glass)</option>
+                      <option value="Fabrication Work">Fabrication Work</option>
                     </>
                   )}
                 </select>

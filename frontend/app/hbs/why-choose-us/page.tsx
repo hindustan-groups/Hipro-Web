@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const title = "Why Choose Hind Build | Engineering-Grade Building Maintenance";
   const description =
-    "Discover why property owners across Rajasthan choose Hind Build over unorganized contractors. 19 specialized trades, non-destructive diagnostics, itemized BOQ, and written warranties.";
+    "Discover why property owners across Rajasthan choose Hind Build over unorganized contractors. Comprehensive specialized trades, non-destructive diagnostics, itemized BOQ, and written warranties.";
 
   return {
     title: { absolute: title },
@@ -100,7 +100,7 @@ const COMPARISON_ROWS = [
   },
   {
     feature: "Service Spectrum",
-    hindBuild: "Single-window coordination for 19 specialized structural, waterproofing, electrical & civil trades.",
+    hindBuild: "Single-window coordination for all specialized structural, waterproofing, electrical & civil trades.",
     local: "Homeowner forced to coordinate 5 conflicting contractors with zero accountability between them.",
   },
 ];
@@ -167,7 +167,7 @@ const FAQS = [
   },
   {
     q: "Can I hire Hind Build for multiple maintenance issues at once?",
-    a: "Yes! That is one of our greatest advantages. With 19 specialized building trades—including waterproofing, structural concrete repair, painting, plumbing, electrical, termite treatment, and civil renovation—you deal with a single project manager and one unified billing source.",
+    a: "Yes! That is one of our greatest advantages. With comprehensive specialized building trades—including waterproofing, structural concrete repair, painting, plumbing, electrical, termite treatment, and civil renovation—you deal with a single project manager and one unified billing source.",
   },
 ];
 
@@ -348,7 +348,7 @@ export default async function HbsWhyChooseUsPage() {
                 className="text-3xl sm:text-5xl lg:text-[56px] font-black tracking-tight text-slate-900 leading-[1.12]"
               >
                 Why Rajasthan Chooses Hind Build
-                <span className="block text-slate-400 font-bold mt-2 text-2xl sm:text-3xl lg:text-4xl">
+                <span className="block text-blue-700 font-bold mt-2 text-2xl sm:text-3xl lg:text-4xl">
                   Engineering Rigor vs. Unregulated Guesswork
                 </span>
               </h1>

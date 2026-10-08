@@ -57,8 +57,8 @@ const DEFAULT_ABOUT_DATA: AboutCmsData = {
       desc: "Supervised under senior civil engineering governance and quality benchmarks.",
     },
     {
-      value: "19 Trades",
-      label: "Turnkey Solutions",
+      value: "Turnkey",
+      label: "Full-Trade Solutions",
       desc: "Single-window accountability for waterproofing, cracks, and restoration.",
     },
     {
@@ -254,7 +254,7 @@ export default async function HbsAboutPage() {
                     href={`${prefix}/services`}
                     className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#0D2D5E] hover:bg-[#091F42] active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
                   >
-                    <span>19 Services</span>
+                    <span>All Services</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
@@ -356,7 +356,7 @@ export default async function HbsAboutPage() {
                     href={`${prefix}/services`}
                     className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#0D2D5E] hover:bg-[#091F42] active:scale-[0.98] text-white font-bold text-xs sm:text-sm uppercase tracking-wider rounded-xl shadow-md transition-all cursor-pointer"
                   >
-                    <span>19 Services</span>
+                    <span>All Services</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
 
@@ -391,8 +391,8 @@ export default async function HbsAboutPage() {
                       <div className="flex items-center gap-2.5 min-w-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src="/hibuild-logo.png"
-                          alt="Hind Build"
+                          src={content.logoPrimary || content.logo || "/hibuild-logo.png"}
+                          alt="HiBUILD - Hind Building Solutions"
                           className="h-7 w-auto object-contain shrink-0"
                         />
                         <div className="min-w-0">

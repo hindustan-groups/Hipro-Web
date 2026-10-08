@@ -859,14 +859,14 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                   Full Spectrum Maintenance
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed font-sans">
-                  Hind Build delivers 19 specialized engineering trades for residential, commercial, and industrial facilities.
+                  Hind Build delivers turnkey specialized engineering trades for residential, commercial, and industrial facilities.
                 </p>
                 <div className="pt-1">
                   <Link
                     href={`${prefix}/services`}
                     className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700"
                   >
-                    <span>Browse All 19 Services</span>
+                    <span>Browse All Services</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>

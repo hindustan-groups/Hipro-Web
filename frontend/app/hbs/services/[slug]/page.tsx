@@ -221,7 +221,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
         }
       : null;
 
-  const serviceNumber = service.serviceNumber || "19";
+  const serviceNumber = service.serviceNumber || "";
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-0">
@@ -708,7 +708,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                     href={`${prefix}/services`}
                     className="text-xs font-bold text-red-600 hover:text-red-700 uppercase tracking-wider block text-center pt-1"
                   >
-                    View All 19 Services →
+                    View All Services →
                   </Link>
                 </div>
               )}

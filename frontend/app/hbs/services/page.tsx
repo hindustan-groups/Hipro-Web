@@ -238,7 +238,7 @@ export default async function HbsServicesPage() {
               className="mt-4 max-w-4xl text-3xl sm:text-5xl lg:text-[54px] font-black tracking-tight text-slate-900 leading-[1.12]"
             >
               Building Repair, Maintenance &amp; Structural Protection
-              <span className="block text-slate-400 font-bold mt-1 text-2xl sm:text-3xl lg:text-4xl">
+              <span className="block text-blue-700 font-bold mt-1 text-2xl sm:text-3xl lg:text-4xl">
                 Executed Under Coordinated Civil Engineers
               </span>
             </h1>

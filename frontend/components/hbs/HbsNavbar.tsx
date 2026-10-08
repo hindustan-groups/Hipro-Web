@@ -324,6 +324,14 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
   const phoneRaw = cleanTelNumber(activePhone);
   const contactWaUrl = getContactWhatsAppUrl(activeWhatsapp);
 
+  // Dynamic brand logos
+  const brandLogo =
+    content?.logoPrimary ||
+    "/hibuild-logo.png";
+  const mobileLogo =
+    content?.logoMobile ||
+    brandLogo;
+
   // Behaviour settings
   const isSticky = navConfig.behaviour?.sticky !== false;
   const compactOnScroll = navConfig.behaviour?.compactOnScroll !== false;
@@ -401,7 +409,7 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
         <div className="flex items-center gap-2.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/hibuild-logo.png"
+            src={mobileLogo}
             alt={logoAlt}
             className="h-9 w-auto object-contain shrink-0"
           />
@@ -593,9 +601,9 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/hibuild-logo.png"
+            src={brandLogo}
             alt="HiBUILD - Hind Building Solutions"
-            className="h-10 sm:h-12 w-auto object-contain"
+            className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105 duration-200"
           />
         </Link>
 

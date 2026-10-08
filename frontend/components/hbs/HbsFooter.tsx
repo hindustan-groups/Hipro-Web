@@ -59,20 +59,51 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
       socialLinks.youtube
   );
 
-  // Dynamic services list (prefer CMS services, fallback to core building services)
+  // Parse footer config from ctaSettings safely
+  let footerConfig: {
+    pillars?: Array<{ label: string; icon?: string }>;
+    heritageCard?: {
+      badge?: string;
+      text?: string;
+      linkText?: string;
+      linkUrl?: string;
+    };
+    copyrightText?: string;
+    enterpriseText?: string;
+    enterpriseUrl?: string;
+  } = {};
+
+  try {
+    if (content.ctaSettings) {
+      const parsed =
+        typeof content.ctaSettings === "string"
+          ? JSON.parse(content.ctaSettings)
+          : content.ctaSettings;
+      if (parsed && typeof parsed === "object" && parsed.footer) {
+        footerConfig = parsed.footer;
+      }
+    }
+  } catch {}
+
+  const trustPillars =
+    Array.isArray(footerConfig.pillars) && footerConfig.pillars.length > 0
+      ? footerConfig.pillars
+      : [
+          { label: "Up to 10-Yr Warranty", icon: "ShieldCheck" },
+          { label: "Civil Engineer Supervision", icon: "HardHat" },
+          { label: "ISI Certified Branded Materials", icon: "CheckCircle2" },
+          { label: "Doorstep Rajasthan Service", icon: "Sparkles" },
+        ];
+
+  // Dynamic services list directly from live database
   const displayedServices =
     services.length > 0
-      ? services.slice(0, 8)
-      : [
-          { title: "Terrace & Roof Waterproofing", slug: "water-leakage-solution" },
-          { title: "Structure Repair & Crack Grouting", slug: "structure-repair" },
-          { title: "Building Painting & Damp Treatment", slug: "painting-and-wall-repair" },
-          { title: "Plumbing & Sanitary Systems", slug: "plumbing-and-electrical" },
-          { title: "Terrace Heat Proofing & Coating", slug: "terrace-and-bird-protection" },
-          { title: "Anti-Termite Soil Treatment", slug: "termite-control" },
-          { title: "Precision Tile & Stone Work", slug: "tile-work" },
-          { title: "Commercial & Home Renovation", slug: "renovation-remodeling" },
-        ];
+      ? services.filter((s) => s.active !== false).slice(0, 8)
+      : [];
+
+  const footerLogo =
+    content?.logoPrimary ||
+    "/hibuild-logo.png";
 
   return (
     <footer
@@ -95,7 +126,7 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/hibuild-logo.png"
+                src={footerLogo}
                 alt="HiBUILD - Hind Building Solutions"
                 className="h-10 sm:h-12 w-auto object-contain group-hover:scale-[1.02] transition-transform"
               />
@@ -106,23 +137,29 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                 "Complete care for your building. Engineering-grade non-destructive diagnostics, chemical waterproofing, structural rehabilitation, painting, and turnkey facility maintenance across Rajasthan."}
             </p>
 
-            {/* Parent Company Heritage Card (Clean Light Style) */}
+            {/* Parent Company Heritage Card (Clean Light Style, 100% Dynamic) */}
             <div className="p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-1 hover:border-slate-300 transition-colors">
               <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs">
                 <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
-                <span>A Brand Under Hindustan Projects</span>
+                <span>{footerConfig.heritageCard?.badge || "A Brand Under Hindustan Projects"}</span>
               </div>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Backed by the civil engineering heritage of{" "}
-                <a
-                  href="https://www.hindustanprojects.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-900 underline decoration-red-600/50 hover:text-red-600 font-semibold transition-colors"
-                >
-                  Hindustan Projects (HiPRO)
-                </a>
-                . Bringing industrial civil rigor to property repair and maintenance.
+                {footerConfig.heritageCard?.text ? (
+                  footerConfig.heritageCard.text
+                ) : (
+                  <>
+                    Backed by the civil engineering heritage of{" "}
+                    <a
+                      href={footerConfig.heritageCard?.linkUrl || "https://www.hindustanprojects.in"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-900 underline decoration-red-600/50 hover:text-red-600 font-semibold transition-colors"
+                    >
+                      {footerConfig.heritageCard?.linkText || "Hindustan Projects (HiPRO)"}
+                    </a>
+                    . Bringing industrial civil rigor to property repair and maintenance.
+                  </>
+                )}
               </p>
             </div>
 
@@ -213,7 +250,7 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                   className="group flex items-center gap-1.5 text-slate-600 hover:text-red-600 font-medium transition-colors py-0.5"
                 >
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-600 group-hover:translate-x-0.5 transition-all" />
-                  <span>All 19 Services</span>
+                  <span>All Services</span>
                 </Link>
               </li>
               <li>
@@ -268,26 +305,30 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                 href={`${prefix}/services`}
                 className="text-[11px] text-red-600 hover:text-red-700 font-bold inline-flex items-center gap-0.5 transition-colors"
               >
-                <span>View All (19)</span>
+                <span>View All {services.length > 0 ? `(${services.length})` : "Services"}</span>
                 <ArrowRight className="w-2.5 h-2.5" />
               </Link>
             </div>
 
-            <ul className="space-y-1.5 text-xs">
-              {displayedServices.map((s, idx) => (
-                <li key={s.slug || idx}>
-                  <Link
-                    href={`${prefix}/services/${s.slug}`}
-                    className="group flex items-center gap-2 text-slate-600 hover:text-red-600 font-medium transition-colors py-0.5 truncate"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-red-600 transition-colors shrink-0" />
-                    <span className="truncate group-hover:translate-x-0.5 transition-transform">
-                      {s.title}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {displayedServices.length === 0 ? (
+              <p className="text-xs text-slate-400 py-1">Catalog loading...</p>
+            ) : (
+              <ul className="space-y-1.5 text-xs">
+                {displayedServices.map((s, idx) => (
+                  <li key={s.slug || idx}>
+                    <Link
+                      href={`${prefix}/services/${s.slug}`}
+                      className="group flex items-center gap-2 text-slate-600 hover:text-red-600 font-medium transition-colors py-0.5 truncate"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-red-600 transition-colors shrink-0" />
+                      <span className="truncate group-hover:translate-x-0.5 transition-transform">
+                        {s.title}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* COLUMN 4: Contact & Site Support (3 cols) */}
@@ -361,31 +402,45 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
           </div>
         </div>
 
-        {/* ── 4 TRUST ASSURANCE PILLARS STRIP (Clean Modern Cards) ── */}
+        {/* ── 4 TRUST ASSURANCE PILLARS STRIP (100% Dynamic from CMS) ── */}
         <div className="pt-6 border-t border-slate-200">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
-              <span className="text-slate-800 font-bold">Up to 10-Yr Warranty</span>
-            </div>
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-              <HardHat className="w-4 h-4 text-[#0D2D5E] shrink-0" />
-              <span className="text-slate-800 font-bold">Civil Engineer Supervision</span>
-            </div>
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="text-slate-800 font-bold">ISI Certified Branded Materials</span>
-            </div>
-            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-              <span className="text-slate-800 font-bold">Doorstep Rajasthan Service</span>
-            </div>
+            {trustPillars.map((p, idx) => {
+              const IconComp =
+                p.icon === "HardHat"
+                  ? HardHat
+                  : p.icon === "CheckCircle2"
+                  ? CheckCircle2
+                  : p.icon === "Sparkles"
+                  ? Sparkles
+                  : ShieldCheck;
+              const iconColor =
+                p.icon === "HardHat"
+                  ? "text-[#0D2D5E]"
+                  : p.icon === "CheckCircle2"
+                  ? "text-emerald-600"
+                  : p.icon === "Sparkles"
+                  ? "text-amber-500"
+                  : "text-red-600";
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs"
+                >
+                  <IconComp className={`w-4 h-4 ${iconColor} shrink-0`} />
+                  <span className="text-slate-800 font-bold">{p.label}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* ── BOTTOM BAR: COPYRIGHT & POLICIES ── */}
+        {/* ── BOTTOM BAR: COPYRIGHT & POLICIES (100% Dynamic from CMS) ── */}
         <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
-          <p>© {new Date().getFullYear()} Hind Building Solutions (HiBUILD). All rights reserved.</p>
+          <p>
+            {footerConfig.copyrightText ||
+              `© ${new Date().getFullYear()} Hind Building Solutions (HiBUILD). All rights reserved.`}
+          </p>
 
           <div className="flex items-center flex-wrap gap-4 text-[11px]">
             {content.privacyPolicyUrl && (
@@ -405,12 +460,14 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
               </Link>
             )}
             <a
-              href="https://www.hindustanprojects.in"
+              href={footerConfig.enterpriseUrl || "https://www.hindustanprojects.in"}
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-600 hover:text-red-600 font-semibold transition-colors inline-flex items-center gap-1"
             >
-              <span>An Enterprise of Hindustan Projects</span>
+              <span>
+                {footerConfig.enterpriseText || "An Enterprise of Hindustan Projects"}
+              </span>
               <ExternalLink className="w-2.5 h-2.5 opacity-60" />
             </a>
           </div>

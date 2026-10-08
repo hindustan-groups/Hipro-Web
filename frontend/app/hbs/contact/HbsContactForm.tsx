@@ -47,25 +47,25 @@ function validateIndianPhone(raw: string): boolean {
 
 // Fallback service list (used only when API is unavailable)
 const HBS_SERVICES_FALLBACK = [
-  "01. Structure Repair",
-  "02. Water Leakage Solution",
-  "03. Plumbing & Electrical",
-  "04. Painting & Wall Repair",
-  "05. Terrace & Bird Protection",
-  "06. Termite Control",
-  "07. Tile Work",
-  "08. AC, Lift & Solar",
-  "09. Electrical & Machine Work",
-  "10. Safety & Compliance",
-  "11. Gardening",
-  "12. Cleaning Services",
-  "13. Packers & Movers",
-  "14. CCTV & Security",
-  "15. Smart Home Automation",
-  "16. Furniture Work",
-  "17. Wall Decor & Wallpaper",
-  "18. Facade Work (ACP & Glass)",
-  "19. Fabrication Work",
+  "Structure Repair",
+  "Water Leakage Solution",
+  "Plumbing & Electrical",
+  "Painting & Wall Repair",
+  "Terrace & Bird Protection",
+  "Termite Control",
+  "Tile Work",
+  "AC, Lift & Solar",
+  "Electrical & Machine Work",
+  "Safety & Compliance",
+  "Gardening",
+  "Cleaning Services",
+  "Packers & Movers",
+  "CCTV & Security",
+  "Smart Home Automation",
+  "Furniture Work",
+  "Wall Decor & Wallpaper",
+  "Facade Work (ACP & Glass)",
+  "Fabrication Work",
   "Turnkey Property Maintenance",
   "Other Repair Inquiry",
 ];
@@ -506,7 +506,7 @@ export default function HbsContactForm({ services, content }: HbsContactFormProp
               ))}
             </div>
 
-            {/* Expandable 19-Trade Full Catalog Drawer */}
+            {/* Expandable Full Catalog Drawer */}
             <div className="border border-slate-200/90 rounded-xl overflow-hidden bg-white">
               <button
                 type="button"
@@ -517,8 +517,8 @@ export default function HbsContactForm({ services, content }: HbsContactFormProp
                   <Wrench className="w-3.5 h-3.5 text-red-600" />
                   <span>
                     {showAllServices
-                      ? "Hide Full 19 Trades Catalog"
-                      : "Browse All 19 Specialized Trades (+)"}
+                      ? "Hide Full Trades Catalog"
+                      : "Browse All Specialized Trades (+)"}
                   </span>
                 </div>
                 {showAllServices ? (

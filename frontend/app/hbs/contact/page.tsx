@@ -283,7 +283,7 @@ export default async function HbsContactPage() {
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200/90 rounded-lg shadow-2xs">
                     <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span><strong>19</strong> Specialized Trades</span>
+                    <span><strong>{services.length > 0 ? services.length : "All"}</strong> Specialized Trades</span>
                   </div>
                 </div>
               </div>

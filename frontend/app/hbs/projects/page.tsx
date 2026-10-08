@@ -166,7 +166,7 @@ export default async function HbsProjectsPage() {
                     className="text-3xl sm:text-5xl lg:text-[52px] font-black tracking-tight text-slate-900 leading-[1.12]"
                   >
                     Projects &amp; Proven Field Work
-                    <span className="block text-slate-400 font-bold mt-1 text-2xl sm:text-3xl lg:text-4xl">
+                    <span className="block text-blue-700 font-bold mt-1 text-2xl sm:text-3xl lg:text-4xl">
                       Executed Under Coordinated Civil Engineers
                     </span>
                   </h1>
