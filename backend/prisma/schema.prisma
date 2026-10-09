@@ -615,3 +615,19 @@ model AutomailDailyStat {
   totalFailed Int    @default(0)
 }
 
+model AutomailSetting {
+  id                 String   @id @default("singleton")
+  smtpHost           String   @default("smtp.hostinger.com")
+  smtpPort           Int      @default(465)
+  smtpUser           String   @default("info@hindustanprojects.in")
+  smtpPass           String?  @default("")
+  senderNameHipro    String   @default("Hindustan Projects")
+  senderEmailHipro   String   @default("info@hindustanprojects.in")
+  senderNameHbs      String   @default("Hind Building Solutions")
+  senderEmailHbs     String   @default("hbs@hindustanprojects.in")
+  dailyLimit         Int      @default(200)
+  rateLimitPerMinute Int      @default(15)
+  replyTo            String   @default("info@hindustanprojects.in")
+  updatedAt          DateTime @updatedAt
+}
+

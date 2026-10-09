@@ -17,7 +17,9 @@ import {
 import { parseContactsFile } from "../services/automail/csvParser";
 import {
   getAutomailSettings,
+  getAutomailSettingsAsync,
   saveAutomailSettings,
+  initAutomailSettings,
   AutomailSettings,
 } from "../services/automail/settingsService";
 import {
@@ -29,6 +31,9 @@ import {
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+// Warm up database settings on module load
+initAutomailSettings().catch((err) => console.warn("[AUTOMAIL] Init warning:", err));
 
 // Protect all automail endpoints with admin authentication
 router.use(authGuard);
@@ -100,9 +105,9 @@ router.get("/stats", async (req: Request, res: Response) => {
 });
 
 // Settings Management
-router.get("/settings", (req: Request, res: Response) => {
+router.get("/settings", async (req: Request, res: Response) => {
   try {
-    const settings = getAutomailSettings();
+    const settings = await getAutomailSettingsAsync();
     return res.json({
       success: true,
       settings: {
@@ -116,16 +121,16 @@ router.get("/settings", (req: Request, res: Response) => {
   }
 });
 
-router.post("/settings", (req: Request, res: Response) => {
+router.post("/settings", async (req: Request, res: Response) => {
   try {
     const body = { ...req.body };
     if (body.smtpPass === "••••••••••••" || !body.smtpPass) {
       delete body.smtpPass;
     }
-    const updated = saveAutomailSettings(body);
+    const updated = await saveAutomailSettings(body);
     return res.json({
       success: true,
-      message: "AutoMail settings saved successfully!",
+      message: "AutoMail settings saved permanently to PostgreSQL database!",
       settings: {
         ...updated,
         smtpPassConfigured: Boolean(updated.smtpPass),
@@ -141,7 +146,7 @@ router.post("/settings/test", async (req: Request, res: Response) => {
   try {
     const body = { ...req.body };
     if (body.smtpPass === "••••••••••••" || !body.smtpPass) {
-      const current = getAutomailSettings();
+      const current = await getAutomailSettingsAsync();
       body.smtpPass = current.smtpPass;
     }
     const result = await testSmtpConnection(body);
@@ -267,10 +272,16 @@ router.get("/test-connection", async (req: Request, res: Response) => {
 // Send single test email
 router.post("/send-test", async (req: Request, res: Response) => {
   try {
-    const { to, subject, htmlBody, brand = "all" } = req.body;
+    const { to, subject, htmlBody, brand = "all", smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
     if (!to) {
       return res.status(400).json({ success: false, error: "Recipient email is required" });
     }
+
+    const customConfig: Partial<AutomailSettings> = {};
+    if (smtpHost) customConfig.smtpHost = smtpHost;
+    if (smtpPort) customConfig.smtpPort = Number(smtpPort);
+    if (smtpUser) customConfig.smtpUser = smtpUser;
+    if (smtpPass && smtpPass !== "••••••••••••") customConfig.smtpPass = smtpPass;
 
     const testSubject = subject ? `[TEST] ${subject}` : "[TEST] Hindustan Projects Email Test";
     const testBody = htmlBody || `<p>This is a test email sent from <strong>Hindustan Projects AutoMail Engine</strong>.</p>`;
@@ -280,6 +291,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       subject: testSubject,
       htmlBody: testBody,
       brand,
+      customConfig: Object.keys(customConfig).length > 0 ? customConfig : undefined,
     });
 
     return res.json({ success: true, message: `Test email sent to ${to}!`, messageId: info.messageId });

@@ -60,33 +60,49 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   },
 };
 
+export function createSmtpTransport(host: string, port: number, user: string, pass: string) {
+  const isSecure = port === 465;
+  const isConfigured = Boolean(user && pass);
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: isSecure,
+    requireTLS: !isSecure, // Enforce STARTTLS on port 587
+    ...(isConfigured ? { auth: { user, pass } } : {}),
+    // Enforce strict timeouts so requests never hang indefinitely
+    connectionTimeout: 8000, // 8s to establish socket
+    greetingTimeout: 8000,   // 8s for SMTP greeting
+    socketTimeout: 12000,    // 12s for socket activity
+    // Connection pooling for fast transmission
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 100,
+    tls: {
+      rejectUnauthorized: false,
+      minVersion: "TLSv1.2",
+    },
+  });
+}
+
 export function getTransporter(customConfig?: Partial<AutomailSettings>) {
   const settings = getAutomailSettings();
-  const host = customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com";
+  const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
   const port = parseInt(String(customConfig?.smtpPort ?? settings.smtpPort ?? 465), 10);
   const user = (customConfig?.smtpUser || settings.smtpUser || "").trim();
   const pass = (customConfig?.smtpPass !== undefined ? customConfig.smtpPass : settings.smtpPass || "").trim();
 
   const isConfigured = Boolean(user && pass);
+  const transporter = createSmtpTransport(host, port, user, pass);
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    ...(isConfigured ? { auth: { user, pass } } : {}),
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-
-  return { transporter, isConfigured, user, host, port };
+  return { transporter, isConfigured, user, host, port, pass };
 }
 
 /**
- * Verify SMTP connection and credentials
+ * Verify SMTP connection and credentials with intelligent diagnostics
  */
 export async function testSmtpConnection(customConfig?: Partial<AutomailSettings>) {
-  const { transporter, isConfigured, user } = getTransporter(customConfig);
+  const { transporter, isConfigured, user, host, port, pass } = getTransporter(customConfig);
   if (!isConfigured) {
     return {
       success: false,
@@ -98,19 +114,37 @@ export async function testSmtpConnection(customConfig?: Partial<AutomailSettings
     await transporter.verify();
     return {
       success: true,
-      message: `SMTP Connection verified successfully with Hostinger mail server (${user})!`,
+      message: `SMTP Connection verified successfully with Hostinger mail server (${user} on ${host}:${port})!`,
     };
   } catch (error: any) {
     let msg = error.message || "SMTP Verification failed.";
-    if (msg.includes('Missing credentials for "PLAIN"') || error.code === "EAUTH") {
-      msg = "Authentication failed: Invalid Hostinger email or password. Please verify your credentials in AutoMail Settings.";
+
+    // If port 465 timed out or connection was refused, check if port 587 works
+    if ((error.code === "ETIMEDOUT" || error.code === "ECONNREFUSED" || msg.includes("timeout")) && port === 465) {
+      try {
+        const altTransporter = createSmtpTransport(host, 587, user, pass);
+        await altTransporter.verify();
+        return {
+          success: true,
+          message: `Port 465 timed out on this server network, but Port 587 (STARTTLS) verified successfully! Please change your SMTP Port to 587 in AutoMail Settings and save.`,
+        };
+      } catch (altError: any) {
+        msg = `Connection to ${host}:${port} timed out. Cloud provider network may be throttling SMTP or host is unreachable. (${altError.message})`;
+      }
     }
+
+    if (msg.includes('Missing credentials for "PLAIN"') || error.code === "EAUTH" || msg.includes("535") || msg.includes("authentication failed")) {
+      msg = `Authentication failed: Invalid Hostinger password or username for ${user}. Please verify your mailbox password at mail.hostinger.com.`;
+    } else if (error.code === "ETIMEDOUT" || msg.includes("timeout")) {
+      msg = `Connection to ${host}:${port} timed out. Try switching to Port 587 (STARTTLS) in AutoMail Settings.`;
+    }
+
     return { success: false, message: msg };
   }
 }
 
 /**
- * Send a single email via SMTP
+ * Send a single email via SMTP with automatic port fallback (465 -> 587)
  */
 export async function sendOneEmail({
   to,
@@ -120,6 +154,7 @@ export async function sendOneEmail({
   senderName,
   senderEmail,
   brand = "all",
+  customConfig,
 }: {
   to: string;
   subject: string;
@@ -128,13 +163,14 @@ export async function sendOneEmail({
   senderName?: string | null;
   senderEmail?: string | null;
   brand?: string;
+  customConfig?: Partial<AutomailSettings>;
 }) {
   const brandMap = getBrandConfigs();
   const brandDefaults = brandMap[brand] || brandMap.all;
   const fromName = senderName?.trim() || brandDefaults.name;
   const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
 
-  const { transporter, isConfigured, user } = getTransporter();
+  const { transporter, isConfigured, user, host, port, pass } = getTransporter(customConfig);
 
   if (!isConfigured) {
     throw new Error(
@@ -144,16 +180,38 @@ export async function sendOneEmail({
 
   // Hostinger requires the envelope/from sender to match the authenticated mailbox (user)
   const authSender = user || fromEmail;
-  const info = await transporter.sendMail({
+  const mailOptions = {
     from: `"${fromName}" <${authSender}>`,
     replyTo: fromEmail && fromEmail !== authSender ? `"${fromName}" <${fromEmail}>` : undefined,
     to,
     subject,
     text: textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : ""),
     html: htmlBody,
-  });
+  };
 
-  return info;
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    return info;
+  } catch (err: any) {
+    // If port 465 timed out or failed to connect, attempt automatic fallback to port 587
+    if ((err.code === "ETIMEDOUT" || err.code === "ECONNREFUSED" || err.message?.includes("timeout")) && port === 465) {
+      console.warn(`[AUTOMAIL] Port 465 timed out to ${host}. Attempting auto-fallback to Port 587...`);
+      try {
+        const fallbackTransporter = createSmtpTransport(host, 587, user, pass);
+        const fallbackInfo = await fallbackTransporter.sendMail(mailOptions);
+        console.log(`[AUTOMAIL] Fallback to Port 587 succeeded for ${to}!`);
+        return fallbackInfo;
+      } catch (fallbackErr: any) {
+        throw new Error(`Email delivery failed on both Port 465 and Port 587: ${fallbackErr.message || err.message}`);
+      }
+    }
+
+    if (err.message && (err.message.includes("535") || err.code === "EAUTH")) {
+      throw new Error(`Authentication failed for ${user}. Check your Hostinger password in AutoMail Settings.`);
+    }
+
+    throw err;
+  }
 }
 
 /**

@@ -60,15 +60,15 @@ export default function AutoMailSettingsPage() {
         setSmtpHost(s.smtpHost || "smtp.hostinger.com");
         setSmtpPort(s.smtpPort || 465);
         setSmtpUser(s.smtpUser || "info@hindustanprojects.in");
-        setSmtpPass(s.smtpPass || "");
+        setSmtpPass(""); // Clear local input so user can leave blank to retain DB password
         setSenderNameHipro(s.senderNameHipro || "Hindustan Projects");
         setSenderEmailHipro(s.senderEmailHipro || "info@hindustanprojects.in");
         setSenderNameHbs(s.senderNameHbs || "Hind Building Solutions");
         setSenderEmailHbs(s.senderEmailHbs || "hbs@hindustanprojects.in");
         setDailyLimit(s.dailyLimit || 200);
-        setRateLimitPerMinute(s.rateLimitPerMinute || 5);
+        setRateLimitPerMinute(s.rateLimitPerMinute || 15);
         setReplyTo(s.replyTo || "info@hindustanprojects.in");
-        setSmtpPassConfigured(s.smtpPassConfigured || false);
+        setSmtpPassConfigured(Boolean(s.smtpPassConfigured));
       }
     } catch {
       setToast({ message: "Failed to load current settings from server", type: "error" });
@@ -81,11 +81,13 @@ export default function AutoMailSettingsPage() {
     fetchSettings();
   }, []);
 
-  // Save Settings
+  // Save Settings permanently to PostgreSQL database
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setTestResult(null);
+
+    const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
 
     try {
       const res = await fetch("/api/automail/settings", {
@@ -95,7 +97,7 @@ export default function AutoMailSettingsPage() {
           smtpHost,
           smtpPort: Number(smtpPort),
           smtpUser,
-          smtpPass,
+          smtpPass: effectivePass,
           senderNameHipro,
           senderEmailHipro,
           senderNameHbs,
@@ -108,9 +110,9 @@ export default function AutoMailSettingsPage() {
 
       const data = await res.json();
       if (data.success) {
-        setToast({ message: "Settings saved successfully! Ready to deliver emails.", type: "success" });
-        setSmtpPassConfigured(data.settings.smtpPassConfigured);
-        setSmtpPass(data.settings.smtpPass);
+        setToast({ message: "Settings saved permanently to PostgreSQL! Will never reset.", type: "success" });
+        setSmtpPassConfigured(Boolean(data.settings?.smtpPassConfigured));
+        setSmtpPass("");
       } else {
         setToast({ message: data.error || "Failed to save settings", type: "error" });
       }
@@ -126,6 +128,8 @@ export default function AutoMailSettingsPage() {
     setTesting(true);
     setTestResult(null);
 
+    const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
+
     try {
       const res = await fetch("/api/automail/settings/test", {
         method: "POST",
@@ -134,7 +138,7 @@ export default function AutoMailSettingsPage() {
           smtpHost,
           smtpPort: Number(smtpPort),
           smtpUser,
-          smtpPass,
+          smtpPass: effectivePass,
         }),
       });
 
@@ -159,6 +163,8 @@ export default function AutoMailSettingsPage() {
     }
 
     setSendingTest(true);
+    const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
+
     try {
       const res = await fetch("/api/automail/send-test", {
         method: "POST",
@@ -168,10 +174,14 @@ export default function AutoMailSettingsPage() {
           subject: "Hostinger SMTP Verification Test",
           htmlBody: `<div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
             <h2 style="color: #0f172a; margin-top: 0;">🎉 Hostinger AutoMail Connection Verified!</h2>
-            <p style="color: #334155; font-size: 14px;">This email confirms that your Hostinger SMTP credentials (<strong>${smtpUser}</strong>) are 100% active and delivering properly.</p>
+            <p style="color: #334155; font-size: 14px;">This email confirms that your Hostinger SMTP credentials (<strong>${smtpUser}</strong> on Port <strong>${smtpPort}</strong>) are 100% active, persistent, and delivering properly.</p>
             <p style="font-size: 12px; color: #64748b;">Timestamp: ${new Date().toLocaleString()}</p>
           </div>`,
           brand: testBrand,
+          smtpHost,
+          smtpPort: Number(smtpPort),
+          smtpUser,
+          smtpPass: effectivePass,
         }),
       });
 
@@ -342,16 +352,23 @@ export default function AutoMailSettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Hostinger Mailbox Password
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700 uppercase">
+                      Hostinger Mailbox Password
+                    </label>
+                    {smtpPassConfigured && (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                        ✓ Saved in Database
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <Key className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-3" />
                     <input
                       type={showPassword ? "text" : "password"}
                       value={smtpPass}
                       onChange={(e) => setSmtpPass(e.target.value)}
-                      placeholder={smtpPassConfigured ? "•••••••••••• (Leave blank to keep current)" : "Hostinger password enter karo"}
+                      placeholder={smtpPassConfigured ? "•••••••••••• (Saved in DB — Leave blank to keep)" : "Enter Hostinger mailbox password"}
                       className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                     <button
@@ -362,7 +379,11 @@ export default function AutoMailSettingsPage() {
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1">Hostinger webmail login password</p>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {smtpPassConfigured
+                      ? "Password is saved in PostgreSQL database and will not reset on server restarts. Type a new password to update."
+                      : "Hostinger webmail login password (saved permanently in database)."}
+                  </p>
                 </div>
               </div>
             </div>
