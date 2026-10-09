@@ -162,12 +162,21 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
       : current.smtpPass;
 
   // Determine Hostinger Mail API token to persist
-  const tokenToSave =
+  let rawTokenToSave =
     newSettings.hostingerApiToken !== undefined &&
     newSettings.hostingerApiToken !== "••••••••••••" &&
     newSettings.hostingerApiToken.trim() !== ""
       ? newSettings.hostingerApiToken.trim()
       : current.hostingerApiToken;
+
+  // Sanitize token (remove quotes or accidental 'Bearer ' prefix)
+  let tokenToSave = (rawTokenToSave || "").trim();
+  if ((tokenToSave.startsWith('"') && tokenToSave.endsWith('"')) || (tokenToSave.startsWith("'") && tokenToSave.endsWith("'"))) {
+    tokenToSave = tokenToSave.slice(1, -1).trim();
+  }
+  if (tokenToSave.toLowerCase().startsWith("bearer ")) {
+    tokenToSave = tokenToSave.slice(7).trim();
+  }
 
   const merged: AutomailSettings = {
     deliveryMethod: newSettings.deliveryMethod || current.deliveryMethod || "smtp",
