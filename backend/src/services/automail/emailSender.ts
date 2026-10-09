@@ -66,6 +66,15 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   },
 };
 
+// Custom DNS lookup that strictly forces IPv4 resolution (eliminates IPv6 ENETUNREACH errors)
+export const ipv4Lookup = (hostname: string, options: any, callback: any) => {
+  if (typeof options === "function") {
+    callback = options;
+    options = {};
+  }
+  return dns.lookup(hostname, { family: 4 }, callback);
+};
+
 export function createSmtpTransport(host: string, port: number, user: string, pass: string) {
   const isSecure = port === 465;
   const isConfigured = Boolean(user && pass);
@@ -76,8 +85,9 @@ export function createSmtpTransport(host: string, port: number, user: string, pa
     secure: isSecure,
     requireTLS: !isSecure, // Enforce STARTTLS on port 587
     ...(isConfigured ? { auth: { user, pass } } : {}),
-    // FORCE IPv4 to eliminate "connect ENETUNREACH 2606:4700:...:465 - Local (:::0)" errors
+    // FORCE IPv4 to eliminate "connect ENETUNREACH 2606:4700:... - Local (:::0)" errors
     family: 4,
+    lookup: ipv4Lookup,
     // Enforce strict timeouts so requests never hang indefinitely
     connectionTimeout: 8000, // 8s to establish socket
     greetingTimeout: 8000,   // 8s for SMTP greeting
