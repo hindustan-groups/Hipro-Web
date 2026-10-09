@@ -11,6 +11,7 @@ import {
   testSmtpConnection,
   personalizeContent,
   getBrandConfigs,
+  getTransporter,
   BRAND_CONFIGS,
 } from "../services/automail/emailSender";
 import { parseContactsFile } from "../services/automail/csvParser";
@@ -505,6 +506,14 @@ router.post("/send-direct", async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Subject line is required" });
     }
 
+    const { isConfigured } = getTransporter();
+    if (!isConfigured) {
+      return res.status(400).json({
+        success: false,
+        error: "Hostinger SMTP password is missing! Please go to AutoMail Settings and enter your password before sending.",
+      });
+    }
+
     const { isSending } = getSendingStatus();
     if (isSending) {
       return res.status(400).json({ success: false, error: "Another campaign is currently transmitting. Please wait or stop it." });
@@ -624,6 +633,14 @@ router.post("/send/:id", async (req: Request, res: Response) => {
 
     if (campaign.status === "sending") {
       return res.status(400).json({ success: false, error: "Campaign is already transmitting" });
+    }
+
+    const { isConfigured } = getTransporter();
+    if (!isConfigured) {
+      return res.status(400).json({
+        success: false,
+        error: "Hostinger SMTP password is missing! Please go to AutoMail Settings and enter your password before sending.",
+      });
     }
 
     const { isSending } = getSendingStatus();

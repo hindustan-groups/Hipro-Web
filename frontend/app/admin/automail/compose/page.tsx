@@ -225,6 +225,13 @@ export default function AutoMailCompose() {
 
   // 1-Click Direct Send to Audience or Custom Recipient
   const handleDirectSend = async () => {
+    if (!smtpConfigured) {
+      setToast({
+        message: "Hostinger SMTP password is missing! Please configure your password in Settings tab first.",
+        type: "error",
+      });
+      return;
+    }
     if (!subject) {
       setToast({ message: "Please provide an email subject line", type: "error" });
       return;

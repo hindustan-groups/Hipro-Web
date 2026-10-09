@@ -15,7 +15,9 @@ export interface AutomailSettings {
   replyTo: string;
 }
 
-const SETTINGS_FILE_PATH = path.resolve(__dirname, "../../../automail_settings.json");
+const SETTINGS_FILE_PATH = fs.existsSync(path.resolve(process.cwd(), "automail_settings.json"))
+  ? path.resolve(process.cwd(), "automail_settings.json")
+  : path.resolve(__dirname, "../../../automail_settings.json");
 
 export function getDefaultSettings(): AutomailSettings {
   return {
@@ -42,6 +44,8 @@ export function getAutomailSettings(): AutomailSettings {
       return {
         ...defaults,
         ...parsed,
+        smtpPass: (parsed.smtpPass || defaults.smtpPass || "").trim(),
+        smtpUser: (parsed.smtpUser || defaults.smtpUser || "").trim(),
         // Ensure numbers are properly typed
         smtpPort: parseInt(String(parsed.smtpPort || defaults.smtpPort), 10),
         dailyLimit: parseInt(String(parsed.dailyLimit || defaults.dailyLimit), 10),
@@ -77,7 +81,9 @@ export function saveAutomailSettings(newSettings: Partial<AutomailSettings>): Au
     process.env.RATE_LIMIT_PER_MINUTE = String(merged.rateLimitPerMinute);
 
     // Also update backend/.env so it persists across dev server restarts
-    const envPath = path.resolve(__dirname, "../../../.env");
+    const envPath = fs.existsSync(path.resolve(process.cwd(), ".env"))
+      ? path.resolve(process.cwd(), ".env")
+      : path.resolve(__dirname, "../../../.env");
     if (fs.existsSync(envPath)) {
       let envContent = fs.readFileSync(envPath, "utf-8");
       const setEnvVar = (key: string, val: string) => {

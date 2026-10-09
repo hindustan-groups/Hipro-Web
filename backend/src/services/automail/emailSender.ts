@@ -75,7 +75,7 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
     secure: port === 465,
     ...(isConfigured ? { auth: { user, pass } } : {}),
     tls: {
-      rejectUnauthorized: process.env.NODE_ENV === "production" && process.env.SMTP_IGNORE_TLS_ERRORS !== "true",
+      rejectUnauthorized: false,
     },
   });
 
@@ -134,7 +134,7 @@ export async function sendOneEmail({
   const fromName = senderName?.trim() || brandDefaults.name;
   const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
 
-  const { transporter, isConfigured } = getTransporter();
+  const { transporter, isConfigured, user } = getTransporter();
 
   if (!isConfigured) {
     throw new Error(
@@ -142,8 +142,11 @@ export async function sendOneEmail({
     );
   }
 
+  // Hostinger requires the envelope/from sender to match the authenticated mailbox (user)
+  const authSender = user || fromEmail;
   const info = await transporter.sendMail({
-    from: `"${fromName}" <${fromEmail}>`,
+    from: `"${fromName}" <${authSender}>`,
+    replyTo: fromEmail && fromEmail !== authSender ? `"${fromName}" <${fromEmail}>` : undefined,
     to,
     subject,
     text: textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : ""),
