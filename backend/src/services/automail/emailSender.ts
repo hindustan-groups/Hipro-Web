@@ -165,6 +165,16 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
 let mailboxCache: Array<{ resourceId: string; address: string }> = [];
 let mailboxCacheExpiry = 0;
 const exchangedTokenCache: Record<string, string> = {};
+export function cleanToken(raw: string): string {
+  let token = (raw || "").trim();
+  if ((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'"))) {
+    token = token.slice(1, -1).trim();
+  }
+  if (token.toLowerCase().startsWith("bearer ")) {
+    token = token.slice(7).trim();
+  }
+  return token;
+}
 
 /**
  * Intelligent token resolver:
@@ -173,7 +183,7 @@ const exchangedTokenCache: Record<string, string> = {};
  *    and generates a Mail API token for the user's order on the fly!
  */
 export async function resolveWorkingHostingerToken(rawToken: string): Promise<string> {
-  const clean = rawToken.trim();
+  const clean = cleanToken(rawToken);
   if (!clean) {
     throw new Error("Hostinger API Token is empty.");
   }
@@ -349,9 +359,11 @@ export async function testHostingerMailApi(tokenOverride?: string) {
       mailboxes,
     };
   } catch (err: any) {
-    let msg = err.response?.data?.message || err.message || "Failed to verify Hostinger Mail API.";
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      msg = "Invalid Hostinger API Token (Unauthorized). In Hostinger hPanel, go to Emails -> API Access and generate an Access Token (do not enter your email password).";
+    const rawError = err.response?.data?.message || err.response?.data?.error || err.message;
+    const status = err.response?.status;
+    let msg = rawError || "Failed to verify Hostinger Mail API.";
+    if (status === 401 || status === 403) {
+      msg = `Invalid Hostinger API Token (${status}: ${rawError || "Unauthorized"}). In Hostinger hPanel, go to Emails -> API Access (ya Dev Tools -> API) and generate an Access Token. Ensure 'All mailboxes' permission is granted.`;
     }
     return {
       success: false,
