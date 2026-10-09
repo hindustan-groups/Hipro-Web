@@ -66,6 +66,45 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   },
 };
 
+// Known Hostinger and standard SMTP IPv4 mapping to completely bypass Nodemailer v10's internal resolve6 random picker
+export const hostIpv4Cache: Record<string, string> = {
+  "smtp.hostinger.com": "172.65.255.143",
+};
+
+export async function getHostIpv4(host: string): Promise<string> {
+  if (/^(\d{1,3}\.){3}\d{1,3}$/.test(host)) {
+    return host;
+  }
+  if (hostIpv4Cache[host]) {
+    // Refresh asynchronously in background
+    dns.promises.resolve4(host).then((addrs) => {
+      if (addrs && addrs[0]) hostIpv4Cache[host] = addrs[0];
+    }).catch(() => null);
+    return hostIpv4Cache[host];
+  }
+
+  try {
+    const addrs = await dns.promises.resolve4(host);
+    if (addrs && addrs[0]) {
+      hostIpv4Cache[host] = addrs[0];
+      return addrs[0];
+    }
+  } catch (err) {
+    console.warn(`[AUTOMAIL] resolve4 fallback for ${host}:`, err);
+  }
+
+  return new Promise((resolve) => {
+    dns.lookup(host, { family: 4 }, (err, address) => {
+      if (address) {
+        hostIpv4Cache[host] = address;
+        resolve(address);
+      } else {
+        resolve(host);
+      }
+    });
+  });
+}
+
 // Custom DNS lookup that strictly forces IPv4 resolution (eliminates IPv6 ENETUNREACH errors)
 export const ipv4Lookup = (hostname: string, options: any, callback: any) => {
   if (typeof options === "function") {
@@ -79,15 +118,16 @@ export function createSmtpTransport(host: string, port: number, user: string, pa
   const isSecure = port === 465;
   const isConfigured = Boolean(user && pass);
 
+  // Directly pass IPv4 address to Nodemailer so net.isIP(targetHost) is true.
+  // This bypasses Nodemailer's resolveHostname() which picks random IPv6 addresses!
+  const targetHost = hostIpv4Cache[host] || host;
+
   return nodemailer.createTransport({
-    host,
+    host: targetHost,
     port,
     secure: isSecure,
     requireTLS: !isSecure, // Enforce STARTTLS on port 587
     ...(isConfigured ? { auth: { user, pass } } : {}),
-    // FORCE IPv4 to eliminate "connect ENETUNREACH 2606:4700:... - Local (:::0)" errors
-    family: 4,
-    lookup: ipv4Lookup,
     // Enforce strict timeouts so requests never hang indefinitely
     connectionTimeout: 8000, // 8s to establish socket
     greetingTimeout: 8000,   // 8s for SMTP greeting
@@ -97,6 +137,7 @@ export function createSmtpTransport(host: string, port: number, user: string, pa
     maxConnections: 3,
     maxMessages: 100,
     tls: {
+      servername: host, // Critical: preserves SSL certificate validation for host (e.g. smtp.hostinger.com)
       rejectUnauthorized: false,
       minVersion: "TLSv1.2",
     },
@@ -120,7 +161,11 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
  * Verify SMTP connection and credentials with intelligent diagnostics
  */
 export async function testSmtpConnection(customConfig?: Partial<AutomailSettings>) {
-  const { transporter, isConfigured, user, host, port, pass } = getTransporter(customConfig);
+  const settings = getAutomailSettings();
+  const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
+  await getHostIpv4(host);
+
+  const { transporter, isConfigured, user, port, pass } = getTransporter(customConfig);
   if (!isConfigured) {
     return {
       success: false,
@@ -183,12 +228,16 @@ export async function sendOneEmail({
   brand?: string;
   customConfig?: Partial<AutomailSettings>;
 }) {
+  const settings = getAutomailSettings();
+  const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
+  await getHostIpv4(host);
+
   const brandMap = getBrandConfigs();
   const brandDefaults = brandMap[brand] || brandMap.all;
   const fromName = senderName?.trim() || brandDefaults.name;
   const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
 
-  const { transporter, isConfigured, user, host, port, pass } = getTransporter(customConfig);
+  const { transporter, isConfigured, user, port, pass } = getTransporter(customConfig);
 
   if (!isConfigured) {
     throw new Error(
