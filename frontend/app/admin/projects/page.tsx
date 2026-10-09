@@ -45,6 +45,7 @@ import ProjectSeoTab from "@/components/admin/projects/ProjectSeoTab";
 import ProjectPreviewModal from "@/components/admin/projects/ProjectPreviewModal";
 import PublishReviewModal from "@/components/admin/projects/PublishReviewModal";
 import ProjectSuccessPanel from "@/components/admin/projects/ProjectSuccessPanel";
+import { getAdminCache, setAdminCache, invalidateAdminCache } from "@/lib/adminCache";
 
 type EditorTab = "general" | "specifications" | "narrative" | "media" | "seo";
 
@@ -291,8 +292,9 @@ function projectToFormState(p: Project): FormState {
 }
 
 export default function AdminProjects() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getAdminCache<Project[]>("admin:projects");
+  const [projects, setProjects] = useState<Project[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -328,8 +330,10 @@ export default function AdminProjects() {
   const [sortBy, setSortBy] = useState<"order" | "newest" | "oldest" | "title">("order");
 
   // Fetch Projects from API (with ?all=true for full admin visibility)
-  const fetchProjects = async () => {
-    setLoading(true);
+  const fetchProjects = async (force = false) => {
+    if (force || !projects.length) {
+      setLoading(true);
+    }
     setError("");
     try {
       const res = await fetch("/api/projects?all=true", {
@@ -337,7 +341,9 @@ export default function AdminProjects() {
       });
       const json = await res.json();
       if (json.success) {
-        setProjects(json.data || []);
+        const data = json.data || [];
+        setProjects(data);
+        setAdminCache("admin:projects", data);
       } else {
         setError(json.error || "Failed to load projects");
       }
@@ -1389,7 +1395,7 @@ export default function AdminProjects() {
 
             <div className="flex items-center gap-2.5 flex-wrap">
               <button
-                onClick={fetchProjects}
+                onClick={() => fetchProjects(true)}
                 disabled={loading}
                 className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-none disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
               >

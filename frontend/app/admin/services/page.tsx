@@ -42,6 +42,7 @@ import {
   ServiceStage,
   ServiceFaq
 } from "@/lib/serviceContentData";
+import { getAdminCache, setAdminCache, invalidateAdminCache } from "@/lib/adminCache";
 
 interface ServiceFormState {
   title: string;
@@ -152,12 +153,14 @@ const CATEGORY_OPTIONS = [
 ];
 
 export default function AdminServices() {
+  const cachedServices = getAdminCache<Service[]>("admin:services");
+  const cachedGuarantees = getAdminCache<Guarantee[]>("admin:guarantees");
   const [activeTab, setActiveTab] = useState<"services" | "guarantees">("services");
-  const [services, setServices] = useState<Service[]>([]);
-  const [guarantees, setGuarantees] = useState<Guarantee[]>([]);
+  const [services, setServices] = useState<Service[]>(cachedServices || []);
+  const [guarantees, setGuarantees] = useState<Guarantee[]>(cachedGuarantees || []);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedServices);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -173,8 +176,10 @@ export default function AdminServices() {
   const [serviceForm, setServiceForm] = useState<ServiceFormState>(EMPTY_SERVICE);
   const [guaranteeForm, setGuaranteeForm] = useState(EMPTY_GUARANTEE);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (force = false) => {
+    if (force || !services.length) {
+      setLoading(true);
+    }
     setError("");
     try {
       const [resS, resG] = await Promise.all([
@@ -183,12 +188,19 @@ export default function AdminServices() {
       ]);
       const [jsonS, jsonG] = await Promise.all([resS.json(), resG.json()]);
 
-      if (jsonS.success) setServices(jsonS.data);
-      if (jsonG.success) setGuarantees(jsonG.data);
+      if (jsonS.success) {
+        setServices(jsonS.data || []);
+        setAdminCache("admin:services", jsonS.data || []);
+      }
+      if (jsonG.success) {
+        setGuarantees(jsonG.data || []);
+        setAdminCache("admin:guarantees", jsonG.data || []);
+      }
     } catch {
       setError("Network error fetching services data");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -390,7 +402,7 @@ export default function AdminServices() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             disabled={loading}
             className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold disabled:opacity-50 transition-colors shadow-sm"
           >
@@ -734,7 +746,7 @@ export default function AdminServices() {
                         }))
                       }
                       placeholder="e.g. Master Site Planning & 3D Modeling&#10;Structural Engineering Analysis&#10;Regulatory Approvals & Blueprinting"
-                      className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-4 py-2.5 text-sm font-mono text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none transition-all"
+                      className="w-full bg-slate-50 border border-slate-300 text-slate-900 px-4 py-2.5 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy resize-none transition-all"
                     />
                   </div>
                 </div>

@@ -36,6 +36,7 @@ import {
   renderFormattedText,
   safeJsonParse,
 } from "@/lib/blogUtils";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface BlogFormData {
   id?: string;
@@ -136,8 +137,9 @@ const EMPTY_FORM: BlogFormData = {
 type TabKey = "content" | "seo" | "faq" | "links" | "publishing";
 
 export default function AdminBlogs() {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cachedBlogs = getAdminCache<BlogPost[]>("admin:blogs");
+  const [blogs, setBlogs] = useState<BlogPost[]>(() => cachedBlogs || []);
+  const [loading, setLoading] = useState(!cachedBlogs);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -152,8 +154,10 @@ export default function AdminBlogs() {
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft" | "unpublished">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchBlogs = async () => {
-    setLoading(true);
+  const fetchBlogs = async (force = false) => {
+    if (force || !blogs.length) {
+      setLoading(true);
+    }
     setError("");
     try {
       const res = await fetch("/api/blogs?all=true&full=true", {
@@ -163,6 +167,7 @@ export default function AdminBlogs() {
       const json = await res.json();
       if (json.success) {
         setBlogs(json.data || []);
+        setAdminCache("admin:blogs", json.data || []);
       } else {
         setError(json.error || "Failed to load blogs");
       }
@@ -626,7 +631,7 @@ export default function AdminBlogs() {
             <span>Customize Hero Banner</span>
           </Link>
           <button
-            onClick={fetchBlogs}
+            onClick={() => fetchBlogs(true)}
             disabled={loading}
             className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
           >

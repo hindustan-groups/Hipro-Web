@@ -28,6 +28,7 @@ import {
   Download
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export interface UnifiedLead {
   id: string;
@@ -88,20 +89,30 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AdminLeadsPage() {
-  const [leads, setLeads] = useState<UnifiedLead[]>([]);
-  const [counts, setCounts] = useState<LeadCounts>({
-    all: 0,
-    contact: 0,
-    quote: 0,
-    estimator: 0,
-    project: 0,
-    service: 0,
-    application: 0,
-    newsletter: 0,
-    new: 0,
-    archived: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const cachedData = getAdminCache<{
+    leads: UnifiedLead[];
+    counts: LeadCounts;
+    totalPages: number;
+    totalLeads: number;
+  }>("admin:leads:default");
+
+  const [leads, setLeads] = useState<UnifiedLead[]>(() => cachedData?.leads || []);
+  const [counts, setCounts] = useState<LeadCounts>(
+    () =>
+      cachedData?.counts || {
+        all: 0,
+        contact: 0,
+        quote: 0,
+        estimator: 0,
+        project: 0,
+        service: 0,
+        application: 0,
+        newsletter: 0,
+        new: 0,
+        archived: 0,
+      }
+  );
+  const [loading, setLoading] = useState(!cachedData);
   const [error, setError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
 
@@ -112,8 +123,8 @@ export default function AdminLeadsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalLeads, setTotalLeads] = useState(0);
+  const [totalPages, setTotalPages] = useState(() => cachedData?.totalPages || 1);
+  const [totalLeads, setTotalLeads] = useState(() => cachedData?.totalLeads || 0);
 
   // Detail Modal / Drawer
   const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
@@ -135,8 +146,17 @@ export default function AdminLeadsPage() {
   }, [searchQuery]);
 
   // Fetch leads from Unified Leads API
-  const fetchLeads = useCallback(async () => {
-    setLoading(true);
+  const fetchLeads = useCallback(async (force = false) => {
+    const isDefault =
+      activeType === "all" &&
+      statusFilter === "all" &&
+      !debouncedSearch.trim() &&
+      page === 1 &&
+      sortOrder === "newest";
+
+    if (force || !leads.length || !isDefault) {
+      setLoading(true);
+    }
     setError("");
     try {
       const params = new URLSearchParams();
@@ -159,6 +179,14 @@ export default function AdminLeadsPage() {
           setTotalPages(json.pagination.totalPages || 1);
           setTotalLeads(json.pagination.total || 0);
         }
+        if (isDefault) {
+          setAdminCache("admin:leads:default", {
+            leads: json.data || [],
+            counts: json.counts,
+            totalPages: json.pagination?.totalPages || 1,
+            totalLeads: json.pagination?.total || 0,
+          });
+        }
       } else {
         setError(json.error || "Could not retrieve leads");
       }
@@ -167,7 +195,7 @@ export default function AdminLeadsPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeType, statusFilter, debouncedSearch, page, sortOrder]);
+  }, [activeType, statusFilter, debouncedSearch, page, sortOrder, leads.length]);
 
   useEffect(() => {
     fetchLeads();
@@ -278,7 +306,7 @@ export default function AdminLeadsPage() {
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => fetchLeads()}
+            onClick={() => fetchLeads(true)}
             disabled={loading}
             className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-4 py-2.5 transition-all shadow-sm disabled:opacity-50"
           >

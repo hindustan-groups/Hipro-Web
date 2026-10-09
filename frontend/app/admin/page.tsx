@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
 import type { BlogPost } from "@/lib/types";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface DashboardData {
   contacts:     { total: number; new: number; read: number; replied: number };
@@ -48,14 +49,17 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
-  const [data, setData]           = useState<DashboardData | null>(null);
+  const cachedDash = getAdminCache<DashboardData>("admin:dashboard");
+  const [data, setData]           = useState<DashboardData | null>(cachedDash);
   const [blogsList, setBlogsList] = useState<BlogPost[]>([]);
-  const [loading, setLoading]     = useState(true);
+  const [loading, setLoading]     = useState(!cachedDash);
   const [error, setError]         = useState("");
   const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "applications">("quotes");
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (force = false) => {
+    if (force || !data) {
+      setLoading(true);
+    }
     setError("");
     try {
       const [dashRes, blogsRes] = await Promise.allSettled([
@@ -89,6 +93,7 @@ export default function AdminDashboard() {
           dashData.recentBlogs = blogs.slice(0, 5);
         }
         setData(dashData);
+        setAdminCache("admin:dashboard", dashData);
       } else if (dashRes.status === "fulfilled" && !dashRes.value.ok) {
         if (dashRes.value.status === 401) {
           setError("Your admin session has expired. Redirecting to login...");
@@ -143,7 +148,7 @@ export default function AdminDashboard() {
 
         <div className="flex items-center gap-3 relative z-10 shrink-0">
           <button
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             disabled={loading}
             className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50"
             title="Refresh statistics"
@@ -166,7 +171,7 @@ export default function AdminDashboard() {
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between">
           <span>{error}</span>
-          <button onClick={fetchData} className="underline font-bold hover:text-red-900">Retry</button>
+          <button onClick={() => fetchData(true)} className="underline font-bold hover:text-red-900">Retry</button>
         </div>
       )}
 
