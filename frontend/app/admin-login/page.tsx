@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ShieldAlert } from "lucide-react";
 
@@ -10,6 +10,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+
+  // Pre-warm backend service in the background so authentication is instant
+  useEffect(() => {
+    fetch("/api/health").catch(() => null);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

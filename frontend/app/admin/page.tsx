@@ -51,7 +51,6 @@ interface DashboardData {
 export default function AdminDashboard() {
   const cachedDash = getAdminCache<DashboardData>("admin:dashboard");
   const [data, setData]           = useState<DashboardData | null>(cachedDash);
-  const [blogsList, setBlogsList] = useState<BlogPost[]>([]);
   const [loading, setLoading]     = useState(!cachedDash);
   const [error, setError]         = useState("");
   const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "applications">("quotes");
@@ -62,45 +61,22 @@ export default function AdminDashboard() {
     }
     setError("");
     try {
-      const [dashRes, blogsRes] = await Promise.allSettled([
-        fetch("/api/dashboard", { credentials: "include", cache: "no-store" }),
-        fetch("/api/blogs", { cache: "no-store" }),
-      ]);
-
-      let dashData: any = null;
-      if (dashRes.status === "fulfilled" && dashRes.value.ok) {
-        const json = await dashRes.value.json();
-        if (json.success) dashData = json.data;
-      }
-
-      let blogs: BlogPost[] = [];
-      if (blogsRes.status === "fulfilled" && blogsRes.value.ok) {
-        const json = await blogsRes.value.json();
-        if (Array.isArray(json.data)) blogs = json.data;
-        else if (Array.isArray(json)) blogs = json;
-      }
-      setBlogsList(blogs);
-
-      if (dashData) {
-        if (!dashData.blogs && blogs.length > 0) {
-          dashData.blogs = {
-            total: blogs.length,
-            published: blogs.filter(b => (b.status || "published").toLowerCase() === "published" && b.active !== false).length,
-            drafts: blogs.filter(b => (b.status || "").toLowerCase() === "draft" || b.active === false).length,
-          };
-        }
-        if (!dashData.recentBlogs && blogs.length > 0) {
-          dashData.recentBlogs = blogs.slice(0, 5);
-        }
-        setData(dashData);
-        setAdminCache("admin:dashboard", dashData);
-      } else if (dashRes.status === "fulfilled" && !dashRes.value.ok) {
-        if (dashRes.value.status === 401) {
+      const res = await fetch("/api/dashboard", { credentials: "include", cache: "no-store" });
+      if (!res.ok) {
+        if (res.status === 401) {
           setError("Your admin session has expired. Redirecting to login...");
           window.location.href = "/admin-login";
-        } else {
-          setError("Failed to load dashboard data from server.");
+          return;
         }
+        setError("Failed to load dashboard data from server.");
+        return;
+      }
+      const json = await res.json();
+      if (json.success && json.data) {
+        setData(json.data);
+        setAdminCache("admin:dashboard", json.data);
+      } else {
+        setError(json.error || "Failed to load dashboard data.");
       }
     } catch {
       setError("Network error — could not reach the server.");
@@ -113,9 +89,9 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  const totalArticles = data?.blogs?.total ?? blogsList.length;
-  const publishedArticles = data?.blogs?.published ?? blogsList.filter(b => (b.status || "published").toLowerCase() === "published" && b.active !== false).length;
-  const recentBlogs = (data?.recentBlogs && data.recentBlogs.length > 0) ? data.recentBlogs : blogsList.slice(0, 5);
+  const totalArticles = data?.blogs?.total ?? 0;
+  const publishedArticles = data?.blogs?.published ?? 0;
+  const recentBlogs = data?.recentBlogs || [];
 
   const pendingQuotesCount = data?.quotes?.pending ?? 0;
   const newContactsCount = data?.contacts?.new ?? 0;
