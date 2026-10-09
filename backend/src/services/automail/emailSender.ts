@@ -187,6 +187,14 @@ export async function resolveWorkingHostingerToken(rawToken: string): Promise<st
   if (!clean) {
     throw new Error("Hostinger API Token is empty.");
   }
+
+  // Detect if user pasted email password or app password instead of API Token
+  if (clean.length < 30) {
+    throw new Error(
+      `Entered value is only ${clean.length} characters long (looks like an email password). Hostinger API Token is a long security string (50+ characters). Please generate an API Token from Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail).`
+    );
+  }
+
   if (exchangedTokenCache[clean]) {
     return exchangedTokenCache[clean];
   }
@@ -266,7 +274,7 @@ export async function resolveWorkingHostingerToken(rawToken: string): Promise<st
   }
 
   throw new Error(
-    "Invalid Hostinger API Token (Unauthorized). Make sure you created an API Token in Hostinger hPanel (Emails -> API Access), NOT your email login password."
+    "Invalid Hostinger API Token (Unauthorized). Hostinger rejected this token. In Hostinger Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions."
   );
 }
 
@@ -363,7 +371,7 @@ export async function testHostingerMailApi(tokenOverride?: string) {
     const status = err.response?.status;
     let msg = rawError || "Failed to verify Hostinger Mail API.";
     if (status === 401 || status === 403) {
-      msg = `Invalid Hostinger API Token (${status}: ${rawError || "Unauthorized"}). In Hostinger hPanel, go to Emails -> API Access (ya Dev Tools -> API) and generate an Access Token. Ensure 'All mailboxes' permission is granted.`;
+      msg = `Invalid Hostinger API Token (${status}: ${rawError || "Unauthorized"}). In Hostinger Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions. (Note: Email account password will not work here).`;
     }
     return {
       success: false,

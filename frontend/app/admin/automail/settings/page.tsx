@@ -484,6 +484,19 @@ export default function AutoMailSettingsPage() {
                     </button>
                   </div>
 
+                  {/* WARNING IF USER PASTES PASSWORD INSTEAD OF TOKEN */}
+                  {hostingerApiToken.length > 0 && hostingerApiToken.length < 30 && (
+                    <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-950 text-xs flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-extrabold text-amber-900">Email Password Detect Hua ({hostingerApiToken.length} characters):</p>
+                        <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                          Ye aapka email password lag raha hai. Hostinger API Token ek lamba security code hota hai (50+ characters). Kripya neeche diye steps se <strong>Agentic Mail API Token</strong> generate karke paste karein.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       type="button"
@@ -520,27 +533,62 @@ export default function AutoMailSettingsPage() {
                   )}
 
                   {/* How to get API Token Guide */}
-                  <div className="p-3.5 bg-blue-50/50 border border-blue-200/60 rounded-xl text-xs text-blue-950 space-y-2">
-                    <div className="flex items-center justify-between font-bold">
-                      <span className="flex items-center gap-1.5">
-                        <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
-                        Hostinger API Token Kaise Nikale:
+                  <div className="p-4 bg-blue-50/60 border border-blue-200/80 rounded-xl text-xs text-blue-950 space-y-3">
+                    <div className="flex items-center justify-between font-bold border-b border-blue-200/60 pb-2">
+                      <span className="flex items-center gap-1.5 text-blue-900">
+                        <HelpCircle className="w-4 h-4 text-blue-600" />
+                        Hostinger API Token Kaise Nikale (2 Simple Ways):
                       </span>
-                      <a
-                        href="https://hpanel.hostinger.com"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1"
-                      >
-                        Open hPanel <ExternalLink className="w-3 h-3" />
-                      </a>
                     </div>
-                    <ol className="list-decimal pl-4 space-y-1 text-[11px] text-slate-600">
-                      <li>Hostinger hPanel (<code className="text-blue-700">hpanel.hostinger.com</code>) me login karo.</li>
-                      <li><strong>Emails</strong> par click karo aur apna domain <strong>hindustanprojects.in</strong> select karo.</li>
-                      <li>Left sidebar me <strong>API Access</strong> (ya <strong>Agentic Mail / API Access</strong>) par jao.</li>
-                      <li><strong>Create Access Token</strong> click karo, mailboxes select karo aur token copy karke upar paste karo.</li>
-                    </ol>
+
+                    {/* METHOD 1: VIA WEBMAIL (EASIEST) */}
+                    <div className="p-3 bg-white border border-blue-200 rounded-lg space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-[11px] text-blue-900 flex items-center gap-1">
+                          ⭐ Tarika 1: Hostinger Webmail Se (Sabse Aasan - 1 Min)
+                        </span>
+                        <a
+                          href="https://mail.hostinger.com"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5"
+                        >
+                          Open Webmail <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                      <ol className="list-decimal pl-4 space-y-0.5 text-[11px] text-slate-700">
+                        <li><a href="https://mail.hostinger.com" target="_blank" rel="noreferrer" className="text-blue-600 font-semibold underline">mail.hostinger.com</a> open karein aur <code className="text-blue-800 font-mono">info@hindustanprojects.in</code> se login karein.</li>
+                        <li>Top right ya left sidebar me <strong>Settings (⚙️ Gear Icon)</strong> par click karein.</li>
+                        <li>Menu me <strong>Agentic Mail</strong> (ya API) par click karein.</li>
+                        <li><strong>Create Token / New Token</strong> par click karein, naam <code className="text-blue-800 font-mono">HiproWeb</code> likhein.</li>
+                        <li>Screen par jo lamba token dikhega usko <strong>Copy</strong> karke upar paste karein!</li>
+                      </ol>
+                    </div>
+
+                    {/* METHOD 2: VIA HPANEL */}
+                    <div className="p-3 bg-white border border-blue-200 rounded-lg space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-[11px] text-slate-800 flex items-center gap-1">
+                          Tarika 2: Hostinger hPanel Se
+                        </span>
+                        <a
+                          href="https://hpanel.hostinger.com"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-blue-600 font-bold hover:underline inline-flex items-center gap-0.5"
+                        >
+                          Open hPanel <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                      <ol className="list-decimal pl-4 space-y-0.5 text-[11px] text-slate-700">
+                        <li><a href="https://hpanel.hostinger.com" target="_blank" rel="noreferrer" className="text-blue-600 font-semibold underline">hpanel.hostinger.com</a> me login karke <strong>Emails</strong> par click karein.</li>
+                        <li>Apna domain <strong>hindustanprojects.in</strong> select karein.</li>
+                        <li>Left sidebar me neeche scroll karein aur <strong>Agentic Mail</strong> (ya API Access) par click karein.</li>
+                        <li><strong>API Tokens</strong> -&gt; <strong>Create API Token</strong> par click karein.</li>
+                        <li>Mailbox me <strong>All mailboxes</strong> ya <code className="text-blue-800 font-mono">info@hindustanprojects.in</code> choose karein (Send permissions ke sath).</li>
+                        <li>Generate token ko copy karke upar paste karein aur <strong>Save Settings</strong> karein.</li>
+                      </ol>
+                    </div>
                   </div>
                 </div>
               )}
