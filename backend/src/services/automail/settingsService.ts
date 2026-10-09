@@ -3,6 +3,9 @@ import path from "path";
 import { prisma } from "../../lib/db";
 
 export interface AutomailSettings {
+  deliveryMethod: "smtp" | "hostinger_api";
+  hostingerApiToken: string;
+  hostingerMailboxId: string;
   smtpHost: string;
   smtpPort: number;
   smtpUser: string;
@@ -25,10 +28,13 @@ let cachedSettings: AutomailSettings | null = null;
 
 export function getDefaultSettings(): AutomailSettings {
   return {
+    deliveryMethod: ((process.env.DELIVERY_METHOD as any) || "smtp"),
+    hostingerApiToken: process.env.HOSTINGER_MAIL_API_TOKEN || process.env.HOSTINGER_API_KEY || "",
+    hostingerMailboxId: process.env.HOSTINGER_MAILBOX_ID || "",
     smtpHost: process.env.SMTP_HOST || "smtp.hostinger.com",
     smtpPort: parseInt(process.env.SMTP_PORT || "465", 10),
     smtpUser: process.env.SMTP_USER || process.env.SENDER_EMAIL || "info@hindustanprojects.in",
-    smtpPass: process.env.SMTP_PASS || process.env.HOSTINGER_API_KEY || "",
+    smtpPass: process.env.SMTP_PASS || "",
     senderNameHipro: "Hindustan Projects",
     senderEmailHipro: process.env.SMTP_USER || "info@hindustanprojects.in",
     senderNameHbs: "Hind Building Solutions",
@@ -48,6 +54,9 @@ export function getAutomailSettingsFromFile(): AutomailSettings {
       return {
         ...defaults,
         ...parsed,
+        deliveryMethod: (parsed.deliveryMethod || defaults.deliveryMethod || "smtp"),
+        hostingerApiToken: (parsed.hostingerApiToken || defaults.hostingerApiToken || "").trim(),
+        hostingerMailboxId: (parsed.hostingerMailboxId || defaults.hostingerMailboxId || "").trim(),
         smtpPass: (parsed.smtpPass || defaults.smtpPass || "").trim(),
         smtpUser: (parsed.smtpUser || defaults.smtpUser || "").trim(),
         smtpPort: parseInt(String(parsed.smtpPort || defaults.smtpPort), 10),
@@ -65,8 +74,8 @@ export function getAutomailSettingsFromFile(): AutomailSettings {
  * Primary asynchronous getter: Reads from PostgreSQL database (persistent across Render restarts)
  */
 export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
-  // If we already have cached settings with configured password, return immediately
-  if (cachedSettings && cachedSettings.smtpPass) {
+  // If we already have cached settings with configured credentials, return immediately
+  if (cachedSettings && (cachedSettings.smtpPass || cachedSettings.hostingerApiToken)) {
     return cachedSettings;
   }
 
@@ -77,6 +86,9 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
 
     if (dbRecord) {
       const dbSettings: AutomailSettings = {
+        deliveryMethod: (dbRecord.deliveryMethod as any) || "smtp",
+        hostingerApiToken: (dbRecord.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim(),
+        hostingerMailboxId: (dbRecord.hostingerMailboxId || process.env.HOSTINGER_MAILBOX_ID || "").trim(),
         smtpHost: dbRecord.smtpHost || "smtp.hostinger.com",
         smtpPort: Number(dbRecord.smtpPort || 465),
         smtpUser: (dbRecord.smtpUser || "info@hindustanprojects.in").trim(),
@@ -149,7 +161,18 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
       ? newSettings.smtpPass.trim()
       : current.smtpPass;
 
+  // Determine Hostinger Mail API token to persist
+  const tokenToSave =
+    newSettings.hostingerApiToken !== undefined &&
+    newSettings.hostingerApiToken !== "••••••••••••" &&
+    newSettings.hostingerApiToken.trim() !== ""
+      ? newSettings.hostingerApiToken.trim()
+      : current.hostingerApiToken;
+
   const merged: AutomailSettings = {
+    deliveryMethod: newSettings.deliveryMethod || current.deliveryMethod || "smtp",
+    hostingerApiToken: tokenToSave,
+    hostingerMailboxId: (newSettings.hostingerMailboxId !== undefined ? newSettings.hostingerMailboxId : current.hostingerMailboxId || "").trim(),
     smtpHost: (newSettings.smtpHost || current.smtpHost || "smtp.hostinger.com").trim(),
     smtpPort: parseInt(String(newSettings.smtpPort ?? current.smtpPort ?? 465), 10),
     smtpUser: (newSettings.smtpUser || current.smtpUser || "info@hindustanprojects.in").trim(),
@@ -184,12 +207,12 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
   cachedSettings = merged;
 
   // 3. Update runtime process environment
+  process.env.DELIVERY_METHOD = merged.deliveryMethod;
+  if (merged.hostingerApiToken) process.env.HOSTINGER_MAIL_API_TOKEN = merged.hostingerApiToken;
   process.env.SMTP_HOST = merged.smtpHost;
   process.env.SMTP_PORT = String(merged.smtpPort);
   process.env.SMTP_USER = merged.smtpUser;
-  if (merged.smtpPass) {
-    process.env.SMTP_PASS = merged.smtpPass;
-  }
+  if (merged.smtpPass) process.env.SMTP_PASS = merged.smtpPass;
   process.env.DAILY_LIMIT = String(merged.dailyLimit);
   process.env.RATE_LIMIT_PER_MINUTE = String(merged.rateLimitPerMinute);
 
@@ -197,33 +220,6 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
   try {
     fs.writeFileSync(SETTINGS_FILE_PATH, JSON.stringify(merged, null, 2), "utf-8");
   } catch (fileErr) {
-    // Ignore in read-only / ephemeral environments
-  }
-
-  // 5. Update local .env if available
-  try {
-    const envPath = fs.existsSync(path.resolve(process.cwd(), ".env"))
-      ? path.resolve(process.cwd(), ".env")
-      : path.resolve(__dirname, "../../../.env");
-    if (fs.existsSync(envPath)) {
-      let envContent = fs.readFileSync(envPath, "utf-8");
-      const setEnvVar = (key: string, val: string) => {
-        const regex = new RegExp(`^${key}=.*$`, "m");
-        if (regex.test(envContent)) {
-          envContent = envContent.replace(regex, `${key}="${val}"`);
-        } else {
-          envContent += `\n${key}="${val}"`;
-        }
-      };
-      setEnvVar("SMTP_HOST", merged.smtpHost);
-      setEnvVar("SMTP_PORT", String(merged.smtpPort));
-      setEnvVar("SMTP_USER", merged.smtpUser);
-      if (merged.smtpPass) setEnvVar("SMTP_PASS", merged.smtpPass);
-      setEnvVar("DAILY_LIMIT", String(merged.dailyLimit));
-      setEnvVar("RATE_LIMIT_PER_MINUTE", String(merged.rateLimitPerMinute));
-      fs.writeFileSync(envPath, envContent.trim() + "\n", "utf-8");
-    }
-  } catch {
     // Ignore in read-only / ephemeral environments
   }
 

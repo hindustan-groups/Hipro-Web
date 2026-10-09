@@ -21,6 +21,7 @@
     "cors": "^2.8.5",
     "csv-parse": "^7.0.3",
     "express": "^4.22.2",
+    "hostinger-mail-api-sdk": "^1.19.4",
     "multer": "^2.4.0",
     "nodemailer": "^10.0.16",
     "web-push": "^3.6.7",

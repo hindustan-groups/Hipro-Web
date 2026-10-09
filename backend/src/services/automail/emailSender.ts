@@ -1,5 +1,6 @@
 import dns from "dns";
 import nodemailer from "nodemailer";
+import { Configuration, AccountApi, SendApi } from "hostinger-mail-api-sdk";
 import { prisma } from "../../lib/db";
 import { getAutomailSettings, AutomailSettings } from "./settingsService";
 
@@ -66,7 +67,7 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   },
 };
 
-// Known Hostinger and standard SMTP IPv4 mapping to completely bypass Nodemailer v10's internal resolve6 random picker
+// Known Hostinger and standard SMTP IPv4 mapping to bypass Nodemailer v10's internal resolve6 random picker
 export const hostIpv4Cache: Record<string, string> = {
   "smtp.hostinger.com": "172.65.255.143",
 };
@@ -157,16 +158,208 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
   return { transporter, isConfigured, user, host, port, pass };
 }
 
+// ----------------------------------------------------
+// HOSTINGER MAIL API (REST OVER HTTPS PORT 443)
+// ----------------------------------------------------
+
+let mailboxCache: Array<{ resourceId: string; address: string }> = [];
+let mailboxCacheExpiry = 0;
+
+export function getHostingerSdk(tokenOverride?: string) {
+  const settings = getAutomailSettings();
+  const apiToken = (tokenOverride || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  if (!apiToken) {
+    throw new Error(
+      "Hostinger Mail API Token not configured! Please generate an API Token in Hostinger hPanel under Emails -> API Access and paste it in AutoMail Settings."
+    );
+  }
+
+  const config = new Configuration({
+    accessToken: apiToken,
+    basePath: "https://api.mail.hostinger.com",
+  });
+
+  return {
+    config,
+    accountApi: new AccountApi(config),
+    sendApi: new SendApi(config),
+    token: apiToken,
+  };
+}
+
 /**
- * Verify SMTP connection and credentials with intelligent diagnostics
+ * Fetch available mailboxes for the authenticated Hostinger Mail API Token
+ */
+export async function getHostingerMailboxes(tokenOverride?: string): Promise<Array<{ resourceId: string; address: string }>> {
+  const now = Date.now();
+  if (mailboxCache.length > 0 && mailboxCacheExpiry > now && !tokenOverride) {
+    return mailboxCache;
+  }
+
+  const { accountApi } = getHostingerSdk(tokenOverride);
+  const response = await accountApi.getCurrentAccount();
+  const mailboxes: Array<{ resourceId: string; address: string }> =
+    (response.data as any)?.data?.mailboxes ||
+    (response.data as any)?.mailboxes ||
+    [];
+
+  if (mailboxes.length > 0 && !tokenOverride) {
+    mailboxCache = mailboxes;
+    mailboxCacheExpiry = now + 5 * 60 * 1000; // Cache for 5 minutes
+  }
+
+  return mailboxes;
+}
+
+/**
+ * Find mailbox resource ID by sender email address, or fallback to first available
+ */
+export async function resolveHostingerMailboxId(senderEmail?: string, tokenOverride?: string, mailboxIdOverride?: string): Promise<string> {
+  if (mailboxIdOverride) return mailboxIdOverride;
+  const settings = getAutomailSettings();
+  if (settings.hostingerMailboxId) return settings.hostingerMailboxId;
+
+  const mailboxes = await getHostingerMailboxes(tokenOverride);
+  if (!mailboxes || mailboxes.length === 0) {
+    throw new Error("No mailboxes found for this Hostinger API Token. Please ensure your mailbox exists in Hostinger.");
+  }
+
+  if (senderEmail) {
+    const clean = senderEmail.toLowerCase().trim();
+    const matched = mailboxes.find((m) => m.address?.toLowerCase().trim() === clean);
+    if (matched) return matched.resourceId;
+  }
+
+  return mailboxes[0].resourceId;
+}
+
+/**
+ * Test Hostinger Mail API connection and fetch connected mailboxes
+ */
+export async function testHostingerMailApi(tokenOverride?: string) {
+  try {
+    const mailboxes = await getHostingerMailboxes(tokenOverride);
+    if (!mailboxes || mailboxes.length === 0) {
+      return {
+        success: false,
+        message: "Hostinger API Token is valid, but no mailboxes were returned for this account.",
+      };
+    }
+    const boxList = mailboxes.map((m) => m.address).join(", ");
+    return {
+      success: true,
+      message: `Hostinger Mail API verified successfully over HTTPS (Port 443)! Connected mailbox(es): ${boxList}`,
+      mailboxes,
+    };
+  } catch (err: any) {
+    let msg = err.response?.data?.message || err.message || "Failed to verify Hostinger Mail API.";
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      msg = "Invalid Hostinger API Token (Unauthorized). In Hostinger hPanel, go to Emails -> API Access and generate an Access Token.";
+    }
+    return {
+      success: false,
+      message: `Hostinger Mail API Handshake Error: ${msg}`,
+    };
+  }
+}
+
+/**
+ * Send an email directly via Hostinger REST API (HTTPS Port 443 — Bypasses Render SMTP port blocking)
+ */
+export async function sendEmailViaHostingerApi({
+  to,
+  subject,
+  htmlBody,
+  textBody,
+  senderName,
+  senderEmail,
+  brand = "all",
+  token,
+  mailboxId,
+}: {
+  to: string;
+  subject: string;
+  htmlBody: string;
+  textBody?: string;
+  senderName?: string | null;
+  senderEmail?: string | null;
+  brand?: string;
+  token?: string;
+  mailboxId?: string;
+}) {
+  const brandMap = getBrandConfigs();
+  const brandDefaults = brandMap[brand] || brandMap.all;
+  const fromName = senderName?.trim() || brandDefaults.name;
+  const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
+
+  const { sendApi } = getHostingerSdk(token);
+  const resolvedMailboxId = await resolveHostingerMailboxId(fromEmail, token, mailboxId);
+  const plainText = textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : "");
+
+  await sendApi.sendEmail(resolvedMailboxId, {
+    to: [to.trim()],
+    displayName: fromName,
+    subject,
+    text: plainText || " ",
+    html: htmlBody,
+    cc: [],
+    bcc: [],
+    attachments: [],
+    inReplyTo: undefined as any,
+    forwardOf: undefined as any,
+  } as any);
+
+  return {
+    messageId: `hmail-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+    accepted: [to],
+    deliveryMethod: "hostinger_api",
+  };
+}
+
+/**
+ * Check if the active delivery configuration has valid credentials
+ */
+export function isEmailDeliveryConfigured(customConfig?: Partial<AutomailSettings>): boolean {
+  const settings = getAutomailSettings();
+  const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
+  const token = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  const user = (customConfig?.smtpUser || settings.smtpUser || "").trim();
+  const pass = (customConfig?.smtpPass !== undefined ? customConfig.smtpPass : settings.smtpPass || "").trim();
+
+  if (deliveryMethod === "hostinger_api") {
+    return Boolean(token);
+  }
+  return Boolean((user && pass) || token);
+}
+
+/**
+ * Verify email connection (SMTP or Hostinger API) with intelligent diagnostics
  */
 export async function testSmtpConnection(customConfig?: Partial<AutomailSettings>) {
   const settings = getAutomailSettings();
+  const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
+  const token = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+
+  // If testing Hostinger Mail API
+  if (deliveryMethod === "hostinger_api" || (!customConfig?.smtpPass && !settings.smtpPass && token)) {
+    if (!token) {
+      return {
+        success: false,
+        message: "Hostinger Mail API Token is missing! Please enter your Hostinger API Token in AutoMail Settings tab.",
+      };
+    }
+    return await testHostingerMailApi(token);
+  }
+
+  // Testing SMTP
   const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
   await getHostIpv4(host);
 
   const { transporter, isConfigured, user, port, pass } = getTransporter(customConfig);
   if (!isConfigured) {
+    if (token) {
+      return await testHostingerMailApi(token);
+    }
     return {
       success: false,
       message: "Hostinger SMTP password or email is missing! Please enter your Hostinger Email & Password in AutoMail Settings tab.",
@@ -182,7 +375,7 @@ export async function testSmtpConnection(customConfig?: Partial<AutomailSettings
   } catch (error: any) {
     let msg = error.message || "SMTP Verification failed.";
 
-    // If port 465 timed out or connection was refused, check if port 587 works
+    // If port 465 timed out, test port 587
     if ((error.code === "ETIMEDOUT" || error.code === "ECONNREFUSED" || msg.includes("timeout")) && port === 465) {
       try {
         const altTransporter = createSmtpTransport(host, 587, user, pass);
@@ -192,14 +385,14 @@ export async function testSmtpConnection(customConfig?: Partial<AutomailSettings
           message: `Port 465 timed out on this server network, but Port 587 (STARTTLS) verified successfully! Please change your SMTP Port to 587 in AutoMail Settings and save.`,
         };
       } catch (altError: any) {
-        msg = `Connection to ${host}:${port} timed out. Cloud provider network may be throttling SMTP or host is unreachable. (${altError.message})`;
+        msg = `Connection to ${host}:${port} timed out. Cloud hosting firewall (e.g. Render Free tier) blocks outbound SMTP ports 465 & 587. Please switch Delivery Method to 'Hostinger Mail API (HTTPS Port 443)' in Settings.`;
       }
     }
 
     if (msg.includes('Missing credentials for "PLAIN"') || error.code === "EAUTH" || msg.includes("535") || msg.includes("authentication failed")) {
       msg = `Authentication failed: Invalid Hostinger password or username for ${user}. Please verify your mailbox password at mail.hostinger.com.`;
     } else if (error.code === "ETIMEDOUT" || msg.includes("timeout")) {
-      msg = `Connection to ${host}:${port} timed out. Try switching to Port 587 (STARTTLS) in AutoMail Settings.`;
+      msg = `Connection to ${host}:${port} timed out. Cloud hosting firewall (e.g. Render Free tier) blocks outbound SMTP ports. Please switch Delivery Method to 'Hostinger Mail API (HTTPS Port 443)' in AutoMail Settings.`;
     }
 
     return { success: false, message: msg };
@@ -207,7 +400,9 @@ export async function testSmtpConnection(customConfig?: Partial<AutomailSettings
 }
 
 /**
- * Send a single email via SMTP with automatic port fallback (465 -> 587)
+ * Send a single email with automatic multi-protocol routing and fallback
+ * 1. Hostinger API (Port 443) if selected or fallback
+ * 2. Hostinger SMTP (Port 465 / 587)
  */
 export async function sendOneEmail({
   to,
@@ -229,6 +424,25 @@ export async function sendOneEmail({
   customConfig?: Partial<AutomailSettings>;
 }) {
   const settings = getAutomailSettings();
+  const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
+  const apiToken = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+
+  // If Hostinger API is selected OR if SMTP pass is empty but API token exists
+  if (deliveryMethod === "hostinger_api" || (!settings.smtpPass && apiToken)) {
+    return await sendEmailViaHostingerApi({
+      to,
+      subject,
+      htmlBody,
+      textBody,
+      senderName,
+      senderEmail,
+      brand,
+      token: apiToken,
+      mailboxId: customConfig?.hostingerMailboxId || settings.hostingerMailboxId,
+    });
+  }
+
+  // SMTP Flow
   const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
   await getHostIpv4(host);
 
@@ -240,12 +454,24 @@ export async function sendOneEmail({
   const { transporter, isConfigured, user, port, pass } = getTransporter(customConfig);
 
   if (!isConfigured) {
+    if (apiToken) {
+      // Auto-rescue via Hostinger API
+      return await sendEmailViaHostingerApi({
+        to,
+        subject,
+        htmlBody,
+        textBody,
+        senderName,
+        senderEmail,
+        brand,
+        token: apiToken,
+      });
+    }
     throw new Error(
-      "Hostinger SMTP password not set! Please go to Admin -> AutoMail -> Settings tab and enter your Hostinger Email Password before sending."
+      "Hostinger email credentials not configured! Please go to Admin -> AutoMail -> Settings tab and enter your Hostinger API Token or SMTP Password."
     );
   }
 
-  // Hostinger requires the envelope/from sender to match the authenticated mailbox (user)
   const authSender = user || fromEmail;
   const mailOptions = {
     from: `"${fromName}" <${authSender}>`,
@@ -260,7 +486,22 @@ export async function sendOneEmail({
     const info = await transporter.sendMail(mailOptions);
     return info;
   } catch (err: any) {
-    // If port 465 timed out or failed to connect, attempt automatic fallback to port 587
+    // If SMTP times out or fails (e.g. Render blocks SMTP ports 465/587) and Hostinger API token is configured, auto-rescue!
+    if (apiToken) {
+      console.warn(`[AUTOMAIL] SMTP delivery failed (${err.message}). Auto-switching to Hostinger Mail API over HTTPS Port 443...`);
+      return await sendEmailViaHostingerApi({
+        to,
+        subject,
+        htmlBody,
+        textBody,
+        senderName,
+        senderEmail,
+        brand,
+        token: apiToken,
+      });
+    }
+
+    // Fallback between Port 465 and Port 587
     if ((err.code === "ETIMEDOUT" || err.code === "ECONNREFUSED" || err.message?.includes("timeout")) && port === 465) {
       console.warn(`[AUTOMAIL] Port 465 timed out to ${host}. Attempting auto-fallback to Port 587...`);
       try {
@@ -269,7 +510,9 @@ export async function sendOneEmail({
         console.log(`[AUTOMAIL] Fallback to Port 587 succeeded for ${to}!`);
         return fallbackInfo;
       } catch (fallbackErr: any) {
-        throw new Error(`Email delivery failed on both Port 465 and Port 587: ${fallbackErr.message || err.message}`);
+        throw new Error(
+          `Email delivery failed on both Port 465 and Port 587 (Render blocks outbound SMTP): ${fallbackErr.message || err.message}. Switch Delivery Method to 'Hostinger Mail API (HTTPS Port 443)' in AutoMail Settings.`
+        );
       }
     }
 
@@ -373,9 +616,8 @@ export async function processCampaignQueue(campaignId: string) {
 
     console.log(`[AUTOMAIL] Starting transmission for "${campaign.name}" (${queuedLogs.length} queued)`);
 
-    const { isConfigured } = getTransporter();
-    if (!isConfigured) {
-      const errorMsg = "Hostinger SMTP credentials missing. Please enter your Hostinger Email & Password in AutoMail Settings tab.";
+    if (!isEmailDeliveryConfigured()) {
+      const errorMsg = "Hostinger credentials missing. Please enter your Hostinger API Token or SMTP Password in AutoMail Settings tab.";
       await (prisma as any).automailSendLog.updateMany({
         where: { campaignId, status: "queued" },
         data: { status: "failed", error: errorMsg },

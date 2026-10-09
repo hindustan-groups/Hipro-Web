@@ -9,6 +9,9 @@ import {
   getSendingStatus,
   getTodaySentCount,
   testSmtpConnection,
+  testHostingerMailApi,
+  getHostingerMailboxes,
+  isEmailDeliveryConfigured,
   personalizeContent,
   getBrandConfigs,
   getTransporter,
@@ -92,6 +95,9 @@ router.get("/stats", async (req: Request, res: Response) => {
       },
       brands: getBrandConfigs(),
       settings: {
+        deliveryMethod: settings.deliveryMethod,
+        hostingerApiTokenConfigured: Boolean(settings.hostingerApiToken),
+        hostingerMailboxId: settings.hostingerMailboxId,
         smtpHost: settings.smtpHost,
         smtpPort: settings.smtpPort,
         smtpUser: settings.smtpUser,
@@ -114,6 +120,8 @@ router.get("/settings", async (req: Request, res: Response) => {
         ...settings,
         smtpPassConfigured: Boolean(settings.smtpPass),
         smtpPass: settings.smtpPass ? "••••••••••••" : "",
+        hostingerApiTokenConfigured: Boolean(settings.hostingerApiToken),
+        hostingerApiToken: settings.hostingerApiToken ? "••••••••••••" : "",
       },
     });
   } catch (err: any) {
@@ -127,6 +135,9 @@ router.post("/settings", async (req: Request, res: Response) => {
     if (body.smtpPass === "••••••••••••" || !body.smtpPass) {
       delete body.smtpPass;
     }
+    if (body.hostingerApiToken === "••••••••••••" || !body.hostingerApiToken) {
+      delete body.hostingerApiToken;
+    }
     const updated = await saveAutomailSettings(body);
     return res.json({
       success: true,
@@ -135,6 +146,8 @@ router.post("/settings", async (req: Request, res: Response) => {
         ...updated,
         smtpPassConfigured: Boolean(updated.smtpPass),
         smtpPass: updated.smtpPass ? "••••••••••••" : "",
+        hostingerApiTokenConfigured: Boolean(updated.hostingerApiToken),
+        hostingerApiToken: updated.hostingerApiToken ? "••••••••••••" : "",
       },
     });
   } catch (err: any) {
@@ -145,14 +158,26 @@ router.post("/settings", async (req: Request, res: Response) => {
 router.post("/settings/test", async (req: Request, res: Response) => {
   try {
     const body = { ...req.body };
+    const current = await getAutomailSettingsAsync();
     if (body.smtpPass === "••••••••••••" || !body.smtpPass) {
-      const current = await getAutomailSettingsAsync();
       body.smtpPass = current.smtpPass;
+    }
+    if (body.hostingerApiToken === "••••••••••••" || !body.hostingerApiToken) {
+      body.hostingerApiToken = current.hostingerApiToken;
     }
     const result = await testSmtpConnection(body);
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.get("/mailboxes", async (req: Request, res: Response) => {
+  try {
+    const mailboxes = await getHostingerMailboxes();
+    return res.json({ success: true, mailboxes });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -272,16 +297,28 @@ router.get("/test-connection", async (req: Request, res: Response) => {
 // Send single test email
 router.post("/send-test", async (req: Request, res: Response) => {
   try {
-    const { to, subject, htmlBody, brand = "all", smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
+    const { to, subject, htmlBody, brand = "all", deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
     if (!to) {
       return res.status(400).json({ success: false, error: "Recipient email is required" });
     }
 
+    const current = await getAutomailSettingsAsync();
     const customConfig: Partial<AutomailSettings> = {};
+    if (deliveryMethod) customConfig.deliveryMethod = deliveryMethod;
+    if (hostingerApiToken && hostingerApiToken !== "••••••••••••") {
+      customConfig.hostingerApiToken = hostingerApiToken;
+    } else if (current.hostingerApiToken) {
+      customConfig.hostingerApiToken = current.hostingerApiToken;
+    }
+    if (hostingerMailboxId) customConfig.hostingerMailboxId = hostingerMailboxId;
     if (smtpHost) customConfig.smtpHost = smtpHost;
     if (smtpPort) customConfig.smtpPort = Number(smtpPort);
     if (smtpUser) customConfig.smtpUser = smtpUser;
-    if (smtpPass && smtpPass !== "••••••••••••") customConfig.smtpPass = smtpPass;
+    if (smtpPass && smtpPass !== "••••••••••••") {
+      customConfig.smtpPass = smtpPass;
+    } else if (current.smtpPass) {
+      customConfig.smtpPass = current.smtpPass;
+    }
 
     const testSubject = subject ? `[TEST] ${subject}` : "[TEST] Hindustan Projects Email Test";
     const testBody = htmlBody || `<p>This is a test email sent from <strong>Hindustan Projects AutoMail Engine</strong>.</p>`;
@@ -294,7 +331,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       customConfig: Object.keys(customConfig).length > 0 ? customConfig : undefined,
     });
 
-    return res.json({ success: true, message: `Test email sent to ${to}!`, messageId: info.messageId });
+    return res.json({ success: true, message: `Test email sent to ${to}!`, messageId: (info as any).messageId });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message || "Failed to send test email" });
   }
@@ -518,11 +555,10 @@ router.post("/send-direct", async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Subject line is required" });
     }
 
-    const { isConfigured } = getTransporter();
-    if (!isConfigured) {
+    if (!isEmailDeliveryConfigured()) {
       return res.status(400).json({
         success: false,
-        error: "Hostinger SMTP password is missing! Please go to AutoMail Settings and enter your password before sending.",
+        error: "Hostinger credentials missing! Please configure Hostinger Mail API Token or SMTP credentials in AutoMail Settings before sending.",
       });
     }
 
@@ -647,11 +683,10 @@ router.post("/send/:id", async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: "Campaign is already transmitting" });
     }
 
-    const { isConfigured } = getTransporter();
-    if (!isConfigured) {
+    if (!isEmailDeliveryConfigured()) {
       return res.status(400).json({
         success: false,
-        error: "Hostinger SMTP password is missing! Please go to AutoMail Settings and enter your password before sending.",
+        error: "Hostinger credentials missing! Please configure Hostinger Mail API Token or SMTP credentials in AutoMail Settings before sending.",
       });
     }
 

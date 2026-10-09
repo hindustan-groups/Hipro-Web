@@ -617,6 +617,9 @@ model AutomailDailyStat {
 
 model AutomailSetting {
   id                 String   @id @default("singleton")
+  deliveryMethod     String   @default("smtp") // "smtp" | "hostinger_api"
+  hostingerApiToken  String?  @default("")
+  hostingerMailboxId String?  @default("")
   smtpHost           String   @default("smtp.hostinger.com")
   smtpPort           Int      @default(465)
   smtpUser           String   @default("info@hindustanprojects.in")
