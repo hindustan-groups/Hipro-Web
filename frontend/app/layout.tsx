@@ -95,12 +95,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montserrat.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
-          rel="stylesheet"
-        />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />

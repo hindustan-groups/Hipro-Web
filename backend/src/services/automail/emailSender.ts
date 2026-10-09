@@ -75,7 +75,7 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
     secure: port === 465,
     ...(isConfigured ? { auth: { user, pass } } : {}),
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: process.env.NODE_ENV === "production" && process.env.SMTP_IGNORE_TLS_ERRORS !== "true",
     },
   });
 
