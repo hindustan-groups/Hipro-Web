@@ -484,6 +484,21 @@ export default function AutoMailSettingsPage() {
                     </button>
                   </div>
 
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleTestConnection}
+                      disabled={testing || (!hostingerApiToken && !hostingerApiTokenConfigured)}
+                      className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {testing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                      <span>Verify Token & Discover Mailboxes</span>
+                    </button>
+                    <span className="text-[11px] text-slate-500">
+                      Token paste karne ke baad verify karein
+                    </span>
+                  </div>
+
                   {/* Connected Mailboxes Detected Preview */}
                   {connectedMailboxes.length > 0 && (
                     <div className="p-3 bg-white border border-emerald-200 rounded-xl space-y-1.5">
