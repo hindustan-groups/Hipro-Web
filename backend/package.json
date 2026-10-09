@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "prisma db push && tsc",
+    "build": "tsc",
+    "db:push": "prisma db push",
     "start": "node dist/index.js",
     "create-admin": "tsx src/scripts/create-admin.ts",
     "postinstall": "prisma generate"

@@ -190,7 +190,7 @@ router.post("/custom-templates", (req: Request, res: Response) => {
 
 router.put("/custom-templates/:id", (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const updated = updateCustomTemplate(id, req.body);
     if (!updated) {
       return res.status(404).json({ success: false, error: "Template not found" });
@@ -203,7 +203,7 @@ router.put("/custom-templates/:id", (req: Request, res: Response) => {
 
 router.delete("/custom-templates/:id", (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const deleted = deleteCustomTemplate(id);
     if (!deleted) {
       return res.status(404).json({ success: false, error: "Template not found" });
