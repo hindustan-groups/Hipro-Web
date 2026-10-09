@@ -1,3 +1,9 @@
+import dns from "dns";
+// Force IPv4-first DNS order across all sockets (fixes ENETUNREACH on IPv6)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
+
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";

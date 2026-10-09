@@ -1,6 +1,12 @@
+import dns from "dns";
 import nodemailer from "nodemailer";
 import { prisma } from "../../lib/db";
 import { getAutomailSettings, AutomailSettings } from "./settingsService";
+
+// Enforce IPv4 DNS resolution across all SMTP socket operations (fixes ENETUNREACH on IPv6)
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder("ipv4first");
+}
 
 // Global sending state for queue management
 let isSending = false;
@@ -70,6 +76,8 @@ export function createSmtpTransport(host: string, port: number, user: string, pa
     secure: isSecure,
     requireTLS: !isSecure, // Enforce STARTTLS on port 587
     ...(isConfigured ? { auth: { user, pass } } : {}),
+    // FORCE IPv4 to eliminate "connect ENETUNREACH 2606:4700:...:465 - Local (:::0)" errors
+    family: 4,
     // Enforce strict timeouts so requests never hang indefinitely
     connectionTimeout: 8000, // 8s to establish socket
     greetingTimeout: 8000,   // 8s for SMTP greeting
@@ -82,7 +90,7 @@ export function createSmtpTransport(host: string, port: number, user: string, pa
       rejectUnauthorized: false,
       minVersion: "TLSv1.2",
     },
-  });
+  } as any);
 }
 
 export function getTransporter(customConfig?: Partial<AutomailSettings>) {
