@@ -164,18 +164,115 @@ export function getTransporter(customConfig?: Partial<AutomailSettings>) {
 
 let mailboxCache: Array<{ resourceId: string; address: string }> = [];
 let mailboxCacheExpiry = 0;
+const exchangedTokenCache: Record<string, string> = {};
 
-export function getHostingerSdk(tokenOverride?: string) {
+/**
+ * Intelligent token resolver:
+ * 1. Tests if token directly works on api.mail.hostinger.com (Mail API Token)
+ * 2. If 401 Unauthorized, automatically checks if it is a General Developer Token (from hPanel -> Dev Tools > API)
+ *    and generates a Mail API token for the user's order on the fly!
+ */
+export async function resolveWorkingHostingerToken(rawToken: string): Promise<string> {
+  const clean = rawToken.trim();
+  if (!clean) {
+    throw new Error("Hostinger API Token is empty.");
+  }
+  if (exchangedTokenCache[clean]) {
+    return exchangedTokenCache[clean];
+  }
+
+  // 1. Try directly against api.mail.hostinger.com
+  try {
+    const config = new Configuration({ accessToken: clean, basePath: "https://api.mail.hostinger.com" });
+    const accApi = new AccountApi(config);
+    await accApi.getCurrentAccount();
+    exchangedTokenCache[clean] = clean;
+    return clean;
+  } catch (err: any) {
+    const status = err.response?.status;
+    if (status !== 401 && status !== 403) {
+      throw err;
+    }
+    console.log("[AUTOMAIL] Direct api.mail.hostinger.com returned 401. Checking if this is a General Developer API token from hPanel -> API...");
+  }
+
+  // 2. If it failed with 401, check if it's a Hostinger Developer API Token
+  const candidateUrls = [
+    "https://developers.hostinger.com/api/mail/v1",
+    "https://api.hostinger.com/api/mail/v1",
+  ];
+
+  for (const baseUrl of candidateUrls) {
+    try {
+      const ordersRes = await fetch(`${baseUrl}/orders`, {
+        headers: {
+          Authorization: `Bearer ${clean}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (ordersRes.ok) {
+        const ordersData: any = await ordersRes.json();
+        const orders = ordersData?.data || ordersData || [];
+        if (Array.isArray(orders) && orders.length > 0) {
+          console.log(`[AUTOMAIL] Found ${orders.length} mail order(s) under Developer API token!`);
+          const orderId = orders[0].id || orders[0].order_id || orders[0].orderId;
+
+          // Auto-generate Mail API Token for this order
+          const createTokenRes = await fetch(`${baseUrl}/orders/${orderId}/api-tokens`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${clean}`,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              name: "AutoMail Webhook & Delivery",
+              scope: {
+                has_all_mailboxes: true,
+              },
+            }),
+          });
+
+          if (createTokenRes.ok) {
+            const tokenData: any = await createTokenRes.json();
+            const newToken =
+              tokenData?.data?.token ||
+              tokenData?.token ||
+              tokenData?.data?.access_token ||
+              tokenData?.access_token;
+
+            if (newToken) {
+              console.log("[AUTOMAIL] Successfully auto-created Mail API token from General Developer Token!");
+              exchangedTokenCache[clean] = newToken;
+              return newToken;
+            }
+          }
+        }
+      }
+    } catch (apiErr: any) {
+      console.warn(`[AUTOMAIL] Checking developer API failed for ${baseUrl}:`, apiErr);
+    }
+  }
+
+  throw new Error(
+    "Invalid Hostinger API Token (Unauthorized). Make sure you created an API Token in Hostinger hPanel (Emails -> API Access), NOT your email login password."
+  );
+}
+
+export async function getHostingerSdk(tokenOverride?: string) {
   const settings = getAutomailSettings();
-  const apiToken = (tokenOverride || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
-  if (!apiToken) {
+  const rawToken = (tokenOverride || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  if (!rawToken) {
     throw new Error(
-      "Hostinger Mail API Token not configured! Please generate an API Token in Hostinger hPanel under Emails -> API Access and paste it in AutoMail Settings."
+      "Hostinger Mail API Token not configured! Please enter your Hostinger API Token in AutoMail Settings."
     );
   }
 
+  const workingToken = await resolveWorkingHostingerToken(rawToken);
+
   const config = new Configuration({
-    accessToken: apiToken,
+    accessToken: workingToken,
     basePath: "https://api.mail.hostinger.com",
   });
 
@@ -183,7 +280,7 @@ export function getHostingerSdk(tokenOverride?: string) {
     config,
     accountApi: new AccountApi(config),
     sendApi: new SendApi(config),
-    token: apiToken,
+    token: workingToken,
   };
 }
 
@@ -196,7 +293,7 @@ export async function getHostingerMailboxes(tokenOverride?: string): Promise<Arr
     return mailboxCache;
   }
 
-  const { accountApi } = getHostingerSdk(tokenOverride);
+  const { accountApi } = await getHostingerSdk(tokenOverride);
   const response = await accountApi.getCurrentAccount();
   const mailboxes: Array<{ resourceId: string; address: string }> =
     (response.data as any)?.data?.mailboxes ||
@@ -254,7 +351,7 @@ export async function testHostingerMailApi(tokenOverride?: string) {
   } catch (err: any) {
     let msg = err.response?.data?.message || err.message || "Failed to verify Hostinger Mail API.";
     if (err.response?.status === 401 || err.response?.status === 403) {
-      msg = "Invalid Hostinger API Token (Unauthorized). In Hostinger hPanel, go to Emails -> API Access and generate an Access Token.";
+      msg = "Invalid Hostinger API Token (Unauthorized). In Hostinger hPanel, go to Emails -> API Access and generate an Access Token (do not enter your email password).";
     }
     return {
       success: false,
@@ -292,7 +389,7 @@ export async function sendEmailViaHostingerApi({
   const fromName = senderName?.trim() || brandDefaults.name;
   const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
 
-  const { sendApi } = getHostingerSdk(token);
+  const { sendApi } = await getHostingerSdk(token);
   const resolvedMailboxId = await resolveHostingerMailboxId(fromEmail, token, mailboxId);
   const plainText = textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : "");
 
