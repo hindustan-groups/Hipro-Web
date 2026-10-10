@@ -74,11 +74,6 @@ export function getAutomailSettingsFromFile(): AutomailSettings {
  * Primary asynchronous getter: Reads from PostgreSQL database (persistent across Render restarts)
  */
 export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
-  // If we already have cached settings with configured credentials, return immediately
-  if (cachedSettings && (cachedSettings.smtpPass || cachedSettings.hostingerApiToken)) {
-    return cachedSettings;
-  }
-
   try {
     const dbRecord = await (prisma as any).automailSetting.findUnique({
       where: { id: "singleton" },
@@ -86,7 +81,7 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
 
     if (dbRecord) {
       const dbSettings: AutomailSettings = {
-        deliveryMethod: (dbRecord.deliveryMethod as any) || "smtp",
+        deliveryMethod: (dbRecord.deliveryMethod as any) || "hostinger_api",
         hostingerApiToken: (dbRecord.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim(),
         hostingerMailboxId: (dbRecord.hostingerMailboxId || process.env.HOSTINGER_MAILBOX_ID || "").trim(),
         smtpHost: dbRecord.smtpHost || "smtp.hostinger.com",
@@ -102,6 +97,10 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
         replyTo: dbRecord.replyTo || "info@hindustanprojects.in",
       };
       cachedSettings = dbSettings;
+      // Sync process environment
+      process.env.DELIVERY_METHOD = dbSettings.deliveryMethod;
+      if (dbSettings.hostingerApiToken) process.env.HOSTINGER_MAIL_API_TOKEN = dbSettings.hostingerApiToken;
+      if (dbSettings.smtpPass) process.env.SMTP_PASS = dbSettings.smtpPass;
       return dbSettings;
     }
 
@@ -122,8 +121,7 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
     return fileSettings;
   } catch (err) {
     console.error("[AUTOMAIL] Database settings lookup failed, using file fallback:", err);
-    const fallback = getAutomailSettingsFromFile();
-    cachedSettings = fallback;
+    const fallback = cachedSettings || getAutomailSettingsFromFile();
     return fallback;
   }
 }
@@ -139,7 +137,7 @@ export function getAutomailSettings(): AutomailSettings {
   const fallback = getAutomailSettingsFromFile();
   cachedSettings = fallback;
 
-  // Background sync from database if not initialized
+  // Background sync from database to populate cache
   getAutomailSettingsAsync().catch((err) => {
     console.error("[AUTOMAIL] Background settings cache sync failed:", err);
   });
@@ -151,7 +149,35 @@ export function getAutomailSettings(): AutomailSettings {
  * Primary saver: Persists permanently to PostgreSQL database (survives Render restarts)
  */
 export async function saveAutomailSettings(newSettings: Partial<AutomailSettings>): Promise<AutomailSettings> {
-  const current = await getAutomailSettingsAsync();
+  // Always query fresh settings from database to avoid stale in-memory cache
+  let current: AutomailSettings;
+  try {
+    const dbRecord = await (prisma as any).automailSetting.findUnique({
+      where: { id: "singleton" },
+    });
+    if (dbRecord) {
+      current = {
+        deliveryMethod: (dbRecord.deliveryMethod as any) || "hostinger_api",
+        hostingerApiToken: (dbRecord.hostingerApiToken || "").trim(),
+        hostingerMailboxId: (dbRecord.hostingerMailboxId || "").trim(),
+        smtpHost: dbRecord.smtpHost || "smtp.hostinger.com",
+        smtpPort: Number(dbRecord.smtpPort || 465),
+        smtpUser: (dbRecord.smtpUser || "info@hindustanprojects.in").trim(),
+        smtpPass: (dbRecord.smtpPass || "").trim(),
+        senderNameHipro: dbRecord.senderNameHipro || "Hindustan Projects",
+        senderEmailHipro: dbRecord.senderEmailHipro || "info@hindustanprojects.in",
+        senderNameHbs: dbRecord.senderNameHbs || "Hind Building Solutions",
+        senderEmailHbs: dbRecord.senderEmailHbs || "hbs@hindustanprojects.in",
+        dailyLimit: Number(dbRecord.dailyLimit || 200),
+        rateLimitPerMinute: Number(dbRecord.rateLimitPerMinute || 15),
+        replyTo: dbRecord.replyTo || "info@hindustanprojects.in",
+      };
+    } else {
+      current = cachedSettings || getDefaultSettings();
+    }
+  } catch {
+    current = cachedSettings || getDefaultSettings();
+  }
 
   // Determine password to persist: preserve existing if new is empty or masked
   const passToSave =
@@ -178,8 +204,13 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
     tokenToSave = tokenToSave.slice(7).trim();
   }
 
+  // Delivery method: If Hostinger token is provided or configured, default to hostinger_api
+  const chosenDeliveryMethod =
+    newSettings.deliveryMethod ||
+    (tokenToSave ? "hostinger_api" : current.deliveryMethod || "hostinger_api");
+
   const merged: AutomailSettings = {
-    deliveryMethod: newSettings.deliveryMethod || current.deliveryMethod || "smtp",
+    deliveryMethod: chosenDeliveryMethod,
     hostingerApiToken: tokenToSave,
     hostingerMailboxId: (newSettings.hostingerMailboxId !== undefined ? newSettings.hostingerMailboxId : current.hostingerMailboxId || "").trim(),
     smtpHost: (newSettings.smtpHost || current.smtpHost || "smtp.hostinger.com").trim(),
@@ -225,11 +256,47 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
   process.env.DAILY_LIMIT = String(merged.dailyLimit);
   process.env.RATE_LIMIT_PER_MINUTE = String(merged.rateLimitPerMinute);
 
-  // 4. Update local JSON file as backup
-  try {
-    fs.writeFileSync(SETTINGS_FILE_PATH, JSON.stringify(merged, null, 2), "utf-8");
-  } catch (fileErr) {
-    // Ignore in read-only / ephemeral environments
+  // 4. Update local JSON file backups
+  const jsonPaths = [
+    SETTINGS_FILE_PATH,
+    path.resolve(process.cwd(), "automail_settings.json"),
+    path.resolve(process.cwd(), "backend/automail_settings.json"),
+    path.resolve(__dirname, "../../../automail_settings.json"),
+  ];
+  for (const jPath of jsonPaths) {
+    try {
+      fs.writeFileSync(jPath, JSON.stringify(merged, null, 2), "utf-8");
+    } catch {
+      // Ignore
+    }
+  }
+
+  // 5. Update backend/.env so it also survives local server restarts
+  const envPaths = [
+    path.resolve(process.cwd(), "backend/.env"),
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(__dirname, "../../../.env"),
+  ];
+  for (const envPath of envPaths) {
+    try {
+      if (fs.existsSync(envPath)) {
+        let envContent = fs.readFileSync(envPath, "utf-8");
+        const setEnvVar = (key: string, val: string) => {
+          const regex = new RegExp(`^${key}=.*$`, "m");
+          if (regex.test(envContent)) {
+            envContent = envContent.replace(regex, `${key}="${val}"`);
+          } else {
+            envContent += `\n${key}="${val}"`;
+          }
+        };
+        if (merged.hostingerApiToken) setEnvVar("HOSTINGER_MAIL_API_TOKEN", merged.hostingerApiToken);
+        setEnvVar("DELIVERY_METHOD", merged.deliveryMethod);
+        if (merged.hostingerMailboxId) setEnvVar("HOSTINGER_MAILBOX_ID", merged.hostingerMailboxId);
+        fs.writeFileSync(envPath, envContent.trim() + "\n", "utf-8");
+      }
+    } catch {
+      // Ignore
+    }
   }
 
   return merged;

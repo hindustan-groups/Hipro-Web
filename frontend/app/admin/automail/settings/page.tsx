@@ -23,6 +23,8 @@ import {
   Globe,
   Sparkles,
   ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
 
 export default function AutoMailSettingsPage() {
@@ -32,6 +34,7 @@ export default function AutoMailSettingsPage() {
   const [sendingTest, setSendingTest] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showApiToken, setShowApiToken] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(false);
 
   // Delivery Method ("hostinger_api" recommended for Render cloud hosting)
   const [deliveryMethod, setDeliveryMethod] = useState<"hostinger_api" | "smtp">("hostinger_api");
@@ -74,7 +77,8 @@ export default function AutoMailSettingsPage() {
       if (data.success && data.settings) {
         const s = data.settings;
         setDeliveryMethod(s.deliveryMethod || "hostinger_api");
-        setHostingerApiToken("");
+        // Pre-fill the actual saved token so user can see it (masked with dots) and unmask with Eye icon
+        setHostingerApiToken(s.hostingerApiToken || "");
         setHostingerApiTokenConfigured(Boolean(s.hostingerApiTokenConfigured));
         setHostingerMailboxId(s.hostingerMailboxId || "");
         setSmtpHost(s.smtpHost || "smtp.hostinger.com");
@@ -128,7 +132,7 @@ export default function AutoMailSettingsPage() {
     setTestResult(null);
 
     const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
-    const effectiveToken = hostingerApiToken.trim() || (hostingerApiTokenConfigured ? "••••••••••••" : "");
+    const effectiveToken = hostingerApiToken.trim();
 
     try {
       const res = await fetch("/api/automail/settings", {
@@ -154,11 +158,13 @@ export default function AutoMailSettingsPage() {
 
       const data = await res.json();
       if (data.success) {
-        setToast({ message: "Settings saved permanently to PostgreSQL! Will never reset.", type: "success" });
+        setToast({ message: "✓ Settings saved permanently to PostgreSQL! Will never reset.", type: "success" });
         setSmtpPassConfigured(Boolean(data.settings?.smtpPassConfigured));
         setHostingerApiTokenConfigured(Boolean(data.settings?.hostingerApiTokenConfigured));
+        if (data.settings?.hostingerApiToken) {
+          setHostingerApiToken(data.settings.hostingerApiToken);
+        }
         setSmtpPass("");
-        setHostingerApiToken("");
         if (data.settings?.hostingerApiTokenConfigured) {
           fetchMailboxes();
         }
@@ -178,7 +184,7 @@ export default function AutoMailSettingsPage() {
     setTestResult(null);
 
     const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
-    const effectiveToken = hostingerApiToken.trim() || (hostingerApiTokenConfigured ? "••••••••••••" : "");
+    const effectiveToken = hostingerApiToken.trim();
 
     try {
       const res = await fetch("/api/automail/settings/test", {
@@ -197,8 +203,15 @@ export default function AutoMailSettingsPage() {
 
       const data = await res.json();
       setTestResult(data);
-      if (data.success && data.mailboxes) {
-        setConnectedMailboxes(data.mailboxes);
+      if (data.success) {
+        if (effectiveToken) {
+          setHostingerApiTokenConfigured(true);
+          setHostingerApiToken(effectiveToken);
+        }
+        setToast({ message: "✓ Hostinger API Token verified & permanently saved to database!", type: "success" });
+        if (data.mailboxes) {
+          setConnectedMailboxes(data.mailboxes);
+        }
       }
     } catch {
       setTestResult({
@@ -220,7 +233,7 @@ export default function AutoMailSettingsPage() {
 
     setSendingTest(true);
     const effectivePass = smtpPass.trim() || (smtpPassConfigured ? "••••••••••••" : "");
-    const effectiveToken = hostingerApiToken.trim() || (hostingerApiTokenConfigured ? "••••••••••••" : "");
+    const effectiveToken = hostingerApiToken.trim();
 
     try {
       const res = await fetch("/api/automail/send-test", {
@@ -268,7 +281,11 @@ export default function AutoMailSettingsPage() {
 
       const data = await res.json();
       if (data.success) {
-        setToast({ message: `Success! Test email delivered to ${testRecipient}`, type: "success" });
+        if (effectiveToken) {
+          setHostingerApiTokenConfigured(true);
+          setHostingerApiToken(effectiveToken);
+        }
+        setToast({ message: `✓ Success! Test email delivered to ${testRecipient} & credentials saved permanently!`, type: "success" });
       } else {
         setToast({ message: data.error || "Failed to send test email", type: "error" });
       }
@@ -460,9 +477,14 @@ export default function AutoMailSettingsPage() {
                       <Key className="w-3.5 h-3.5 text-blue-600" />
                       <span>Hostinger Mail API Access Token</span>
                     </label>
-                    {hostingerApiTokenConfigured && (
+                    {hostingerApiTokenConfigured ? (
                       <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        ✓ Saved in Database
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>Saved in Database (Active)</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                        Not Saved Yet
                       </span>
                     )}
                   </div>
@@ -472,16 +494,33 @@ export default function AutoMailSettingsPage() {
                       type={showApiToken ? "text" : "password"}
                       value={hostingerApiToken}
                       onChange={(e) => setHostingerApiToken(e.target.value)}
-                      placeholder={hostingerApiTokenConfigured ? "•••••••••••• (Saved in DB — Leave blank to keep)" : "Paste your Hostinger API Token here"}
-                      className="w-full pl-3.5 pr-10 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      placeholder={hostingerApiTokenConfigured ? "Token is saved in database" : "Paste your Hostinger API Token here"}
+                      className="w-full pl-3.5 pr-20 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiToken(!showApiToken)}
-                      className="absolute right-3 top-3 text-slate-400 hover:text-slate-700"
-                    >
-                      {showApiToken ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
+                    <div className="absolute right-2.5 top-2 flex items-center gap-1">
+                      {hostingerApiToken && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(hostingerApiToken);
+                            setCopiedToken(true);
+                            setTimeout(() => setCopiedToken(false), 2000);
+                          }}
+                          title="Copy Token to Clipboard"
+                          className="p-1 text-slate-400 hover:text-slate-700 rounded transition"
+                        >
+                          {copiedToken ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowApiToken(!showApiToken)}
+                        title={showApiToken ? "Hide Token" : "Show Saved Token"}
+                        className="p-1 text-slate-400 hover:text-slate-700 rounded transition"
+                      >
+                        {showApiToken ? <EyeOff className="w-3.5 h-3.5 text-blue-600" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
                   </div>
 
                   {/* WARNING IF USER PASTES PASSWORD INSTEAD OF TOKEN */}

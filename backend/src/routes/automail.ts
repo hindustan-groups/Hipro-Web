@@ -121,7 +121,7 @@ router.get("/settings", async (req: Request, res: Response) => {
         smtpPassConfigured: Boolean(settings.smtpPass),
         smtpPass: settings.smtpPass ? "••••••••••••" : "",
         hostingerApiTokenConfigured: Boolean(settings.hostingerApiToken),
-        hostingerApiToken: settings.hostingerApiToken ? "••••••••••••" : "",
+        hostingerApiToken: settings.hostingerApiToken || "",
       },
     });
   } catch (err: any) {
@@ -147,7 +147,7 @@ router.post("/settings", async (req: Request, res: Response) => {
         smtpPassConfigured: Boolean(updated.smtpPass),
         smtpPass: updated.smtpPass ? "••••••••••••" : "",
         hostingerApiTokenConfigured: Boolean(updated.hostingerApiToken),
-        hostingerApiToken: updated.hostingerApiToken ? "••••••••••••" : "",
+        hostingerApiToken: updated.hostingerApiToken || "",
       },
     });
   } catch (err: any) {
@@ -166,6 +166,23 @@ router.post("/settings/test", async (req: Request, res: Response) => {
       body.hostingerApiToken = current.hostingerApiToken;
     }
     const result = await testSmtpConnection(body);
+
+    // If verification succeeded and user passed a token, auto-save it immediately so it is never lost!
+    if (result.success && body.hostingerApiToken && body.hostingerApiToken !== "••••••••••••") {
+      try {
+        const mailboxes = (result as any).mailboxes;
+        const mailboxId = Array.isArray(mailboxes) && mailboxes.length > 0 ? mailboxes[0].resourceId : undefined;
+        await saveAutomailSettings({
+          deliveryMethod: "hostinger_api",
+          hostingerApiToken: body.hostingerApiToken,
+          ...(mailboxId ? { hostingerMailboxId: mailboxId } : {}),
+        });
+        console.log("[AUTOMAIL] Automatically saved verified Hostinger API Token to PostgreSQL!");
+      } catch (saveErr) {
+        console.warn("[AUTOMAIL] Auto-save on token verify warning:", saveErr);
+      }
+    }
+
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ success: false, message: err.message });
@@ -330,6 +347,20 @@ router.post("/send-test", async (req: Request, res: Response) => {
       brand,
       customConfig: Object.keys(customConfig).length > 0 ? customConfig : undefined,
     });
+
+    // Auto-save working credentials on successful test send so credentials are never lost!
+    if (info && hostingerApiToken && hostingerApiToken !== "••••••••••••") {
+      try {
+        await saveAutomailSettings({
+          deliveryMethod: deliveryMethod || "hostinger_api",
+          hostingerApiToken,
+          ...(hostingerMailboxId ? { hostingerMailboxId } : {}),
+        });
+        console.log("[AUTOMAIL] Automatically saved working Hostinger credentials to PostgreSQL after successful test email!");
+      } catch (saveErr) {
+        console.warn("[AUTOMAIL] Auto-save on send-test warning:", saveErr);
+      }
+    }
 
     return res.json({ success: true, message: `Test email sent to ${to}!`, messageId: (info as any).messageId });
   } catch (err: any) {
