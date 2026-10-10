@@ -161,51 +161,86 @@ export default function AutoMailDashboard() {
         </div>
       )}
 
-      {/* Top Banner / Welcome Action */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-md relative z-0 overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="relative z-10 space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+      {/* Top Banner / Welcome Action - High-End Glassmorphism */}
+      <div className="relative z-0 overflow-hidden rounded-3xl p-6 sm:p-7 md:p-8 bg-gradient-to-br from-slate-900/95 via-[#0B1528]/90 to-slate-950/95 backdrop-blur-2xl border border-white/20 shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35),0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_1px_0_rgba(255,255,255,0.25)] flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all duration-300">
+        {/* Specular glass reflection & sheen highlights */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.03] via-transparent to-white/[0.06] pointer-events-none" />
+
+        {/* Ambient luminous glow orbs */}
+        <div className="absolute -top-24 -right-16 w-80 h-80 bg-rose-600/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-16 w-80 h-80 bg-blue-600/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-3 max-w-xl">
+          {/* Frosted Glass Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-blue-200 text-[10px] font-mono font-bold uppercase tracking-wider shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
             <Zap className="w-3 h-3 text-blue-400" />
             <span>Universal Mail Pipeline Active</span>
+            <span className="h-2.5 w-px bg-white/20" />
+            <span className="text-white/80 font-sans normal-case text-[10px]">
+              {selectedBrand === "hipro" ? "HiPRO Scope" : selectedBrand === "hbs" ? "Hind Build Scope" : "All Brands"}
+            </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-black tracking-tight">
-            {selectedBrand === "hipro"
-              ? "HiPRO Construction Mail Suite"
-              : selectedBrand === "hbs"
-              ? "Hind Build Solutions Mail Suite"
-              : "Global Multi-Brand AutoMail Hub"}
-          </h2>
-          <p className="text-slate-300 text-xs leading-relaxed">
-            Send bulk announcements, quotations & updates across all sub-brands with automatic rate-limiting and Hostinger SMTP anti-spam protection.
-          </p>
+
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
+              {selectedBrand === "hipro"
+                ? "HiPRO Construction Mail Suite"
+                : selectedBrand === "hbs"
+                ? "Hind Build Solutions Mail Suite"
+                : "Global Multi-Brand AutoMail Hub"}
+            </h2>
+            <p className="mt-1.5 text-slate-300 text-xs sm:text-sm leading-relaxed">
+              Send bulk announcements, quotations &amp; updates across all sub-brands with automatic rate-limiting and Hostinger SMTP anti-spam protection.
+            </p>
+          </div>
+
+          {/* Micro feature pills with frosted glass */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300 font-medium backdrop-blur-md">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>Hostinger Anti-Spam Guard</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300 font-medium backdrop-blur-md">
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span>Auto Rate-Limit (100/hr)</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300 font-medium backdrop-blur-md">
+              <Globe2 className="w-3 h-3 text-blue-400" />
+              <span>DKIM &amp; SPF Optimized</span>
+            </div>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-wrap items-center gap-2.5">
+        <div className="relative z-10 flex flex-wrap items-center gap-3">
           <Link
             href={selectedBrand !== "all" ? `/admin/automail/compose?brand=${selectedBrand}` : "/admin/automail/compose"}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black rounded-xl text-xs shadow-lg shadow-red-600/25 transition-all"
+            className="group relative inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-400 text-white font-black rounded-2xl text-xs sm:text-sm shadow-[0_12px_28px_-6px_rgba(225,29,72,0.5),inset_0_1px_1px_rgba(255,255,255,0.35)] border border-red-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
-            <Send className="w-4 h-4" />
-            <span>⚡ Compose & Send Email</span>
+            <Send className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            <span>Compose &amp; Send Email</span>
           </Link>
           <Link
             href="/admin/automail/contacts"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl text-xs backdrop-blur-md transition-all"
+            className="inline-flex items-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 text-white font-bold rounded-2xl text-xs sm:text-sm backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.15),0_8px_20px_-6px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
-            <Users className="w-4 h-4" />
+            <Users className="w-4 h-4 text-blue-300" />
             <span>Audience ({totalContacts})</span>
           </Link>
           <button
             onClick={fetchStats}
-            className="p-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white transition-all"
+            className="p-3.5 bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/30 rounded-2xl text-white/90 hover:text-white backdrop-blur-xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.15)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             title="Refresh statistics"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
-
-        {/* Ambient glow decoration */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* EASY 3-STEP HOW IT WORKS CARD */}
