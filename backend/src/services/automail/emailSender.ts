@@ -642,18 +642,83 @@ export async function sendOneEmail({
 }
 
 /**
- * Replace dynamic personalization tokens
+ * Smartly parse and clean recipient names from name or email
+ * e.g. "rohit sharma" -> "Rohit Sharma", firstName: "Rohit"
+ * e.g. "amit.kumar21@gmail.com" -> "Amit Kumar", firstName: "Amit"
  */
-export function personalizeContent(content: string, contact: { name?: string | null; email: string }, brand: string = "all"): string {
+export function extractCleanContactName(
+  rawName?: string | null,
+  email?: string | null
+): { fullName: string; firstName: string } {
+  let cleaned = (rawName || "").trim();
+
+  // If no name provided or name is just email/numeric, try extracting from email prefix
+  if (!cleaned || cleaned.includes("@") || /^\d+$/.test(cleaned)) {
+    if (email && email.includes("@")) {
+      const prefix = email.split("@")[0];
+      // Replace dots, underscores, dashes, plus signs with spaces and remove trailing numbers
+      const namePart = prefix.replace(/[\._\-\+]+/g, " ").replace(/\d+/g, "").trim();
+      if (namePart.length >= 2) {
+        cleaned = namePart;
+      }
+    }
+  }
+
+  // If still empty or generic
+  if (!cleaned || cleaned.toLowerCase() === "null" || cleaned.toLowerCase() === "undefined") {
+    return {
+      fullName: "Valued Client",
+      firstName: "Valued Client",
+    };
+  }
+
+  // Capitalize each word properly (Title Case)
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const titleCasedWords = words.map((w) => {
+    if (w.length > 1 && w === w.toUpperCase() && words.length > 1) {
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  });
+
+  const fullName = titleCasedWords.join(" ");
+  const firstName = titleCasedWords[0] || fullName;
+
+  return { fullName, firstName };
+}
+
+/**
+ * Replace dynamic personalization tokens across both email body and subject line
+ */
+export function personalizeContent(
+  content: string,
+  contact: { name?: string | null; email: string },
+  brand: string = "all"
+): string {
   if (!content) return "";
   const brandConfig = BRAND_CONFIGS[brand] || BRAND_CONFIGS.all;
-  const name = contact.name?.trim() || "Valued Client";
+  const { fullName, firstName } = extractCleanContactName(contact.name, contact.email);
+  const now = new Date();
+  const dateFormatted = now.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const year = String(now.getFullYear());
+  const phone = brand === "hbs" ? "+91 75970 00601" : "+91 75970 00601";
 
   return content
-    .replace(/\{\{name\}\}/gi, name)
+    .replace(/\{\{name\}\}/gi, fullName)
+    .replace(/\{\{client_name\}\}/gi, fullName)
+    .replace(/\{\{first_name\}\}/gi, firstName)
+    .replace(/\{\{firstName\}\}/gi, firstName)
     .replace(/\{\{email\}\}/gi, contact.email)
     .replace(/\{\{brand\}\}/gi, brandConfig.name)
-    .replace(/\{\{website\}\}/gi, brandConfig.website);
+    .replace(/\{\{company\}\}/gi, brandConfig.name)
+    .replace(/\{\{website\}\}/gi, brandConfig.website)
+    .replace(/\{\{phone\}\}/gi, phone)
+    .replace(/\{\{date\}\}/gi, dateFormatted)
+    .replace(/\{\{year\}\}/gi, year);
 }
 
 /**
@@ -769,22 +834,28 @@ export async function processCampaignQueue(campaignId: string) {
       }
 
       try {
+        const contactInfo = { name: entry.contactName, email: entry.contactEmail };
+        const personalizedSubject = personalizeContent(
+          campaign.subject,
+          contactInfo,
+          campaign.brand
+        );
         const personalizedHtml = personalizeContent(
           campaign.htmlBody,
-          { name: entry.contactName, email: entry.contactEmail },
+          contactInfo,
           campaign.brand
         );
         const personalizedText = campaign.textBody
           ? personalizeContent(
               campaign.textBody,
-              { name: entry.contactName, email: entry.contactEmail },
+              contactInfo,
               campaign.brand
             )
           : undefined;
 
         await sendOneEmail({
           to: entry.contactEmail,
-          subject: campaign.subject,
+          subject: personalizedSubject,
           htmlBody: personalizedHtml,
           textBody: personalizedText,
           senderName: campaign.senderName,

@@ -13,6 +13,7 @@ import {
   getHostingerMailboxes,
   isEmailDeliveryConfigured,
   personalizeContent,
+  extractCleanContactName,
   getBrandConfigs,
   getTransporter,
   BRAND_CONFIGS,
@@ -383,16 +384,18 @@ router.post("/send-single", async (req: Request, res: Response) => {
     }
 
     const cleanEmail = to.trim().toLowerCase();
-    const contactName = name ? String(name).trim() : cleanEmail.split("@")[0];
+    const { fullName } = extractCleanContactName(name, cleanEmail);
+    const contactInfo = { name: fullName, email: cleanEmail };
 
-    // Personalize content
-    const personalizedHtml = personalizeContent(htmlBody, { name: contactName, email: cleanEmail }, brand);
-    const personalizedText = textBody ? personalizeContent(textBody, { name: contactName, email: cleanEmail }, brand) : undefined;
+    // Personalize subject & content
+    const personalizedSubject = personalizeContent(subject, contactInfo, brand);
+    const personalizedHtml = personalizeContent(htmlBody, contactInfo, brand);
+    const personalizedText = textBody ? personalizeContent(textBody, contactInfo, brand) : undefined;
 
     // Send single email via SMTP
     const info = await sendOneEmail({
       to: cleanEmail,
-      subject,
+      subject: personalizedSubject,
       htmlBody: personalizedHtml,
       textBody: personalizedText,
       senderName,
@@ -403,8 +406,8 @@ router.post("/send-single", async (req: Request, res: Response) => {
     // Upsert contact so audience database updates automatically
     await (prisma as any).automailContact.upsert({
       where: { email: cleanEmail },
-      create: { email: cleanEmail, name: contactName, brand, source: "crm_single_send" },
-      update: { name: contactName || undefined },
+      create: { email: cleanEmail, name: fullName, brand, source: "crm_single_send" },
+      update: { name: fullName || undefined },
     }).catch(() => null);
 
     // Increment today stats
@@ -580,6 +583,7 @@ router.post("/send-direct", async (req: Request, res: Response) => {
       targetAudience = "all",
       contactIds,
       customRecipients,
+      customClientName,
     } = req.body;
 
     if (!subject) {
@@ -610,17 +614,25 @@ router.post("/send-direct", async (req: Request, res: Response) => {
           if (!trimmed) continue;
           const match = trimmed.match(/^(.*?)\s*<([^\s>]+@[^\s>]+)>$/);
           if (match) {
-            parsedRecipients.push({ name: match[1].trim(), email: match[2].trim().toLowerCase() });
+            const { fullName } = extractCleanContactName(match[1].trim(), match[2].trim());
+            parsedRecipients.push({ name: fullName, email: match[2].trim().toLowerCase() });
           } else if (trimmed.includes("@")) {
-            parsedRecipients.push({ name: trimmed.split("@")[0], email: trimmed.toLowerCase() });
+            const cleanEmail = trimmed.toLowerCase();
+            const singleName = rawList.length === 1 && customClientName ? customClientName : null;
+            const { fullName } = extractCleanContactName(singleName, cleanEmail);
+            parsedRecipients.push({ name: fullName, email: cleanEmail });
           }
         }
       } else if (Array.isArray(customRecipients)) {
         for (const item of customRecipients) {
           if (typeof item === "string" && item.includes("@")) {
-            parsedRecipients.push({ name: item.split("@")[0], email: item.trim().toLowerCase() });
+            const cleanEmail = item.trim().toLowerCase();
+            const { fullName } = extractCleanContactName(null, cleanEmail);
+            parsedRecipients.push({ name: fullName, email: cleanEmail });
           } else if (item && typeof item === "object" && item.email) {
-            parsedRecipients.push({ name: item.name || item.email.split("@")[0], email: item.email.trim().toLowerCase() });
+            const cleanEmail = item.email.trim().toLowerCase();
+            const { fullName } = extractCleanContactName(item.name, cleanEmail);
+            parsedRecipients.push({ name: fullName, email: cleanEmail });
           }
         }
       }
@@ -671,11 +683,11 @@ router.post("/send-direct", async (req: Request, res: Response) => {
       },
     });
 
-    // Create send_log entries
+    // Create send_log entries with properly cleaned contact names
     const logData = contacts.map((c: any) => ({
       campaignId: campaign.id,
       contactEmail: c.email,
-      contactName: c.name || "",
+      contactName: extractCleanContactName(c.name, c.email).fullName,
       brand,
       status: "queued",
     }));
@@ -754,11 +766,11 @@ router.post("/send/:id", async (req: Request, res: Response) => {
     // Clear previous logs for fresh/resumed transmission
     await (prisma as any).automailSendLog.deleteMany({ where: { campaignId: id } });
 
-    // Prepare batch logs
+    // Prepare batch logs with clean recipient names
     const logData = contacts.map((c: any) => ({
       campaignId: id,
       contactEmail: c.email,
-      contactName: c.name || "",
+      contactName: extractCleanContactName(c.name, c.email).fullName,
       brand: campaign.brand,
       status: "queued",
     }));

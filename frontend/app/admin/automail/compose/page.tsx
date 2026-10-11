@@ -29,7 +29,61 @@ import {
   FileUp,
   Filter,
   ChevronDown,
+  Wand2,
 } from "lucide-react";
+
+const SMART_WORKFLOWS = [
+  {
+    id: "quote_followup",
+    title: "Quotation & Rates Follow-up",
+    icon: "📑",
+    badge: "Quotes",
+    desc: "Detailed build cost estimates & commercial proposal",
+    brand: "hipro",
+    subject: "Hi {{first_name}}, Detailed Quotation & Estimate from Hindustan Projects",
+    templateId: "hipro_quote_followup",
+  },
+  {
+    id: "turnkey_pitch",
+    title: "Turnkey Construction Proposal",
+    icon: "🏗️",
+    badge: "HiPRO Master",
+    desc: "Turnkey villa, commercial or warehouse construction",
+    brand: "hipro",
+    subject: "Comprehensive Construction & Turnkey Engineering Services for {{name}}",
+    templateId: "hipro_turnkey_pitch",
+  },
+  {
+    id: "hbs_repair",
+    title: "Building Repair & Waterproofing",
+    icon: "🛠️",
+    badge: "Hind Build",
+    desc: "Crack repair, waterproofing & building maintenance",
+    brand: "hbs",
+    subject: "Hi {{first_name}}, Specialized Building Repair & Protection — Hind Build Solutions",
+    templateId: "hbs_building_repair_suite",
+  },
+  {
+    id: "site_inspection",
+    title: "Site Survey & Consultation",
+    icon: "📐",
+    badge: "Inspection",
+    desc: "Confirming engineer site inspection schedule",
+    brand: "hipro",
+    subject: "Site Inspection & Engineering Consultation Confirmation for {{name}}",
+    templateId: "hipro_client_satisfaction",
+  },
+  {
+    id: "hbs_roof",
+    title: "Terrace Waterproofing (10-Yr)",
+    icon: "💧",
+    badge: "10-Yr Warranty",
+    desc: "Leakage, dampness & terrace protection proposal",
+    brand: "hbs",
+    subject: "Terrace Waterproofing Proposal & 10-Year Warranty for {{name}}",
+    templateId: "hbs_roof_waterproofing_quote",
+  },
+];
 
 export default function AutoMailCompose() {
   const router = useRouter();
@@ -52,6 +106,10 @@ export default function AutoMailCompose() {
   );
   const [htmlBody, setHtmlBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+
+  // Dynamic Personalization Preview State
+  const [previewPersonalized, setPreviewPersonalized] = useState(true);
+  const [previewTestName, setPreviewTestName] = useState(initialName || "Ramesh Sharma");
 
   // Recipient Mode: "custom" (direct single/comma-separated emails) vs "group" (all/hipro/hbs)
   const [recipientMode, setRecipientMode] = useState<"custom" | "group">(initialTo ? "custom" : "group");
@@ -146,6 +204,7 @@ export default function AutoMailCompose() {
       const defaultTemplate = initialBrand === "hbs" ? BUSINESS_TEMPLATES[2] : BUSINESS_TEMPLATES[0];
       applyTemplate(defaultTemplate);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTemplateId]);
 
   const applyTemplate = (t: any) => {
@@ -219,8 +278,103 @@ export default function AutoMailCompose() {
     }
   };
 
-  const insertTag = (tag: string) => {
-    setHtmlBody((prev) => prev + ` ${tag} `);
+  const insertTag = (tag: string, target: "body" | "subject" = "body") => {
+    if (target === "subject") {
+      setSubject((prev) => (prev ? `${prev} ${tag}` : tag));
+    } else {
+      setHtmlBody((prev) => prev + ` ${tag} `);
+    }
+  };
+
+  // Smart Auto-Name Detection when typing recipient email
+  const handleCustomToChange = (val: string) => {
+    setCustomTo(val);
+    if (!customClientName.trim() && val.includes("@")) {
+      const firstItem = val.split(/[\n,;]+/)[0]?.trim();
+      if (!firstItem) return;
+      const match = firstItem.match(/^(.*?)\s*<([^\s>]+@[^\s>]+)>$/);
+      if (match && match[1]) {
+        setCustomClientName(match[1].trim());
+        setPreviewTestName(match[1].trim());
+      } else if (firstItem.includes("@")) {
+        const prefix = firstItem.split("@")[0];
+        const namePart = prefix.replace(/[\._\-\+]+/g, " ").replace(/\d+/g, "").trim();
+        if (namePart.length >= 2) {
+          const capitalized = namePart
+            .split(/\s+/)
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ");
+          setCustomClientName(capitalized);
+          setPreviewTestName(capitalized);
+        }
+      }
+    }
+  };
+
+  // 1-Click Smart Workflow Applicator
+  const applySmartWorkflow = (wf: (typeof SMART_WORKFLOWS)[0]) => {
+    const found = BUSINESS_TEMPLATES.find((t) => t.id === wf.templateId) || BUSINESS_TEMPLATES[0];
+    setHtmlBody(found.html);
+    setSubject(wf.subject);
+    setName(wf.title);
+    setBrand(wf.brand as any);
+    if (wf.brand === "hbs") {
+      setSenderName("Hind Building Solutions");
+      setSenderEmail("hbs@hindustanprojects.in");
+      setTargetAudience("hbs");
+    } else {
+      setSenderName("Hindustan Projects");
+      setSenderEmail("info@hindustanprojects.in");
+      setTargetAudience("hipro");
+    }
+    setToast({
+      message: `Workflow loaded: "${wf.title}". Formatted automatically for client!`,
+      type: "success",
+    });
+  };
+
+  // Render Real Client Visual Preview
+  const getRenderedPreviewHtml = () => {
+    if (!htmlBody) return "";
+    if (!previewPersonalized) return htmlBody;
+    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
+    const pFirstName = pName.split(" ")[0] || "Ramesh";
+    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
+    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
+    const pWebsite = brand === "hbs" ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in";
+    const pPhone = brand === "hbs" ? "+91 75970 00601" : "+91 75970 00601";
+    const pDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    const pYear = String(new Date().getFullYear());
+
+    return htmlBody
+      .replace(/\{\{name\}\}/gi, pName)
+      .replace(/\{\{client_name\}\}/gi, pName)
+      .replace(/\{\{first_name\}\}/gi, pFirstName)
+      .replace(/\{\{firstName\}\}/gi, pFirstName)
+      .replace(/\{\{email\}\}/gi, pEmail)
+      .replace(/\{\{brand\}\}/gi, pBrand)
+      .replace(/\{\{company\}\}/gi, pBrand)
+      .replace(/\{\{website\}\}/gi, pWebsite)
+      .replace(/\{\{phone\}\}/gi, pPhone)
+      .replace(/\{\{date\}\}/gi, pDate)
+      .replace(/\{\{year\}\}/gi, pYear);
+  };
+
+  const getRenderedPreviewSubject = () => {
+    if (!subject) return "";
+    if (!previewPersonalized) return subject;
+    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
+    const pFirstName = pName.split(" ")[0] || "Ramesh";
+    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
+    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
+
+    return subject
+      .replace(/\{\{name\}\}/gi, pName)
+      .replace(/\{\{client_name\}\}/gi, pName)
+      .replace(/\{\{first_name\}\}/gi, pFirstName)
+      .replace(/\{\{firstName\}\}/gi, pFirstName)
+      .replace(/\{\{email\}\}/gi, pEmail)
+      .replace(/\{\{brand\}\}/gi, pBrand);
   };
 
   // 1-Click Direct Send to Audience or Custom Recipient
@@ -255,8 +409,9 @@ export default function AutoMailCompose() {
         brand,
         senderName,
         senderEmail,
-        htmlBody: customClientName ? htmlBody.replace(/\{\{name\}\}/gi, customClientName) : htmlBody,
+        htmlBody,
         textBody: htmlBody.replace(/<[^>]*>/g, ""),
+        customClientName: customClientName.trim() || undefined,
       };
 
       if (recipientMode === "custom") {
@@ -478,6 +633,45 @@ export default function AutoMailCompose() {
             <p className="text-[11px] text-slate-500 mt-0.5">Hostinger SMTP se safe rate-limiting ke saath send hoga</p>
           </div>
         </div>
+
+        {/* 1-Click Smart Workflows: User & Name ke hisab se Auto-Generate */}
+        <div className="pt-3 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
+            <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Smart Workflows (1-Click Auto-Draft For Client):</span>
+            </span>
+            <span className="text-[11px] text-slate-500">
+              Client ke intent par click karein — Email body, greeting aur subject auto create hoga
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            {SMART_WORKFLOWS.map((wf) => (
+              <button
+                key={wf.id}
+                type="button"
+                onClick={() => applySmartWorkflow(wf)}
+                className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 bg-slate-50/70 hover:bg-blue-50/60 text-left transition-all group flex flex-col justify-between shadow-2xs hover:shadow-xs active:scale-[0.98]"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className="text-base">{wf.icon}</span>
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
+                      {wf.badge}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug">
+                    {wf.title}
+                  </h4>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                  {wf.desc}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Main Composer Form */}
@@ -531,7 +725,7 @@ export default function AutoMailCompose() {
                   <input
                     type="text"
                     value={customTo}
-                    onChange={(e) => setCustomTo(e.target.value)}
+                    onChange={(e) => handleCustomToChange(e.target.value)}
                     placeholder="client@gmail.com (ya comma separated: a@gmail.com, b@gmail.com)"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
@@ -539,17 +733,25 @@ export default function AutoMailCompose() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Client Name (Optional)
+                  <label className="text-xs font-bold text-slate-700 uppercase mb-1 flex items-center justify-between">
+                    <span>Client Name (Auto-Detected)</span>
+                    {customClientName && (
+                      <span className="text-[10px] text-emerald-600 font-bold">✓ Active: &quot;{customClientName}&quot;</span>
+                    )}
                   </label>
                   <input
                     type="text"
                     value={customClientName}
-                    onChange={(e) => setCustomClientName(e.target.value)}
+                    onChange={(e) => {
+                      setCustomClientName(e.target.value);
+                      if (e.target.value) setPreviewTestName(e.target.value);
+                    }}
                     placeholder="e.g. Ramesh Sharma"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Email template me &ldquo;Dear {'{{name}}'}&rdquo; ki jagah replace hoga.</p>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Template me &ldquo;Dear {'{{name}}'}&rdquo; aur &ldquo;Hi {'{{first_name}}'}&rdquo; auto replace honge.
+                  </p>
                 </div>
               </div>
             </div>
@@ -692,13 +894,42 @@ export default function AutoMailCompose() {
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                Email Subject Line *
-              </label>
+            <div className="md:col-span-2 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Email Subject Line *
+                </label>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-slate-400 font-medium">Insert in Subject:</span>
+                  <button
+                    type="button"
+                    onClick={() => insertTag("{{first_name}}", "subject")}
+                    className="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-mono font-bold border border-blue-200 transition-colors"
+                    title="First Name (e.g. Ramesh)"
+                  >
+                    + {"{{first_name}}"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTag("{{name}}", "subject")}
+                    className="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-mono font-bold border border-blue-200 transition-colors"
+                    title="Full Name (e.g. Ramesh Sharma)"
+                  >
+                    + {"{{name}}"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertTag("{{brand}}", "subject")}
+                    className="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-mono font-bold border border-blue-200 transition-colors"
+                    title="Brand Name"
+                  >
+                    + {"{{brand}}"}
+                  </button>
+                </div>
+              </div>
               <input
                 type="text"
-                placeholder="e.g. Important Project Update for {{name}}"
+                placeholder="e.g. Hi {{first_name}}, Detailed Quotation & Estimate from {{brand}}"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 required
@@ -709,32 +940,63 @@ export default function AutoMailCompose() {
         </div>
 
         {/* Personalization Tag Helper */}
-        <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-950">
-            <Tag className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Click to Insert Personalization Tags:</span>
+        <div className="p-3.5 bg-indigo-50/70 border border-indigo-200/80 rounded-xl space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-indigo-950">
+              <Tag className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Smart Dynamic Personalization Tags (Auto-Replaced Per User):</span>
+            </div>
+            <span className="text-[10px] text-indigo-700 font-medium">Click any tag to insert in email body:</span>
           </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => insertTag("{{name}}")}
-              className="px-2.5 py-1 bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md text-[11px] font-mono font-bold"
+              onClick={() => insertTag("{{first_name}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="First Name (e.g. Ramesh)"
             >
-              + {"{{name}}"}
+              + {"{{first_name}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(First Name)</span>
             </button>
             <button
               type="button"
-              onClick={() => insertTag("{{email}}")}
-              className="px-2.5 py-1 bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md text-[11px] font-mono font-bold"
+              onClick={() => insertTag("{{name}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="Full Name (e.g. Ramesh Sharma)"
             >
-              + {"{{email}}"}
+              + {"{{name}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Full Name)</span>
             </button>
             <button
               type="button"
-              onClick={() => insertTag("{{brand}}")}
-              className="px-2.5 py-1 bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md text-[11px] font-mono font-bold"
+              onClick={() => insertTag("{{email}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="Client's Email"
             >
-              + {"{{brand}}"}
+              + {"{{email}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Email)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => insertTag("{{brand}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="Brand Name (e.g. Hindustan Projects)"
+            >
+              + {"{{brand}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Brand)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => insertTag("{{phone}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="Helpline Phone"
+            >
+              + {"{{phone}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Phone)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => insertTag("{{date}}", "body")}
+              className="px-2.5 py-1 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-900 rounded-lg text-xs font-mono font-bold transition-colors shadow-2xs"
+              title="Today's Date"
+            >
+              + {"{{date}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Date)</span>
             </button>
           </div>
         </div>
@@ -772,16 +1034,56 @@ export default function AutoMailCompose() {
           </div>
 
           {showPreview ? (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 min-h-[380px] max-h-[600px] overflow-y-auto">
-              <div className="pb-3 mb-4 border-b border-slate-200 text-xs text-slate-500 space-y-1">
-                <p><strong>From:</strong> {senderName} &lt;{senderEmail}&gt;</p>
-                <p><strong>Subject:</strong> {subject || "(No subject entered)"}</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 min-h-[380px] max-h-[650px] overflow-y-auto space-y-4">
+              {/* Dynamic Preview Control Bar */}
+              <div className="p-3 bg-white border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Live Client Preview Mode:
+                  </span>
+                  <span className="text-[11px] text-slate-500 hidden md:inline">
+                    (Customer ko kaisa dikhega preview karein)
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <span>Sample Name:</span>
+                    <input
+                      type="text"
+                      value={previewTestName}
+                      onChange={(e) => setPreviewTestName(e.target.value)}
+                      placeholder="e.g. Ramesh Sharma"
+                      className="px-2.5 py-1 text-xs border border-slate-200 rounded-lg bg-slate-50 focus:bg-white outline-none w-36 font-semibold"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewPersonalized(!previewPersonalized)}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${
+                      previewPersonalized
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                        : "bg-slate-100 text-slate-600 border-slate-200"
+                    }`}
+                  >
+                    {previewPersonalized ? "✓ Personalized View" : "Raw {{name}} View"}
+                  </button>
+                </div>
               </div>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: htmlBody || '<p style="text-align: center; color: #94a3b8; padding: 40px;">No HTML content written yet. Click "Template Gallery" to load a pre-made business template!</p>',
-                }}
-              />
+
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+                <div className="pb-3 border-b border-slate-100 text-xs text-slate-600 space-y-1">
+                  <p><strong>From:</strong> <span className="font-medium text-slate-900">{senderName} &lt;{senderEmail}&gt;</span></p>
+                  <p><strong>To:</strong> <span className="font-medium text-slate-900">{previewPersonalized ? `${previewTestName || "Ramesh Sharma"} <${customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com"}>` : (customTo || "{{email}}")}</span></p>
+                  <p><strong>Subject:</strong> <span className="font-bold text-slate-900">{getRenderedPreviewSubject() || "(No subject entered)"}</span></p>
+                </div>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: getRenderedPreviewHtml() || '<p style="text-align: center; color: #94a3b8; padding: 40px;">No HTML content written yet. Click "Template Gallery" to load a pre-made business template!</p>',
+                  }}
+                />
+              </div>
             </div>
           ) : (
             <textarea
