@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Search, Menu, LogOut } from "lucide-react";
+import { Bell, Search, Menu, LogOut, ExternalLink } from "lucide-react";
 
 const titles: Record<string, string> = {
   "/admin":             "Dashboard",
@@ -25,6 +25,7 @@ const titles: Record<string, string> = {
   "/admin/navigation":  "Navigation Menus",
   "/admin/users":       "Users & Roles",
   "/admin/settings":    "Site Settings",
+  "/admin/snaptech":    "SnapTech Digital Portal",
   "/admin/hbs":             "Hind Build Dashboard",
   "/admin/hbs/home":        "Hind Build · Homepage CMS",
   "/admin/hbs/about":       "Hind Build · About Page CMS",
@@ -105,6 +106,19 @@ export default function AdminHeader({ user }: { user: any }) {
             </div>
 
             {/* Notification Apple Glass Pill */}
+            <a
+              href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/80 hover:bg-blue-100/90 text-blue-700 border border-blue-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
+              title="Open SnapTech Admin Portal (New Tab)"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <span>SnapTech Admin</span>
+              <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+
             <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
@@ -140,6 +154,19 @@ export default function AdminHeader({ user }: { user: any }) {
                 className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
               />
             </div>
+            {/* SnapTech Direct Portal Launcher */}
+            <a
+              href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-all group"
+              title="Open SnapTech Admin Portal (New Tab)"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <span>SnapTech Admin</span>
+              <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
             <button className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-construction-navy transition-colors text-slate-500">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-construction-red rounded-full" />

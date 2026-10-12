@@ -46,6 +46,7 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
 
   const hasAccess =
     sectionKey === "dashboard" ||
+    sectionKey === "snaptech" ||
     (sectionKey === "hbs" && (
       userPermissions.includes("hbs") ||
       (subKey && userPermissions.includes(subKey))

@@ -171,6 +171,13 @@ const navCategories: NavCategory[] = [
       { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },
     ],
   },
+  {
+    id: "portals",
+    title: "Group Ventures",
+    items: [
+      { href: "/admin/snaptech", label: "SnapTech Admin", icon: Globe, badge: "IT Portal", sectionKey: "snaptech" },
+    ],
+  },
 ];
 
 export default function AdminSidebar({ user }: { user: any }) {
@@ -201,7 +208,7 @@ export default function AdminSidebar({ user }: { user: any }) {
   const checkAccess = useCallback((href: string, sectionKey?: string) => {
     if (isAdmin) return true;
     const key = sectionKey || href.split("/")[2] || "dashboard";
-    if (key === "dashboard") return true;
+    if (key === "dashboard" || key === "snaptech") return true;
     if (key.startsWith("hbs") && (userPermissions.includes("hbs") || userPermissions.includes(key))) return true;
     if (userPermissions.includes(key)) return true;
     if (
@@ -316,13 +323,14 @@ export default function AdminSidebar({ user }: { user: any }) {
               </Link>
             </div>
 
-            {/* 2. Apple Segmented Control: HiPRO vs HiBUILD */}
-            <div className="px-3.5 py-3 border-b border-slate-200/50">
-              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl flex items-center border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+            {/* 2. Apple Segmented Control: HiPRO vs HiBUILD vs SnapTech */}
+            <div className="px-3 py-2.5 border-b border-slate-200/50">
+              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl grid grid-cols-3 gap-1 border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
                 <Link
                   href="/admin"
                   scroll={false}
-                  className="flex-1 py-1.5 px-2.5 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1.5 text-xs font-semibold"
+                  className="py-1 px-1.5 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1 text-[11px] font-semibold"
+                  title="HiPRO Master Admin"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/logo.jpg" alt="HiPRO" className="w-3.5 h-3.5 object-contain rounded-xs mix-blend-multiply" />
@@ -331,11 +339,24 @@ export default function AdminSidebar({ user }: { user: any }) {
                 <Link
                   href="/admin/hbs"
                   scroll={false}
-                  className="flex-1 py-1.5 px-2.5 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1.5 text-xs font-bold border border-black/5"
+                  className="py-1 px-1.5 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1 text-[11px] font-bold border border-black/5"
+                  title="HiBUILD Admin"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   <span>HiBUILD</span>
                 </Link>
+                <a
+                  href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-1 px-1.5 text-center rounded-xl text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[11px] font-semibold"
+                  title="SnapTech Admin Portal (New Tab)"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <span>SnapTech</span>
+                  <span className="text-[9px] text-slate-400 font-mono">↗</span>
+                </a>
               </div>
             </div>
 
@@ -458,6 +479,20 @@ export default function AdminSidebar({ user }: { user: any }) {
                 <span className="text-[10px] text-slate-400 font-mono">/hbs ↗</span>
               </Link>
 
+              <a
+                href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-blue-600 hover:bg-white/80 rounded-xl transition-all shadow-2xs hover:shadow-xs border border-transparent hover:border-blue-200/60"
+              >
+                <div className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <span>SnapTech Portal</span>
+                </div>
+                <span className="text-[10px] text-blue-500 font-mono">External ↗</span>
+              </a>
+
               <button
                 type="button"
                 onClick={async () => {
@@ -503,13 +538,14 @@ export default function AdminSidebar({ user }: { user: any }) {
           </Link>
         </div>
 
-        {/* Dual Brand Switcher: HiPRO Master vs Hind Build CMS */}
-        <div className="px-3 py-2.5 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
-          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
+        {/* Triple Brand Switcher: HiPRO Master vs Hind Build CMS vs SnapTech */}
+        <div className="px-3 py-2 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
             <Link
               href="/admin"
               scroll={false}
-              className="py-1.5 px-2 text-center rounded-lg bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1.5 font-extrabold border border-slate-200/60"
+              className="py-1 px-1 text-center rounded-lg bg-white text-slate-900 shadow-xs flex items-center justify-center gap-1 font-extrabold border border-slate-200/60"
+              title="HiPRO Master Admin"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.jpg" alt="HiPRO" className="w-3.5 h-3.5 object-contain rounded-xs mix-blend-multiply" />
@@ -518,13 +554,26 @@ export default function AdminSidebar({ user }: { user: any }) {
             <Link
               href="/admin/hbs"
               scroll={false}
-              className="py-1.5 px-2 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1.5 group font-semibold"
+              className="py-1 px-1 text-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition-all flex items-center justify-center gap-1 group font-semibold"
+              title="Hind Build Solutions CMS"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/hbs-icon.jpg" alt="Hind Build" className="w-3.5 h-3.5 object-contain rounded-xs" />
-              <span>Hind Build</span>
+              <span>HiBUILD</span>
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             </Link>
+            <a
+              href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-1 px-1 text-center rounded-lg text-slate-600 hover:text-blue-700 hover:bg-white/70 transition-all flex items-center justify-center gap-1 group font-semibold"
+              title="SnapTech Digital Admin Portal (External)"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <span>SnapTech</span>
+              <span className="text-[9px] text-blue-500 font-mono">↗</span>
+            </a>
           </div>
         </div>
 
@@ -729,6 +778,22 @@ export default function AdminSidebar({ user }: { user: any }) {
               Visit ↗
             </span>
           </Link>
+
+          <a
+            href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-1.5 rounded-none text-xs font-semibold uppercase tracking-wider text-slate-600 hover:text-blue-700 hover:bg-blue-50/80 transition-all group"
+          >
+            <div className="flex items-center gap-2.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-4 h-4 object-contain rounded-xs" />
+              <span>SnapTech Admin</span>
+            </div>
+            <span className="text-[9px] text-blue-600 uppercase font-mono group-hover:underline">
+              Portal ↗
+            </span>
+          </a>
         </div>
           </>
         )}

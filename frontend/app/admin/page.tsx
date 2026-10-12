@@ -27,7 +27,8 @@ import {
   Clock,
   Sparkles,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  Globe
 } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
 import type { BlogPost } from "@/lib/types";
@@ -332,6 +333,111 @@ export default function AdminDashboard() {
                   <Link href="/admin/settings" className="font-semibold text-construction-navy hover:underline">Settings &rarr;</Link>
                   <Link href="/admin/users" className="text-slate-500 hover:text-slate-900">Users</Link>
                   <Link href="/admin/stats" className="text-slate-500 hover:text-slate-900">Analytics</Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Group Ecosystem & Multi-Brand Admin Consoles */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-blue-600" />
+                Hindustan Group &middot; Multi-Brand Admin Consoles
+              </h3>
+              <span className="text-[11px] text-slate-400 font-mono">1-Click Direct Management</span>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Portal 1: HiPRO Flagship */}
+              <div className="bg-white border-2 border-construction-navy/30 p-5 shadow-xs flex flex-col justify-between relative overflow-hidden group">
+                <div className="absolute top-0 right-0 bg-construction-navy text-white text-[9px] font-bold font-mono px-2.5 py-0.5 uppercase tracking-wider">
+                  Active Console
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/logo.jpg" alt="HiPRO" className="w-9 h-9 object-contain rounded-xs mix-blend-multiply" />
+                    <div>
+                      <h4 className="text-slate-900 font-bold text-sm">Hindustan Projects</h4>
+                      <p className="text-[10px] text-slate-400 uppercase font-mono font-bold">Architecture &amp; Turnkey Infra</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-xs leading-relaxed">
+                    Flagship turnkey construction, municipal infrastructure, project case studies, and corporate client leads.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-mono text-[11px]">hindustanprojects.in</span>
+                  <span className="font-bold text-construction-navy flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Current Console</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Portal 2: Hind Build (HiBUILD) */}
+              <div className="bg-white border border-slate-200/90 hover:border-red-300 p-5 shadow-xs flex flex-col justify-between transition-all group">
+                <div>
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/hbs-icon.jpg" alt="Hind Build" className="w-9 h-9 object-contain rounded-xs" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-slate-900 font-bold text-sm">Hind Build (HiBUILD)</h4>
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      </div>
+                      <p className="text-[10px] text-red-600 uppercase font-mono font-bold">Building Repair &amp; Maintenance</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-xs leading-relaxed">
+                    Specialized waterproofing, structural rehabilitation, painting, trade catalogs, and property inspection bookings.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-mono text-[11px]">/admin/hbs</span>
+                  <Link
+                    href="/admin/hbs"
+                    className="font-bold text-red-600 hover:text-red-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <span>Manage HiBUILD</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Portal 3: SnapTech Digital */}
+              <div className="bg-gradient-to-br from-white to-blue-50/40 border border-blue-200/90 hover:border-blue-400 p-5 shadow-xs flex flex-col justify-between transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-bold font-mono px-2.5 py-0.5 uppercase tracking-wider">
+                  IT &amp; Digital Portal
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/snaptech-icon.png" alt="SnapTech" className="w-9 h-9 object-contain rounded-lg shadow-2xs" />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h4 className="text-slate-900 font-bold text-sm">SnapTech Digital</h4>
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                      </div>
+                      <p className="text-[10px] text-blue-600 uppercase font-mono font-bold">Web &amp; App Development Agency</p>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-xs leading-relaxed">
+                    Manage technology clients, custom software, digital agency inquiries, website projects, and app portals.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-blue-100/80 flex items-center justify-between text-xs">
+                  <span className="text-slate-400 font-mono text-[11px]">snaptech.digital</span>
+                  <a
+                    href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                  >
+                    <span>Launch Admin</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
             </div>

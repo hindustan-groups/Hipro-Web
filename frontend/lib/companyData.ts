@@ -57,6 +57,23 @@ export const COMPANY_INFO = {
       status: "Flagship",
     },
     {
+      name: "Hind Build Solutions (HiBUILD)",
+      category: "Building Maintenance & Renovation",
+      description: "Specialized Waterproofing, Structural Rehabilitation & Property Care.",
+      url: "https://www.hindustanprojects.in/hbs",
+      isExternal: false,
+      status: "Active Division",
+    },
+    {
+      name: "SnapTech Digital",
+      category: "Web & App Development Agency",
+      description: "Enterprise Web, Mobile App Development, UI/UX & Cloud Solutions.",
+      url: "https://www.snaptech.digital/",
+      adminUrl: "https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x",
+      isExternal: true,
+      status: "Live Portal",
+    },
+    {
       name: "HiPro Marketing",
       category: "Brand & Commercial Solutions",
       description: "Marketing and brand solutions under the Hindustan Group.",
