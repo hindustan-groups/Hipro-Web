@@ -10,13 +10,17 @@ export function middleware(req: NextRequest) {
     nextHostname === "hindbuilding.hindustanprojects.in" ||
     hostHeader === "hindbuilding.hindustanprojects.in";
 
-  if (!isHbsSubdomain) {
+  const isEmpanelmentSubdomain =
+    nextHostname === "empanelment.hindustanprojects.in" ||
+    hostHeader === "empanelment.hindustanprojects.in";
+
+  if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
     return NextResponse.next();
   }
 
   const { pathname, search } = req.nextUrl;
 
-  // Admin and API protection: NEVER route /admin, /admin-login, /api, or static assets through HBS hostname routing
+  // Admin and API protection: NEVER route /admin, /admin-login, /api, or static assets through subdomain hostname routing
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
@@ -27,8 +31,22 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // If a request on the subdomain directly uses /hbs or /hbs/*, redirect to the clean subdomain path
-  // to prevent /hbs appearing in the browser URL on the subdomain
+  // Empanelment subdomain handling
+  if (isEmpanelmentSubdomain) {
+    if (pathname === "/empanelment") {
+      return NextResponse.redirect(new URL(`/${search}`, req.url), 307);
+    }
+    if (pathname.startsWith("/empanelment/")) {
+      const cleanPath = pathname.replace(/^\/empanelment/, "");
+      return NextResponse.redirect(new URL(`${cleanPath}${search}`, req.url), 307);
+    }
+
+    const targetPath = `/empanelment${pathname === "/" ? "" : pathname}`;
+    const rewriteUrl = new URL(`${targetPath}${search}`, req.url);
+    return NextResponse.rewrite(rewriteUrl);
+  }
+
+  // HBS subdomain handling
   if (pathname === "/hbs") {
     return NextResponse.redirect(new URL(`/${search}`, req.url), 307);
   }
@@ -37,13 +55,6 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(`${cleanPath}${search}`, req.url), 307);
   }
 
-  // Internal rewrite: map root and public pages on the subdomain to the internal /hbs application
-  // e.g.:
-  // /         -> /hbs
-  // /about    -> /hbs/about
-  // /services -> /hbs/services
-  // /projects -> /hbs/projects
-  // /contact  -> /hbs/contact
   const targetPath = `/hbs${pathname === "/" ? "" : pathname}`;
   const rewriteUrl = new URL(`${targetPath}${search}`, req.url);
 

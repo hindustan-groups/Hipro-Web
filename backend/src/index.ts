@@ -32,6 +32,7 @@ import uploadRouter from "./routes/upload";
 import leadsRouter from "./routes/leads";
 import hbsRouter from "./routes/hbs";
 import automailRouter from "./routes/automail";
+import empanelmentRouter from "./routes/empanelment";
 import { securityHeaders } from "./middleware/securityHeaders";
 
 const app = express();
@@ -47,6 +48,7 @@ const defaultAllowedOrigins = [
   "https://www.hindustanprojects.in",
   "https://hindustanprojects.in",
   "https://hindbuilding.hindustanprojects.in",
+  "https://empanelment.hindustanprojects.in",
 ];
 
 const envAllowedOrigins = process.env.ALLOWED_ORIGINS
@@ -94,6 +96,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/leads", leadsRouter);
 app.use("/api/hbs", hbsRouter);
 app.use("/api/automail", automailRouter);
+app.use("/api/empanelment", empanelmentRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {

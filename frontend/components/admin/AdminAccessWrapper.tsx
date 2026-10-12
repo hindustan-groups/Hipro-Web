@@ -43,6 +43,7 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
   const segments = pathname.split("/");
   const sectionKey = segments[2] || "dashboard";
   const subKey = segments[2] === "hbs" && segments[3] ? `hbs-${segments[3]}` : null;
+  const empanelmentSubKey = segments[2] === "empanelment" && segments[3] ? `empanelment-${segments[3]}` : null;
 
   const hasAccess =
     sectionKey === "dashboard" ||
@@ -50,6 +51,10 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
     (sectionKey === "hbs" && (
       userPermissions.includes("hbs") ||
       (subKey && userPermissions.includes(subKey))
+    )) ||
+    (sectionKey === "empanelment" && (
+      userPermissions.includes("empanelment") ||
+      (empanelmentSubKey && userPermissions.includes(empanelmentSubKey))
     )) ||
     userPermissions.includes(sectionKey) ||
     (sectionKey === "projects-hero" && (

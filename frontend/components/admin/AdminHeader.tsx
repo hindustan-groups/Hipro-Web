@@ -38,6 +38,13 @@ const titles: Record<string, string> = {
   "/admin/hbs/media":       "Hind Build · Media Library",
   "/admin/hbs/seo":         "Hind Build · SEO & Metadata",
   "/admin/hbs/settings":    "Hind Build · Settings",
+  "/admin/empanelment":             "Empanelment · Executive Dashboard",
+  "/admin/empanelment/applications":"Empanelment · Applications Pipeline & KYC",
+  "/admin/empanelment/directory":   "Empanelment · Verified Partners Directory",
+  "/admin/empanelment/tenders":     "Empanelment · Tenders & Bidding Radar",
+  "/admin/empanelment/gate-passes": "Empanelment · Daily Site Gate Passes",
+  "/admin/empanelment/tickets":     "Empanelment · Vendor Helpdesk",
+  "/admin/empanelment/settings":    "Empanelment · Settings & Workflows",
 };
 
 export default function AdminHeader({ user }: { user: any }) {
@@ -80,6 +87,11 @@ export default function AdminHeader({ user }: { user: any }) {
                 <span className="md:hidden">Hind Build Admin</span>
                 <span className="hidden md:inline">{title}</span>
               </>
+            ) : pathname?.startsWith("/admin/empanelment") ? (
+              <>
+                <span className="md:hidden">Empanelment Hub</span>
+                <span className="hidden md:inline">{title}</span>
+              </>
             ) : (
               title
             )}
@@ -87,7 +99,50 @@ export default function AdminHeader({ user }: { user: any }) {
         </div>
       </div>
       <div className="flex items-center gap-2 md:gap-3">
-        {pathname?.startsWith("/admin/hbs") ? (
+        {pathname?.startsWith("/admin/empanelment") ? (
+          <>
+            {/* Apple Status Pill - Amber */}
+            <div className="hidden xl:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-800 text-xs font-semibold backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>Partner Hub · Active</span>
+            </div>
+
+            {/* Public Portal Link */}
+            <a
+              href="https://empanelment.hindustanprojects.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 text-amber-900 border border-amber-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
+              title="Open Public Empanelment Portal (New Tab)"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <span>Public Portal ↗</span>
+            </a>
+
+            <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full" />
+            </button>
+
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-red-50 border border-slate-200/70 hover:border-red-200 flex items-center justify-center hover:text-red-600 transition-all text-slate-500 shadow-2xs"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200/60">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
+                {(user?.name || user?.email || "E").charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
+                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider font-mono">Empanelment Staff</p>
+              </div>
+            </div>
+          </>
+        ) : pathname?.startsWith("/admin/hbs") ? (
           <>
             {/* Apple Status Pill */}
             <div className="hidden xl:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs font-semibold backdrop-blur-md">

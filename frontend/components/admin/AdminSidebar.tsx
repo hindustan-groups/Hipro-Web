@@ -176,6 +176,42 @@ const navCategories: NavCategory[] = [
     title: "Group Ventures",
     items: [
       { href: "/admin/snaptech", label: "SnapTech Admin", icon: Globe, badge: "IT Portal", sectionKey: "snaptech" },
+      { href: "/admin/empanelment", label: "Vendor Empanelment", icon: ShieldCheck, badge: "Portal", sectionKey: "empanelment" },
+    ],
+  },
+];
+
+export const EMPANELMENT_NAV_SECTIONS: HbsNavSection[] = [
+  {
+    title: "OVERVIEW",
+    items: [
+      { href: "/admin/empanelment", label: "Dashboard & KPIs", icon: LayoutDashboard, sectionKey: "empanelment" },
+    ],
+  },
+  {
+    title: "KYC & CONTRACTORS",
+    items: [
+      { href: "/admin/empanelment/applications", label: "Application Pipeline", icon: Inbox, badge: "KYC", sectionKey: "empanelment-applications" },
+      { href: "/admin/empanelment/directory", label: "Verified Partners Directory", icon: Users, badge: "Tiers", sectionKey: "empanelment-directory" },
+    ],
+  },
+  {
+    title: "PROCUREMENT & BIDS",
+    items: [
+      { href: "/admin/empanelment/tenders", label: "Tenders & Bidding Radar", icon: Briefcase, badge: "Live", sectionKey: "empanelment-tenders" },
+    ],
+  },
+  {
+    title: "SITE SECURITY",
+    items: [
+      { href: "/admin/empanelment/gate-passes", label: "Daily Site Gate Passes", icon: ShieldCheck, badge: "24-Hr", sectionKey: "empanelment-gate-passes" },
+    ],
+  },
+  {
+    title: "COMMUNICATIONS",
+    items: [
+      { href: "/admin/automail?brand=empanelment", label: "AutoMail Dispatcher", icon: Send, badge: "Auto", sectionKey: "automail" },
+      { href: "/admin/empanelment/tickets", label: "Vendor Helpdesk", icon: Mail, sectionKey: "empanelment-tickets" },
     ],
   },
 ];
@@ -210,6 +246,7 @@ export default function AdminSidebar({ user }: { user: any }) {
     const key = sectionKey || href.split("/")[2] || "dashboard";
     if (key === "dashboard" || key === "snaptech") return true;
     if (key.startsWith("hbs") && (userPermissions.includes("hbs") || userPermissions.includes(key))) return true;
+    if (key.startsWith("empanelment") && (userPermissions.includes("empanelment") || userPermissions.includes(key))) return true;
     if (userPermissions.includes(key)) return true;
     if (
       key === "projects-hero" &&
@@ -306,7 +343,148 @@ export default function AdminSidebar({ user }: { user: any }) {
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {pathname?.startsWith("/admin/hbs") ? (
+        {pathname?.startsWith("/admin/empanelment") ? (
+          <>
+            {/* 1. Empanelment Admin Header */}
+            <div className="h-16 px-4 border-b border-amber-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
+              <Link href="/admin/empanelment" className="flex items-center gap-2.5 group">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-slate-900 font-bold text-xs leading-tight">Empanelment</p>
+                  <span className="text-[9px] bg-amber-50 text-amber-700 font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full border border-amber-200/60">
+                    Partner Hub
+                  </span>
+                </div>
+              </Link>
+            </div>
+
+            {/* 2. Apple Segmented Control: 4 Brands */}
+            <div className="px-3 py-2.5 border-b border-slate-200/50">
+              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl grid grid-cols-4 gap-1 border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+                <Link
+                  href="/admin"
+                  scroll={false}
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
+                  title="HiPRO Master Admin"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/logo.jpg" alt="HiPRO" className="w-3.5 h-3.5 object-contain rounded-xs mix-blend-multiply" />
+                  <span>HiPRO</span>
+                </Link>
+                <Link
+                  href="/admin/hbs"
+                  scroll={false}
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-red-700 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
+                  title="HiBUILD Admin"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/hbs-icon.jpg" alt="HiBUILD" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <span>HiBUILD</span>
+                </Link>
+                <Link
+                  href="/admin/empanelment"
+                  scroll={false}
+                  className="py-1 px-1 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1 text-[10px] font-bold border border-black/5"
+                  title="Vendor Empanelment Portal"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                  <span>Empanel</span>
+                </Link>
+                <a
+                  href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
+                  title="SnapTech Admin Portal (New Tab)"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
+                  <span>SnapTech</span>
+                </a>
+              </div>
+            </div>
+
+            {/* 3. Navigation Links (Apple macOS Sidebar List for Empanelment) */}
+            <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+              {EMPANELMENT_NAV_SECTIONS.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {section.title}
+                  </p>
+                  <div className="space-y-0.5">
+                    {section.items.map(({ href, label, icon: Icon, badge, sectionKey }) => {
+                      if (!checkAccess(href, sectionKey)) return null;
+                      const active = pathname === href;
+                      return (
+                        <Link
+                          key={href}
+                          href={href}
+                          scroll={false}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] ${
+                            active
+                              ? "bg-white text-slate-900 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200/80 ring-1 ring-black/5"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-white/60 hover:shadow-2xs font-medium"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Icon
+                              className={`w-4 h-4 shrink-0 transition-colors ${
+                                active ? "text-amber-600" : "text-slate-400"
+                              }`}
+                            />
+                            <span className="truncate">{label}</span>
+                          </div>
+                          {badge && (
+                            <span
+                              className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                                active
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200/60"
+                                  : "bg-slate-100 text-slate-500 border border-slate-200/50"
+                              }`}
+                            >
+                              {badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </nav>
+
+            {/* 4. Footer */}
+            <div className="p-3 border-t border-slate-200/50 bg-white/30 backdrop-blur-md shrink-0 space-y-2">
+              <a
+                href="https://empanelment.hindustanprojects.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-amber-900 bg-amber-50/80 hover:bg-amber-100 rounded-xl transition-all border border-amber-200/60 shadow-2xs group"
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Public Portal</span>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <button
+                onClick={async () => {
+                  try {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                  } finally {
+                    window.location.href = "/admin-login";
+                  }
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-500/10 rounded-xl transition-all text-left min-h-[38px]"
+              >
+                <LogOut className="w-3.5 h-3.5 text-slate-400" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </>
+        ) : pathname?.startsWith("/admin/hbs") ? (
           <>
             {/* 1. Hind Build Admin Header (Apple Frosted Glass) */}
             <div className="h-16 px-4 border-b border-slate-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
@@ -323,13 +501,13 @@ export default function AdminSidebar({ user }: { user: any }) {
               </Link>
             </div>
 
-            {/* 2. Apple Segmented Control: HiPRO vs HiBUILD vs SnapTech */}
+            {/* 2. Apple Segmented Control: HiPRO vs HiBUILD vs Empanel vs SnapTech */}
             <div className="px-3 py-2.5 border-b border-slate-200/50">
-              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl grid grid-cols-3 gap-1 border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+              <div className="p-1 bg-slate-200/50 backdrop-blur-xl rounded-2xl grid grid-cols-4 gap-1 border border-white/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
                 <Link
                   href="/admin"
                   scroll={false}
-                  className="py-1 px-1.5 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1 text-[11px] font-semibold"
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-slate-800 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
                   title="HiPRO Master Admin"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -339,23 +517,31 @@ export default function AdminSidebar({ user }: { user: any }) {
                 <Link
                   href="/admin/hbs"
                   scroll={false}
-                  className="py-1 px-1.5 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1 text-[11px] font-bold border border-black/5"
+                  className="py-1 px-1 text-center rounded-xl bg-white text-slate-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)] flex items-center justify-center gap-1 text-[10px] font-bold border border-black/5"
                   title="HiBUILD Admin"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                   <span>HiBUILD</span>
                 </Link>
+                <Link
+                  href="/admin/empanelment"
+                  scroll={false}
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-amber-800 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
+                  title="Vendor Empanelment Portal"
+                >
+                  <ShieldCheck className="w-3 h-3 text-amber-600 shrink-0" />
+                  <span>Empanel</span>
+                </Link>
                 <a
                   href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-1 px-1.5 text-center rounded-xl text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[11px] font-semibold"
+                  className="py-1 px-1 text-center rounded-xl text-slate-500 hover:text-blue-600 hover:bg-white/60 transition-all flex items-center justify-center gap-1 text-[10px] font-semibold"
                   title="SnapTech Admin Portal (New Tab)"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
                   <span>SnapTech</span>
-                  <span className="text-[9px] text-slate-400 font-mono">↗</span>
                 </a>
               </div>
             </div>
@@ -538,9 +724,9 @@ export default function AdminSidebar({ user }: { user: any }) {
           </Link>
         </div>
 
-        {/* Triple Brand Switcher: HiPRO Master vs Hind Build CMS vs SnapTech */}
+        {/* Triple Brand Switcher: HiPRO Master vs Hind Build CMS vs Empanel vs SnapTech */}
         <div className="px-3 py-2 bg-slate-100/40 backdrop-blur-md border-b border-white/80">
-          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[11px] font-bold border border-white/60 shadow-inner">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-slate-200/50 backdrop-blur-md rounded-xl text-[10px] font-bold border border-white/60 shadow-inner">
             <Link
               href="/admin"
               scroll={false}
@@ -560,7 +746,15 @@ export default function AdminSidebar({ user }: { user: any }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/hbs-icon.jpg" alt="Hind Build" className="w-3.5 h-3.5 object-contain rounded-xs" />
               <span>HiBUILD</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            </Link>
+            <Link
+              href="/admin/empanelment"
+              scroll={false}
+              className="py-1 px-1 text-center rounded-lg text-slate-600 hover:text-amber-800 hover:bg-white/70 transition-all flex items-center justify-center gap-1 group font-semibold"
+              title="Vendor Empanelment Portal"
+            >
+              <ShieldCheck className="w-3 h-3 text-amber-600 shrink-0" />
+              <span>Empanel</span>
             </Link>
             <a
               href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
@@ -572,7 +766,6 @@ export default function AdminSidebar({ user }: { user: any }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
               <span>SnapTech</span>
-              <span className="text-[9px] text-blue-500 font-mono">↗</span>
             </a>
           </div>
         </div>
