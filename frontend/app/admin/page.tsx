@@ -414,7 +414,7 @@ export default function AdminDashboard() {
                 <div>
                   <div className="flex items-center gap-2.5 mb-2.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/snaptech-icon.png" alt="SnapTech" className="w-9 h-9 object-contain rounded-lg shadow-2xs" />
+                    <img src="/snaptech-icon.png" alt="SnapTech" className="w-9 h-9 object-contain rounded-full bg-white border border-blue-200/80 p-0.5 shadow-2xs shrink-0" />
                     <div>
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-slate-900 font-bold text-sm">SnapTech Digital</h4>

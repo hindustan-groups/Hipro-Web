@@ -353,7 +353,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                   title="SnapTech Admin Portal (New Tab)"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
                   <span>SnapTech</span>
                   <span className="text-[9px] text-slate-400 font-mono">↗</span>
                 </a>
@@ -487,7 +487,7 @@ export default function AdminSidebar({ user }: { user: any }) {
               >
                 <div className="flex items-center gap-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+                  <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
                   <span>SnapTech Portal</span>
                 </div>
                 <span className="text-[10px] text-blue-500 font-mono">External ↗</span>
@@ -570,7 +570,7 @@ export default function AdminSidebar({ user }: { user: any }) {
               title="SnapTech Digital Admin Portal (External)"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
               <span>SnapTech</span>
               <span className="text-[9px] text-blue-500 font-mono">↗</span>
             </a>
@@ -787,7 +787,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           >
             <div className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-4 h-4 object-contain rounded-xs" />
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-4 h-4 object-contain rounded-full bg-white shadow-2xs shrink-0" />
               <span>SnapTech Admin</span>
             </div>
             <span className="text-[9px] text-blue-600 uppercase font-mono group-hover:underline">

@@ -56,7 +56,7 @@ export default function SnapTechAdminBridgePage() {
               <img
                 src="/snaptech-icon.png"
                 alt="SnapTech Logo"
-                className="w-12 h-12 object-contain rounded-xl shadow-xs border border-slate-200 bg-slate-900 shrink-0"
+                className="w-12 h-12 object-contain rounded-full shadow-xs border border-blue-200/80 bg-white p-0.5 shrink-0 ring-2 ring-blue-500/10"
               />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight font-display">
@@ -123,9 +123,20 @@ export default function SnapTechAdminBridgePage() {
             <span>Dedicated Remote Production Gateway</span>
           </div>
 
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-            Direct Access to SnapTech Production Management Portal
-          </h2>
+          <div className="flex items-center gap-4 pt-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/snaptech-icon.png"
+              alt="SnapTech"
+              className="w-14 h-14 object-contain rounded-full bg-white p-1 shadow-lg shrink-0 border-2 border-white/80 ring-2 ring-blue-400/30"
+            />
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+                Direct Access to SnapTech Production Management Portal
+              </h2>
+              <p className="text-blue-200 text-xs font-mono mt-0.5">Hindustan Group &middot; Official IT &amp; Web Wing</p>
+            </div>
+          </div>
 
           <p className="text-slate-300 text-xs md:text-sm leading-relaxed">
             Clicking the button below opens the SnapTech Digital administrative console in a secure, isolated workspace tab.

@@ -114,7 +114,7 @@ export default function AdminHeader({ user }: { user: any }) {
               title="Open SnapTech Admin Portal (New Tab)"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
               <span>SnapTech Admin</span>
               <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
@@ -163,7 +163,7 @@ export default function AdminHeader({ user }: { user: any }) {
               title="Open SnapTech Admin Portal (New Tab)"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-xs" />
+              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
               <span>SnapTech Admin</span>
               <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
