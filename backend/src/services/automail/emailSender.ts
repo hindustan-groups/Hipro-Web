@@ -37,6 +37,12 @@ export function getBrandConfigs(): Record<string, BrandConfig> {
       defaultEmail: settings.senderEmailHbs || "hbs@hindustanprojects.in",
       website: "https://hindbuilding.hindustanprojects.in",
     },
+    empanelment: {
+      key: "empanelment",
+      name: "HiPRO Empanelment Desk",
+      defaultEmail: (settings as any).senderEmailEmpanelment || "empanelment@hindustanprojects.in",
+      website: "https://empanelment.hindustanprojects.in",
+    },
     all: {
       key: "all",
       name: "Hindustan Projects Group",
@@ -58,6 +64,12 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
     name: "Hind Building Solutions",
     defaultEmail: process.env.HBS_SMTP_USER || process.env.SMTP_USER || "hbs@hindustanprojects.in",
     website: "https://hindbuilding.hindustanprojects.in",
+  },
+  empanelment: {
+    key: "empanelment",
+    name: "HiPRO Empanelment Desk",
+    defaultEmail: process.env.EMPANELMENT_SMTP_USER || process.env.SMTP_USER || "empanelment@hindustanprojects.in",
+    website: "https://empanelment.hindustanprojects.in",
   },
   all: {
     key: "all",

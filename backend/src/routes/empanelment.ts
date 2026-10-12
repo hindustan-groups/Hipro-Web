@@ -2,6 +2,11 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
 import crypto from "crypto";
+import {
+  sendApplicationReceivedEmail,
+  sendApplicationStatusEmail,
+  sendSiteGatePassEmail,
+} from "../services/empanelmentMailer";
 
 const router = Router();
 
@@ -197,6 +202,20 @@ router.post("/apply", async (req: Request, res: Response) => {
       },
     });
 
+    // Asynchronously dispatch transactional acknowledgment email
+    sendApplicationReceivedEmail({
+      email: application.email,
+      companyName: application.companyName,
+      contactName: application.contactName,
+      trackingId: application.trackingId,
+      category: application.category,
+      tier: application.tier,
+      pan: application.pan,
+      gstin: application.gstin,
+    }).catch((mailErr) => {
+      console.warn("[EMPANELMENT] Asynchronous confirmation email failed:", mailErr?.message || mailErr);
+    });
+
     return res.status(201).json({
       success: true,
       trackingId,
@@ -387,6 +406,20 @@ router.post("/gate-pass/generate", async (req: Request, res: Response) => {
         validTill,
         status: "ACTIVE",
       },
+    });
+
+    // Asynchronously dispatch Gate Pass confirmation email
+    sendSiteGatePassEmail({
+      email: vendor.email,
+      visitorName: pass.visitorName,
+      companyName: vendor.companyName,
+      passCode: pass.passCode,
+      siteLocation: pass.siteLocation,
+      purpose: "Authorized Site Entry & Inspection",
+      validUntil: pass.validTill.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      phone: vendor.phone,
+    }).catch((mailErr) => {
+      console.warn("[EMPANELMENT] Asynchronous gate pass email failed:", mailErr?.message || mailErr);
     });
 
     return res.status(201).json({
@@ -653,6 +686,22 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
       where: { id },
       data: updateData,
     });
+
+    // If status changed to APPROVED or REJECTED, notify the vendor
+    if (updated.status === "APPROVED" || updated.status === "REJECTED") {
+      sendApplicationStatusEmail({
+        email: updated.email,
+        companyName: updated.companyName,
+        contactName: updated.contactName,
+        trackingId: updated.trackingId,
+        status: updated.status as any,
+        registrationNo: updated.trackingId,
+        tier: updated.tier,
+        remarks: updated.adminRemarks || undefined,
+      }).catch((mailErr) => {
+        console.warn("[EMPANELMENT] Asynchronous status email failed:", mailErr?.message || mailErr);
+      });
+    }
 
     return res.json({
       success: true,
