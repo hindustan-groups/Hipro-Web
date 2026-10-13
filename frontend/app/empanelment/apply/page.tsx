@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -19,6 +19,12 @@ import {
   Lock,
   Camera,
 } from "lucide-react";
+import {
+  EmpanelmentContent,
+  EmpanelmentCategory,
+  DEFAULT_EMPANELMENT_CONTENT,
+  parseJsonField,
+} from "@/lib/empanelmentContent";
 
 export default function EmpanelmentRegistrationWizard() {
   const [step, setStep] = useState(1);
@@ -26,6 +32,22 @@ export default function EmpanelmentRegistrationWizard() {
   const [error, setError] = useState("");
   const [successData, setSuccessData] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState(false);
+  const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
+
+  useEffect(() => {
+    async function loadCms() {
+      try {
+        const res = await fetch("/api/empanelment/content", { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.content) {
+            setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
+          }
+        }
+      } catch (_e) {}
+    }
+    loadCms();
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -383,12 +405,29 @@ export default function EmpanelmentRegistrationWizard() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
                 >
-                  <option value="Civil Construction">Civil Construction (आरसीसी एवं चिनाई)</option>
-                  <option value="Electrical & MEP">Electrical & MEP (विद्युत एवं सबस्टेशन)</option>
-                  <option value="Plumbing & Sanitation">Plumbing & Sanitation (प्लंबिंग कार्य)</option>
-                  <option value="Fabrication & PEB">Fabrication & PEB (फेब्रिकेशन एवं स्टील)</option>
-                  <option value="Flooring & Finishing">Flooring & Finishing (फ्लोरिंग एवं फिनिशिंग)</option>
-                  <option value="Material Supply">Material Supply (निर्माण सामग्री सप्लायर)</option>
+                  {(() => {
+                    const cats: EmpanelmentCategory[] = parseJsonField(
+                      content.categoriesList,
+                      parseJsonField(DEFAULT_EMPANELMENT_CONTENT.categoriesList, [])
+                    );
+                    if (cats.length > 0) {
+                      return cats.map((cat) => (
+                        <option key={cat.id || cat.title} value={cat.title}>
+                          {cat.title}
+                        </option>
+                      ));
+                    }
+                    return (
+                      <>
+                        <option value="Civil Construction">Civil Construction (आरसीसी एवं चिनाई)</option>
+                        <option value="Electrical & MEP">Electrical & MEP (विद्युत एवं सबस्टेशन)</option>
+                        <option value="Plumbing & Sanitation">Plumbing & Sanitation (प्लंबिंग कार्य)</option>
+                        <option value="Fabrication & PEB">Fabrication & PEB (फेब्रिकेशन एवं स्टील)</option>
+                        <option value="Flooring & Finishing">Flooring & Finishing (फ्लोरिंग एवं फिनिशिंग)</option>
+                        <option value="Material Supply">Material Supply (निर्माण सामग्री सप्लायर)</option>
+                      </>
+                    );
+                  })()}
                 </select>
               </div>
             </div>

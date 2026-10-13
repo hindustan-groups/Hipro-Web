@@ -918,6 +918,26 @@ model EmpanelmentContent {
   ctaSubtitle            String    @default("Register as a vendor today and become a part of Hindustan Projects' growing network.")
   ctaBtnText             String    @default("Register Now")
 
+  // Guidelines & Capacity Standards (Dynamic CMS for /empanelment/guidelines)
+  guidelinesBadge        String    @default("PROCUREMENT & ELIGIBILITY")
+  guidelinesTitle        String    @default("Contractor Empanelment Standards")
+  guidelinesSubtitle     String    @default("Official procurement criteria, CPWD-aligned capacity tiers, and statutory compliance framework for infrastructure execution.")
+  guidelinesTiers        String?   @db.Text
+  guidelinesStatutoryDocs String?  @db.Text
+  guidelinesSafetyStandards String? @db.Text
+
+  // Tenders Radar Notice & Policies (Dynamic CMS for /empanelment/tenders)
+  tendersNoticeBadge     String    @default("NOTICE BOARD")
+  tendersNoticeTitle     String    @default("Procurement Directorate Bulletin")
+  tendersNoticeText      String?   @db.Text
+  tendersSubmissionRules String?   @db.Text
+  tendersHelplinePhone   String?   @default("+91 98765 43210")
+  tendersHelplineEmail   String?   @default("procurement@hindustanprojects.in")
+
+  // Site Gate Pass Instructions & Terms (Dynamic CMS for /empanelment/gate-pass)
+  gatePassInstructions   String?   @db.Text
+  gatePassTerms          String?   @db.Text
+
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 }

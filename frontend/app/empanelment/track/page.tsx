@@ -18,16 +18,36 @@ import {
   Phone,
 } from "lucide-react";
 import SmartCardPreviewModal from "@/components/admin/empanelment/SmartCardPreviewModal";
+import {
+  EmpanelmentContent,
+  DEFAULT_EMPANELMENT_CONTENT,
+} from "@/lib/empanelmentContent";
 
 function TrackingContent() {
   const searchParams = useSearchParams();
   const initialId = searchParams?.get("id") || "";
 
+  const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [trackingQuery, setTrackingQuery] = useState(initialId);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any | null>(null);
   const [error, setError] = useState("");
   const [isSmartCardOpen, setIsSmartCardOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadCms() {
+      try {
+        const res = await fetch("/api/empanelment/content", { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.content) {
+            setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
+          }
+        }
+      } catch (_e) {}
+    }
+    loadCms();
+  }, []);
 
   const handleTrack = useCallback(async (queryToUse?: string) => {
     const q = (queryToUse || trackingQuery).trim();
@@ -254,6 +274,25 @@ function TrackingContent() {
           />
         </div>
       )}
+
+      {/* Procurement Helpline Support Box */}
+      <div className="max-w-xl mx-auto p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-center space-y-2">
+        <p className="text-xs text-slate-500">
+          Need help with your empanelment application status? Contact the procurement helpdesk:
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-700">
+          {content.phone && (
+            <a href={`tel:${content.phone.replace(/\s+/g, "")}`} className="hover:text-amber-600 transition-colors">
+              📞 {content.phone}
+            </a>
+          )}
+          {content.email && (
+            <a href={`mailto:${content.email}`} className="hover:text-amber-600 transition-colors">
+              ✉️ {content.email}
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

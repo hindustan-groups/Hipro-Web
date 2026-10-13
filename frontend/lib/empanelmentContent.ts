@@ -52,6 +52,33 @@ export interface EmpanelmentHeroPill {
   iconName: string;
 }
 
+export interface EmpanelmentTier {
+  code: string;
+  title: string;
+  turnover: string;
+  capacity: string;
+  validity: string;
+  scope: string;
+  color?: string;
+  border?: string;
+  bg?: string;
+}
+
+export interface EmpanelmentStatutoryDoc {
+  id: string;
+  title: string;
+  authority: string;
+  requiredFor: string;
+  desc: string;
+}
+
+export interface EmpanelmentSafetyStandard {
+  id: string;
+  title: string;
+  codeRef: string;
+  desc: string;
+}
+
 export interface EmpanelmentContent {
   id: string;
   portalName: string;
@@ -119,6 +146,26 @@ export interface EmpanelmentContent {
   ctaTitle: string;
   ctaSubtitle: string;
   ctaBtnText: string;
+
+  // Guidelines & Capacity Standards
+  guidelinesBadge: string;
+  guidelinesTitle: string;
+  guidelinesSubtitle: string;
+  guidelinesTiers?: string | null;
+  guidelinesStatutoryDocs?: string | null;
+  guidelinesSafetyStandards?: string | null;
+
+  // Tenders Radar Notice & Policies
+  tendersNoticeBadge: string;
+  tendersNoticeTitle: string;
+  tendersNoticeText?: string | null;
+  tendersSubmissionRules?: string | null;
+  tendersHelplinePhone?: string | null;
+  tendersHelplineEmail?: string | null;
+
+  // Site Gate Pass Instructions & Terms
+  gatePassInstructions?: string | null;
+  gatePassTerms?: string | null;
 }
 
 export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
@@ -389,6 +436,139 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
   ctaSubtitle:
     "Register as a vendor today and become a part of Hindustan Projects' growing network.",
   ctaBtnText: "Register Now",
+
+  // Guidelines & Capacity Standards
+  guidelinesBadge: "PROCUREMENT & ELIGIBILITY",
+  guidelinesTitle: "Contractor Empanelment Standards",
+  guidelinesSubtitle:
+    "Official procurement criteria, CPWD-aligned capacity tiers, and statutory compliance framework for infrastructure execution.",
+  guidelinesTiers: JSON.stringify([
+    {
+      code: "CLASS_A",
+      title: "Class 'A' Prime Partner",
+      turnover: "₹ 5.00 Crore+ (Per Annum)",
+      capacity: "Single Work Order Up to ₹ 10.00 Cr",
+      validity: "3 Years",
+      color: "from-amber-500 to-amber-700",
+      border: "border-amber-300",
+      bg: "bg-amber-50/50",
+      scope:
+        "Mega Industrial Sheds, Turnkey PEB Structures, Multi-Storey Commercial Complexes, Infrastructure Highways & Bridges.",
+    },
+    {
+      code: "CLASS_B",
+      title: "Class 'B' Major Contractor",
+      turnover: "₹ 1.00 Crore – ₹ 5.00 Crore",
+      capacity: "Single Work Order Up to ₹ 2.50 Cr",
+      validity: "2 Years",
+      color: "from-blue-600 to-indigo-700",
+      border: "border-blue-200",
+      bg: "bg-blue-50/50",
+      scope:
+        "Industrial RCC Foundations, Plinth & Structure Masonry, MEP Firefighting & HVAC, Heavy Fabrication & Roofing.",
+    },
+    {
+      code: "CLASS_C",
+      title: "Class 'C' Specialized Subcontractor",
+      turnover: "₹ 25 Lakhs – ₹ 1.00 Crore",
+      capacity: "Single Work Order Up to ₹ 50 Lakhs",
+      validity: "2 Years",
+      color: "from-emerald-600 to-teal-700",
+      border: "border-emerald-200",
+      bg: "bg-emerald-50/50",
+      scope:
+        "Trimix Industrial Flooring, Waterproofing & Grouting, Aluminum & Glass Glazing, Boundary Walls, Specialized Finishing.",
+    },
+    {
+      code: "CLASS_D",
+      title: "Class 'D' Provisional / Local Trades",
+      turnover: "Under ₹ 25 Lakhs / New MSME",
+      capacity: "Single Work Order Up to ₹ 15 Lakhs",
+      validity: "1 Year",
+      color: "from-slate-600 to-slate-800",
+      border: "border-slate-200",
+      bg: "bg-slate-50/50",
+      scope:
+        "Labor Supply, Formwork & Shuttering, Earthwork Excavation, Local Aggregate / Sand Suppliers, Electrical Conduit Wiring.",
+    },
+  ]),
+  guidelinesStatutoryDocs: JSON.stringify([
+    {
+      id: "doc1",
+      title: "Permanent Account Number (PAN)",
+      authority: "Income Tax Department",
+      requiredFor: "All Entities",
+      desc: "Mandatory corporate or individual PAN card copy linked with bank account.",
+    },
+    {
+      id: "doc2",
+      title: "Goods & Services Tax (GSTIN)",
+      authority: "GST Network (Govt of India)",
+      requiredFor: "Class A, B, C (Optional for Class D)",
+      desc: "Valid 15-digit GST registration certificate. Must be filed active for last 2 quarters.",
+    },
+    {
+      id: "doc3",
+      title: "CA Certified Turnover / Audited Balances",
+      authority: "Chartered Accountant (ICAI)",
+      requiredFor: "Class A & B",
+      desc: "Audited balance sheet and profit & loss statements for last 3 financial years with UDIN.",
+    },
+    {
+      id: "doc4",
+      title: "Bank Solvency & Cancelled Cheque",
+      authority: "Scheduled Commercial Bank",
+      requiredFor: "All Entities",
+      desc: "Cancelled cheque showing account holder name, IFS code, and bank branch for RTGS transfers.",
+    },
+    {
+      id: "doc5",
+      title: "EPFO & ESIC Registration",
+      authority: "Ministry of Labour & Employment",
+      requiredFor: "Class A & B (Labor Deployments)",
+      desc: "Active PF code and ESIC sub-code compliance certificate for on-site workforce safety.",
+    },
+  ]),
+  guidelinesSafetyStandards: JSON.stringify([
+    {
+      id: "safe1",
+      title: "National Building Code (NBC 2016) Compliance",
+      codeRef: "Part 7: Construction Management & Safety",
+      desc: "Mandatory site helmets (IS 2925), steel-toe safety footwear (IS 15298), fall protection harnesses for heights above 2.0m.",
+    },
+    {
+      id: "safe2",
+      title: "Zero Tolerance Drug & Alcohol Policy",
+      codeRef: "Hindustan Projects Site Safety Byelaws",
+      desc: "Strict sobriety checks at security turnstiles. Immediate cancellation of gate pass upon non-compliance.",
+    },
+    {
+      id: "safe3",
+      title: "Contractor All Risk (CAR) & Workmen Compensation Insurance",
+      codeRef: "Labour Welfare & Insurance Mandate",
+      desc: "Comprehensive third-party liability and workmen compensation policy covering all deployed personnel.",
+    },
+  ]),
+
+  // Tenders Radar Notice & Policies
+  tendersNoticeBadge: "NOTICE BOARD",
+  tendersNoticeTitle: "Procurement Directorate Bulletin",
+  tendersNoticeText:
+    "E-Bidding window opens at 10:00 AM IST on all working days. EMD submission is accepted via RTGS/NEFT only. Verified Class A & B contractors enjoy fast-track commercial evaluation.",
+  tendersSubmissionRules: JSON.stringify([
+    "Only empanelled contractors with active tracking IDs can submit commercial bids.",
+    "Bids must include rate inclusive of GST, freight, and unloading at site.",
+    "EMD (Earnest Money Deposit) reference must be entered during bid submission.",
+    "Bids once submitted cannot be retracted without written notice to procurement directorate.",
+  ]),
+  tendersHelplinePhone: "+91 98765 43210",
+  tendersHelplineEmail: "procurement@hindustanprojects.in",
+
+  // Site Gate Pass Instructions & Terms
+  gatePassInstructions:
+    "Gate passes are issued exclusively to verified and approved vendor contractors. Ensure vehicle registration numbers and accurate worker counts are submitted for smooth security clearance.",
+  gatePassTerms:
+    "Pass holder must comply with Hindustan Projects on-site safety guidelines, wear prescribed PPE, and present physical or digital pass QR code at gate checkpoint upon entry.",
 };
 
 export async function fetchEmpanelmentContent(): Promise<EmpanelmentContent> {

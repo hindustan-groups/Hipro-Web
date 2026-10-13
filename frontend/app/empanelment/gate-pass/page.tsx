@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -14,12 +14,18 @@ import {
   Users,
   Truck,
   ArrowRight,
+  Info,
 } from "lucide-react";
+import {
+  EmpanelmentContent,
+  DEFAULT_EMPANELMENT_CONTENT,
+} from "@/lib/empanelmentContent";
 
 function GatePassContent() {
   const searchParams = useSearchParams();
   const defaultTrackingId = searchParams?.get("trackingId") || "";
 
+  const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [trackingId, setTrackingId] = useState(defaultTrackingId);
   const [siteLocation, setSiteLocation] = useState("Mansarovar Commercial Site, Jaipur");
   const [purpose, setPurpose] = useState("RCC & Civil Structural Works");
@@ -29,6 +35,21 @@ function GatePassContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [generatedPass, setGeneratedPass] = useState<any | null>(null);
+
+  useEffect(() => {
+    async function fetchCms() {
+      try {
+        const res = await fetch("/api/empanelment/content", { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.content) {
+            setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
+          }
+        }
+      } catch (_e) {}
+    }
+    fetchCms();
+  }, []);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +103,13 @@ function GatePassContent() {
           Empanelled contractors must generate a daily digital QR pass before site entry for security logging.
         </p>
       </div>
+
+      {content.gatePassInstructions && (
+        <div className="bg-rose-50/70 border border-rose-200/80 rounded-2xl p-4 flex items-start gap-3">
+          <Info className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-rose-900 leading-relaxed">{content.gatePassInstructions}</p>
+        </div>
+      )}
 
       {!generatedPass ? (
         <form
@@ -233,8 +261,8 @@ function GatePassContent() {
               </div>
             </div>
 
-            <p className="text-[10px] text-slate-400">
-              Valid for today only. Show this QR screen to site security guards at the entry gate.
+            <p className="text-[10px] text-slate-500 leading-relaxed border-t border-slate-100 pt-2">
+              {content.gatePassTerms || "Valid for today only. Show this QR screen to site security guards at the entry gate."}
             </p>
           </div>
 

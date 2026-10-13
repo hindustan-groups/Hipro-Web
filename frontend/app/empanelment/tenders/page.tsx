@@ -15,10 +15,18 @@ import {
   ShieldCheck,
   Send,
   X,
+  Bell,
+  Phone,
+  Mail,
 } from "lucide-react";
+import {
+  EmpanelmentContent,
+  DEFAULT_EMPANELMENT_CONTENT,
+} from "@/lib/empanelmentContent";
 
 export default function PublicTendersRadarPage() {
   const [tenders, setTenders] = useState<any[]>([]);
+  const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -33,15 +41,27 @@ export default function PublicTendersRadarPage() {
   const [bidSuccess, setBidSuccess] = useState("");
   const [bidError, setBidError] = useState("");
 
-  const fetchTenders = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/empanelment/tenders", { cache: "no-store" });
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Failed to load tenders");
-      setTenders(json.tenders || []);
+      const [tendersRes, contentRes] = await Promise.all([
+        fetch("/api/empanelment/tenders", { cache: "no-store" }),
+        fetch("/api/empanelment/content", { cache: "no-store" }),
+      ]);
+
+      const tendersJson = await tendersRes.json();
+      if (tendersRes.ok && tendersJson.success) {
+        setTenders(tendersJson.tenders || []);
+      }
+
+      if (contentRes.ok) {
+        const contentJson = await contentRes.json();
+        if (contentJson.success && contentJson.content) {
+          setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...contentJson.content });
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load active tenders");
     } finally {
@@ -50,7 +70,7 @@ export default function PublicTendersRadarPage() {
   };
 
   useEffect(() => {
-    fetchTenders();
+    fetchData();
   }, []);
 
   const handleOpenBid = (tender: any) => {
@@ -124,6 +144,24 @@ export default function PublicTendersRadarPage() {
         </p>
       </div>
 
+      {/* Live Procurement Notice Bulletin Banner */}
+      {content.tendersNoticeText && (
+        <div className="max-w-4xl mx-auto bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3.5 shadow-2xs">
+          <div className="px-2.5 py-1 bg-amber-500 text-white font-mono text-[11px] font-bold uppercase rounded-lg shrink-0 flex items-center gap-1.5">
+            <Bell className="w-3.5 h-3.5" />
+            <span>{content.tendersNoticeBadge || "NOTICE"}</span>
+          </div>
+          <div className="space-y-0.5 flex-1">
+            <h4 className="font-bold text-xs text-slate-900">
+              {content.tendersNoticeTitle || "Procurement Directorate Bulletin"}
+            </h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {content.tendersNoticeText}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Filter / Search Bar */}
       <div className="max-w-md mx-auto relative">
         <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -162,7 +200,7 @@ export default function PublicTendersRadarPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
-                    {tender.tenderNumber}
+                    {tender.tenderNo || tender.tenderNumber}
                   </span>
                   <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     OPEN FOR BIDS
@@ -194,11 +232,13 @@ export default function PublicTendersRadarPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Submission Deadline:</span>
                     <span className="font-bold text-amber-700 font-mono">
-                      {new Date(tender.deadline).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {tender.dueDate || tender.deadline
+                        ? new Date(tender.dueDate || tender.deadline).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "Open Package"}
                     </span>
                   </div>
                 </div>
@@ -337,6 +377,34 @@ export default function PublicTendersRadarPage() {
           </div>
         </div>
       )}
+
+      {/* Procurement Helpline Support Box */}
+      <div className="max-w-3xl mx-auto p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-3">
+        <h3 className="font-bold text-sm text-slate-900">Need Assistance with Bidding or Tender Submissions?</h3>
+        <p className="text-xs text-slate-500">
+          Reach out directly to the Hindustan Projects Central Procurement Desk for BOQ clarifications and EMD deposit references.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-700 pt-1">
+          {content.tendersHelplinePhone && (
+            <a
+              href={`tel:${content.tendersHelplinePhone.replace(/\s+/g, "")}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl hover:border-slate-300 shadow-2xs"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-600" />
+              <span>{content.tendersHelplinePhone}</span>
+            </a>
+          )}
+          {content.tendersHelplineEmail && (
+            <a
+              href={`mailto:${content.tendersHelplineEmail}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl hover:border-slate-300 shadow-2xs"
+            >
+              <Mail className="w-3.5 h-3.5 text-amber-600" />
+              <span>{content.tendersHelplineEmail}</span>
+            </a>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

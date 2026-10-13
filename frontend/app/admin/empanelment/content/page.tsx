@@ -33,6 +33,9 @@ import {
   EmpanelmentFAQ,
   EmpanelmentImpactPillar,
   EmpanelmentHeroPill,
+  EmpanelmentTier,
+  EmpanelmentStatutoryDoc,
+  EmpanelmentSafetyStandard,
   DEFAULT_EMPANELMENT_CONTENT,
   parseJsonField,
 } from "@/lib/empanelmentContent";
@@ -49,6 +52,8 @@ export default function EmpanelmentContentCmsPage() {
     | "documents"
     | "faqs"
     | "banner"
+    | "guidelines"
+    | "tenders_notice"
   >("hero");
 
   const [loading, setLoading] = useState(true);
@@ -70,6 +75,9 @@ export default function EmpanelmentContentCmsPage() {
   const [impactPillars, setImpactPillars] = useState<EmpanelmentImpactPillar[]>([]);
   const [docsList, setDocsList] = useState<EmpanelmentDocument[]>([]);
   const [faqsList, setFaqsList] = useState<EmpanelmentFAQ[]>([]);
+  const [guidelinesTiers, setGuidelinesTiers] = useState<EmpanelmentTier[]>([]);
+  const [guidelinesStatutoryDocs, setGuidelinesStatutoryDocs] = useState<EmpanelmentStatutoryDoc[]>([]);
+  const [guidelinesSafetyStandards, setGuidelinesSafetyStandards] = useState<EmpanelmentSafetyStandard[]>([]);
 
   // Fetch CMS Content
   const fetchContent = async () => {
@@ -88,6 +96,9 @@ export default function EmpanelmentContentCmsPage() {
         setImpactPillars(parseJsonField(c.impactPillars, []));
         setDocsList(parseJsonField(c.docsList, []));
         setFaqsList(parseJsonField(c.faqsList, []));
+        setGuidelinesTiers(parseJsonField(c.guidelinesTiers, []));
+        setGuidelinesStatutoryDocs(parseJsonField(c.guidelinesStatutoryDocs, []));
+        setGuidelinesSafetyStandards(parseJsonField(c.guidelinesSafetyStandards, []));
       }
     } catch (_err) {
       // Fallback to defaults
@@ -99,6 +110,9 @@ export default function EmpanelmentContentCmsPage() {
       setImpactPillars(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.impactPillars, []));
       setDocsList(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.docsList, []));
       setFaqsList(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.faqsList, []));
+      setGuidelinesTiers(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesTiers, []));
+      setGuidelinesStatutoryDocs(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesStatutoryDocs, []));
+      setGuidelinesSafetyStandards(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesSafetyStandards, []));
     } finally {
       setLoading(false);
     }
@@ -123,6 +137,9 @@ export default function EmpanelmentContentCmsPage() {
       impactPillars: JSON.stringify(impactPillars),
       docsList: JSON.stringify(docsList),
       faqsList: JSON.stringify(faqsList),
+      guidelinesTiers: JSON.stringify(guidelinesTiers),
+      guidelinesStatutoryDocs: JSON.stringify(guidelinesStatutoryDocs),
+      guidelinesSafetyStandards: JSON.stringify(guidelinesSafetyStandards),
     };
 
     try {
@@ -165,6 +182,9 @@ export default function EmpanelmentContentCmsPage() {
       setImpactPillars(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.impactPillars, []));
       setDocsList(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.docsList, []));
       setFaqsList(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.faqsList, []));
+      setGuidelinesTiers(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesTiers, []));
+      setGuidelinesStatutoryDocs(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesStatutoryDocs, []));
+      setGuidelinesSafetyStandards(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesSafetyStandards, []));
     }
   };
 
@@ -259,6 +279,8 @@ export default function EmpanelmentContentCmsPage() {
           { id: "documents", label: "Documents (6)", icon: FileText },
           { id: "faqs", label: "Quick FAQs", icon: HelpCircle },
           { id: "banner", label: "Red CTA Banner", icon: Sparkles },
+          { id: "guidelines", label: "Guidelines & Classes", icon: ShieldCheck },
+          { id: "tenders_notice", label: "Tenders Bulletin & Gate Pass", icon: FileText },
           { id: "branding", label: "Brand & Contact", icon: Globe },
         ].map((t) => {
           const Icon = t.icon;
@@ -1408,6 +1430,487 @@ export default function EmpanelmentContentCmsPage() {
                   onChange={(e) => setFormData({ ...formData, supportWhatsapp: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
                   placeholder="+91 98765 43210"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB 11: GUIDELINES & CAPACITY TIERS */}
+        {/* ================================================================ */}
+        {activeTab === "guidelines" && (
+          <div className="space-y-8">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="text-lg font-bold text-slate-900">
+                Guidelines & Contractor Capacity Standards CMS
+              </h2>
+              <p className="text-xs text-slate-500">
+                Directly configure Class A–D turnover thresholds, statutory documents, and NBC 2016 safety norms displayed on the public Guidelines page.
+              </p>
+            </div>
+
+            {/* Header Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200/80">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Section Badge
+                </label>
+                <input
+                  type="text"
+                  value={formData.guidelinesBadge}
+                  onChange={(e) => setFormData({ ...formData, guidelinesBadge: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Main Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.guidelinesTitle}
+                  onChange={(e) => setFormData({ ...formData, guidelinesTitle: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+              </div>
+              <div className="md:col-span-3">
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Subtitle / Preamble
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.guidelinesSubtitle}
+                  onChange={(e) => setFormData({ ...formData, guidelinesSubtitle: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Capacity Tiers (Class A, B, C, D) */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Contractor Capacity Classes</h3>
+                  <p className="text-xs text-slate-500">CPWD / HiPRO financial turnover & single order capacity brackets</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newTier: EmpanelmentTier = {
+                      code: `CLASS_${String.fromCharCode(65 + guidelinesTiers.length)}`,
+                      title: `Class '${String.fromCharCode(65 + guidelinesTiers.length)}' Contractor`,
+                      turnover: "₹ 50 Lakhs+",
+                      capacity: "Up to ₹ 1.00 Cr",
+                      validity: "2 Years",
+                      scope: "General construction and civil works.",
+                    };
+                    setGuidelinesTiers([...guidelinesTiers, newTier]);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Class Tier
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {guidelinesTiers.map((tier, idx) => (
+                  <div key={idx} className="p-5 rounded-xl border border-slate-200 bg-white shadow-sm space-y-3">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-1 bg-red-100 text-red-700 font-mono text-xs font-bold rounded">
+                          {tier.code || `CLASS_${idx + 1}`}
+                        </span>
+                        <input
+                          type="text"
+                          value={tier.title}
+                          onChange={(e) => {
+                            const updated = [...guidelinesTiers];
+                            updated[idx].title = e.target.value;
+                            setGuidelinesTiers(updated);
+                          }}
+                          className="font-bold text-slate-900 text-sm border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none px-1"
+                          placeholder="Class Title"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = guidelinesTiers.filter((_, i) => i !== idx);
+                          setGuidelinesTiers(updated);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
+                        title="Delete Tier"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Code</label>
+                        <input
+                          type="text"
+                          value={tier.code}
+                          onChange={(e) => {
+                            const updated = [...guidelinesTiers];
+                            updated[idx].code = e.target.value;
+                            setGuidelinesTiers(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Annual Turnover</label>
+                        <input
+                          type="text"
+                          value={tier.turnover}
+                          onChange={(e) => {
+                            const updated = [...guidelinesTiers];
+                            updated[idx].turnover = e.target.value;
+                            setGuidelinesTiers(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Order Capacity</label>
+                        <input
+                          type="text"
+                          value={tier.capacity}
+                          onChange={(e) => {
+                            const updated = [...guidelinesTiers];
+                            updated[idx].capacity = e.target.value;
+                            setGuidelinesTiers(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Empanelment Validity</label>
+                        <input
+                          type="text"
+                          value={tier.validity}
+                          onChange={(e) => {
+                            const updated = [...guidelinesTiers];
+                            updated[idx].validity = e.target.value;
+                            setGuidelinesTiers(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Eligible Work Scope</label>
+                      <textarea
+                        rows={2}
+                        value={tier.scope}
+                        onChange={(e) => {
+                          const updated = [...guidelinesTiers];
+                          updated[idx].scope = e.target.value;
+                          setGuidelinesTiers(updated);
+                        }}
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Statutory Documents Checklist */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Statutory Documents Checklist</h3>
+                  <p className="text-xs text-slate-500">Government compliance certificates required from applicants</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newDoc: EmpanelmentStatutoryDoc = {
+                      id: `doc_${Date.now()}`,
+                      title: "New Certificate",
+                      authority: "Issuing Authority",
+                      requiredFor: "All Entities",
+                      desc: "Mandatory compliance certificate copy.",
+                    };
+                    setGuidelinesStatutoryDocs([...guidelinesStatutoryDocs, newDoc]);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Document
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {guidelinesStatutoryDocs.map((doc, idx) => (
+                  <div key={doc.id || idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <input
+                        type="text"
+                        value={doc.title}
+                        onChange={(e) => {
+                          const updated = [...guidelinesStatutoryDocs];
+                          updated[idx].title = e.target.value;
+                          setGuidelinesStatutoryDocs(updated);
+                        }}
+                        className="font-bold text-slate-900 text-sm flex-1 border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none"
+                        placeholder="Document Title"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = guidelinesStatutoryDocs.filter((_, i) => i !== idx);
+                          setGuidelinesStatutoryDocs(updated);
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Issuing Authority</label>
+                        <input
+                          type="text"
+                          value={doc.authority}
+                          onChange={(e) => {
+                            const updated = [...guidelinesStatutoryDocs];
+                            updated[idx].authority = e.target.value;
+                            setGuidelinesStatutoryDocs(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Applicable Classes</label>
+                        <input
+                          type="text"
+                          value={doc.requiredFor}
+                          onChange={(e) => {
+                            const updated = [...guidelinesStatutoryDocs];
+                            updated[idx].requiredFor = e.target.value;
+                            setGuidelinesStatutoryDocs(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Requirement Note</label>
+                        <input
+                          type="text"
+                          value={doc.desc}
+                          onChange={(e) => {
+                            const updated = [...guidelinesStatutoryDocs];
+                            updated[idx].desc = e.target.value;
+                            setGuidelinesStatutoryDocs(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Safety & NBC 2016 Standards */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Safety & NBC 2016 Protocols</h3>
+                  <p className="text-xs text-slate-500">On-site occupational safety and statutory insurance standards</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newSafe: EmpanelmentSafetyStandard = {
+                      id: `safe_${Date.now()}`,
+                      title: "Site Safety Mandate",
+                      codeRef: "NBC 2016 Standard",
+                      desc: "Mandatory personal protective equipment and site safety compliance.",
+                    };
+                    setGuidelinesSafetyStandards([...guidelinesSafetyStandards, newSafe]);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Safety Rule
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {guidelinesSafetyStandards.map((safe, idx) => (
+                  <div key={safe.id || idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <input
+                        type="text"
+                        value={safe.title}
+                        onChange={(e) => {
+                          const updated = [...guidelinesSafetyStandards];
+                          updated[idx].title = e.target.value;
+                          setGuidelinesSafetyStandards(updated);
+                        }}
+                        className="font-bold text-slate-900 text-sm flex-1 border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none"
+                        placeholder="Protocol Title"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = guidelinesSafetyStandards.filter((_, i) => i !== idx);
+                          setGuidelinesSafetyStandards(updated);
+                        }}
+                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Code Reference</label>
+                        <input
+                          type="text"
+                          value={safe.codeRef}
+                          onChange={(e) => {
+                            const updated = [...guidelinesSafetyStandards];
+                            updated[idx].codeRef = e.target.value;
+                            setGuidelinesSafetyStandards(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 font-mono"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Protocol Description</label>
+                        <input
+                          type="text"
+                          value={safe.desc}
+                          onChange={(e) => {
+                            const updated = [...guidelinesSafetyStandards];
+                            updated[idx].desc = e.target.value;
+                            setGuidelinesSafetyStandards(updated);
+                          }}
+                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB 12: TENDERS BULLETIN & GATE PASS POLICIES */}
+        {/* ================================================================ */}
+        {activeTab === "tenders_notice" && (
+          <div className="space-y-6">
+            <div className="border-b border-slate-100 pb-4">
+              <h2 className="text-lg font-bold text-slate-900">
+                Tenders Notice Board & Site Gate Pass CMS
+              </h2>
+              <p className="text-xs text-slate-500">
+                Manage the live procurement bulletin broadcasted to contractors, bidding instructions, and on-site gate pass safety rules.
+              </p>
+            </div>
+
+            {/* Public Tenders Announcement Bulletin */}
+            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-4">
+              <h3 className="text-sm font-bold text-slate-900">Live Tenders Notice Board Banner</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Notice Badge
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tendersNoticeBadge}
+                    onChange={(e) => setFormData({ ...formData, tendersNoticeBadge: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Notice Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tendersNoticeTitle}
+                    onChange={(e) => setFormData({ ...formData, tendersNoticeTitle: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Bulletin Text / Broadcast Message
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={formData.tendersNoticeText || ""}
+                    onChange={(e) => setFormData({ ...formData, tendersNoticeText: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
+                    placeholder="Broadcast notices, E-bidding timings, EMD guidelines..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Procurement Tender Contacts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 rounded-xl border border-slate-200 bg-white">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Tenders Helpline Phone
+                </label>
+                <input
+                  type="text"
+                  value={formData.tendersHelplinePhone || ""}
+                  onChange={(e) => setFormData({ ...formData, tendersHelplinePhone: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
+                  placeholder="+91 98765 43210"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Tenders Helpline Email
+                </label>
+                <input
+                  type="text"
+                  value={formData.tendersHelplineEmail || ""}
+                  onChange={(e) => setFormData({ ...formData, tendersHelplineEmail: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
+                  placeholder="tenders@hindustanprojects.in"
+                />
+              </div>
+            </div>
+
+            {/* Site Gate Pass Policy & Terms */}
+            <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-4">
+              <h3 className="text-sm font-bold text-slate-900">Site Gate Pass Policies & Disclaimer</h3>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Gate Pass Request Instructions (Shown on Form)
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.gatePassInstructions || ""}
+                  onChange={(e) => setFormData({ ...formData, gatePassInstructions: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
+                  placeholder="Instructions for vehicle registration and personnel entry..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Gate Pass Safety Terms & Liability Disclaimer (Printed on Pass)
+                </label>
+                <textarea
+                  rows={2}
+                  value={formData.gatePassTerms || ""}
+                  onChange={(e) => setFormData({ ...formData, gatePassTerms: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
+                  placeholder="Legal indemnity and on-site PPE compliance notice..."
                 />
               </div>
             </div>
