@@ -64,7 +64,7 @@ export default function TenderCreateModal({ isOpen, onClose, onCreated }: Tender
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200/80 bg-slate-50/70 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs">
               <Briefcase className="w-4 h-4" />
             </div>
             <div>
@@ -215,7 +215,7 @@ export default function TenderCreateModal({ isOpen, onClose, onCreated }: Tender
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold shadow-md shadow-violet-600/20 transition-all"
+              className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold shadow-xs transition-all"
             >
               {saving ? "Publishing..." : "Publish Tender"}
             </button>

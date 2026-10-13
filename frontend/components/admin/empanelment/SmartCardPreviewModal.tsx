@@ -24,10 +24,10 @@ export default function SmartCardPreviewModal({ vendor, isOpen, onClose }: Smart
   if (!isOpen || !vendor) return null;
 
   const tierLabels: Record<string, { label: string; color: string; bg: string }> = {
-    TIER_A: { label: "TIER A • MEGA CONTRACTOR", color: "text-amber-300", bg: "bg-amber-500/20 border-amber-400/40" },
-    TIER_B: { label: "TIER B • CORE CIVIL & MEP", color: "text-blue-300", bg: "bg-blue-500/20 border-blue-400/40" },
-    TIER_C: { label: "TIER C • SPECIALIZED TRADE", color: "text-emerald-300", bg: "bg-emerald-500/20 border-emerald-400/40" },
-    TIER_D: { label: "TIER D • LOCAL CONTRACTOR", color: "text-slate-300", bg: "bg-slate-500/20 border-slate-400/40" },
+    TIER_A: { label: "CLASS A • MEGA CONTRACTOR", color: "text-amber-300", bg: "bg-amber-500/20 border-amber-400/40" },
+    TIER_B: { label: "CLASS B • CORE CIVIL & MEP", color: "text-slate-200", bg: "bg-slate-400/20 border-slate-300/40" },
+    TIER_C: { label: "CLASS C • SPECIALIZED TRADE", color: "text-amber-200/90", bg: "bg-amber-700/20 border-amber-600/40" },
+    TIER_D: { label: "CLASS D • LOCAL SUPPLIER", color: "text-slate-300", bg: "bg-slate-700/30 border-slate-600/40" },
   };
 
   const currentTier = tierLabels[vendor.tier] || tierLabels.TIER_C;

@@ -150,8 +150,7 @@ export default function PortalSwitcherDropdown({
             {activePortal.shortName}
           </span>
 
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold font-mono bg-slate-100 text-slate-600 border border-slate-200/80">
             Active
           </span>
 
@@ -195,7 +194,6 @@ export default function PortalSwitcherDropdown({
                 <span className="font-bold truncate text-xs text-slate-900 leading-tight">
                   {activePortal.shortName}
                 </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               </div>
               <p className="text-[10px] font-medium text-slate-500 truncate mt-0.5">
                 {activePortal.badge}
@@ -204,7 +202,7 @@ export default function PortalSwitcherDropdown({
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 ml-1">
-            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase font-mono bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase font-mono bg-slate-100 text-slate-600 border border-slate-200/80">
               Active
             </span>
             <ChevronDown

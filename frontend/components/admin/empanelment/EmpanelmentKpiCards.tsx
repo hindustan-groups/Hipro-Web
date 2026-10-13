@@ -57,8 +57,8 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       icon: Inbox,
       href: "/admin/empanelment/applications",
       badge: "All Categories",
-      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
-      iconColor: "text-slate-700 bg-slate-100 border-slate-200",
+      badgeColor: "bg-slate-100/80 text-slate-600 border-slate-200/60",
+      iconColor: "text-amber-700 bg-amber-500/10 border-amber-500/20",
     },
     {
       label: "Pending KYC Review",
@@ -67,8 +67,8 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       icon: Clock,
       href: "/admin/empanelment/applications?status=PENDING",
       badge: pendingKyc > 0 ? "Action Required" : "Cleared",
-      badgeColor: pendingKyc > 0 ? "bg-amber-50 text-amber-800 border-amber-300" : "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconColor: pendingKyc > 0 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200",
+      badgeColor: pendingKyc > 0 ? "bg-amber-500/10 text-amber-800 border-amber-500/20" : "bg-emerald-500/10 text-emerald-800 border-emerald-500/20",
+      iconColor: pendingKyc > 0 ? "text-amber-800 bg-amber-500/15 border-amber-500/30" : "text-amber-700 bg-amber-500/10 border-amber-500/20",
     },
     {
       label: "Empanelled Partners",
@@ -77,8 +77,8 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       icon: CheckCircle2,
       href: "/admin/empanelment/directory",
       badge: "Verified",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
+      badgeColor: "bg-emerald-500/10 text-emerald-800 border-emerald-500/20",
+      iconColor: "text-amber-700 bg-amber-500/10 border-amber-500/20",
     },
     {
       label: "Active Tenders",
@@ -87,8 +87,8 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       icon: Briefcase,
       href: "/admin/empanelment/tenders",
       badge: "Live Packages",
-      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
-      iconColor: "text-blue-700 bg-blue-50 border-blue-200",
+      badgeColor: "bg-slate-100/80 text-slate-600 border-slate-200/60",
+      iconColor: "text-amber-700 bg-amber-500/10 border-amber-500/20",
     },
     {
       label: "Today's Gate Passes",
@@ -97,40 +97,40 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       icon: QrCode,
       href: "/admin/empanelment/gate-passes",
       badge: "Site Security",
-      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
-      iconColor: "text-rose-700 bg-rose-50 border-rose-200",
+      badgeColor: "bg-slate-100/80 text-slate-600 border-slate-200/60",
+      iconColor: "text-amber-700 bg-amber-500/10 border-amber-500/20",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
       {cards.map((c, i) => {
         const Icon = c.icon;
         return (
           <a
             key={i}
             href={c.href}
-            className="group bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all flex flex-col justify-between select-none"
+            className="group bg-white/75 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-3.5 shadow-[0_2px_12px_rgba(15,23,42,0.02)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.06)] hover:border-slate-300/80 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between select-none relative overflow-hidden"
           >
             <div className="flex items-start justify-between gap-2">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight group-hover:text-slate-900 transition-colors">
+              <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wide leading-tight group-hover:text-slate-900 transition-colors">
                 {c.label}
               </span>
-              <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${c.iconColor}`}>
-                <Icon className="w-4 h-4" />
+              <div className={`w-7 h-7 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-2xs ${c.iconColor}`}>
+                <Icon className="w-3.5 h-3.5" />
               </div>
             </div>
 
-            <div className="mt-3">
+            <div className="mt-2.5">
               <div className="flex items-baseline justify-between gap-1.5">
                 <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-sans">
                   {c.value ?? 0}
                 </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${c.badgeColor} shrink-0`}>
+                <span className={`text-[9.5px] font-mono font-bold px-2 py-0.5 rounded-full border ${c.badgeColor} shrink-0`}>
                   {c.badge}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1 truncate">
+              <p className="text-[10.5px] text-slate-500 mt-1 truncate">
                 {c.sub}
               </p>
             </div>

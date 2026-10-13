@@ -283,17 +283,17 @@ export default function WorkOrdersBillingPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsWoModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-white transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-xs font-bold text-white transition-all shadow-xs"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-amber-400" />
             <span>Issue Work Order</span>
           </button>
 
           <button
             onClick={() => setIsInvoiceModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-xs font-bold text-white transition-all shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 text-xs font-bold text-slate-800 transition-all shadow-2xs"
           >
-            <DollarSign className="w-3.5 h-3.5" />
+            <DollarSign className="w-3.5 h-3.5 text-slate-500" />
             <span>Record Invoice</span>
           </button>
         </div>
@@ -301,28 +301,28 @@ export default function WorkOrdersBillingPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="text-[10px] font-bold text-slate-400 uppercase">Total Contract Value</div>
-          <div className="text-2xl font-extrabold text-slate-900 mt-1">
+        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Contract Value</div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
             ₹ {(totalContractVal / 10000000).toFixed(2)} Cr
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">{workOrders.length} Active Packages</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">{workOrders.length} Active Packages</div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-blue-200 shadow-2xs bg-blue-50/20">
-          <div className="text-[10px] font-bold text-blue-700 uppercase">Gross Invoiced</div>
-          <div className="text-2xl font-extrabold text-blue-700 mt-1">
+        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gross Invoiced</div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
             ₹ {(totalInvoicedVal / 100000).toFixed(2)} Lakhs
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">{invoices.length} Milestone Claims</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">{invoices.length} Milestone Claims</div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-emerald-200 shadow-2xs bg-emerald-50/20">
-          <div className="text-[10px] font-bold text-emerald-700 uppercase">RTGS Disbursed</div>
-          <div className="text-2xl font-extrabold text-emerald-700 mt-1">
+        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RTGS Disbursed</div>
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
             ₹ {(totalPaidVal / 100000).toFixed(2)} Lakhs
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Audited & Settled</div>
+          <div className="text-[11px] text-slate-500 mt-0.5">Audited & Settled</div>
         </div>
       </div>
 

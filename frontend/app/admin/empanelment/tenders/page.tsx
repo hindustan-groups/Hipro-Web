@@ -128,7 +128,7 @@ export default function TendersRadarPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/60">
         <div>
           <div className="flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-violet-600" />
+            <Briefcase className="w-5 h-5 text-amber-600" />
             <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight font-display">
               Tenders Radar & L1/L2 Bidding Comparison
             </h1>
@@ -147,9 +147,9 @@ export default function TendersRadarPage() {
           </button>
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-violet-600/20 transition-all"
+            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center gap-1.5 shadow-xs transition-all"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-amber-400" />
             <span>Create New Tender</span>
           </button>
         </div>
@@ -192,14 +192,14 @@ export default function TendersRadarPage() {
                     onClick={() => handleSelectTender(tender)}
                     className={`p-4 rounded-2xl border transition-all cursor-pointer relative group ${
                       isSelected
-                        ? "bg-white border-violet-500 shadow-md ring-2 ring-violet-500/10"
+                        ? "bg-white border-amber-500 shadow-md ring-2 ring-amber-500/10"
                         : "bg-white/80 hover:bg-white border-slate-200/70 hover:shadow-2xs"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <span className="font-mono text-[10px] font-bold text-violet-700 px-1.5 py-0.5 rounded-md bg-violet-50 border border-violet-200/60">
+                          <span className="font-mono text-[10px] font-bold text-amber-900 px-1.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-200/70">
                             {tender.tenderNumber}
                           </span>
                           <span className="text-[10px] text-slate-400 font-medium">
@@ -213,7 +213,7 @@ export default function TendersRadarPage() {
 
                       <button
                         onClick={(e) => handleDeleteTender(tender.id, e)}
-                        className="text-slate-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 p-1"
+                        className="text-slate-300 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100 p-1"
                         title="Delete Tender"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -247,10 +247,10 @@ export default function TendersRadarPage() {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-4 border-b border-slate-200/70">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-mono font-bold text-xs text-violet-700">
+                    <span className="font-mono font-bold text-xs text-amber-800">
                       {selectedTender.tenderNumber}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[10px] uppercase">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-800 border border-emerald-500/20 font-bold text-[10px] uppercase">
                       {selectedTender.status}
                     </span>
                   </div>
@@ -265,9 +265,9 @@ export default function TendersRadarPage() {
                   </p>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-violet-50/80 border border-violet-100 text-right shrink-0">
-                  <p className="text-[10px] font-bold uppercase text-violet-600">Total Quotations</p>
-                  <p className="text-xl font-black text-violet-900 font-display">
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-right shrink-0">
+                  <p className="text-[10px] font-bold uppercase text-amber-800">Total Quotations</p>
+                  <p className="text-xl font-black text-amber-950 font-display">
                     {bids.length}
                   </p>
                 </div>

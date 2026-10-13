@@ -353,30 +353,44 @@ export default function AdminSidebar({ user }: { user: any }) {
       >
         {pathname?.startsWith("/admin/empanelment") ? (
           <>
-            {/* 1. Empanelment Admin Header */}
-            <div className="h-16 px-4 border-b border-amber-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
-              <Link href="/admin/empanelment" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs">
-                  <ShieldCheck className="w-4 h-4" />
+            {/* 1. macOS Window Controls + Sleek Frosted Header */}
+            <div className="px-3.5 pt-3 pb-2.5 border-b border-amber-200/40 bg-white/40 backdrop-blur-xl shrink-0">
+              {/* macOS Traffic Lights */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] border border-[#e0443e] inline-block shadow-2xs" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] border border-[#dea123] inline-block shadow-2xs" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f] border border-[#1aab29] inline-block shadow-2xs" />
                 </div>
-                <div>
-                  <p className="text-slate-900 font-bold text-xs leading-tight">Empanelment</p>
-                  <span className="text-[9px] bg-amber-50 text-amber-700 font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full border border-amber-200/60">
-                    Partner Hub
+                <span className="text-[9px] font-mono font-bold tracking-wider text-amber-700/70 uppercase">
+                  Empanelment Hub
+                </span>
+              </div>
+
+              {/* Compact Brand Identity */}
+              <Link href="/admin/empanelment" className="flex items-center gap-2 group">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <p className="text-slate-900 font-bold text-xs tracking-tight truncate">Empanelment</p>
+                  <span className="text-[8.5px] bg-amber-500/10 text-amber-800 font-semibold uppercase tracking-wider px-1.5 py-0.2 rounded-full border border-amber-500/20">
+                    Partner
                   </span>
                 </div>
               </Link>
             </div>
 
             {/* 2. Portal Switcher Dropdown */}
-            <div className="px-3 py-2 bg-amber-50/40 border-b border-amber-200/50">
+            <div className="px-2.5 py-2 bg-amber-50/30 border-b border-amber-200/40">
               <PortalSwitcherDropdown variant="sidebar" />
             </div>
 
-            <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+            {/* 3. macOS Sleek Navigation List */}
+            <nav className="flex-1 px-2.5 py-2.5 space-y-3.5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200/80">
               {EMPANELMENT_NAV_SECTIONS.map((section) => (
-                <div key={section.title} className="space-y-1">
-                  <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <div key={section.title} className="space-y-0.5">
+                  <p className="px-2 text-[9.5px] font-bold uppercase tracking-wider text-slate-400/90 pb-1 select-none">
                     {section.title}
                   </p>
                   <div className="space-y-0.5">
@@ -388,26 +402,30 @@ export default function AdminSidebar({ user }: { user: any }) {
                           key={href}
                           href={href}
                           scroll={false}
-                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] ${
+                          className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11.5px] transition-all duration-150 ${
                             active
-                              ? "bg-white text-slate-900 font-bold shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-200/80 ring-1 ring-black/5"
-                              : "text-slate-600 hover:text-slate-900 hover:bg-white/60 hover:shadow-2xs font-medium"
+                              ? "bg-white text-slate-900 font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.03)] border border-slate-200/80"
+                              : "text-slate-600 hover:text-slate-900 hover:bg-white/60 font-medium"
                           }`}
                         >
-                          <div className="flex items-center gap-2.5">
+                          {/* macOS Active Left Indicator Bar */}
+                          {active && (
+                            <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-amber-500" />
+                          )}
+                          <div className="flex items-center gap-2 min-w-0 pl-1">
                             <Icon
-                              className={`w-4 h-4 shrink-0 transition-colors ${
-                                active ? "text-amber-600" : "text-slate-400"
+                              className={`w-3.5 h-3.5 shrink-0 transition-colors ${
+                                active ? "text-amber-600" : "text-slate-400 group-hover:text-slate-600"
                               }`}
                             />
                             <span className="truncate">{label}</span>
                           </div>
                           {badge && (
                             <span
-                              className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                              className={`text-[9px] font-mono font-medium px-1.5 py-0.2 rounded-md ${
                                 active
                                   ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                                  : "bg-slate-100 text-slate-500 border border-slate-200/50"
+                                  : "bg-slate-100/80 text-slate-500 border border-slate-200/40"
                               }`}
                             >
                               {badge}
@@ -421,19 +439,19 @@ export default function AdminSidebar({ user }: { user: any }) {
               ))}
             </nav>
 
-            {/* 4. Footer */}
-            <div className="p-3 border-t border-slate-200/50 bg-white/30 backdrop-blur-md shrink-0 space-y-2">
+            {/* 4. macOS Refined Footer */}
+            <div className="p-2.5 border-t border-slate-200/50 bg-white/40 backdrop-blur-md shrink-0 space-y-1">
               <a
                 href="https://empanelment.hindustanprojects.in"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-amber-900 bg-amber-50/80 hover:bg-amber-100 rounded-xl transition-all border border-amber-200/60 shadow-2xs group"
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11.5px] font-medium text-amber-900 bg-amber-500/10 hover:bg-amber-500/15 rounded-lg transition-all border border-amber-500/20 shadow-2xs group"
               >
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
                   <span>Public Portal</span>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
+                <ExternalLink className="w-3 h-3 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
               </a>
               <button
                 onClick={async () => {
@@ -443,7 +461,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                     window.location.href = "/admin-login";
                   }
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-700 hover:bg-red-500/10 rounded-xl transition-all text-left min-h-[38px]"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 text-[11.5px] font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50/60 rounded-lg transition-all text-left"
               >
                 <LogOut className="w-3.5 h-3.5 text-slate-400" />
                 <span>Logout</span>

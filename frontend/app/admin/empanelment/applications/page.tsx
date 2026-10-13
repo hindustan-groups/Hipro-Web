@@ -292,17 +292,24 @@ export default function ApplicationsPipelinePage() {
 
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 ${
                           app.status === "APPROVED"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                            ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
                             : app.status === "REJECTED"
-                            ? "bg-red-50 text-red-700 border border-red-200/60"
-                            : app.status === "DOCS_REQUESTED"
-                            ? "bg-purple-50 text-purple-700 border border-purple-200/60"
-                            : "bg-amber-50 text-amber-800 border border-amber-200/60"
+                            ? "bg-rose-500/10 text-rose-800 border border-rose-500/20"
+                            : "bg-amber-500/10 text-amber-800 border border-amber-500/20"
                         }`}
                       >
-                        {app.status}
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            app.status === "APPROVED"
+                              ? "bg-emerald-500"
+                              : app.status === "REJECTED"
+                              ? "bg-rose-500"
+                              : "bg-amber-500"
+                          }`}
+                        />
+                        {app.status.replace(/_/g, " ")}
                       </span>
                     </td>
 
