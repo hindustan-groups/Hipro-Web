@@ -252,10 +252,10 @@ export default function EmpanelmentRegistrationWizard() {
         </div>
 
         {/* Next Actions */}
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-4 w-full">
           <Link
             href={`/empanelment/track?id=${successData.trackingId}`}
-            className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition-all flex items-center gap-2"
+            className="px-6 py-3.5 rounded-2xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs shadow-md shadow-red-600/20 transition-all flex items-center justify-center gap-2"
           >
             <span>Track Application & Download ID Card</span>
             <ArrowRight className="w-4 h-4" />
@@ -263,7 +263,7 @@ export default function EmpanelmentRegistrationWizard() {
 
           <Link
             href="/empanelment"
-            className="px-6 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition-all"
+            className="px-6 py-3.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs transition-all text-center"
           >
             Back to Portal Home
           </Link>
@@ -276,7 +276,7 @@ export default function EmpanelmentRegistrationWizard() {
     <div className="max-w-3xl mx-auto px-4 py-10 md:py-16 space-y-8">
       {/* Header */}
       <div className="text-center space-y-2">
-        <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+        <span className="text-xs font-mono font-bold uppercase tracking-widest text-red-700 bg-red-50 px-3 py-1 rounded-full border border-red-200">
           5-STEP CONTRACTOR ONBOARDING WIZARD
         </span>
         <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight font-display">
@@ -287,39 +287,67 @@ export default function EmpanelmentRegistrationWizard() {
         </p>
       </div>
 
-      {/* Stepper Bar */}
-      <div className="grid grid-cols-5 gap-2 text-center text-xs">
-        {[
-          { id: 1, label: "Profile", icon: Building2 },
-          { id: 2, label: "Contact", icon: Phone },
-          { id: 3, label: "Banking", icon: CreditCard },
-          { id: 4, label: "KYC Docs", icon: FileText },
-          { id: 5, label: "Review", icon: ShieldCheck },
-        ].map((s) => {
-          const Icon = s.icon;
-          const active = step === s.id;
-          const done = step > s.id;
-          return (
+      {/* Stepper Bar (Responsive: Progress bar on mobile, 5 pills on tablet/desktop) */}
+      <div className="space-y-2">
+        {/* Compact Mobile Banner with Percentage Bar */}
+        <div className="sm:hidden bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold">
+            <span className="text-slate-900 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-[#dc2626] text-white text-[11px] font-black flex items-center justify-center shrink-0">
+                {step}
+              </span>
+              <span className="truncate">
+                {step === 1 && "Step 1 of 5: Enterprise Profile"}
+                {step === 2 && "Step 2 of 5: Contact & Office Address"}
+                {step === 3 && "Step 3 of 5: Banking & Capacity"}
+                {step === 4 && "Step 4 of 5: KYC Documents"}
+                {step === 5 && "Step 5 of 5: Review & Declaration"}
+              </span>
+            </span>
+            <span className="font-mono text-slate-500 text-[11px] shrink-0">{step * 20}%</span>
+          </div>
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
             <div
-              key={s.id}
-              onClick={() => done && setStep(s.id)}
-              className={`p-2 rounded-xl border flex flex-col items-center gap-1 transition-all ${
-                active
-                  ? "bg-amber-500 text-white border-amber-500 shadow-sm font-bold"
-                  : done
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200 cursor-pointer font-semibold"
-                  : "bg-white text-slate-400 border-slate-200"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" />
-              <span className="text-[10px] hidden sm:inline">{s.label}</span>
-            </div>
-          );
-        })}
+              className="bg-[#dc2626] h-full rounded-full transition-all duration-300"
+              style={{ width: `${step * 20}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Desktop & Tablet 5-Step Grid */}
+        <div className="hidden sm:grid grid-cols-5 gap-2 text-center text-xs">
+          {[
+            { id: 1, label: "Profile", icon: Building2 },
+            { id: 2, label: "Contact", icon: Phone },
+            { id: 3, label: "Banking", icon: CreditCard },
+            { id: 4, label: "KYC Docs", icon: FileText },
+            { id: 5, label: "Review", icon: ShieldCheck },
+          ].map((s) => {
+            const Icon = s.icon;
+            const active = step === s.id;
+            const done = step > s.id;
+            return (
+              <div
+                key={s.id}
+                onClick={() => done && setStep(s.id)}
+                className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all ${
+                  active
+                    ? "bg-[#dc2626] text-white border-[#dc2626] shadow-sm font-bold"
+                    : done
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-200 cursor-pointer font-semibold"
+                    : "bg-white text-slate-400 border-slate-200"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="text-[11px]">{s.label}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm space-y-6 text-xs">
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 md:p-8 shadow-sm space-y-6 text-xs">
         {error && (
           <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -336,31 +364,31 @@ export default function EmpanelmentRegistrationWizard() {
             </div>
 
             {/* GSTIN 1-Click Verification */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/5 to-slate-50 border border-amber-500/20 space-y-2">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
               <label className="block font-bold text-slate-800 uppercase tracking-wider text-[10px]">
                 15-Digit GSTIN (Optional if unregistered local vendor)
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   maxLength={15}
                   value={formData.gstin}
                   onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
                   placeholder="e.g. 08AAAAA0000A1Z5"
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 font-mono uppercase font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 font-mono uppercase font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm sm:text-xs"
                 />
                 <button
                   type="button"
                   onClick={handleVerifyGst}
                   disabled={gstLoading}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold shrink-0 transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold shrink-0 transition-colors w-full sm:w-auto"
                 >
                   {gstLoading ? "Decoding..." : "Verify GST"}
                 </button>
               </div>
 
               {gstFeedback && (
-                <p className={`text-[11px] font-semibold ${gstFeedback.startsWith("✓") ? "text-emerald-700" : "text-amber-700"}`}>
+                <p className={`text-[11px] font-semibold ${gstFeedback.startsWith("✓") ? "text-emerald-700" : "text-red-700"}`}>
                   {gstFeedback}
                 </p>
               )}
@@ -750,12 +778,12 @@ export default function EmpanelmentRegistrationWizard() {
             </div>
 
             {/* Declaration Checkbox */}
-            <label className="flex items-start gap-2.5 p-3 rounded-2xl bg-amber-50/60 border border-amber-200 cursor-pointer">
+            <label className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.termsAgreed}
                 onChange={(e) => setFormData({ ...formData, termsAgreed: e.target.checked })}
-                className="w-4 h-4 mt-0.5 rounded text-amber-600 border-slate-300 focus:ring-amber-500"
+                className="w-4 h-4 mt-0.5 rounded text-[#dc2626] border-slate-300 focus:ring-red-500"
               />
               <span className="text-[11px] text-slate-700 leading-relaxed font-medium">
                 I hereby declare that all information, GST credentials, and banking proofs provided are true and accurate. I agree to abide by the safety, quality, and anti-corruption policies of Hindustan Projects.
@@ -766,12 +794,12 @@ export default function EmpanelmentRegistrationWizard() {
         )}
 
         {/* Footer Navigation Buttons */}
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
           {step > 1 ? (
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2.5 min-h-[44px] rounded-xl border border-slate-200 text-slate-700 hover:text-slate-900 font-bold flex items-center gap-1.5 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -795,7 +823,7 @@ export default function EmpanelmentRegistrationWizard() {
                 setError("");
                 setStep(step + 1);
               }}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all"
+              className="px-6 py-2.5 min-h-[44px] rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold flex items-center gap-1.5 shadow-md shadow-red-600/20 transition-all ml-auto"
             >
               <span>Next Step</span>
               <ArrowRight className="w-4 h-4" />
@@ -805,7 +833,7 @@ export default function EmpanelmentRegistrationWizard() {
               type="button"
               disabled={submitting}
               onClick={handleSubmit}
-              className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all"
+              className="px-6 py-2.5 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all ml-auto"
             >
               {submitting ? "Submitting Application..." : "Submit Registration (जमा करें)"}
             </button>

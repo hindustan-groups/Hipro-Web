@@ -366,8 +366,10 @@ export default function EmpanelmentPortalHomePage() {
             fill
             priority
             unoptimized
-            className="object-cover object-[80%_bottom] lg:object-[82%_bottom] opacity-25 lg:opacity-100 transition-opacity"
+            className="object-cover object-[80%_bottom] lg:object-[82%_bottom] opacity-15 sm:opacity-25 lg:opacity-100 transition-opacity"
           />
+          {/* Mobile soft white veil so background graphics never collide with text */}
+          <div className="lg:hidden absolute inset-0 bg-white/80 z-[1] pointer-events-none" />
           {/* Smooth horizontal gradient fade on left side close to text */}
           <div className="hidden lg:block absolute inset-y-0 left-0 w-24 sm:w-36 lg:w-44 bg-gradient-to-r from-white via-white/50 to-transparent z-10 pointer-events-none" />
           {/* Smooth bottom gradient fade into floating stats card */}
@@ -401,33 +403,33 @@ export default function EmpanelmentPortalHomePage() {
                 "Join our local vendor network for construction materials, services and project opportunities across Rajasthan and beyond."}
             </p>
 
-            {/* Dual Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-1">
+            {/* Dual Action Buttons (Mobile-first stacked on small screens, row on desktop) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1 w-full sm:w-auto">
               <Link
                 href="/empanelment/apply"
-                className="inline-flex items-center gap-2.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs sm:text-sm font-bold px-6 py-3.5 rounded-lg transition-all shadow-md shadow-red-600/20 group"
+                className="inline-flex items-center justify-center gap-2.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl transition-all shadow-md shadow-red-600/20 group w-full sm:w-auto text-center"
               >
-                <User className="w-4 h-4 text-white" />
+                <User className="w-4 h-4 text-white shrink-0" />
                 <span>{content.heroRegisterBtnText || "Register as a Vendor"}</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform shrink-0" />
               </Link>
 
               <Link
                 href="/empanelment/track"
-                className="inline-flex items-center gap-2.5 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-lg border border-slate-300 transition-all shadow-xs group"
+                className="inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl border border-slate-300 transition-all shadow-2xs group w-full sm:w-auto text-center"
               >
-                <User className="w-4 h-4 text-slate-700" />
+                <User className="w-4 h-4 text-slate-700 shrink-0" />
                 <span>{content.heroLoginBtnText || "Vendor Login"}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform shrink-0" />
               </Link>
             </div>
 
-            {/* 4 Feature Pills Below CTAs (Pure red outline icons, no background boxes, 2 lines) */}
-            <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5 border-t border-slate-100">
+            {/* 4 Feature Pills Below CTAs (Pure red outline icons, responsive 2x2 on mobile) */}
+            <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 border-t border-slate-100">
               {heroPills.map((pill) => (
-                <div key={pill.id} className="flex items-start gap-2.5">
+                <div key={pill.id} className="flex items-start gap-2 sm:gap-2.5">
                   <div className="text-[#dc2626] shrink-0 mt-0.5">
-                    {renderIcon(pill.iconName, "w-6 h-6 stroke-[1.8]")}
+                    {renderIcon(pill.iconName, "w-5 h-5 sm:w-6 sm:h-6 stroke-[1.8]")}
                   </div>
                   <div className="text-[11px] sm:text-[12px] font-bold text-slate-800 leading-[1.25] whitespace-pre-line">
                     {pill.title}
@@ -440,24 +442,24 @@ export default function EmpanelmentPortalHomePage() {
       </section>
 
       {/* ================================================================ */}
-      {/* 2. STATS COUNTER BAR (Floats over hero bottom edge) */}
+      {/* 2. STATS COUNTER BAR (Floats over hero bottom edge, responsive grid) */}
       {/* ================================================================ */}
-      <section className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 sm:-mt-12 lg:-mt-14 w-full">
-        <div className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/90 shadow-xl shadow-slate-200/50 grid grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+      <section className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 lg:-mt-14 w-full">
+        <div className="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/90 shadow-xl shadow-slate-200/50 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {stats.map((stat, idx) => (
             <div
               key={stat.id}
-              className={`flex items-center gap-4 ${idx > 0 ? "sm:pl-6" : ""} ${idx > 1 ? "pt-4 sm:pt-0" : ""}`}
+              className={`flex items-center gap-3 sm:gap-4 ${idx % 2 === 1 ? "pl-2 sm:pl-0" : ""} ${idx > 0 ? "lg:border-l lg:border-slate-100 lg:pl-6" : ""}`}
             >
-              {/* Pure red outline icon, no pink box */}
+              {/* Pure red outline icon */}
               <div className="text-[#dc2626] shrink-0">
-                {renderIcon(stat.iconName, "w-9 h-9 stroke-[1.8]")}
+                {renderIcon(stat.iconName, "w-7 h-7 sm:w-9 sm:h-9 stroke-[1.8]")}
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+                <div className="text-xl sm:text-3xl font-black text-slate-950 tracking-tight">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-[13px] font-semibold text-slate-500 mt-0.5">
+                <div className="text-[11px] sm:text-[13px] font-semibold text-slate-500 mt-0.5 leading-tight">
                   {stat.label}
                 </div>
               </div>
@@ -869,14 +871,14 @@ export default function EmpanelmentPortalHomePage() {
             </div>
 
             {/* Right White Pill Button */}
-            <div className="shrink-0">
+            <div className="shrink-0 w-full md:w-auto">
               <Link
                 href="/empanelment/apply"
-                className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-950 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-full transition-all shadow-lg group"
+                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-950 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-full transition-all shadow-lg group w-full md:w-auto text-center"
               >
-                <User className="w-4 h-4 text-slate-900" />
+                <User className="w-4 h-4 text-slate-900 shrink-0" />
                 <span>{content.ctaBtnText || "Register Now"}</span>
-                <ArrowRight className="w-4 h-4 text-[#dc2626] group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-[#dc2626] group-hover:translate-x-1 transition-transform shrink-0" />
               </Link>
             </div>
           </div>

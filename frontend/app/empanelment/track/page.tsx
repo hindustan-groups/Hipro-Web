@@ -102,7 +102,7 @@ function TrackingContent() {
     <div className="max-w-3xl mx-auto px-4 py-10 md:py-16 space-y-8 text-xs">
       {/* Header */}
       <div className="text-center space-y-2">
-        <span className="text-xs font-mono font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+        <span className="text-xs font-mono font-bold uppercase tracking-widest text-red-700 bg-red-50 px-3 py-1 rounded-full border border-red-200">
           REAL-TIME CONTRACTOR STATUS
         </span>
         <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight font-display">
@@ -114,11 +114,11 @@ function TrackingContent() {
       </div>
 
       {/* Search Box */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm space-y-3">
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-sm space-y-3">
         <label className="block text-[10px] uppercase font-bold text-slate-500">
           Enter Tracking ID (e.g. HP-EMP-849201) or Registered Phone Number
         </label>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="flex-1 relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -127,13 +127,13 @@ function TrackingContent() {
               value={trackingQuery}
               onChange={(e) => setTrackingQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-sm sm:text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
           </div>
           <button
             onClick={() => handleTrack()}
             disabled={loading}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shrink-0 transition-colors shadow-xs"
+            className="px-6 py-2.5 min-h-[44px] rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold shrink-0 transition-colors shadow-xs w-full sm:w-auto"
           >
             {loading ? "Checking..." : "Track Status"}
           </button>
@@ -149,12 +149,12 @@ function TrackingContent() {
 
       {/* Result Card */}
       {result && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm space-y-6 animate-in fade-in duration-300">
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 md:p-8 shadow-sm space-y-6 animate-in fade-in duration-300">
           {/* Top Bar: Company Name & Status */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                <span className="font-mono text-xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">
                   {result.trackingId}
                 </span>
                 <span className="text-[10px] font-mono text-slate-400">
@@ -195,7 +195,6 @@ function TrackingContent() {
               {stages.map((st, i) => {
                 const currentIdx = getStageIndex(result.status);
                 const isPassed = i <= currentIdx;
-                const isCurrent = i === currentIdx;
 
                 return (
                   <div
@@ -228,7 +227,7 @@ function TrackingContent() {
 
           {/* When APPROVED: Show PVC Smart Card Action & Gate Pass Launch */}
           {result.status === "APPROVED" && (
-            <div className="p-6 rounded-3xl bg-gradient-to-br from-slate-900 to-amber-950 text-white space-y-4 shadow-xl">
+            <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 text-white space-y-4 shadow-xl">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-amber-400" />
                 <h3 className="font-bold text-sm tracking-wide text-amber-300">
@@ -239,10 +238,10 @@ function TrackingContent() {
                 Congratulations! Your empanelment dossier has been verified and approved by Hindustan Projects. You can now generate your official PVC Smart Card and daily 24-hr site gate passes.
               </p>
 
-              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1 w-full">
                 <button
                   onClick={() => setIsSmartCardOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+                  className="px-4 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>View & Print PVC Smart Card</span>
@@ -250,7 +249,7 @@ function TrackingContent() {
 
                 <Link
                   href={`/empanelment/gate-pass?trackingId=${result.trackingId}`}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <QrCode className="w-3.5 h-3.5 text-amber-300" />
                   <span>Generate Daily Site Gate Pass</span>
@@ -258,7 +257,7 @@ function TrackingContent() {
 
                 <Link
                   href="/empanelment/tenders"
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <span>Participate in Active Tenders ↗</span>
                 </Link>

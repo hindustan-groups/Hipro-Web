@@ -171,7 +171,7 @@ function GatePassContent() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
                 Total Persons / Labour Count *
@@ -183,7 +183,7 @@ function GatePassContent() {
                 max="100"
                 value={personsCount}
                 onChange={(e) => setPersonsCount(parseInt(e.target.value, 10) || 1)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm sm:text-xs"
               />
             </div>
 
@@ -196,7 +196,7 @@ function GatePassContent() {
                 value={vehicleNumber}
                 onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
                 placeholder="e.g. RJ-14-XX-1234"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 uppercase focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm sm:text-xs"
               />
             </div>
           </div>
@@ -204,7 +204,7 @@ function GatePassContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-md shadow-rose-600/20 flex items-center justify-center gap-1.5 transition-all text-xs"
+            className="w-full py-3.5 min-h-[44px] rounded-2xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold shadow-md shadow-red-600/20 flex items-center justify-center gap-1.5 transition-all text-xs"
           >
             <QrCode className="w-4 h-4" />
             <span>{loading ? "Generating Security Pass..." : "Generate Today's Gate Pass (पास बनाएं)"}</span>
@@ -213,11 +213,11 @@ function GatePassContent() {
       ) : (
         /* Generated Gate Pass Badge Card */
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl border-2 border-rose-500/40 p-6 md:p-8 shadow-2xl space-y-6 text-center select-none">
+          <div className="bg-white rounded-3xl border-2 border-red-500/40 p-5 sm:p-7 md:p-8 shadow-2xl space-y-6 text-center select-none">
             {/* Header Ribbon */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="text-left">
-                <p className="text-[10px] font-mono font-black text-rose-600 uppercase tracking-widest">
+                <p className="text-[10px] font-mono font-black text-[#dc2626] uppercase tracking-widest">
                   HINDUSTAN PROJECTS SECURITY
                 </p>
                 <p className="text-xs font-bold text-slate-900 mt-0.5">24-HOUR SITE ACCESS PASS</p>
@@ -242,7 +242,7 @@ function GatePassContent() {
             </div>
 
             {/* Pass Metadata Grid */}
-            <div className="grid grid-cols-2 gap-3 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
               <div>
                 <p className="text-[9px] uppercase font-bold text-slate-400">Site Location</p>
                 <p className="font-semibold text-slate-900 line-clamp-1">{generatedPass.siteLocation}</p>
@@ -266,10 +266,10 @@ function GatePassContent() {
             </p>
           </div>
 
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full">
             <button
               onClick={() => window.print()}
-              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center gap-1.5 transition-colors shadow-xs"
+              className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print / Save Pass</span>
@@ -277,7 +277,7 @@ function GatePassContent() {
 
             <button
               onClick={() => setGeneratedPass(null)}
-              className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold transition-colors"
+              className="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold transition-colors text-center"
             >
               Generate Another Pass
             </button>
