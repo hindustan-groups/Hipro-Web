@@ -2,16 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Inbox,
-  Users,
-  Briefcase,
   ShieldCheck,
-  FileText,
-  Mail,
-  LayoutTemplate,
   ExternalLink,
   QrCode,
   Sparkles,
@@ -19,78 +11,11 @@ import {
   Send,
 } from "lucide-react";
 
-const NAV_TABS = [
-  {
-    href: "/admin/empanelment",
-    label: "Overview",
-    icon: LayoutDashboard,
-    exact: true,
-    badge: "KPIs",
-  },
-  {
-    href: "/admin/empanelment/applications",
-    label: "Applications Pipeline",
-    icon: Inbox,
-    exact: false,
-    badge: "KYC",
-  },
-  {
-    href: "/admin/empanelment/directory",
-    label: "Verified Directory",
-    icon: Users,
-    exact: false,
-    badge: "Partners",
-  },
-  {
-    href: "/admin/empanelment/tenders",
-    label: "Tenders & Bidding",
-    icon: Briefcase,
-    exact: false,
-    badge: "Live",
-  },
-  {
-    href: "/admin/empanelment/gate-passes",
-    label: "Site Gate Passes",
-    icon: ShieldCheck,
-    exact: false,
-    badge: "24-Hr",
-  },
-  {
-    href: "/admin/empanelment/work-orders",
-    label: "Work Orders & Billing",
-    icon: FileText,
-    exact: false,
-    badge: "Payouts",
-  },
-  {
-    href: "/admin/empanelment/tickets",
-    label: "Helpdesk Tickets",
-    icon: Mail,
-    exact: false,
-  },
-  {
-    href: "/admin/empanelment/content",
-    label: "Portal CMS Studio",
-    icon: LayoutTemplate,
-    exact: false,
-    badge: "Live Preview",
-  },
-];
-
 export default function EmpanelmentAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-
-  const isTabActive = (tab: (typeof NAV_TABS)[0]) => {
-    if (tab.exact) {
-      return pathname === tab.href;
-    }
-    return pathname.startsWith(tab.href);
-  };
-
   return (
     <div className="space-y-5 max-w-7xl mx-auto pb-12">
       {/* Top Enterprise Command Bar */}
@@ -157,46 +82,6 @@ export default function EmpanelmentAdminLayout({
             <Sparkles className="w-3.5 h-3.5" />
             <span>Portal Studio</span>
           </Link>
-        </div>
-      </div>
-
-      {/* Modern Sticky Horizontal Navigation Tabs Bar */}
-      <div className="sticky top-0 z-30 bg-slate-50/90 backdrop-blur-md pt-1 pb-2">
-        <div className="flex items-center gap-1.5 overflow-x-auto p-1.5 bg-white/90 border border-slate-200/80 rounded-2xl shadow-xs scrollbar-none">
-          {NAV_TABS.map((tab) => {
-            const active = isTabActive(tab);
-            const Icon = tab.icon;
-
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all select-none ${
-                  active
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-100/80"
-                }`}
-              >
-                <Icon
-                  className={`w-3.5 h-3.5 transition-colors ${
-                    active ? "text-rose-400" : "text-slate-400"
-                  }`}
-                />
-                <span>{tab.label}</span>
-                {tab.badge && (
-                  <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full uppercase tracking-wider font-extrabold ${
-                      active
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-100 text-slate-600 border border-slate-200"
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
         </div>
       </div>
 
