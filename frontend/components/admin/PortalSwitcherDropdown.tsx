@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, ChevronDown, Check, ExternalLink } from "lucide-react";
@@ -87,19 +87,18 @@ export default function PortalSwitcherDropdown({
 }: PortalSwitcherDropdownProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const activePortal = getActivePortal(pathname);
 
+  // Close when pressing ESC
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Close on route change
   useEffect(() => {
@@ -107,13 +106,21 @@ export default function PortalSwitcherDropdown({
   }, [pathname]);
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${className}`}>
+      {/* Transparent backdrop to cleanly dismiss on outside clicks without DOM node race conditions */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* ─── VARIANT 1: HEADER TRIGGER ───────────────────────────── */}
       {variant === "header" && (
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-2xs focus:outline-none ${
+          className={`relative z-50 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-2xs focus:outline-none cursor-pointer ${
             isOpen
               ? "bg-slate-100 text-slate-900 border-slate-300"
               : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200/90"
@@ -161,7 +168,7 @@ export default function PortalSwitcherDropdown({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-full flex items-center justify-between p-2 rounded-lg border text-xs font-semibold transition-all shadow-2xs focus:outline-none ${
+          className={`relative z-50 w-full flex items-center justify-between p-2 rounded-lg border text-xs font-semibold transition-all shadow-2xs focus:outline-none cursor-pointer ${
             isOpen
               ? "bg-slate-100 text-slate-900 border-slate-300"
               : "bg-white hover:bg-slate-50 text-slate-900 border-slate-200/90"
@@ -212,8 +219,10 @@ export default function PortalSwitcherDropdown({
       {/* ─── FLOATING DROPDOWN MENU ───────────────────────────────── */}
       {isOpen && (
         <div
-          className={`absolute mt-2 rounded-xl bg-white border border-slate-200/90 shadow-2xl p-2.5 z-50 animate-in fade-in duration-100 ${
-            variant === "header" ? "right-0 w-96 sm:w-[410px]" : "left-0 w-80 sm:w-96"
+          className={`absolute top-full mt-2 rounded-xl bg-white border border-slate-200/90 shadow-2xl p-2.5 z-50 animate-in fade-in duration-100 ${
+            variant === "header"
+              ? "right-0 w-80 sm:w-96 max-w-[calc(100vw-2rem)]"
+              : "left-0 w-72 sm:w-80 max-w-[calc(100vw-2rem)]"
           }`}
         >
           {/* Menu Header */}

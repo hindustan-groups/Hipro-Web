@@ -148,12 +148,6 @@ export default function AdminHeader({ user }: { user: any }) {
           </>
         ) : pathname?.startsWith("/admin/hbs") ? (
           <>
-            {/* Apple Status Pill */}
-            <div className="hidden xl:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs font-semibold backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>HiBUILD CMS · Online</span>
-            </div>
-
             {/* Apple Spotlight Capsule Search */}
             <div className="hidden md:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-60 focus-within:w-72 focus-within:bg-white focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400 transition-all duration-200 backdrop-blur-md">
               <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
