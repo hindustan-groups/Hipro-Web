@@ -38,10 +38,14 @@ import {
   HardHat,
   Sliders,
   SlidersHorizontal,
+  ChevronLeft,
   ChevronRight,
   Check,
   Share2,
   Copy,
+  Briefcase,
+  QrCode,
+  UploadCloud,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -104,6 +108,175 @@ const IMAGE_LIBRARY_PRESETS = [
   },
 ];
 
+interface StudioImagePickerProps {
+  label: string;
+  sublabel?: string;
+  value: string;
+  onChange: (url: string) => void;
+  presets?: { label: string; url: string; category?: string }[];
+}
+
+function StudioImagePicker({
+  label,
+  sublabel,
+  value,
+  onChange,
+  presets = IMAGE_LIBRARY_PRESETS,
+}: StudioImagePickerProps) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("File exceeds 5MB size limit. Please upload a smaller image.");
+      return;
+    }
+
+    setUploading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        onChange(data.url);
+      } else {
+        setError(data.error || "Upload failed. Please enter URL manually.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Network error while uploading image.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-[10px] uppercase font-bold text-slate-700 flex items-center gap-1.5">
+          <ImageIcon className="w-3.5 h-3.5 text-amber-500" />
+          <span>{label}</span>
+        </label>
+        {sublabel && <span className="text-[10px] text-slate-400">{sublabel}</span>}
+      </div>
+
+      {error && (
+        <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError("")}
+            className="text-rose-500 hover:text-rose-700 font-bold px-1"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Image Preview & Upload Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Preview Thumbnail */}
+        {value ? (
+          <div className="relative w-28 h-20 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 group shadow-2xs">
+            <img src={value} alt="Preview" className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute top-1 right-1 p-1 bg-black/70 hover:bg-black text-white rounded-md text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"
+              title="Remove Image"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div className="w-28 h-20 rounded-xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center text-slate-400 shrink-0">
+            <ImageIcon className="w-5 h-5 mb-1 opacity-50" />
+            <span className="text-[9px] font-bold">No Image</span>
+          </div>
+        )}
+
+        {/* Input & Upload Button */}
+        <div className="flex-1 w-full space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={value || ""}
+              onChange={(e) => onChange(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20"
+              placeholder="/images/... or https://..."
+            />
+            {/* Hidden native file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+            >
+              {uploading ? (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Upload Image</span>
+                </>
+              )}
+            </button>
+          </div>
+          <p className="text-[9.5px] text-slate-400">
+            Upload any image directly from device (JPG, PNG, WebP up to 5MB) or pick from certified presets below.
+          </p>
+        </div>
+      </div>
+
+      {/* 1-Click Library Presets */}
+      {presets && presets.length > 0 && (
+        <div className="space-y-1.5 pt-1 border-t border-slate-200/60">
+          <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider">
+            1-Click Certified Presets:
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {presets.map((p) => (
+              <button
+                key={p.url}
+                type="button"
+                onClick={() => onChange(p.url)}
+                className={`text-[10px] px-2.5 py-1 rounded-lg border transition-all ${
+                  value === p.url
+                    ? "bg-amber-500 text-white font-bold border-amber-600 shadow-2xs"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EmpanelmentContentCmsPage() {
   // Navigation & Page Selector
   const [selectedGroup, setSelectedGroup] = useState<
@@ -153,6 +326,22 @@ export default function EmpanelmentContentCmsPage() {
     showTendersNotice: true,
     showAnnouncementTicker: true,
   });
+
+  // Social Links state parsed from formData.socialLinks
+  const socialLinksParsed = useMemo(() => {
+    return parseJsonField(formData.socialLinks, {
+      linkedin: "https://linkedin.com/company/hindustanprojects",
+      facebook: "https://facebook.com/hindustanprojects",
+      instagram: "https://instagram.com/hindustan_projects",
+      youtube: "https://youtube.com/@hindustanprojects",
+    });
+  }, [formData.socialLinks]);
+
+  const updateSocialLink = (network: string, val: string) => {
+    const updated = { ...socialLinksParsed, [network]: val };
+    setFormData({ ...formData, socialLinks: JSON.stringify(updated) });
+    markDirty();
+  };
 
   // Fetch CMS Content
   const fetchContent = async () => {
@@ -300,64 +489,76 @@ export default function EmpanelmentContentCmsPage() {
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-4 font-sans max-w-7xl mx-auto">
       {/* ================================================================ */}
-      {/* 1. TOP COMMAND BAR (Title, Status, View Modes & Publish Live) */}
+      {/* 1. TOP COMMAND BAR (macOS Translucent Studio Bar) */}
       {/* ================================================================ */}
-      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 sticky top-2 z-40 backdrop-blur-md bg-white/95">
+      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl border border-slate-200/70 p-3.5 sm:px-4.5 sm:py-3 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-3 sticky top-2 z-40">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-50 text-[#dc2626] border border-red-200/60 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#dc2626] animate-pulse" />
-              <span>Advanced Enterprise CMS</span>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            {/* macOS Traffic Lights */}
+            <div className="flex items-center gap-1.5 mr-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] border border-[#e0443e] inline-block shadow-2xs" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] border border-[#dea123] inline-block shadow-2xs" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f] border border-[#1aab29] inline-block shadow-2xs" />
+            </div>
+
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 inline-flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-amber-600" />
+              <span>Portal Studio CMS</span>
             </span>
+
             <span className="text-slate-300">•</span>
+
             {hasUnsavedChanges ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                ● Unsaved Changes Pending
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-900 border border-amber-300 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Unsaved Changes
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                ✓ Live & Published in Sync
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100/90 text-slate-600 border border-slate-200/80 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Published &amp; Synced
               </span>
             )}
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1.5">
+
+          <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
             Public Empanelment Portal Studio
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Control all public pages, capacity criteria, tenders bulletin, and site pass terms in real time without code edits.
+          <p className="text-[11.5px] text-slate-500 mt-0.5">
+            Real-time live CMS for public landing page, vendor guidelines, commercial tenders &amp; security pass policy.
           </p>
         </div>
 
         {/* View Switchers & Save Actions */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* View Mode Toggle */}
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200/80 text-xs font-bold text-slate-600">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {/* Apple Segmented View Mode Toggle */}
+          <div className="bg-slate-200/60 p-0.5 rounded-full flex items-center text-xs font-medium">
             <button
               onClick={() => setViewMode("edit")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === "edit" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              className={`px-3 py-1 rounded-full transition-all ${
+                viewMode === "edit" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Editor Only
+              Editor
             </button>
             <button
               onClick={() => setViewMode("split")}
-              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-                viewMode === "split" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
+                viewMode === "split" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <Eye className="w-3.5 h-3.5 text-[#dc2626]" />
-              <span>Split Preview</span>
+              <Eye className="w-3 h-3 text-amber-600" />
+              <span>Split</span>
             </button>
             <button
               onClick={() => setViewMode("preview")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === "preview" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              className={`px-3 py-1 rounded-full transition-all ${
+                viewMode === "preview" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Full Preview
+              Preview
             </button>
           </div>
 
@@ -365,17 +566,17 @@ export default function EmpanelmentContentCmsPage() {
           <Link
             href="/empanelment"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs"
+            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 text-xs font-semibold inline-flex items-center gap-1.5 transition-all shadow-2xs"
             title="Open portal in new window"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-            <span className="hidden sm:inline">Visit Live</span>
+            <span>Visit Live</span>
+            <ExternalLink className="w-3 h-3 text-slate-400" />
           </Link>
 
           {/* Reset Defaults */}
           <button
             onClick={handleResetDefaults}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold transition-all"
+            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 text-xs font-semibold transition-all shadow-2xs"
             title="Reset all sections to verified reference standards"
           >
             Reset
@@ -385,14 +586,14 @@ export default function EmpanelmentContentCmsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-red-600/25 disabled:opacity-60 transition-all"
+            className="px-4 py-1.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-60"
           >
             {saving ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
             ) : (
-              <Save className="w-4 h-4" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             )}
-            <span>{saving ? "Publishing..." : "Publish Live (तुरंत लागू करें)"}</span>
+            <span>{saving ? "Publishing..." : "Publish Live"}</span>
           </button>
         </div>
       </div>
@@ -400,17 +601,17 @@ export default function EmpanelmentContentCmsPage() {
       {/* Notification Toast */}
       {notification && (
         <div
-          className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in duration-200 ${
+          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in duration-200 ${
             notification.type === "success"
               ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              : "bg-rose-50 text-rose-800 border border-rose-200"
           }`}
         >
           <div className="flex items-center gap-2.5">
             {notification.type === "success" ? (
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             )}
             <span>{notification.message}</span>
           </div>
@@ -424,56 +625,125 @@ export default function EmpanelmentContentCmsPage() {
       )}
 
       {/* ================================================================ */}
-      {/* 2. PRIMARY PAGE GROUP SELECTOR TABS */}
+      {/* 2. STUDIO NAVIGATION & SCOPE CONTROLLER (Apple Pro Dropdown Suite) */}
       {/* ================================================================ */}
-      <div className="bg-white p-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-1.5 overflow-x-auto text-xs font-bold">
-        {[
-          { id: "landing", label: "🏠 Home / Landing Page", count: `${categories.length} Categories` },
-          { id: "guidelines", label: "📜 Capacity Guidelines", count: `${guidelinesTiers.length} Tiers` },
-          { id: "tenders", label: "📢 Tenders Radar Notice", count: "Live Bulletin" },
-          { id: "gatepass", label: "🎫 Daily Site Gate Pass", count: "Security Policy" },
-          { id: "branding", label: "🌐 Global Branding & Desk", count: "Header / Footer" },
-          { id: "seo", label: "🔍 SEO & Meta Tags", count: "Google Search" },
-          { id: "visibility", label: "⚙️ Section Switches", count: "Show / Hide" },
-        ].map((grp) => {
-          const isActive = selectedGroup === grp.id;
-          return (
-            <button
-              key={grp.id}
-              onClick={() => {
-                setSelectedGroup(grp.id as any);
-                if (grp.id === "landing") setActiveSubTab("hero");
-                if (grp.id === "guidelines") setActiveSubTab("tiers");
-                if (grp.id === "tenders") setActiveSubTab("notice");
-                if (grp.id === "gatepass") setActiveSubTab("terms");
-                if (grp.id === "branding") setActiveSubTab("contacts");
-                if (grp.id === "seo") setActiveSubTab("meta");
-                if (grp.id === "visibility") setActiveSubTab("switches");
+      <div className="bg-white/85 backdrop-blur-2xl p-2.5 rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-3">
+        {/* Dropdowns Group */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Target Page Selector Dropdown */}
+          <div className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/60 transition-colors px-3 py-1.5 rounded-xl border border-slate-200/80">
+            <LayoutTemplate className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Page:</span>
+            <select
+              value={selectedGroup}
+              onChange={(e) => {
+                const val = e.target.value as any;
+                setSelectedGroup(val);
+                if (val === "landing") {
+                  setActiveSubTab("hero");
+                  setPreviewPage("home");
+                } else if (val === "guidelines") {
+                  setActiveSubTab("tiers");
+                  setPreviewPage("guidelines");
+                } else if (val === "tenders") {
+                  setActiveSubTab("notice");
+                  setPreviewPage("tenders");
+                } else if (val === "gatepass") {
+                  setActiveSubTab("policy");
+                  setPreviewPage("gatepass");
+                } else if (val === "branding") {
+                  setActiveSubTab("branding");
+                  setPreviewPage("home");
+                } else if (val === "seo") {
+                  setActiveSubTab("meta");
+                  setPreviewPage("home");
+                } else if (val === "visibility") {
+                  setActiveSubTab("switches");
+                  setPreviewPage("home");
+                }
               }}
-              className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all flex items-center gap-2 ${
-                isActive
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
+              className="bg-transparent font-bold text-xs text-slate-900 pr-1 py-0.5 focus:outline-none cursor-pointer"
             >
-              <span>{grp.label}</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
-                }`}
+              <option value="landing">🏠 Landing / Home Page (10 Dynamic Sections)</option>
+              <option value="guidelines">📜 Capacity Standards & Tiers (/empanelment/guidelines)</option>
+              <option value="tenders">📢 Tenders Radar Notice & Bulletin (/empanelment/tenders)</option>
+              <option value="gatepass">🎫 Daily Site Pass Policy & Instructions (/empanelment/gate-pass)</option>
+              <option value="branding">🌐 Global Branding, Navbar & Footer Desk</option>
+              <option value="seo">🔍 Search Engine SEO & OpenGraph Social Meta</option>
+              <option value="visibility">⚙️ Section Visibility & Feature Switches</option>
+            </select>
+          </div>
+
+          {/* Section Dropdown (When on Landing Page) */}
+          {selectedGroup === "landing" && (
+            <div className="flex items-center gap-2 bg-amber-50/80 hover:bg-amber-100/60 transition-colors px-3 py-1.5 rounded-xl border border-amber-200/80">
+              <Sliders className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Section:</span>
+              <select
+                value={activeSubTab}
+                onChange={(e) => setActiveSubTab(e.target.value)}
+                className="bg-transparent font-bold text-xs text-slate-900 pr-1 py-0.5 focus:outline-none cursor-pointer"
               >
-                {grp.count}
-              </span>
+                <option value="hero">01. Hero Banner, Headline & Graphic</option>
+                <option value="hero_pills">02. 4 Feature Check Pills</option>
+                <option value="stats">03. Live Counter Stats Bar (4 Metrics)</option>
+                <option value="categories">04. Supply Categories List (6 Domains)</option>
+                <option value="process">05. 4-Step Registration Process</option>
+                <option value="benefits">06. Vendor Growth Benefits (6 Pillars)</option>
+                <option value="impact">07. Dark Impact Section, Image & Pillars</option>
+                <option value="docs">08. Required Documents Checklist</option>
+                <option value="faqs">09. Frequently Asked Questions (Accordion)</option>
+                <option value="cta">10. Bottom Red CTA Banner</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Section Quick Step Buttons (Prev / Next) */}
+        {selectedGroup === "landing" && (
+          <div className="flex items-center gap-1.5 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                const tabs = ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"];
+                const idx = tabs.indexOf(activeSubTab);
+                if (idx > 0) setActiveSubTab(tabs[idx - 1]);
+              }}
+              disabled={activeSubTab === "hero"}
+              className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100/80 text-slate-700 font-semibold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              title="Previous Section"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span className="text-[11px] hidden sm:inline">Prev</span>
             </button>
-          );
-        })}
+
+            <span className="text-[11px] font-mono text-slate-500 px-1 font-bold">
+              {Math.max(1, ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"].indexOf(activeSubTab) + 1)} / 10
+            </span>
+
+            <button
+              type="button"
+              onClick={() => {
+                const tabs = ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"];
+                const idx = tabs.indexOf(activeSubTab);
+                if (idx < tabs.length - 1) setActiveSubTab(tabs[idx + 1]);
+              }}
+              disabled={activeSubTab === "cta"}
+              className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100/80 text-slate-700 font-semibold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              title="Next Section"
+            >
+              <span className="text-[11px] hidden sm:inline">Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ================================================================ */}
       {/* 3. MAIN WORKSPACE (Form Editor + Split / Full Live Preview) */}
       {/* ================================================================ */}
       <div
-        className={`grid gap-6 ${
+        className={`grid gap-5 ${
           viewMode === "split"
             ? "grid-cols-1 xl:grid-cols-12"
             : viewMode === "preview"
@@ -483,39 +753,9 @@ export default function EmpanelmentContentCmsPage() {
       >
         {/* LEFT PANE: Form Editors (Visible in 'edit' and 'split' modes) */}
         {viewMode !== "preview" && (
-          <div className={`${viewMode === "split" ? "xl:col-span-7" : "w-full"} space-y-6`}>
-            {/* SUB-TABS BAR FOR LANDING PAGE */}
-            {selectedGroup === "landing" && (
-              <div className="bg-white p-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-1.5 overflow-x-auto text-xs font-semibold text-slate-600">
-                {[
-                  { id: "hero", label: "Hero Banner" },
-                  { id: "hero_pills", label: "4 Feature Pills" },
-                  { id: "stats", label: "Stats Bar" },
-                  { id: "categories", label: "Supply Categories" },
-                  { id: "process", label: "4-Step Process" },
-                  { id: "benefits", label: "Vendor Benefits" },
-                  { id: "impact", label: "Impact Container" },
-                  { id: "documents", label: "Required Docs" },
-                  { id: "faqs", label: "Portal FAQs" },
-                  { id: "cta", label: "Bottom CTA Banner" },
-                ].map((st) => (
-                  <button
-                    key={st.id}
-                    onClick={() => setActiveSubTab(st.id)}
-                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
-                      activeSubTab === st.id
-                        ? "bg-red-50 text-[#dc2626] font-bold border border-red-200"
-                        : "hover:bg-slate-50 text-slate-600"
-                    }`}
-                  >
-                    {st.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
+          <div className={`${viewMode === "split" ? "xl:col-span-7" : "w-full"} space-y-4`}>
             {/* FORM CARD CONTAINER */}
-            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
+            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-5 sm:p-7 shadow-[0_2px_12px_rgba(15,23,42,0.02)] space-y-5">
               {/* ================================================================ */}
               {/* SECTION: HERO BANNER */}
               {/* ================================================================ */}
@@ -543,7 +783,7 @@ export default function EmpanelmentContentCmsPage() {
                           setFormData({ ...formData, heroBadge: e.target.value });
                           markDirty();
                         }}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                       />
                     </div>
 
@@ -558,7 +798,7 @@ export default function EmpanelmentContentCmsPage() {
                           setFormData({ ...formData, heroTitlePrefix: e.target.value });
                           markDirty();
                         }}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                       />
                     </div>
                   </div>
@@ -575,7 +815,7 @@ export default function EmpanelmentContentCmsPage() {
                           setFormData({ ...formData, heroTitleHighlight: e.target.value });
                           markDirty();
                         }}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-[#dc2626] focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-[#dc2626] focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                       />
                     </div>
 
@@ -590,7 +830,7 @@ export default function EmpanelmentContentCmsPage() {
                           setFormData({ ...formData, heroRegisterBtnText: e.target.value });
                           markDirty();
                         }}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                       />
                     </div>
                   </div>
@@ -606,57 +846,21 @@ export default function EmpanelmentContentCmsPage() {
                         setFormData({ ...formData, heroSubtitle: e.target.value });
                         markDirty();
                       }}
-                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
                     />
                   </div>
 
-                  {/* Hero Background Image Picker with 1-Click Library Presets */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-[10px] uppercase font-bold text-slate-700 flex items-center gap-1.5">
-                        <ImageIcon className="w-3.5 h-3.5 text-[#dc2626]" />
-                        <span>Hero Right Graphic Image URL</span>
-                      </label>
-                      <span className="text-[10px] text-slate-400">Supports direct URLs or presets</span>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={formData.heroImageUrl || ""}
-                        onChange={(e) => {
-                          setFormData({ ...formData, heroImageUrl: e.target.value });
-                          markDirty();
-                        }}
-                        className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none"
-                        placeholder="/images/empanelment/hero-engineers-perfect.jpg"
-                      />
-                    </div>
-
-                    {/* Presets Gallery */}
-                    <div className="space-y-1.5">
-                      <p className="text-[10px] font-bold text-slate-400">1-Click Certified Presets:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {IMAGE_LIBRARY_PRESETS.map((p) => (
-                          <button
-                            key={p.url}
-                            type="button"
-                            onClick={() => {
-                              setFormData({ ...formData, heroImageUrl: p.url });
-                              markDirty();
-                            }}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                              formData.heroImageUrl === p.url
-                                ? "bg-red-50 text-[#dc2626] border-red-300"
-                                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-                            }`}
-                          >
-                            {p.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+                  {/* Hero Right Graphic Image Uploader */}
+                  <StudioImagePicker
+                    label="Hero Right Graphic Image"
+                    sublabel="Upload from device, paste URL, or pick certified presets"
+                    value={formData.heroImageUrl || ""}
+                    onChange={(url) => {
+                      setFormData({ ...formData, heroImageUrl: url });
+                      markDirty();
+                    }}
+                    presets={IMAGE_LIBRARY_PRESETS}
+                  />
                 </div>
               )}
 
@@ -999,18 +1203,53 @@ export default function EmpanelmentContentCmsPage() {
                         </div>
 
                         <div>
-                          <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Photo Image URL</label>
-                          <input
-                            type="text"
-                            value={cat.imageUrl}
-                            onChange={(e) => {
-                              const next = [...categories];
-                              next[idx].imageUrl = e.target.value;
-                              setCategories(next);
-                              markDirty();
-                            }}
-                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800"
-                          />
+                          <div className="flex items-center justify-between mb-0.5">
+                            <label className="text-[9px] uppercase font-bold text-slate-400">Photo Image URL</label>
+                            <label className="text-[9.5px] text-amber-600 font-bold hover:underline cursor-pointer flex items-center gap-1">
+                              <UploadCloud className="w-3 h-3" />
+                              <span>Upload from device</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  try {
+                                    const fd = new FormData();
+                                    fd.append("file", file);
+                                    const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "include" });
+                                    const data = await res.json();
+                                    if (data.success && data.url) {
+                                      const next = [...categories];
+                                      next[idx].imageUrl = data.url;
+                                      setCategories(next);
+                                      markDirty();
+                                    }
+                                  } catch (_e) {}
+                                }}
+                              />
+                            </label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {cat.imageUrl && (
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-200 shrink-0">
+                                <img src={cat.imageUrl} alt="" className="w-full h-full object-cover" />
+                              </div>
+                            )}
+                            <input
+                              type="text"
+                              value={cat.imageUrl}
+                              onChange={(e) => {
+                                const next = [...categories];
+                                next[idx].imageUrl = e.target.value;
+                                setCategories(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800"
+                              placeholder="/images/... or https://..."
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1118,6 +1357,355 @@ export default function EmpanelmentContentCmsPage() {
               )}
 
               {/* ================================================================ */}
+              {/* SECTION: DARK IMPACT SECTION & PILLARS */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "impact" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Dark Impact Section & Vision Pillars</h2>
+                      <p className="text-xs text-slate-500">
+                        Controls impact headline, background graphic, CTA button, and key corporate pillars
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-slate-400">Section 07</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Impact Section Badge
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.impactBadge}
+                        onChange={(e) => {
+                          setFormData({ ...formData, impactBadge: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Action Button Label
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.impactBtnText}
+                        onChange={(e) => {
+                          setFormData({ ...formData, impactBtnText: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Impact Headline Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.impactTitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, impactTitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Impact Subtitle Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.impactSubtitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, impactSubtitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+
+                  {/* Impact Background Image Uploader */}
+                  <StudioImagePicker
+                    label="Impact Background Graphic Image"
+                    sublabel="Upload night skyline/drone site photo, paste URL, or pick preset"
+                    value={formData.impactImageUrl || ""}
+                    onChange={(url) => {
+                      setFormData({ ...formData, impactImageUrl: url });
+                      markDirty();
+                    }}
+                    presets={IMAGE_LIBRARY_PRESETS}
+                  />
+
+                  {/* Impact Pillars Editor */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-800">Impact Strategic Pillars ({impactPillars.length})</h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newId = `p_${Date.now()}`;
+                          setImpactPillars([
+                            ...impactPillars,
+                            { id: newId, title: "New Strategic Pillar", iconName: "ShieldCheck" },
+                          ]);
+                          markDirty();
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Pillar</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {impactPillars.map((pillar, idx) => (
+                        <div key={pillar.id} className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-700">Pillar #{idx + 1}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => moveItem(impactPillars, idx, "up", setImpactPillars)}
+                                disabled={idx === 0}
+                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveItem(impactPillars, idx, "down", setImpactPillars)}
+                                disabled={idx === impactPillars.length - 1}
+                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setImpactPillars(impactPillars.filter((_, i) => i !== idx));
+                                  markDirty();
+                                }}
+                                className="p-1 rounded-lg hover:bg-red-50 text-red-500"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Pillar Title</label>
+                            <input
+                              type="text"
+                              value={pillar.title}
+                              onChange={(e) => {
+                                const next = [...impactPillars];
+                                next[idx].title = e.target.value;
+                                setImpactPillars(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900 bg-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Lucide Icon</label>
+                            <input
+                              type="text"
+                              value={pillar.iconName || "ShieldCheck"}
+                              onChange={(e) => {
+                                const next = [...impactPillars];
+                                next[idx].iconName = e.target.value;
+                                setImpactPillars(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-700 bg-white"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: DOCUMENTS REQUIRED CHECKLIST */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "docs" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Required Documents Checklist ({docsList.length})</h2>
+                      <p className="text-xs text-slate-500">
+                        Guidance for vendors on what documents to keep ready before applying
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-slate-400">Section 08</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Badge Text
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.docsBadge}
+                        onChange={(e) => {
+                          setFormData({ ...formData, docsBadge: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Section Headline
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.docsTitle}
+                        onChange={(e) => {
+                          setFormData({ ...formData, docsTitle: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Section Subtitle Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.docsSubtitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, docsSubtitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+
+                  {/* Documents List Editor */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-800">Required Documents ({docsList.length})</h3>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newId = `doc_${Date.now()}`;
+                          setDocsList([
+                            ...docsList,
+                            { id: newId, title: "New Document Requirement", description: "Brief details on validity and format required.", iconName: "FileText" },
+                          ]);
+                          markDirty();
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Document</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      {docsList.map((doc, idx) => (
+                        <div key={doc.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-700">Document #{idx + 1}</span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => moveItem(docsList, idx, "up", setDocsList)}
+                                disabled={idx === 0}
+                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => moveItem(docsList, idx, "down", setDocsList)}
+                                disabled={idx === docsList.length - 1}
+                                className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setDocsList(docsList.filter((_, i) => i !== idx));
+                                  markDirty();
+                                }}
+                                className="p-1 rounded-lg hover:bg-red-50 text-red-500"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <div className="sm:col-span-2">
+                              <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Title</label>
+                              <input
+                                type="text"
+                                value={doc.title}
+                                onChange={(e) => {
+                                  const next = [...docsList];
+                                  next[idx].title = e.target.value;
+                                  setDocsList(next);
+                                  markDirty();
+                                }}
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900 bg-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Icon Name</label>
+                              <input
+                                type="text"
+                                value={doc.iconName || "FileText"}
+                                onChange={(e) => {
+                                  const next = [...docsList];
+                                  next[idx].iconName = e.target.value;
+                                  setDocsList(next);
+                                  markDirty();
+                                }}
+                                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-700 bg-white"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Description / Validity Details</label>
+                            <textarea
+                              rows={2}
+                              value={doc.description}
+                              onChange={(e) => {
+                                const next = [...docsList];
+                                next[idx].description = e.target.value;
+                                setDocsList(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white leading-relaxed"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
               {/* SECTION: PORTAL FAQS */}
               {/* ================================================================ */}
               {selectedGroup === "landing" && activeSubTab === "faqs" && (
@@ -1210,6 +1798,82 @@ export default function EmpanelmentContentCmsPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: BOTTOM RED CTA BANNER */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "cta" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Bottom Brand CTA Callout Banner</h2>
+                      <p className="text-xs text-slate-500">High-converting red action banner placed at the bottom of the portal home</p>
+                    </div>
+                    <span className="text-xs font-mono font-bold text-slate-400">Section 10</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Badge Text
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.ctaBadge}
+                        onChange={(e) => {
+                          setFormData({ ...formData, ctaBadge: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Register CTA Button Label
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.ctaBtnText}
+                        onChange={(e) => {
+                          setFormData({ ...formData, ctaBtnText: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Main Headline Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.ctaTitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, ctaTitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Banner Subtitle Text
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.ctaSubtitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, ctaSubtitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+                    />
                   </div>
                 </div>
               )}
@@ -1642,6 +2306,60 @@ export default function EmpanelmentContentCmsPage() {
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
                     />
                   </div>
+
+                  {/* Social Media Channels */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[10px] uppercase font-bold text-slate-700 flex items-center gap-1.5">
+                        <Share2 className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Corporate Social Media Profiles</span>
+                      </label>
+                      <span className="text-[10px] text-slate-400">Displayed in footer and contact desks</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">LinkedIn Page URL</label>
+                        <input
+                          type="text"
+                          value={socialLinksParsed.linkedin || ""}
+                          onChange={(e) => updateSocialLink("linkedin", e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800 bg-white"
+                          placeholder="https://linkedin.com/company/hindustanprojects"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Facebook Page URL</label>
+                        <input
+                          type="text"
+                          value={socialLinksParsed.facebook || ""}
+                          onChange={(e) => updateSocialLink("facebook", e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800 bg-white"
+                          placeholder="https://facebook.com/hindustanprojects"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Instagram Profile URL</label>
+                        <input
+                          type="text"
+                          value={socialLinksParsed.instagram || ""}
+                          onChange={(e) => updateSocialLink("instagram", e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800 bg-white"
+                          placeholder="https://instagram.com/hindustan_projects"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">YouTube Channel URL</label>
+                        <input
+                          type="text"
+                          value={socialLinksParsed.youtube || ""}
+                          onChange={(e) => updateSocialLink("youtube", e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800 bg-white"
+                          placeholder="https://youtube.com/@hindustanprojects"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -1701,6 +2419,18 @@ export default function EmpanelmentContentCmsPage() {
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
                     />
                   </div>
+
+                  {/* Social Share OG Image */}
+                  <StudioImagePicker
+                    label="Social Share & OpenGraph Image (WhatsApp, LinkedIn, Twitter)"
+                    sublabel="Image shown when empanelment links are shared on social platforms"
+                    value={formData.ogImageUrl || ""}
+                    onChange={(url) => {
+                      setFormData({ ...formData, ogImageUrl: url });
+                      markDirty();
+                    }}
+                    presets={IMAGE_LIBRARY_PRESETS}
+                  />
 
                   {/* Google Snippet Live Simulation */}
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
@@ -1787,19 +2517,22 @@ export default function EmpanelmentContentCmsPage() {
               viewMode === "split" ? "xl:col-span-5" : "w-full max-w-5xl mx-auto"
             } space-y-4 sticky top-28`}
           >
-            {/* Preview Toolbar */}
-            <div className="bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-md">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-xs font-bold tracking-wide">Live Preview Engine</span>
+            {/* Preview Toolbar (macOS Studio Display Control Bar) */}
+            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/70 p-2.5 rounded-2xl flex items-center justify-between gap-3 shadow-[0_2px_12px_rgba(15,23,42,0.02)]">
+              <div className="flex items-center gap-2 pl-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-xs font-bold text-slate-800 tracking-tight">Studio Viewport</span>
               </div>
 
-              {/* Page Selector */}
-              <div className="flex items-center gap-1.5">
+              {/* Page Selector & Device Toggle */}
+              <div className="flex items-center gap-2">
                 <select
                   value={previewPage}
                   onChange={(e) => setPreviewPage(e.target.value as any)}
-                  className="bg-slate-800 text-white border border-slate-700 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none"
+                  className="bg-slate-100/90 hover:bg-slate-200/70 text-slate-800 border border-slate-200/80 rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
                 >
                   <option value="home">Landing (Home)</option>
                   <option value="guidelines">Guidelines Standards</option>
@@ -1807,21 +2540,31 @@ export default function EmpanelmentContentCmsPage() {
                   <option value="gatepass">Gate Pass Preview</option>
                 </select>
 
-                {/* Device Selector */}
-                <div className="bg-slate-800 p-0.5 rounded-xl flex items-center border border-slate-700 text-xs">
+                {/* Device Selector (Apple Segmented Pill) */}
+                <div className="bg-slate-100/90 p-0.5 rounded-xl flex items-center border border-slate-200/70 text-xs">
                   <button
                     onClick={() => setPreviewDevice("desktop")}
-                    className={`p-1.5 rounded-lg ${previewDevice === "desktop" ? "bg-slate-700 text-white" : "text-slate-400"}`}
-                    title="Desktop Preview"
+                    className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                      previewDevice === "desktop"
+                        ? "bg-white text-slate-900 font-semibold shadow-2xs"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                    title="Desktop Viewport"
                   >
                     <Monitor className="w-3.5 h-3.5" />
+                    <span className="text-[10px] hidden sm:inline">Desktop</span>
                   </button>
                   <button
                     onClick={() => setPreviewDevice("mobile")}
-                    className={`p-1.5 rounded-lg ${previewDevice === "mobile" ? "bg-slate-700 text-white" : "text-slate-400"}`}
-                    title="Mobile Viewport (390px)"
+                    className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                      previewDevice === "mobile"
+                        ? "bg-white text-slate-900 font-semibold shadow-2xs"
+                        : "text-slate-500 hover:text-slate-900"
+                    }`}
+                    title="Mobile Viewport (iPhone 16 Pro)"
                   >
                     <Smartphone className="w-3.5 h-3.5" />
+                    <span className="text-[10px] hidden sm:inline">Mobile</span>
                   </button>
                 </div>
               </div>
@@ -1829,20 +2572,54 @@ export default function EmpanelmentContentCmsPage() {
 
             {/* Simulated Live Viewport Container */}
             <div
-              className={`mx-auto bg-white border-4 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${
+              className={`mx-auto transition-all duration-300 ${
                 previewDevice === "mobile"
-                  ? "w-[390px] border-slate-800 min-h-[700px] max-h-[820px] overflow-y-auto"
-                  : "w-full border-slate-200 min-h-[700px] max-h-[820px] overflow-y-auto"
+                  ? "w-[385px] bg-slate-950 p-2.5 rounded-[46px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] ring-1 ring-slate-800/90"
+                  : "w-full bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
               }`}
             >
-              {/* Simulated Mobile Notch / Browser Header */}
-              {previewDevice === "mobile" && (
-                <div className="bg-slate-900 text-white text-[10px] py-1 px-4 flex items-center justify-between font-mono">
-                  <span>9:41</span>
-                  <div className="w-14 h-3 bg-black rounded-full" />
-                  <span>5G 100%</span>
-                </div>
-              )}
+              <div
+                className={`flex flex-col min-h-[700px] max-h-[820px] ${
+                  previewDevice === "mobile"
+                    ? "bg-white rounded-[38px] overflow-hidden border border-slate-800/40"
+                    : "bg-white"
+                }`}
+              >
+                {/* Simulated Header: Safari bar for desktop, Dynamic Island for mobile */}
+                {previewDevice === "mobile" ? (
+                  <div className="bg-slate-900 text-white text-[10px] pt-2 pb-1.5 px-6 flex items-center justify-between font-mono shrink-0 select-none">
+                    <span className="font-semibold text-[11px]">9:41</span>
+                    <div className="w-20 h-4 bg-black rounded-full flex items-center justify-center ring-1 ring-white/10">
+                      <div className="w-2 h-2 rounded-full bg-slate-900" />
+                    </div>
+                    <span className="text-[10.5px] font-medium tracking-tight">5G 100%</span>
+                  </div>
+                ) : (
+                  <div className="bg-slate-100/90 backdrop-blur border-b border-slate-200/70 px-3.5 py-2 flex items-center justify-between gap-3 text-xs shrink-0 select-none">
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/90 border border-black/5" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]/90 border border-black/5" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]/90 border border-black/5" />
+                    </div>
+                    <div className="flex-1 max-w-sm mx-auto bg-white border border-slate-200/80 rounded-lg px-2.5 py-1 flex items-center justify-center gap-1.5 text-[11px] text-slate-600 shadow-2xs font-mono">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+                      <span className="truncate">
+                        https://empanelment.hindustanprojects.in
+                        {previewPage === "guidelines"
+                          ? "/guidelines"
+                          : previewPage === "tenders"
+                          ? "/tenders"
+                          : previewPage === "gatepass"
+                          ? "/gate-pass"
+                          : ""}
+                      </span>
+                    </div>
+                    <div className="text-[10px] font-mono text-slate-400 font-medium">100%</div>
+                  </div>
+                )}
+
+                {/* Viewport Scrollable Area */}
+                <div className="flex-1 overflow-y-auto">
 
               {/* RENDER SELECTED PREVIEW PAGE */}
               {previewPage === "home" && (
@@ -1929,13 +2706,82 @@ export default function EmpanelmentContentCmsPage() {
                     </div>
                   )}
 
+                  {/* 4-Step Process Live */}
+                  {visibility.showProcess !== false && (
+                    <div className="p-3 space-y-2 bg-white">
+                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.processBadge}</p>
+                      <h3 className="font-black text-sm text-slate-900">{formData.processTitle}</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {steps.slice(0, 4).map((st) => (
+                          <div key={st.step} className="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <span className="text-[9px] font-black text-[#dc2626]">STEP {st.step}</span>
+                            <p className="font-bold text-[10px] text-slate-900 mt-0.5">{st.title}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Vendor Benefits Live */}
+                  {visibility.showBenefits !== false && (
+                    <div className="p-3 space-y-2 bg-slate-50/70">
+                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.benefitsBadge}</p>
+                      <h3 className="font-black text-sm text-slate-900">{formData.benefitsTitle}</h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {benefits.slice(0, 4).map((b) => (
+                          <div key={b.id} className="p-2 rounded-xl bg-white border border-slate-200">
+                            <p className="font-bold text-[10px] text-slate-900">{b.title}</p>
+                            <p className="text-[9px] text-slate-500 line-clamp-1">{b.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dark Impact Section Live */}
+                  {visibility.showImpact !== false && (
+                    <div className="p-4 bg-slate-950 text-white space-y-2.5 rounded-xl m-2">
+                      <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">
+                        — {formData.impactBadge}
+                      </span>
+                      <h3 className="font-black text-sm text-white leading-tight">{formData.impactTitle}</h3>
+                      <p className="text-[10px] text-slate-300 line-clamp-2">{formData.impactSubtitle}</p>
+                      <div className="grid grid-cols-2 gap-1.5 pt-1">
+                        {impactPillars.slice(0, 4).map((p) => (
+                          <div key={p.id} className="p-1.5 rounded-lg bg-white/10 text-[9px] font-semibold text-slate-200">
+                            ✓ {p.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Required Documents Checklist Live */}
+                  {visibility.showDocs !== false && (
+                    <div className="p-3 space-y-2 bg-white">
+                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.docsBadge}</p>
+                      <h3 className="font-black text-sm text-slate-900">{formData.docsTitle}</h3>
+                      <div className="space-y-1.5">
+                        {docsList.slice(0, 3).map((d) => (
+                          <div key={d.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                            <div>
+                              <p className="font-bold text-[10.5px] text-slate-900">{d.title}</p>
+                              <p className="text-[9px] text-slate-500 line-clamp-1">{d.description}</p>
+                            </div>
+                            <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">REQUIRED</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* FAQs */}
                   {visibility.showFaqs !== false && (
-                    <div className="p-3 space-y-2">
+                    <div className="p-3 space-y-2 bg-slate-50/70">
                       <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.faqBadge}</p>
                       <div className="space-y-1.5">
                         {faqsList.slice(0, 3).map((f) => (
-                          <div key={f.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                          <div key={f.id} className="p-2 rounded-xl bg-white border border-slate-200">
                             <p className="font-bold text-[11px] text-slate-900">{f.question}</p>
                             <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2">{f.answer}</p>
                           </div>
@@ -1943,6 +2789,29 @@ export default function EmpanelmentContentCmsPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Bottom Red CTA Live */}
+                  {visibility.showCta !== false && (
+                    <div className="p-4 bg-gradient-to-br from-[#dc2626] to-red-800 text-white text-center space-y-2 rounded-xl m-2">
+                      <span className="text-[9px] font-bold tracking-wider uppercase opacity-90 block">
+                        {formData.ctaBadge}
+                      </span>
+                      <h3 className="font-black text-sm leading-tight">{formData.ctaTitle}</h3>
+                      <p className="text-[10px] text-white/80 line-clamp-2">{formData.ctaSubtitle}</p>
+                      <button className="mt-1 px-4 py-1.5 rounded-lg bg-white text-[#dc2626] font-bold text-xs shadow-xs">
+                        {formData.ctaBtnText}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Footer Mockup */}
+                  <div className="bg-[#0b101b] text-slate-400 p-3 space-y-2 text-[10px] border-t border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-xs">{formData.portalName}</span>
+                      <span className="text-[9px] text-slate-500">{formData.phone}</span>
+                    </div>
+                    <p className="text-[9px] text-slate-500">{formData.address}</p>
+                  </div>
                 </div>
               )}
 
@@ -2017,6 +2886,15 @@ export default function EmpanelmentContentCmsPage() {
                   </div>
                 </div>
               )}
+                </div>
+
+                {/* Mobile Bottom Home Bar */}
+                {previewDevice === "mobile" && (
+                  <div className="bg-white py-1.5 shrink-0 flex justify-center border-t border-slate-100/60">
+                    <div className="w-28 h-1 bg-slate-300 rounded-full" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
