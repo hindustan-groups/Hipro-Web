@@ -849,3 +849,76 @@ model EmpanelmentTicket {
   @@index([status])
 }
 
+model EmpanelmentContent {
+  id                     String    @id @default("singleton")
+  // Brand & Contact Coordinates
+  portalName             String    @default("Hindustan Projects")
+  tagline                String    @default("Engineering - Construction - Infrastructure")
+  phone                  String    @default("+91 98765 43210")
+  email                  String    @default("procurement@hindustanprojects.in")
+  address                String    @default("Hindustan Projects, Bhilwara, Rajasthan, India")
+  supportWhatsapp        String    @default("+91 98765 43210")
+  socialLinks            String?   @db.Text
+
+  // Hero Section
+  heroBadge              String    @default("VENDOR PORTAL")
+  heroTitlePrefix        String    @default("Partner with")
+  heroTitleHighlight     String    @default("Hindustan Projects")
+  heroSubtitle           String    @default("Join our local vendor network for construction materials, services and project opportunities across Rajasthan and beyond.")
+  heroRegisterBtnText    String    @default("Register as a Vendor")
+  heroLoginBtnText       String    @default("Vendor Login")
+  heroImageUrl           String?   @default("/images/empanelment/hero-engineers.jpg")
+  heroOverlayBadge       String    @default("Building Stronger Partnerships for a Better Rajasthan.")
+  heroPills              String?   @db.Text
+
+  // Stats Counter Bar
+  stats                  String?   @db.Text
+
+  // Categories Section
+  categoriesBadge        String    @default("CATEGORIES")
+  categoriesTitle        String    @default("Supply to Our Construction Projects")
+  categoriesSubtitle     String    @default("We source high-quality materials, services and solutions from trusted local vendors to support our construction and infrastructure projects across Rajasthan.")
+  categoriesList         String?   @db.Text
+
+  // Process / How It Works
+  processBadge           String    @default("HOW IT WORKS")
+  processTitle           String    @default("Vendor Registration Process")
+  processSubtitle        String    @default("Get registered in a few simple steps and become a part of Hindustan Projects' approved vendor network.")
+  processSteps           String?   @db.Text
+
+  // Benefits
+  benefitsBadge          String    @default("WHY PARTNER WITH US?")
+  benefitsTitle          String    @default("Benefits for Our Vendors")
+  benefitsSubtitle       String    @default("We believe in long-term relationships with our vendors and suppliers, creating value for both business and society.")
+  benefitsList           String?   @db.Text
+
+  // Dark Impact Section
+  impactBadge            String    @default("OUR IMPACT")
+  impactTitle            String    @default("Building a Stronger Rajasthan Together")
+  impactSubtitle         String    @default("Empowering local businesses, creating opportunities and building a better Rajasthan through responsible and sustainable infrastructure development.")
+  impactBtnText          String    @default("Join Our Vendor Network")
+  impactPillars          String?   @db.Text
+  impactImageUrl         String?   @default("/images/empanelment/impact-skyline.jpg")
+
+  // Documents Required
+  docsBadge              String    @default("DOCUMENTS REQUIRED")
+  docsTitle              String    @default("Get Ready for Registration")
+  docsSubtitle           String    @default("Keep the following documents ready (as applicable) to complete your vendor registration smoothly.")
+  docsList               String?   @db.Text
+
+  // FAQs
+  faqBadge               String    @default("FREQUENTLY ASKED QUESTIONS")
+  faqTitle               String    @default("Quick Answers")
+  faqSubtitle            String    @default("Find answers to common questions about vendor registration, procurement and working with Hindustan Projects.")
+  faqsList               String?   @db.Text
+
+  // Bottom Red CTA Banner
+  ctaBadge               String    @default("BE A PART OF OUR JOURNEY")
+  ctaTitle               String    @default("Let's Build a Stronger, Self-Reliant Rajasthan.")
+  ctaSubtitle            String    @default("Register as a vendor today and become a part of Hindustan Projects' growing network.")
+  ctaBtnText             String    @default("Register Now")
+
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+

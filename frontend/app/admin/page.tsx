@@ -50,11 +50,18 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
-  const cachedDash = getAdminCache<DashboardData>("admin:dashboard");
-  const [data, setData]           = useState<DashboardData | null>(cachedDash);
-  const [loading, setLoading]     = useState(!cachedDash);
+  const [data, setData]           = useState<DashboardData | null>(null);
+  const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState("");
   const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "applications">("quotes");
+
+  useEffect(() => {
+    const cached = getAdminCache<DashboardData>("admin:dashboard");
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    }
+  }, []);
 
   const fetchData = async (force = false) => {
     if (force || !data) {

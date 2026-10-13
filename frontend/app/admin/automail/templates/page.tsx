@@ -33,13 +33,14 @@ import {
   ChevronDown,
   Filter,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 
 interface CustomTemplateItem {
   id: string;
   title: string;
   category: string;
-  brand: "hipro" | "hbs" | "all";
+  brand: "hipro" | "hbs" | "empanelment" | "all";
   badge: string;
   description: string;
   subject: string;
@@ -70,7 +71,7 @@ export default function AutoMailTemplatesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editorTitle, setEditorTitle] = useState("");
   const [editorCategory, setEditorCategory] = useState("Official Company");
-  const [editorBrand, setEditorBrand] = useState<"hipro" | "hbs" | "all">("all");
+  const [editorBrand, setEditorBrand] = useState<"hipro" | "hbs" | "empanelment" | "all">("all");
   const [editorDescription, setEditorDescription] = useState("");
   const [editorSubject, setEditorSubject] = useState("");
   const [editorSenderName, setEditorSenderName] = useState("");
@@ -82,7 +83,7 @@ export default function AutoMailTemplatesPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importMode, setImportMode] = useState<"file" | "paste">("file");
   const [importTitle, setImportTitle] = useState("");
-  const [importBrand, setImportBrand] = useState<"hipro" | "hbs" | "all">("all");
+  const [importBrand, setImportBrand] = useState<"hipro" | "hbs" | "empanelment" | "all">("all");
   const [importSubject, setImportSubject] = useState("");
   const [importCategory, setImportCategory] = useState("Imported Design");
   const [importPastedHtml, setImportPastedHtml] = useState("");
@@ -141,6 +142,7 @@ export default function AutoMailTemplatesPage() {
     "all",
     "Construction & Engineering",
     "Building Repair & Maintenance",
+    "Vendor Empanelment & Procurement",
     "Formal Quotations",
     "Client Relations",
     "Official Company",
@@ -666,13 +668,17 @@ export default function AutoMailTemplatesPage() {
                         ? "bg-blue-50 text-blue-700 border-blue-200"
                         : t.brand === "hbs"
                         ? "bg-red-50 text-red-700 border-red-200"
-                        : "bg-amber-50 text-amber-800 border-amber-200"
+                        : t.brand === "empanelment"
+                        ? "bg-amber-50 text-amber-700 border-amber-200"
+                        : "bg-slate-50 text-slate-800 border-slate-200"
                     }`}
                   >
                     {t.brand === "hipro" ? (
                       <Building2 className="w-3 h-3" />
                     ) : t.brand === "hbs" ? (
                       <Hammer className="w-3 h-3" />
+                    ) : t.brand === "empanelment" ? (
+                      <ShieldCheck className="w-3 h-3" />
                     ) : (
                       <Globe2 className="w-3 h-3" />
                     )}
@@ -948,6 +954,7 @@ export default function AutoMailTemplatesPage() {
                   >
                     <option value="hipro">HiPRO Construction</option>
                     <option value="hbs">Hind Build (HiBUILD)</option>
+                    <option value="empanelment">Empanelment Hub</option>
                     <option value="all">Universal / All Brands</option>
                   </select>
                 </div>
@@ -1150,6 +1157,7 @@ export default function AutoMailTemplatesPage() {
                   <option value="all">Universal / All Brands</option>
                   <option value="hipro">HiPRO Construction</option>
                   <option value="hbs">Hind Build (HiBUILD)</option>
+                  <option value="empanelment">Empanelment Hub</option>
                 </select>
               </div>
             </div>

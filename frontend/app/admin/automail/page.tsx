@@ -77,7 +77,12 @@ export default function AutoMailDashboard() {
       const res = await fetch("/api/automail/contacts/sync-crm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ syncHiproLeads: true, syncHiproNewsletter: true, syncHbsLeads: true }),
+        body: JSON.stringify({
+          syncHiproLeads: true,
+          syncHiproNewsletter: true,
+          syncHbsLeads: true,
+          syncEmpanelmentVendors: true,
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -312,7 +317,7 @@ export default function AutoMailDashboard() {
       </div>
 
       {/* Brand Distribution Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div
           onClick={() => setSelectedBrand("hipro")}
           className={`cursor-pointer bg-white border p-4 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-between ${
@@ -350,6 +355,26 @@ export default function AutoMailDashboard() {
           </div>
           <span className="text-base font-black text-slate-900 font-mono">
             {stats?.brandDistribution?.hbs || 0}
+          </span>
+        </div>
+
+        <div
+          onClick={() => setSelectedBrand("empanelment")}
+          className={`cursor-pointer bg-white border p-4 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-between ${
+            selectedBrand === "empanelment" ? "border-amber-500 ring-2 ring-amber-500/10 bg-amber-50/20" : "border-slate-200"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-800">Empanelled Partners</p>
+              <p className="text-[11px] text-slate-500">Vendors & Contractors</p>
+            </div>
+          </div>
+          <span className="text-base font-black text-slate-900 font-mono">
+            {stats?.brandDistribution?.empanelment || 0}
           </span>
         </div>
 

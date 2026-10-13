@@ -1,7 +1,11 @@
 "use client";
 
+import React from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Search, Menu, LogOut, ExternalLink } from "lucide-react";
+import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
+
 
 const titles: Record<string, string> = {
   "/admin":             "Dashboard",
@@ -38,13 +42,15 @@ const titles: Record<string, string> = {
   "/admin/hbs/media":       "Hind Build · Media Library",
   "/admin/hbs/seo":         "Hind Build · SEO & Metadata",
   "/admin/hbs/settings":    "Hind Build · Settings",
-  "/admin/empanelment":             "Empanelment · Executive Dashboard",
-  "/admin/empanelment/applications":"Empanelment · Applications Pipeline & KYC",
-  "/admin/empanelment/directory":   "Empanelment · Verified Partners Directory",
-  "/admin/empanelment/tenders":     "Empanelment · Tenders & Bidding Radar",
-  "/admin/empanelment/gate-passes": "Empanelment · Daily Site Gate Passes",
-  "/admin/empanelment/tickets":     "Empanelment · Vendor Helpdesk",
-  "/admin/empanelment/settings":    "Empanelment · Settings & Workflows",
+  "/admin/empanelment":             "Vendor Empanelment",
+  "/admin/empanelment/applications":"KYC Applications Pipeline",
+  "/admin/empanelment/directory":   "Verified Partners Directory",
+  "/admin/empanelment/tenders":     "Tenders & Bidding Radar",
+  "/admin/empanelment/gate-passes": "Daily Site Gate Passes",
+  "/admin/empanelment/work-orders": "Work Orders & Billing",
+  "/admin/empanelment/content":     "Portal CMS & Content",
+  "/admin/empanelment/tickets":     "Vendor Helpdesk & Tickets",
+  "/admin/empanelment/settings":    "Empanelment Settings",
 };
 
 export default function AdminHeader({ user }: { user: any }) {
@@ -67,21 +73,21 @@ export default function AdminHeader({ user }: { user: any }) {
 
   return (
     <header className="h-[70px] shrink-0 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
-          className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 focus:outline-none"
+          className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 focus:outline-none shrink-0"
         >
           <Menu className="w-6 h-6" />
         </button>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={pathname?.startsWith("/admin/hbs") ? "/hibuild-brand-logo.png" : "/logo.jpg"}
             alt="Brand Logo"
-            className="h-7 w-auto object-contain md:hidden mix-blend-multiply"
+            className="h-7 w-auto object-contain md:hidden mix-blend-multiply shrink-0"
           />
-          <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight line-clamp-1">
+          <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight whitespace-nowrap">
             {pathname?.startsWith("/admin/hbs") ? (
               <>
                 <span className="md:hidden">Hind Build Admin</span>
@@ -89,7 +95,7 @@ export default function AdminHeader({ user }: { user: any }) {
               </>
             ) : pathname?.startsWith("/admin/empanelment") ? (
               <>
-                <span className="md:hidden">Empanelment Hub</span>
+                <span className="md:hidden">Vendor Portal</span>
                 <span className="hidden md:inline">{title}</span>
               </>
             ) : (
@@ -98,14 +104,9 @@ export default function AdminHeader({ user }: { user: any }) {
           </h1>
         </div>
       </div>
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
         {pathname?.startsWith("/admin/empanelment") ? (
           <>
-            {/* Apple Status Pill - Amber */}
-            <div className="hidden xl:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-800 text-xs font-semibold backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>Partner Hub · Active</span>
-            </div>
 
             {/* Public Portal Link */}
             <a
@@ -118,6 +119,9 @@ export default function AdminHeader({ user }: { user: any }) {
               <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               <span>Public Portal ↗</span>
             </a>
+
+            {/* Portals & SnapTech Ecosystem Dropdown */}
+            <PortalSwitcherDropdown variant="header" />
 
             <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
               <Bell className="w-4 h-4" />
@@ -160,19 +164,8 @@ export default function AdminHeader({ user }: { user: any }) {
               />
             </div>
 
-            {/* Notification Apple Glass Pill */}
-            <a
-              href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/80 hover:bg-blue-100/90 text-blue-700 border border-blue-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
-              title="Open SnapTech Admin Portal (New Tab)"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
-              <span>SnapTech Admin</span>
-              <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </a>
+            {/* Portals & SnapTech Ecosystem Dropdown */}
+            <PortalSwitcherDropdown variant="header" />
 
             <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
               <Bell className="w-4 h-4" />
@@ -209,19 +202,9 @@ export default function AdminHeader({ user }: { user: any }) {
                 className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
               />
             </div>
-            {/* SnapTech Direct Portal Launcher */}
-            <a
-              href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-all group"
-              title="Open SnapTech Admin Portal (New Tab)"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/snaptech-icon.png" alt="SnapTech" className="w-3.5 h-3.5 object-contain rounded-full bg-white shadow-2xs shrink-0" />
-              <span>SnapTech Admin</span>
-              <ExternalLink className="w-3 h-3 text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </a>
+            {/* Portals & SnapTech Ecosystem Dropdown */}
+            <PortalSwitcherDropdown variant="header" />
+
             <button className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-construction-navy transition-colors text-slate-500">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-construction-red rounded-full" />

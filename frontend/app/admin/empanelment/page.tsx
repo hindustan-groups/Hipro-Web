@@ -17,7 +17,14 @@ import {
   AlertCircle,
   Eye,
   Award,
-  Layers,
+  Mail,
+  MapPin,
+  Calendar,
+  Building2,
+  QrCode,
+  ArrowRight,
+  FileText,
+  Filter,
 } from "lucide-react";
 import EmpanelmentKpiCards from "@/components/admin/empanelment/EmpanelmentKpiCards";
 import ApplicationReviewDrawer, {
@@ -32,6 +39,10 @@ export default function EmpanelmentAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Filters & Search
+  const [pipelineFilter, setPipelineFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Modals / Drawers
   const [selectedApplication, setSelectedApplication] = useState<VendorApplicationDetail | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -42,21 +53,33 @@ export default function EmpanelmentAdminDashboard() {
     setError("");
 
     try {
-      const [statsRes, appsRes, tendersRes] = await Promise.all([
-        fetch("/api/empanelment/admin/stats", { credentials: "include", cache: "no-store" }),
-        fetch("/api/empanelment/admin/applications", { credentials: "include", cache: "no-store" }),
-        fetch("/api/empanelment/admin/tenders", { credentials: "include", cache: "no-store" }),
-      ]);
+      const fetchJson = async (url: string) => {
+        try {
+          const res = await fetch(url, { credentials: "include", cache: "no-store" });
+          if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+            window.location.href = "/admin-login";
+            return null;
+          }
+          const ct = res.headers.get("content-type") || "";
+          if (!ct.includes("application/json")) {
+            return null;
+          }
+          if (!res.ok) return null;
+          return await res.json();
+        } catch {
+          return null;
+        }
+      };
 
       const [statsJson, appsJson, tendersJson] = await Promise.all([
-        statsRes.json().catch(() => ({})),
-        appsRes.json().catch(() => ({})),
-        tendersRes.json().catch(() => ({})),
+        fetchJson("/api/empanelment/admin/stats"),
+        fetchJson("/api/empanelment/admin/applications"),
+        fetchJson("/api/empanelment/admin/tenders"),
       ]);
 
-      if (statsJson.success) setStats(statsJson.stats);
-      if (appsJson.success) setRecentApplications(appsJson.applications?.slice(0, 8) || []);
-      if (tendersJson.success) setActiveTenders(tendersJson.tenders?.slice(0, 4) || []);
+      if (statsJson?.success) setStats(statsJson.stats);
+      if (appsJson?.success) setRecentApplications(appsJson.applications || []);
+      if (tendersJson?.success) setActiveTenders(tendersJson.tenders || []);
     } catch (err: any) {
       setError(err.message || "Failed to load empanelment metrics");
     } finally {
@@ -80,238 +103,560 @@ export default function EmpanelmentAdminDashboard() {
     fetchDashboardData();
   };
 
+  // Filtered applications
+  const filteredApplications = recentApplications.filter((app) => {
+    if (pipelineFilter === "PENDING") {
+      const isPending = [
+        "SUBMITTED",
+        "UNDER_VERIFICATION",
+        "TECHNICAL_AUDIT",
+        "FINANCIAL_REVIEW",
+        "DOCS_REQUESTED",
+      ].includes(app.status);
+      if (!isPending) return false;
+    } else if (pipelineFilter === "APPROVED" && app.status !== "APPROVED") {
+      return false;
+    } else if (pipelineFilter === "REJECTED" && app.status !== "REJECTED") {
+      return false;
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchName = app.companyName?.toLowerCase().includes(q);
+      const matchOwner =
+        app.contactName?.toLowerCase().includes(q) || app.tradeName?.toLowerCase().includes(q);
+      const matchPhone = app.phone?.toLowerCase().includes(q);
+      const matchTracking = app.trackingId?.toLowerCase().includes(q);
+      const matchCat = app.category?.toLowerCase().includes(q);
+      if (!matchName && !matchOwner && !matchPhone && !matchTracking && !matchCat) return false;
+    }
+    return true;
+  });
+
+  const getInitials = (name?: string) => {
+    if (!name) return "VN";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  };
+
+  const renderTierBadge = (tier?: string) => {
+    switch (tier) {
+      case "CLASS_A":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-300">
+            <Award className="w-3 h-3 text-amber-600" />
+            Class A
+          </span>
+        );
+      case "CLASS_B":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-800 border border-blue-200">
+            Class B
+          </span>
+        );
+      case "CLASS_C":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
+            Class C
+          </span>
+        );
+      case "CLASS_D":
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+            Class D
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-slate-400 bg-slate-50 border border-slate-200">
+            Unassigned
+          </span>
+        );
+    }
+  };
+
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case "APPROVED":
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Approved
+          </span>
+        );
+      case "REJECTED":
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            Rejected
+          </span>
+        );
+      case "DOCS_REQUESTED":
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 bg-purple-50 text-purple-700 border border-purple-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+            Docs Pending
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            {status.replace(/_/g, " ")}
+          </span>
+        );
+    }
+  };
+
+  const pendingCount = recentApplications.filter((a) =>
+    ["SUBMITTED", "UNDER_VERIFICATION", "TECHNICAL_AUDIT", "FINANCIAL_REVIEW", "DOCS_REQUESTED"].includes(a.status)
+  ).length;
+
   return (
-    <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      {/* Top Banner & Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-200/60">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight font-display">
-              Vendor Empanelment Command Center
-            </h1>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Top Header Card - Clean Enterprise Styling */}
+      <div className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+            <span>Admin</span>
+            <span>/</span>
+            <span className="text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
+              Vendor Management
+            </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
-            Centralized procurement KYC, contractor tiering, daily site gate passes, and L1 bidding radar
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Vendor Empanelment & Procurement
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-normal">
+            Manage contractor registrations, KYC verification, commercial tender bidding, and daily site access passes.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={() => fetchDashboardData()}
-            className="p-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 transition-colors shadow-2xs"
-            title="Refresh Metrics"
+            className="p-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/90 transition-all shadow-2xs"
+            title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
 
-          <button
-            onClick={() => setIsTenderModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs shadow-md shadow-violet-600/20 flex items-center gap-1.5 transition-all"
+          <Link
+            href="/admin/empanelment/gate-passes"
+            className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>New Tender</span>
-          </button>
+            <QrCode className="w-3.5 h-3.5 text-slate-500" />
+            <span>Site Passes</span>
+          </Link>
 
           <a
             href="https://empanelment.hindustanprojects.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300/60 font-bold text-xs flex items-center gap-1.5 transition-all"
+            className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
           >
-            <span>Live Portal</span>
-            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Public Portal</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </a>
+
+          <button
+            onClick={() => setIsTenderModalOpen(true)}
+            className="px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Post New Tender</span>
+          </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* KPI Cards Row */}
       <EmpanelmentKpiCards stats={stats} loading={loading} />
 
-      {/* Split Grid: Recent Applications Pipeline + Active Procurement Tenders */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols): Recent Applications Pipeline */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
+      {/* Main Section: KYC Applications Verification Queue (Full Width on Desktop) */}
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+        {/* Table Toolbar */}
+        <div className="p-4 sm:p-5 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-slate-50/50">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <Inbox className="w-4 h-4 text-amber-600" />
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Recent KYC Applications
+              <h2 className="text-sm font-bold text-slate-900">
+                Recent Applications Queue
               </h2>
-            </div>
-            <Link
-              href="/admin/empanelment/applications"
-              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 group"
-            >
-              <span>View All Pipeline</span>
-              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-            {recentApplications.length === 0 ? (
-              <div className="p-8 text-center text-xs text-slate-500">
-                {loading ? "Loading incoming applications..." : "No vendor applications received yet."}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/80 border-b border-slate-200/60 text-[10px] uppercase font-bold text-slate-400">
-                    <tr>
-                      <th className="px-4 py-3">Vendor / Enterprise</th>
-                      <th className="px-4 py-3">Category</th>
-                      <th className="px-4 py-3">Tracking ID</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {recentApplications.map((app) => (
-                      <tr
-                        key={app.id}
-                        className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
-                        onClick={() => handleOpenReview(app)}
-                      >
-                        <td className="px-4 py-3">
-                          <p className="font-bold text-slate-900 group-hover:text-amber-700 transition-colors line-clamp-1">
-                            {app.companyName}
-                          </p>
-                          <p className="text-[11px] text-slate-400 font-medium line-clamp-1">
-                            {app.contactName} • {app.phone}
-                          </p>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="font-medium text-slate-600 line-clamp-1">
-                            {app.category}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-mono text-[11px] text-slate-500">
-                          {app.trackingId}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              app.status === "APPROVED"
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-                                : app.status === "REJECTED"
-                                ? "bg-red-50 text-red-700 border border-red-200/60"
-                                : app.status === "DOCS_REQUESTED"
-                                ? "bg-purple-50 text-purple-700 border border-purple-200/60"
-                                : "bg-amber-50 text-amber-800 border border-amber-200/60"
-                            }`}
-                          >
-                            {app.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => handleOpenReview(app)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 font-semibold transition-colors text-[11px] inline-flex items-center gap-1"
-                          >
-                            <Eye className="w-3 h-3" />
-                            <span>Review</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column: Active Procurement Radar & Tier Rules */}
-        <div className="space-y-6">
-          {/* Active Tenders Box */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-violet-600" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Active Tenders Radar
-                </h2>
-              </div>
-              <Link
-                href="/admin/empanelment/tenders"
-                className="text-xs font-bold text-violet-700 hover:text-violet-800"
-              >
-                Manage
-              </Link>
+              <span className="text-xs font-mono font-bold bg-white text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
+                {recentApplications.length}
+              </span>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 shadow-2xs p-4 space-y-3">
-              {activeTenders.length === 0 ? (
-                <div className="text-center py-6 text-slate-400 text-xs">
-                  No active tenders published right now.
-                </div>
-              ) : (
-                activeTenders.map((tender) => (
-                  <div
-                    key={tender.id}
-                    className="p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:border-violet-300 transition-all space-y-1.5"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-bold text-slate-900 text-xs line-clamp-1">
-                        {tender.title}
-                      </p>
-                      <span className="font-mono text-[10px] font-bold text-violet-700 shrink-0">
-                        {tender.bidsCount || 0} Bids
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
-                      <span>{tender.category}</span>
-                      <span className="font-semibold text-slate-700">{tender.estimatedBudget || "TBD"}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-
+            {/* Quick Filter Tabs */}
+            <div className="flex items-center gap-1 p-0.5 bg-slate-200/60 rounded-lg text-xs font-medium">
               <button
-                onClick={() => setIsTenderModalOpen(true)}
-                className="w-full py-2 rounded-xl border border-dashed border-slate-300 text-slate-600 hover:text-slate-900 hover:border-violet-400 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                onClick={() => setPipelineFilter("ALL")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  pipelineFilter === "ALL"
+                    ? "bg-white text-slate-900 font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Publish Work Package</span>
+                All ({recentApplications.length})
+              </button>
+              <button
+                onClick={() => setPipelineFilter("PENDING")}
+                className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
+                  pipelineFilter === "PENDING"
+                    ? "bg-white text-amber-800 font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <span>Pending Review</span>
+                {pendingCount > 0 && (
+                  <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => setPipelineFilter("APPROVED")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  pipelineFilter === "APPROVED"
+                    ? "bg-white text-emerald-800 font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Approved
+              </button>
+              <button
+                onClick={() => setPipelineFilter("REJECTED")}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  pipelineFilter === "REJECTED"
+                    ? "bg-white text-red-800 font-bold shadow-2xs"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Rejected
               </button>
             </div>
           </div>
 
-          {/* Partner Tiering Blueprint */}
-          <div className="bg-gradient-to-br from-slate-900 to-amber-950 text-white rounded-2xl p-5 shadow-lg space-y-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-amber-400" />
-              <h3 className="font-black text-sm uppercase tracking-wider text-amber-300 font-display">
-                Contractor Capacity Tiers
-              </h3>
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search firm, phone, tracking ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-amber-500 w-56 sm:w-64 transition-all"
+              />
             </div>
-            <p className="text-slate-300 text-[11px] leading-relaxed">
-              Assigned automatically during KYC evaluation based on turnover and machinery capabilities:
+
+            <Link
+              href="/admin/empanelment/applications"
+              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 shrink-0 px-2 py-1 rounded-lg hover:bg-amber-50 transition-colors"
+            >
+              <span>View All</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Table Content */}
+        {filteredApplications.length === 0 ? (
+          <div className="p-12 text-center text-xs text-slate-500 space-y-2">
+            <Inbox className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="font-bold text-slate-700">
+              {loading ? "Loading incoming applications..." : "No matching applications found."}
             </p>
-            <div className="space-y-2 pt-1 font-mono text-[11px]">
-              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
-                <span className="font-bold text-amber-400">TIER A</span>
-                <span className="text-slate-300">Turnkey &gt; ₹2 Crore</span>
+            <p className="text-[11px] text-slate-400">
+              Try adjusting your search query or switching filters.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50/70 border-b border-slate-200/80 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Vendor / Enterprise</th>
+                  <th className="px-3 py-3 font-semibold">Category & Scope</th>
+                  <th className="px-3 py-3 font-semibold">Capacity Tier</th>
+                  <th className="px-3 py-3 font-semibold">Tracking ID</th>
+                  <th className="px-3 py-3 font-semibold">Applied Date</th>
+                  <th className="px-3 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredApplications.map((app) => (
+                  <tr
+                    key={app.id}
+                    className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                    onClick={() => handleOpenReview(app)}
+                  >
+                    {/* Enterprise & Owner */}
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
+                          {getInitials(app.companyName)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 group-hover:text-amber-800 transition-colors truncate">
+                            {app.companyName}
+                          </p>
+                          <p className="text-[11px] text-slate-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
+                            <span>{app.contactName}</span>
+                            <span>•</span>
+                            <span>{app.phone}</span>
+                            {app.gstin && (
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                GSTIN ✓
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Category */}
+                    <td className="px-3 py-3.5">
+                      <span className="font-semibold text-slate-800 block truncate">
+                        {app.category}
+                      </span>
+                      <span className="text-[11px] text-slate-400 truncate block mt-0.5">
+                        {app.tradeName || "Contractor / Vendor"}
+                      </span>
+                    </td>
+
+                    {/* Tier */}
+                    <td className="px-3 py-3.5 whitespace-nowrap">
+                      {renderTierBadge(app.tier)}
+                    </td>
+
+                    {/* Tracking ID */}
+                    <td className="px-3 py-3.5 whitespace-nowrap">
+                      <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                        {app.trackingId}
+                      </span>
+                    </td>
+
+                    {/* Applied Date */}
+                    <td className="px-3 py-3.5 whitespace-nowrap text-slate-500 font-medium text-[11px]">
+                      {app.createdAt && !isNaN(new Date(app.createdAt).getTime())
+                        ? new Date(app.createdAt).toLocaleDateString()
+                        : "Recent"}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-3 py-3.5 whitespace-nowrap">
+                      {renderStatusBadge(app.status)}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1.5">
+                        {app.email && (
+                          <Link
+                            href={`/admin/automail/compose?to=${encodeURIComponent(app.email)}&name=${encodeURIComponent(app.companyName)}&brand=empanelment&template=empanelment_kyc_approval`}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+                            title="Send AutoMail Notice"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                          </Link>
+                        )}
+
+                        <button
+                          onClick={() => handleOpenReview(app)}
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 font-bold transition-colors text-[11px] inline-flex items-center gap-1 shadow-2xs"
+                        >
+                          <Eye className="w-3 h-3" />
+                          <span>Review KYC</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Lower Section: Active Tenders & Capacity Standards */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column (7 cols): Active Commercial Tenders */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-slate-700" />
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Active Commercial Tenders
+                </h3>
+                <span className="text-[11px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.2 rounded-full">
+                  {activeTenders.length}
+                </span>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
-                <span className="font-bold text-blue-400">TIER B</span>
-                <span className="text-slate-300">Core Civil ₹50L – ₹2 Cr</span>
+              <Link
+                href="/admin/empanelment/tenders"
+                className="text-xs font-bold text-amber-700 hover:text-amber-800"
+              >
+                Manage All →
+              </Link>
+            </div>
+
+            {activeTenders.length === 0 ? (
+              <div className="text-center py-8 text-slate-400 text-xs space-y-2">
+                <Briefcase className="w-7 h-7 text-slate-300 mx-auto" />
+                <p className="font-semibold text-slate-600">No active tender notices right now.</p>
+                <p className="text-[11px] text-slate-400">Click below to post a new contractor work package.</p>
               </div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
-                <span className="font-bold text-emerald-400">TIER C</span>
-                <span className="text-slate-300">Specialized ₹10L – ₹50L</span>
+            ) : (
+              <div className="space-y-2.5">
+                {activeTenders.slice(0, 3).map((tender) => (
+                  <div
+                    key={tender.id}
+                    className="p-3.5 rounded-lg bg-slate-50/70 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="font-mono text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-1.5 py-0.2 rounded">
+                          {tender.tenderNo}
+                        </span>
+                        <p className="font-bold text-slate-900 text-xs mt-1 line-clamp-1">
+                          {tender.title}
+                        </p>
+                      </div>
+                      <span className="font-mono text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full shrink-0">
+                        {tender.bidsCount || 0} Bids
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-200/60">
+                      <span className="truncate max-w-[150px] font-medium text-slate-600">{tender.category}</span>
+                      <span className="font-bold text-slate-900">{tender.estimatedBudget || "TBD"}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-slate-400" />
+                        <span className="truncate max-w-[140px]">{tender.location}</span>
+                      </span>
+                      <span className="flex items-center gap-1 font-mono">
+                        <Calendar className="w-3 h-3 text-slate-400" />
+                        <span>Due {new Date(tender.dueDate).toLocaleDateString()}</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
-                <span className="font-bold text-slate-400">TIER D</span>
-                <span className="text-slate-300">Local Supply &lt; ₹10L</span>
+            )}
+
+            <button
+              onClick={() => setIsTenderModalOpen(true)}
+              className="w-full py-2.5 rounded-lg border border-dashed border-slate-300 hover:border-amber-500 bg-slate-50/50 hover:bg-amber-50/30 text-slate-700 hover:text-amber-800 text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Post New Tender Notice</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column (5 cols): Standards & Quick Navigation */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Capacity Tier Classification Standards */}
+          <div className="bg-white rounded-xl border border-slate-200/90 p-5 shadow-2xs space-y-3 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-amber-600" />
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Contractor Capacity Standards
+                </h3>
               </div>
+              <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-semibold">
+                CPWD / HiPRO
+              </span>
+            </div>
+
+            <p className="text-slate-500 text-[11px] leading-relaxed">
+              Assigned during KYC evaluation based on past audited turnover, technical machinery, and site track record:
+            </p>
+
+            <div className="space-y-1.5 pt-1 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-lg bg-amber-50/40 border border-amber-200/60">
+                <span className="font-bold text-amber-900 text-[11px]">CLASS A</span>
+                <span className="text-slate-700 font-medium text-[11px]">Turnkey &gt; ₹2 Crore</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-blue-50/40 border border-blue-200/60">
+                <span className="font-bold text-blue-900 text-[11px]">CLASS B</span>
+                <span className="text-slate-700 font-medium text-[11px]">Core Civil ₹50L – ₹2 Cr</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-50/40 border border-emerald-200/60">
+                <span className="font-bold text-emerald-900 text-[11px]">CLASS C</span>
+                <span className="text-slate-700 font-medium text-[11px]">Specialized ₹10L – ₹50L</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200/80">
+                <span className="font-bold text-slate-700 text-[11px]">CLASS D</span>
+                <span className="text-slate-700 font-medium text-[11px]">Local Supplies &lt; ₹10L</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Hub Modules Navigation */}
+          <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs space-y-2.5">
+            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Procurement Directorate Modules
+            </h4>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Link
+                href="/admin/empanelment/gate-passes"
+                className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all group"
+              >
+                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
+                  <QrCode className="w-3.5 h-3.5" />
+                </div>
+                <p className="font-bold text-slate-900">Site Passes</p>
+                <p className="text-[10px] text-slate-500">24-Hr gate security</p>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/work-orders"
+                className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all group"
+              >
+                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
+                  <FileText className="w-3.5 h-3.5" />
+                </div>
+                <p className="font-bold text-slate-900">Work Orders</p>
+                <p className="text-[10px] text-slate-500">Milestone billing</p>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/directory"
+                className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all group"
+              >
+                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
+                  <Users className="w-3.5 h-3.5" />
+                </div>
+                <p className="font-bold text-slate-900">Directory</p>
+                <p className="text-[10px] text-slate-500">Verified Rolodex</p>
+              </Link>
+
+              <Link
+                href="/admin/automail?brand=empanelment"
+                className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all group"
+              >
+                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
+                  <Mail className="w-3.5 h-3.5" />
+                </div>
+                <p className="font-bold text-slate-900">AutoMail Hub</p>
+                <p className="text-[10px] text-slate-500">Broadcast notices</p>
+              </Link>
             </div>
           </div>
         </div>

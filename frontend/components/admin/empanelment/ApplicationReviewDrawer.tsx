@@ -169,12 +169,14 @@ export default function ApplicationReviewDrawer({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                {application.category} • Submitted on{" "}
-                {new Date(application.createdAt).toLocaleDateString("en-IN", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
+                {application.category} • Submitted{" "}
+                {application.createdAt && !isNaN(new Date(application.createdAt).getTime())
+                  ? new Date(application.createdAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Recently"}
               </p>
             </div>
           </div>

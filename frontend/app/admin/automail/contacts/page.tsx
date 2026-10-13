@@ -24,6 +24,7 @@ import {
   CheckSquare,
   Square,
   ChevronDown,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function AutoMailContacts() {
@@ -72,6 +73,7 @@ export default function AutoMailContacts() {
   const [syncHiproLeads, setSyncHiproLeads] = useState(true);
   const [syncHiproNewsletter, setSyncHiproNewsletter] = useState(true);
   const [syncHbsLeads, setSyncHbsLeads] = useState(true);
+  const [syncEmpanelmentVendors, setSyncEmpanelmentVendors] = useState(true);
   const [syncingCrm, setSyncingCrm] = useState(false);
 
   // Toast
@@ -163,7 +165,7 @@ export default function AutoMailContacts() {
       const res = await fetch("/api/automail/contacts/sync-crm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ syncHiproLeads, syncHiproNewsletter, syncHbsLeads }),
+        body: JSON.stringify({ syncHiproLeads, syncHiproNewsletter, syncHbsLeads, syncEmpanelmentVendors }),
       });
       const data = await res.json();
       if (data.success) {
@@ -354,14 +356,20 @@ export default function AutoMailContacts() {
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                 brandFilter === "hipro"
                   ? "bg-blue-50 text-blue-700 border-blue-200"
+                  : brandFilter === "empanelment"
+                  ? "bg-amber-50 text-amber-700 border-amber-200"
                   : "bg-red-50 text-red-700 border-red-200"
               }`}>
-                {brandFilter === "hipro" ? "HiPRO Scope" : "Hind Build Scope"}
+                {brandFilter === "hipro"
+                  ? "HiPRO Scope"
+                  : brandFilter === "empanelment"
+                  ? "Empanelment Hub Scope"
+                  : "Hind Build Scope"}
               </span>
             )}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Centralized subscriber database spanning HiPRO, Hind Build & external marketing lists
+            Centralized subscriber database spanning HiPRO, Hind Build, Empanelment Hub & external marketing lists
           </p>
         </div>
 
@@ -625,6 +633,11 @@ export default function AutoMailContacts() {
                             <Hammer className="w-3 h-3" />
                             Hind Build
                           </span>
+                        ) : c.brand === "empanelment" ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                            <ShieldCheck className="w-3 h-3" />
+                            Empanelment
+                          </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                             <Globe2 className="w-3 h-3" />
@@ -743,6 +756,19 @@ export default function AutoMailContacts() {
                   <p className="text-slate-500 text-[11px]">Repair, maintenance & waterproofing inquiries</p>
                 </div>
               </label>
+
+              <label className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={syncEmpanelmentVendors}
+                  onChange={(e) => setSyncEmpanelmentVendors(e.target.checked)}
+                  className="rounded text-amber-600"
+                />
+                <div className="text-xs">
+                  <p className="font-bold text-slate-900">Vendor Empanelment & Contractors Hub</p>
+                  <p className="text-slate-500 text-[11px]">Empanelled vendors, applicants & tender bidders</p>
+                </div>
+              </label>
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -818,6 +844,7 @@ export default function AutoMailContacts() {
                   <option value="all">Universal / All Brands</option>
                   <option value="hipro">HiPRO Construction</option>
                   <option value="hbs">Hind Build (HiBUILD)</option>
+                  <option value="empanelment">Empanelment Hub (Vendors/Contractors)</option>
                 </select>
               </div>
 
@@ -913,6 +940,7 @@ export default function AutoMailContacts() {
                   <option value="all">Universal / All Brands</option>
                   <option value="hipro">HiPRO Construction</option>
                   <option value="hbs">Hind Build (HiBUILD)</option>
+                  <option value="empanelment">Empanelment Hub (Vendors/Contractors)</option>
                 </select>
               </div>
 

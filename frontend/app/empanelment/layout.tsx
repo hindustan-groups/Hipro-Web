@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EmpanelmentNavbar from "@/components/empanelment/EmpanelmentNavbar";
 import EmpanelmentFooter from "@/components/empanelment/EmpanelmentFooter";
+import EmpanelmentSupportWidget from "@/components/empanelment/EmpanelmentSupportWidget";
 
 export const metadata: Metadata = {
   title: "Vendor & Contractor Empanelment Portal | Hindustan Projects",
@@ -22,7 +23,7 @@ export default function EmpanelmentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/60 font-sans text-slate-900 selection:bg-amber-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-50/60 font-sans text-slate-900 selection:bg-red-500 selection:text-white relative">
       <EmpanelmentNavbar />
       <main className="flex-1">{children}</main>
       <EmpanelmentFooter />

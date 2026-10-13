@@ -16,6 +16,7 @@ import {
   Layers,
   ChevronDown,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function AutoMailNav({
@@ -80,6 +81,15 @@ export default function AutoMailNav({
       color: "text-red-600",
       bgLight: "bg-red-50",
     },
+    {
+      id: "empanelment",
+      label: "Vendor Empanelment Hub",
+      shortLabel: "Empanelment Hub",
+      subtitle: "Contractor KYC, tenders, gate passes & procurement",
+      icon: ShieldCheck,
+      color: "text-amber-600",
+      bgLight: "bg-amber-50",
+    },
   ];
 
   const selectedBrandObj = brandOptions.find((b) => b.id === currentBrand) || brandOptions[0];
@@ -101,7 +111,7 @@ export default function AutoMailNav({
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium line-clamp-1">
-              High-deliverability Hostinger SMTP automation for HiPRO, Hind Build & all campaigns
+              High-deliverability Hostinger SMTP automation for HiPRO, Hind Build, Empanelment & campaigns
             </p>
           </div>
         </div>
@@ -133,7 +143,7 @@ export default function AutoMailNav({
               <div className="px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center justify-between border-b border-slate-100 pb-2 mb-1">
                 <span>Select Brand Scope</span>
                 <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">
-                  3 Brands
+                  4 Brands
                 </span>
               </div>
               {brandOptions.map((b) => {

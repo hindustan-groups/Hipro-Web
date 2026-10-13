@@ -49,6 +49,8 @@ const defaultAllowedOrigins = [
   "https://hindustanprojects.in",
   "https://hindbuilding.hindustanprojects.in",
   "https://empanelment.hindustanprojects.in",
+  "https://vendor.hindustanprojects.in",
+  "https://vender.hindustanprojects.in",
 ];
 
 const envAllowedOrigins = process.env.ALLOWED_ORIGINS

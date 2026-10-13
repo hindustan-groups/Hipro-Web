@@ -17,6 +17,7 @@ import {
   Building2,
   Hammer,
   Globe2,
+  ShieldCheck,
   Search,
   Filter,
 } from "lucide-react";
@@ -201,7 +202,7 @@ export default function AutoMailCampaigns() {
           <div className="space-y-1">
             <h3 className="text-sm font-bold text-slate-800">No campaigns found</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Compose your first email campaign for {selectedBrand === "hipro" ? "HiPRO" : selectedBrand === "hbs" ? "Hind Build" : "your audience"}.
+              Compose your first email campaign for {selectedBrand === "hipro" ? "HiPRO" : selectedBrand === "hbs" ? "Hind Build" : selectedBrand === "empanelment" ? "Empanelled Partners" : "your audience"}.
             </p>
           </div>
           <Link
@@ -237,6 +238,11 @@ export default function AutoMailCampaigns() {
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
                           <Hammer className="w-3 h-3" />
                           Hind Build
+                        </span>
+                      ) : c.brand === "empanelment" ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                          <ShieldCheck className="w-3 h-3" />
+                          Empanelment
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">

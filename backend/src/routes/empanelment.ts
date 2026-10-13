@@ -581,6 +581,10 @@ router.get("/admin/stats", async (req: Request, res: Response) => {
         rejectedApplications,
         activeTenders,
         totalPassesToday,
+        total: totalApplications,
+        approved: approvedPartners,
+        submitted: pendingVerification,
+        todayGatePasses: totalPassesToday,
       },
     });
   } catch (err: any) {
@@ -716,6 +720,28 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
 /**
  * Admin Tenders CRUD
  */
+router.get("/admin/tenders", async (req: Request, res: Response) => {
+  try {
+    const tenders = await prisma.empanelmentTender.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: {
+          select: { bids: true },
+        },
+      },
+    });
+
+    const formatted = tenders.map((t) => ({
+      ...t,
+      bidsCount: t._count.bids,
+    }));
+
+    return res.json({ success: true, count: formatted.length, tenders: formatted });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 router.post("/admin/tenders", async (req: Request, res: Response) => {
   try {
     const { title, category, location, estimatedBudget, emdAmount, dueDate, scopeOfWork, documentUrl } = req.body;
@@ -818,6 +844,393 @@ router.get("/admin/gate-passes", async (req: Request, res: Response) => {
     });
 
     return res.json({ success: true, passes });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===================================================================
+// VENDOR HELPDESK TICKETS ENDPOINTS
+// ===================================================================
+
+/**
+ * Public/Vendor: Submit Support Ticket
+ * POST /api/empanelment/tickets
+ */
+router.post("/tickets", async (req: Request, res: Response) => {
+  try {
+    const { trackingId, subject, category, priority, message } = req.body;
+
+    if (!trackingId || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Tracking ID, Subject, and Message are required",
+      });
+    }
+
+    const vendor = await prisma.vendorApplication.findUnique({
+      where: { trackingId: String(trackingId).trim().toUpperCase() },
+    });
+
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        error: "Vendor profile with this Tracking ID was not found",
+      });
+    }
+
+    const count = await prisma.empanelmentTicket.count();
+    const ticketNo = `HP-TCK-${String(count + 1).padStart(3, "0")}`;
+
+    const ticket = await prisma.empanelmentTicket.create({
+      data: {
+        ticketNo,
+        vendorId: vendor.id,
+        subject,
+        category: category || "General Query",
+        priority: priority || "NORMAL",
+        message,
+        status: "OPEN",
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      ticketNo: ticket.ticketNo,
+      ticket,
+      message: "Ticket submitted successfully. Procurement support team will review within 24 business hours.",
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: List All Vendor Helpdesk Tickets
+ * GET /api/empanelment/admin/tickets
+ */
+router.get("/admin/tickets", async (req: Request, res: Response) => {
+  try {
+    const { status, priority } = req.query;
+    const where: any = {};
+
+    if (status && status !== "ALL") where.status = String(status);
+    if (priority && priority !== "ALL") where.priority = String(priority);
+
+    const tickets = await prisma.empanelmentTicket.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        vendor: {
+          select: {
+            companyName: true,
+            contactName: true,
+            phone: true,
+            email: true,
+            tier: true,
+            trackingId: true,
+          },
+        },
+      },
+    });
+
+    return res.json({ success: true, count: tickets.length, tickets });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Update Ticket Status & Send Reply
+ * PATCH /api/empanelment/admin/tickets/:id
+ */
+router.patch("/admin/tickets/:id", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { status, adminReply, priority } = req.body;
+
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (adminReply !== undefined) updateData.adminReply = adminReply;
+    if (priority) updateData.priority = priority;
+
+    const ticket = await prisma.empanelmentTicket.update({
+      where: { id },
+      data: updateData,
+      include: {
+        vendor: {
+          select: {
+            email: true,
+            companyName: true,
+            contactName: true,
+          },
+        },
+      },
+    });
+
+    return res.json({
+      success: true,
+      ticket,
+      message: "Support ticket updated successfully",
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===================================================================
+// WORK ORDERS & MILESTONE INVOICING ENDPOINTS
+// ===================================================================
+
+/**
+ * Admin: List Work Orders
+ * GET /api/empanelment/admin/work-orders
+ */
+router.get("/admin/work-orders", async (req: Request, res: Response) => {
+  try {
+    const workOrders = await prisma.vendorWorkOrder.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        vendor: {
+          select: {
+            companyName: true,
+            contactName: true,
+            phone: true,
+            tier: true,
+            city: true,
+          },
+        },
+        invoices: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    return res.json({ success: true, count: workOrders.length, workOrders });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Create New Work Order
+ * POST /api/empanelment/admin/work-orders
+ */
+router.post("/admin/work-orders", async (req: Request, res: Response) => {
+  try {
+    const {
+      vendorId,
+      projectName,
+      packageTitle,
+      contractAmount,
+      startDate,
+      completionTargetDate,
+      contractDocUrl,
+    } = req.body;
+
+    if (!vendorId || !projectName || !packageTitle || !contractAmount) {
+      return res.status(400).json({
+        success: false,
+        error: "Vendor, Project Name, Package Title, and Contract Amount are required",
+      });
+    }
+
+    const count = await prisma.vendorWorkOrder.count();
+    const workOrderNo = `HP-WO-2026-${String(count + 1).padStart(3, "0")}`;
+
+    const workOrder = await prisma.vendorWorkOrder.create({
+      data: {
+        workOrderNo,
+        vendorId: String(vendorId),
+        projectName,
+        packageTitle,
+        contractAmount: parseFloat(String(contractAmount)),
+        startDate: startDate ? new Date(startDate) : new Date(),
+        completionTargetDate: completionTargetDate ? new Date(completionTargetDate) : null,
+        progressPercent: 0,
+        status: "IN_EXECUTION",
+        contractDocUrl: contractDocUrl || null,
+      },
+      include: {
+        vendor: { select: { companyName: true, contactName: true } },
+      },
+    });
+
+    return res.status(201).json({ success: true, workOrder });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Update Work Order Progress & Status
+ * PATCH /api/empanelment/admin/work-orders/:id
+ */
+router.patch("/admin/work-orders/:id", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { progressPercent, status, completionTargetDate } = req.body;
+
+    const updateData: any = {};
+    if (progressPercent !== undefined) updateData.progressPercent = parseInt(progressPercent, 10);
+    if (status) updateData.status = status;
+    if (completionTargetDate) updateData.completionTargetDate = new Date(completionTargetDate);
+
+    const workOrder = await prisma.vendorWorkOrder.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return res.json({ success: true, workOrder });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: List Invoices
+ * GET /api/empanelment/admin/invoices
+ */
+router.get("/admin/invoices", async (req: Request, res: Response) => {
+  try {
+    const invoices = await prisma.vendorInvoice.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        vendor: {
+          select: {
+            companyName: true,
+            tier: true,
+            phone: true,
+            gstin: true,
+            pan: true,
+          },
+        },
+        workOrder: {
+          select: {
+            workOrderNo: true,
+            projectName: true,
+            packageTitle: true,
+          },
+        },
+      },
+    });
+
+    return res.json({ success: true, count: invoices.length, invoices });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Create Milestone Invoice
+ * POST /api/empanelment/admin/invoices
+ */
+router.post("/admin/invoices", async (req: Request, res: Response) => {
+  try {
+    const { vendorId, workOrderId, invoiceNo, amount, tdsPercent } = req.body;
+
+    if (!vendorId || !invoiceNo || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: "Vendor, Invoice Number, and Amount are required",
+      });
+    }
+
+    const rawAmount = parseFloat(String(amount));
+    const tds = (rawAmount * (parseFloat(String(tdsPercent || "2")))) / 100;
+    const net = rawAmount - tds;
+
+    const invoice = await prisma.vendorInvoice.create({
+      data: {
+        invoiceNo: String(invoiceNo).trim().toUpperCase(),
+        vendorId: String(vendorId),
+        workOrderId: workOrderId ? String(workOrderId) : null,
+        amount: rawAmount,
+        tdsDeduction: tds,
+        netPayable: net,
+        status: "UNDER_REVIEW",
+      },
+    });
+
+    return res.status(201).json({ success: true, invoice });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Update Invoice Status (Approve / Mark Paid with RTGS)
+ * PATCH /api/empanelment/admin/invoices/:id/status
+ */
+router.patch("/admin/invoices/:id/status", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { status, rtgsRef } = req.body;
+
+    const updateData: any = {};
+    if (status) updateData.status = status;
+    if (rtgsRef) updateData.rtgsRef = rtgsRef;
+    if (status === "PAID") updateData.paidAt = new Date();
+
+    const invoice = await prisma.vendorInvoice.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return res.json({ success: true, invoice, message: "Invoice updated successfully" });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===================================================================
+// EMPANELMENT PORTAL CMS & PAGE BUILDER ENDPOINTS
+// ===================================================================
+
+/**
+ * Public: Get Empanelment Portal CMS Content
+ * GET /api/empanelment/content
+ */
+router.get("/content", async (_req: Request, res: Response) => {
+  try {
+    let content = await prisma.empanelmentContent.findUnique({
+      where: { id: "singleton" },
+    });
+
+    if (!content) {
+      content = await prisma.empanelmentContent.create({
+        data: { id: "singleton" },
+      });
+    }
+
+    return res.json({ success: true, content });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Update Empanelment Portal CMS Content
+ * PUT /api/empanelment/admin/content
+ */
+router.put("/admin/content", async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
+
+    const updated = await prisma.empanelmentContent.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", ...data },
+      update: data,
+    });
+
+    return res.json({
+      success: true,
+      content: updated,
+      message: "Empanelment Portal CMS updated successfully",
+    });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }

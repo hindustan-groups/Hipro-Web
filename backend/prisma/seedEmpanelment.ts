@@ -20,7 +20,6 @@ async function main() {
         status: "ACTIVE",
         scopeOfWork:
           "Earthwork excavation, RCC footings (M30 grade), columns, tie beams, and plinth masonry across 45,000 sq.ft industrial shed. Contractor must deploy mechanized batching plant and bar bending machinery on site.",
-        minimumTier: "CLASS_B",
       },
       {
         tenderNo: "HP-TND-2026-02",
@@ -33,7 +32,6 @@ async function main() {
         status: "ACTIVE",
         scopeOfWork:
           "Supply, fabrication, sand blasting, epoxy painting, and site erection of 380 MT high-tensile steel rafters, purlins, and color coated roofing sheets (0.50mm BMT). EOT crane runway beam alignment included.",
-        minimumTier: "CLASS_A",
       },
       {
         tenderNo: "HP-TND-2026-03",
@@ -46,7 +44,6 @@ async function main() {
         status: "ACTIVE",
         scopeOfWork:
           "Daily supply of 45-60 cu.m transit mixer batches with slump test certificates and cube test compliance reports. Consistent supply rate guaranteed under peak pour schedules.",
-        minimumTier: "CLASS_C",
       },
     ];
 
@@ -79,6 +76,7 @@ async function main() {
         designation: "Managing Director",
         email: "contact@marwarinfra.example.com",
         phone: "+91 98290 12345",
+        address: "Plot 42, Riico Industrial Area, Bhilwara, Rajasthan",
         city: "Bhilwara",
         state: "Rajasthan",
         pincode: "311001",

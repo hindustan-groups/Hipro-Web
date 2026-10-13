@@ -30,6 +30,7 @@ import {
   Filter,
   ChevronDown,
   Wand2,
+  ShieldCheck,
 } from "lucide-react";
 
 const SMART_WORKFLOWS = [
@@ -83,6 +84,26 @@ const SMART_WORKFLOWS = [
     subject: "Terrace Waterproofing Proposal & 10-Year Warranty for {{name}}",
     templateId: "hbs_roof_waterproofing_quote",
   },
+  {
+    id: "empanelment_kyc",
+    title: "Vendor Empanelment Approval",
+    icon: "🛡️",
+    badge: "Empanelment Hub",
+    desc: "Official KYC clearance, capacity tier & bidding authorization",
+    brand: "empanelment",
+    subject: "Congratulations {{name}}: Empanelment Approved & Capacity Tier Assigned — Hindustan Projects",
+    templateId: "empanelment_kyc_approval",
+  },
+  {
+    id: "empanelment_tender",
+    title: "Tender Invitation & Bidding",
+    icon: "📋",
+    badge: "Active Tenders",
+    desc: "Commercial work package notice & bid submission request",
+    brand: "empanelment",
+    subject: "Active Tender Notice: Civil & Structural Work Packages Open for Bidding — HP Tenders",
+    templateId: "empanelment_tender_invite",
+  },
 ];
 
 export default function AutoMailCompose() {
@@ -99,10 +120,18 @@ export default function AutoMailCompose() {
   const [name, setName] = useState("");
   const [subject, setSubject] = useState(initialSubject);
   const [senderName, setSenderName] = useState(
-    initialBrand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects"
+    initialBrand === "hbs"
+      ? "Hind Building Solutions"
+      : initialBrand === "empanelment"
+      ? "HiPRO Empanelment Desk"
+      : "Hindustan Projects"
   );
   const [senderEmail, setSenderEmail] = useState(
-    initialBrand === "hbs" ? "hbs@hindustanprojects.in" : "info@hindustanprojects.in"
+    initialBrand === "hbs"
+      ? "hbs@hindustanprojects.in"
+      : initialBrand === "empanelment"
+      ? "empanelment@hindustanprojects.in"
+      : "info@hindustanprojects.in"
   );
   const [htmlBody, setHtmlBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
@@ -111,17 +140,20 @@ export default function AutoMailCompose() {
   const [previewPersonalized, setPreviewPersonalized] = useState(true);
   const [previewTestName, setPreviewTestName] = useState(initialName || "Ramesh Sharma");
 
-  // Recipient Mode: "custom" (direct single/comma-separated emails) vs "group" (all/hipro/hbs)
+  // Recipient Mode: "custom" (direct single/comma-separated emails) vs "group" (all/hipro/hbs/empanelment)
   const [recipientMode, setRecipientMode] = useState<"custom" | "group">(initialTo ? "custom" : "group");
   const [customTo, setCustomTo] = useState(initialTo);
   const [customClientName, setCustomClientName] = useState(initialName);
 
   // Audience Targeting
-  const [targetAudience, setTargetAudience] = useState<"all" | "hipro" | "hbs">("all");
-  const [audienceCounts, setAudienceCounts] = useState<{ all: number; hipro: number; hbs: number }>({
+  const [targetAudience, setTargetAudience] = useState<"all" | "hipro" | "hbs" | "empanelment">(
+    initialBrand === "empanelment" ? "empanelment" : initialBrand === "hbs" ? "hbs" : initialBrand === "hipro" ? "hipro" : "all"
+  );
+  const [audienceCounts, setAudienceCounts] = useState<{ all: number; hipro: number; hbs: number; empanelment: number }>({
     all: 0,
     hipro: 0,
     hbs: 0,
+    empanelment: 0,
   });
 
   // SMTP status
@@ -161,6 +193,7 @@ export default function AutoMailCompose() {
             all: data.stats.totalContacts || 0,
             hipro: data.stats.brandDistribution?.hipro || 0,
             hbs: data.stats.brandDistribution?.hbs || 0,
+            empanelment: data.stats.brandDistribution?.empanelment || 0,
           });
         }
         if (data.settings && data.settings.smtpConfigured !== undefined) {
@@ -201,8 +234,13 @@ export default function AutoMailCompose() {
       }
     }
     if (!htmlBody) {
-      const defaultTemplate = initialBrand === "hbs" ? BUSINESS_TEMPLATES[2] : BUSINESS_TEMPLATES[0];
-      applyTemplate(defaultTemplate);
+      const defaultTemplate =
+        initialBrand === "hbs"
+          ? BUSINESS_TEMPLATES.find((t) => t.brand === "hbs") || BUSINESS_TEMPLATES[2]
+          : initialBrand === "empanelment"
+          ? BUSINESS_TEMPLATES.find((t) => t.brand === "empanelment") || BUSINESS_TEMPLATES[0]
+          : BUSINESS_TEMPLATES[0];
+      if (defaultTemplate) applyTemplate(defaultTemplate);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTemplateId]);
@@ -212,10 +250,25 @@ export default function AutoMailCompose() {
     setSubject(t.subject);
     setName(t.title);
     setBrand(t.brand || "all");
-    setSenderName(t.senderName || (t.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects"));
-    setSenderEmail(t.senderEmail || (t.brand === "hbs" ? "hbs@hindustanprojects.in" : "info@hindustanprojects.in"));
+    setSenderName(
+      t.senderName ||
+        (t.brand === "hbs"
+          ? "Hind Building Solutions"
+          : t.brand === "empanelment"
+          ? "HiPRO Empanelment Desk"
+          : "Hindustan Projects")
+    );
+    setSenderEmail(
+      t.senderEmail ||
+        (t.brand === "hbs"
+          ? "hbs@hindustanprojects.in"
+          : t.brand === "empanelment"
+          ? "empanelment@hindustanprojects.in"
+          : "info@hindustanprojects.in")
+    );
     if (t.brand === "hipro") setTargetAudience("hipro");
     else if (t.brand === "hbs") setTargetAudience("hbs");
+    else if (t.brand === "empanelment") setTargetAudience("empanelment");
     else setTargetAudience("all");
     setShowLibraryModal(false);
     setToast({ message: `Loaded template: "${t.title}"`, type: "success" });
@@ -267,6 +320,10 @@ export default function AutoMailCompose() {
       setSenderName("Hind Building Solutions");
       setSenderEmail("hbs@hindustanprojects.in");
       setTargetAudience("hbs");
+    } else if (newBrand === "empanelment") {
+      setSenderName("HiPRO Empanelment Desk");
+      setSenderEmail("empanelment@hindustanprojects.in");
+      setTargetAudience("empanelment");
     } else if (newBrand === "hipro") {
       setSenderName("Hindustan Projects");
       setSenderEmail("info@hindustanprojects.in");
@@ -322,6 +379,10 @@ export default function AutoMailCompose() {
       setSenderName("Hind Building Solutions");
       setSenderEmail("hbs@hindustanprojects.in");
       setTargetAudience("hbs");
+    } else if (wf.brand === "empanelment") {
+      setSenderName("HiPRO Empanelment Desk");
+      setSenderEmail("empanelment@hindustanprojects.in");
+      setTargetAudience("empanelment");
     } else {
       setSenderName("Hindustan Projects");
       setSenderEmail("info@hindustanprojects.in");
@@ -515,6 +576,8 @@ export default function AutoMailCompose() {
       ? audienceCounts.hipro
       : targetAudience === "hbs"
       ? audienceCounts.hbs
+      : targetAudience === "empanelment"
+      ? audienceCounts.empanelment
       : audienceCounts.all;
 
   const combinedTemplates = [
@@ -527,6 +590,7 @@ export default function AutoMailCompose() {
     "Custom / Imported",
     "Construction & Engineering",
     "Building Repair & Maintenance",
+    "Vendor Empanelment & Procurement",
     "Formal Quotations",
     "Client Relations",
     "Official Company",
@@ -760,7 +824,7 @@ export default function AutoMailCompose() {
           {/* MODE B: AUDIENCE GROUP SEGMENT */}
           {recipientMode === "group" && (
             <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <label
                   className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                     targetAudience === "all"
@@ -781,7 +845,7 @@ export default function AutoMailCompose() {
                     />
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    HiPRO + Hind Build + CSV Uploads ({audienceCounts.all} contacts)
+                    HiPRO + Hind Build + Empanelment ({audienceCounts.all} contacts)
                   </p>
                 </label>
 
@@ -840,6 +904,35 @@ export default function AutoMailCompose() {
                   </div>
                   <p className="text-[11px] text-slate-500">
                     Repair, Waterproofing Inquiries ({audienceCounts.hbs} contacts)
+                  </p>
+                </label>
+
+                <label
+                  className={`p-3 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
+                    targetAudience === "empanelment"
+                      ? "bg-emerald-50/70 border-emerald-300 ring-2 ring-emerald-400/20"
+                      : "bg-white border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Empanelled Partners</span>
+                    </span>
+                    <input
+                      type="radio"
+                      name="audience"
+                      checked={targetAudience === "empanelment"}
+                      onChange={() => {
+                        setTargetAudience("empanelment");
+                        setBrand("empanelment");
+                        setSenderName("HiPRO Empanelment Desk");
+                        setSenderEmail("empanelment@hindustanprojects.in");
+                      }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Vendors, Contractors, Tenders ({audienceCounts.empanelment} contacts)
                   </p>
                 </label>
               </div>

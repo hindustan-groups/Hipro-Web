@@ -64,9 +64,10 @@ router.get("/stats", async (req: Request, res: Response) => {
     ]);
 
     // Brand distribution
-    const [hiproContacts, hbsContacts] = await Promise.all([
+    const [hiproContacts, hbsContacts, empanelmentContacts] = await Promise.all([
       (prisma as any).automailContact.count({ where: { brand: "hipro" } }),
       (prisma as any).automailContact.count({ where: { brand: "hbs" } }),
+      (prisma as any).automailContact.count({ where: { brand: "empanelment" } }),
     ]);
 
     const settings = getAutomailSettings();
@@ -90,7 +91,8 @@ router.get("/stats", async (req: Request, res: Response) => {
         brandDistribution: {
           hipro: hiproContacts,
           hbs: hbsContacts,
-          general: totalContacts - (hiproContacts + hbsContacts),
+          empanelment: empanelmentContacts,
+          general: Math.max(0, totalContacts - (hiproContacts + hbsContacts + empanelmentContacts)),
         },
         recentStats: dailyStats.reverse(),
       },
@@ -946,10 +948,10 @@ router.post("/contacts/import", upload.single("file"), async (req: Request, res:
   }
 });
 
-// 1-Click Sync from CRM Leads (HiPRO + Hind Build)
+// 1-Click Sync from CRM Leads (HiPRO + Hind Build + Empanelment Hub)
 router.post("/contacts/sync-crm", async (req: Request, res: Response) => {
   try {
-    const { syncHiproLeads = true, syncHiproNewsletter = true, syncHbsLeads = true } = req.body;
+    const { syncHiproLeads = true, syncHiproNewsletter = true, syncHbsLeads = true, syncEmpanelmentVendors = true } = req.body;
 
     let syncedCount = 0;
 
@@ -1040,9 +1042,42 @@ router.post("/contacts/sync-crm", async (req: Request, res: Response) => {
       }
     }
 
+    // 4. Sync Empanelment Vendors & Contractors
+    if (syncEmpanelmentVendors) {
+      const vendorApps = await (prisma as any).vendorApplication.findMany({
+        select: {
+          email: true,
+          companyName: true,
+          contactName: true,
+          ownerName: true,
+          category: true,
+        },
+      });
+
+      for (const va of vendorApps) {
+        if (!va.email) continue;
+        const clean = va.email.toLowerCase().trim();
+        const contactName = va.contactName || va.ownerName || va.companyName || clean.split("@")[0];
+        await (prisma as any).automailContact.upsert({
+          where: { email: clean },
+          create: {
+            email: clean,
+            name: contactName,
+            brand: "empanelment",
+            source: "vendor_application",
+          },
+          update: {
+            name: contactName,
+            brand: "empanelment",
+          },
+        }).catch(() => null);
+        syncedCount++;
+      }
+    }
+
     return res.json({
       success: true,
-      message: `Synced ${syncedCount} contacts across HiPRO and Hind Build (HBS)!`,
+      message: `Synced ${syncedCount} contacts across HiPRO, Hind Build, and Empanelment Hub!`,
       syncedCount,
     });
   } catch (err: any) {

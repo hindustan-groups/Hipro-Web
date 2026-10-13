@@ -1,8 +1,13 @@
 export interface AutomailBusinessTemplate {
   id: string;
   title: string;
-  category: "Construction & Engineering" | "Building Repair & Maintenance" | "Formal Quotations" | "Client Relations";
-  brand: "hipro" | "hbs" | "all";
+  category:
+    | "Construction & Engineering"
+    | "Building Repair & Maintenance"
+    | "Formal Quotations"
+    | "Client Relations"
+    | "Vendor Empanelment & Procurement";
+  brand: "hipro" | "hbs" | "empanelment" | "all";
   badge: string;
   description: string;
   subject: string;
@@ -717,6 +722,387 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
             <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
               <p style="margin: 0;">You are receiving this newsletter as a subscribed client of {{brand}}.</p>
               <p style="margin: 4px 0 0;">Sent to {{email}} • © 2026 Hindustan Projects. All rights reserved.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // VENDOR EMPANELMENT & PROCUREMENT TEMPLATES
+  // ─────────────────────────────────────────────────────────────
+
+  // 7. Vendor Empanelment KYC Approval Letter
+  {
+    id: "empanelment_kyc_approval",
+    title: "Vendor Empanelment KYC Approval & Tier Classification",
+    category: "Vendor Empanelment & Procurement",
+    brand: "empanelment",
+    badge: "KYC Verified",
+    description: "Official confirmation letter sent to verified contractors assigning capacity Tier (Class A, B, or C) with portal credentials.",
+    subject: "Congratulations {{name}}: Empanelment Approved & Capacity Tier Assigned — Hindustan Projects",
+    senderName: "HiPRO Empanelment Desk",
+    senderEmail: "empanelment@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Empanelment Approved - Hindustan Projects</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          
+          <!-- Gold Amber Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #78350f, #d97706); padding: 28px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <span style="display: inline-block; padding: 4px 12px; background-color: rgba(255,255,255,0.2); border-radius: 20px; color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
+                      OFFICIAL PROCUREMENT LETTER
+                    </span>
+                    <h1 style="margin: 10px 0 4px; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: 1px;">
+                      HINDUSTAN PROJECTS
+                    </h1>
+                    <p style="margin: 0; color: #fef3c7; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;">
+                      Vendor & Contractor Empanelment Directorate
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Success Alert Box -->
+          <tr>
+            <td style="padding: 28px 28px 10px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 16px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 700;">
+                      ✅ Verification Status: KYC VERIFIED & APPROVED
+                    </p>
+                    <p style="margin: 4px 0 0; color: #047857; font-size: 12px; line-height: 1.5;">
+                      Your enterprise documents, GST compliance, and audited turnover have cleared preliminary verification. You are officially enrolled in our centralized procurement network.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Letter Body -->
+          <tr>
+            <td style="padding: 16px 28px 20px; color: #1e293b;">
+              <p style="font-size: 15px; margin: 0 0 14px; font-weight: 700; color: #0f172a;">
+                Dear {{name}},
+              </p>
+              <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
+                We are pleased to inform you that your registration under <strong>Hindustan Projects Vendor Empanelment Program</strong> has been successfully approved. You are now authorized to participate in competitive bidding, submit technical quotations, and receive commercial work packages across our residential, industrial, and infrastructure project sites.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Partner Entitlements -->
+          <tr>
+            <td style="padding: 0 28px 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0 0 8px; font-size: 12px; font-weight: 800; color: #92400e; text-transform: uppercase;">
+                      📋 YOUR EMPANELMENT BENEFITS
+                    </p>
+                    <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #78350f; line-height: 1.7;">
+                      <li><strong>Direct Work Package Alerts:</strong> Immediate notification upon tender release matching your scope.</li>
+                      <li><strong>Fast-Track Milestone Billing:</strong> Automated RA bill approvals with strict 14-day payment cycles.</li>
+                      <li><strong>24-Hour Digital Site Gate Passes:</strong> Automated worker clearance for site logistics.</li>
+                      <li><strong>Priority Supply Order Agreements:</strong> Preferred supplier status for high-volume cement, steel & hardware.</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Action Button -->
+          <tr>
+            <td style="padding: 10px 28px 30px; text-align: center;">
+              <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+                Access Partner Portal & Bidding Radar →
+              </a>
+              <p style="margin: 12px 0 0; font-size: 11px; color: #64748b;">
+                Support Hotline: +91 98290 82821 • procurement@hindustanprojects.in
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              <p style="margin: 0;">Sent by Hindustan Projects Vendor Directorate • Jaipur & Jodhpur Central Offices</p>
+              <p style="margin: 4px 0 0;">Recipient: {{email}} • Confidential partner communication.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // 8. Tender Notification & Bidding Invitation
+  {
+    id: "empanelment_tender_invite",
+    title: "Active Tender Notice & Commercial Work Package Bidding",
+    category: "Vendor Empanelment & Procurement",
+    brand: "empanelment",
+    badge: "Bidding Radar",
+    description: "Work package notice dispatched to empanelled vendors inviting commercial quotes for civil, MEP, or structural work packages.",
+    subject: "Tender Invitation: Commercial Work Package Bidding Allotment for {{name}}",
+    senderName: "HiPRO Procurement & Tenders",
+    senderEmail: "empanelment@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tender Invitation - Hindustan Projects</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          
+          <!-- Header Bar -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
+              <span style="display: inline-block; padding: 4px 12px; background-color: #d97706; border-radius: 20px; color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
+                PROCUREMENT NOTICE • RFQ ALLOTMENT
+              </span>
+              <h1 style="margin: 10px 0 4px; color: #ffffff; font-size: 20px; font-weight: 800;">
+                HINDUSTAN PROJECTS
+              </h1>
+              <p style="margin: 0; color: #94a3b8; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;">
+                Tender Allotment & Contractor Bidding Hub
+              </p>
+            </td>
+          </tr>
+
+          <!-- Intro Message -->
+          <tr>
+            <td style="padding: 28px 28px 16px; color: #1e293b;">
+              <p style="font-size: 15px; margin: 0 0 12px; font-weight: 700; color: #0f172a;">
+                Respected Partner {{name}},
+              </p>
+              <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
+                You are cordially invited to submit your competitive technical quotation and rates for an active commercial work package currently open on our central bidding radar.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Work Package Highlight Table -->
+          <tr>
+            <td style="padding: 0 28px 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
+                <tr style="background-color: #0f172a;">
+                  <td colspan="2" style="padding: 10px 16px; color: #f59e0b; font-size: 12px; font-weight: 800; text-transform: uppercase;">
+                    📌 ACTIVE TENDER HIGHLIGHT
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Project Scope:</td>
+                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0;">Civil Structural, MEP or Material Package</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0;">Location:</td>
+                  <td style="padding: 12px 16px; font-size: 12px; color: #334155; border-bottom: 1px solid #e2e8f0;">Rajasthan (Jaipur / Jodhpur Region)</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0;">Eligibility:</td>
+                  <td style="padding: 12px 16px; font-size: 12px; color: #065f46; font-weight: 700; border-bottom: 1px solid #e2e8f0;">Verified Class A, B, or C Empanelled Partners</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b;">Terms:</td>
+                  <td style="padding: 12px 16px; font-size: 12px; color: #334155;">14-Day Running Account (RA) Billing Clearance</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td style="padding: 0 28px 30px; text-align: center;">
+              <a href="https://empanelment.hindustanprojects.in/tenders" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 32px; border-radius: 8px; border: 1px solid #f59e0b;">
+                Review Tender Specs & Submit Quote →
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              <p style="margin: 0;">Automated Dispatch by HiPRO AutoMail Engine • Empanelment Desk</p>
+              <p style="margin: 4px 0 0;">Recipient: {{email}}</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // 9. Site Gate Pass Clearance & Security Permit
+  {
+    id: "empanelment_gate_pass_clearance",
+    title: "Daily Site Security & Digital Gate Pass Authorization",
+    category: "Vendor Empanelment & Procurement",
+    brand: "empanelment",
+    badge: "Site Security",
+    description: "Site entry pass confirmation dispatched to contractor teams for equipment and labor clearance.",
+    subject: "Site Security Clearance Approved: Gate Pass Issued for {{name}}",
+    senderName: "HiPRO Site Safety & Security",
+    senderEmail: "empanelment@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Security Clearance - Hindustan Projects</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          
+          <tr style="background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 4px solid #10b981;">
+            <td style="padding: 24px; text-align: center;">
+              <span style="display: inline-block; padding: 3px 10px; background-color: #10b981; border-radius: 12px; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase;">
+                SECURITY ACCESS PERMIT
+              </span>
+              <h1 style="margin: 8px 0 0; color: #ffffff; font-size: 20px; font-weight: 800;">
+                24-HR DIGITAL GATE PASS
+              </h1>
+              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">Hindustan Projects Construction Operations</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 24px 28px; color: #1e293b;">
+              <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700;">Authorized Contractor: {{name}}</p>
+              <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
+                Your site security entry permit has been validated and authorized by the site safety engineer. Present this verification slip at the perimeter checkpoint for immediate vehicle and labor check-in.
+              </p>
+
+              <div style="background-color: #f1f5f9; border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 4px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">🛡️ Mandatory Safety Compliance:</p>
+                <p style="margin: 4px 0 0; font-size: 11px; color: #475569; line-height: 1.5;">
+                  All site crew must possess standard PPE (Steel-Toe Boots, Hard Hats & High-Visibility Vests). No entry permitted without safety equipment.
+                </p>
+              </div>
+
+              <div style="text-align: center; margin: 20px 0 10px;">
+                <a href="https://empanelment.hindustanprojects.in/gate-pass" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
+                  View & Download Security Gate Pass Slip →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color: #f8fafc; padding: 14px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              Central Operations Desk • Hindustan Projects Site Security Directorate
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // 10. Contractor Work Order Milestone & Billing Release
+  {
+    id: "empanelment_work_order_billing",
+    title: "Contractor Work Order Milestone & Billing Clearance",
+    category: "Vendor Empanelment & Procurement",
+    brand: "empanelment",
+    badge: "Procurement Payout",
+    description: "Official work order milestone clearance dispatch confirming RA billing validation and payment release schedule.",
+    subject: "Work Order Milestone Released: Invoice Clearance for {{name}}",
+    senderName: "HiPRO Procurement Billing",
+    senderEmail: "empanelment@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Order Milestone Release - Hindustan Projects</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+          
+          <tr style="background: linear-gradient(135deg, #065f46, #047857); border-bottom: 4px solid #10b981;">
+            <td style="padding: 24px; text-align: center;">
+              <span style="display: inline-block; padding: 3px 10px; background-color: rgba(255,255,255,0.2); border-radius: 12px; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase;">
+                COMMERCIAL BILLING RELEASE
+              </span>
+              <h1 style="margin: 8px 0 0; color: #ffffff; font-size: 20px; font-weight: 800;">
+                WORK ORDER MILESTONE APPROVED
+              </h1>
+              <p style="margin: 4px 0 0; color: #a7f3d0; font-size: 11px;">Hindustan Projects Financial & Procurement Accounts</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 24px 28px; color: #1e293b;">
+              <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700;">Partner: {{name}}</p>
+              <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
+                This notification confirms that the milestone inspection report for your active work package has been accepted and certified by our site project engineer. Your running account (RA) invoice has been processed for direct bank disbursement.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+                <tr>
+                  <td>
+                    <p style="margin: 0; font-size: 12px; font-weight: 700; color: #065f46;">Payment Schedule:</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #047857;">
+                      NEFT / RTGS transmission is scheduled within 3 business days directly to your verified bank account on file.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="text-align: center; margin: 20px 0 10px;">
+                <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #047857; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
+                  View Detailed Payment Voucher & Statements →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color: #f8fafc; padding: 14px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
+              Accounts Directorate • Hindustan Projects Private Limited
             </td>
           </tr>
 

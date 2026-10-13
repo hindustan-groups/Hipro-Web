@@ -869,6 +869,7 @@ export default function AutoMailSettingsPage() {
                 >
                   <option value="hipro">HiPRO ({senderNameHipro})</option>
                   <option value="hbs">Hind Build ({senderNameHbs})</option>
+                  <option value="empanelment">Empanelment Desk (HiPRO Empanelment Desk)</option>
                 </select>
               </div>
 

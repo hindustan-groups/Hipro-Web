@@ -12,7 +12,11 @@ export function middleware(req: NextRequest) {
 
   const isEmpanelmentSubdomain =
     nextHostname === "empanelment.hindustanprojects.in" ||
-    hostHeader === "empanelment.hindustanprojects.in";
+    hostHeader === "empanelment.hindustanprojects.in" ||
+    nextHostname === "vendor.hindustanprojects.in" ||
+    hostHeader === "vendor.hindustanprojects.in" ||
+    nextHostname === "vender.hindustanprojects.in" ||
+    hostHeader === "vender.hindustanprojects.in";
 
   if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
     return NextResponse.next();
