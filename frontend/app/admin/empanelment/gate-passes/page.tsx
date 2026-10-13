@@ -32,6 +32,17 @@ export default function GatePassesSecurityLogPage() {
         credentials: "include",
         cache: "no-store",
       });
+
+      if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error("Unable to load gate passes (Session expired or server error)");
+      }
+
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to load gate passes");
       setPasses(json.passes || []);
@@ -49,11 +60,14 @@ export default function GatePassesSecurityLogPage() {
   const filteredPasses = passes.filter((p) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
+    const vNum = (p.vehicleNo || p.vehicleNumber || "").toLowerCase();
     return (
       p.passCode?.toLowerCase().includes(q) ||
       p.vendor?.companyName?.toLowerCase().includes(q) ||
+      p.visitorName?.toLowerCase().includes(q) ||
+      p.supervisor?.toLowerCase().includes(q) ||
       p.purpose?.toLowerCase().includes(q) ||
-      p.vehicleNumber?.toLowerCase().includes(q) ||
+      vNum.includes(q) ||
       p.siteLocation?.toLowerCase().includes(q)
     );
   });
@@ -160,18 +174,18 @@ export default function GatePassesSecurityLogPage() {
                       <div className="flex items-center gap-2 text-[11px]">
                         <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
                           <Users className="w-3 h-3 text-slate-400" />
-                          {pass.personsCount} Pers.
+                          {pass.workerCount || pass.personsCount || 1} Pers.
                         </span>
-                        {pass.vehicleNumber && (
+                        {(pass.vehicleNo || pass.vehicleNumber) && (
                           <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                            {pass.vehicleNumber}
+                            {pass.vehicleNo || pass.vehicleNumber}
                           </span>
                         )}
                       </div>
                     </td>
 
                     <td className="px-4 py-3 text-slate-600 font-mono text-[11px]">
-                      {new Date(pass.validDate).toLocaleDateString("en-IN", {
+                      {new Date(pass.validTill || pass.validDate || Date.now()).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

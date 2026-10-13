@@ -27,6 +27,7 @@ function GatePassContent() {
 
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [trackingId, setTrackingId] = useState(defaultTrackingId);
+  const [visitorName, setVisitorName] = useState("");
   const [siteLocation, setSiteLocation] = useState("Mansarovar Commercial Site, Jaipur");
   const [purpose, setPurpose] = useState("RCC & Civil Structural Works");
   const [personsCount, setPersonsCount] = useState(8);
@@ -62,10 +63,14 @@ function GatePassContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           trackingId: trackingId.trim().toUpperCase(),
+          visitorName: visitorName.trim() || undefined,
+          supervisor: visitorName.trim() || undefined,
           siteLocation,
           purpose,
           personsCount: parseInt(personsCount.toString(), 10) || 1,
+          workerCount: parseInt(personsCount.toString(), 10) || 1,
           vehicleNumber: vehicleNumber.trim() || undefined,
+          vehicleNo: vehicleNumber.trim() || undefined,
         }),
       });
 
@@ -83,9 +88,10 @@ function GatePassContent() {
     }
   };
 
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://empanelment.hindustanprojects.in";
   const qrUrl = generatedPass
     ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(
-        `https://empanelment.hindustanprojects.in/verify-pass?passCode=${generatedPass.passCode}`
+        `${origin}/empanelment/verify-pass?passCode=${generatedPass.passCode}`
       )}`
     : "";
 
@@ -132,12 +138,41 @@ function GatePassContent() {
               required
               value={trackingId}
               onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
-              placeholder="e.g. HP-EMP-849201"
+              placeholder="e.g. HP-EMP-108201"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-rose-500/20"
             />
             <p className="text-[10px] text-slate-400 mt-0.5">
               Must be an approved active empanelled partner.
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
+                Supervisor / Incharge Name (पर्यवेक्षक नाम) *
+              </label>
+              <input
+                type="text"
+                required
+                value={visitorName}
+                onChange={(e) => setVisitorName(e.target.value)}
+                placeholder="e.g. Mukesh Sharma"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-sm sm:text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
+                Vehicle Number (गाड़ी संख्या - यदि हो)
+              </label>
+              <input
+                type="text"
+                value={vehicleNumber}
+                onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
+                placeholder="e.g. RJ-14-EA-4592"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-sm sm:text-xs"
+              />
+            </div>
           </div>
 
           <div>
@@ -152,29 +187,30 @@ function GatePassContent() {
               <option value="Mansarovar Commercial Site, Jaipur">Mansarovar Commercial Hub, Jaipur</option>
               <option value="Jagatpura PEB Warehouse Project, Jaipur">Jagatpura PEB Warehouse, Jaipur</option>
               <option value="Sitapura Industrial Complex, Jaipur">Sitapura Industrial Complex, Jaipur</option>
+              <option value="Bhilwara Textile Park - Gate 03">Bhilwara Textile Park - Gate 03</option>
               <option value="Vaishali Nagar High-Rise Site, Jaipur">Vaishali Nagar High-Rise, Jaipur</option>
               <option value="Ajmer Highway Logistics Park">Ajmer Highway Logistics Park</option>
             </select>
           </div>
 
-          <div>
-            <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-              Purpose of Site Entry *
-            </label>
-            <input
-              type="text"
-              required
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              placeholder="e.g. RCC Column Casting / Plumbing Inspection"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 font-medium focus:outline-none"
-            />
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                Total Persons / Labour Count *
+                Purpose of Site Entry *
+              </label>
+              <input
+                type="text"
+                required
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                placeholder="e.g. RCC Column Casting / Fabrication"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-800 font-medium focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
+                Total Labour / Persons Count *
               </label>
               <input
                 type="number"
@@ -183,20 +219,7 @@ function GatePassContent() {
                 max="100"
                 value={personsCount}
                 onChange={(e) => setPersonsCount(parseInt(e.target.value, 10) || 1)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm sm:text-xs"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                Vehicle Number (If any)
-              </label>
-              <input
-                type="text"
-                value={vehicleNumber}
-                onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
-                placeholder="e.g. RJ-14-XX-1234"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-mono font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-red-500/20 text-sm sm:text-xs"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500/20 text-sm sm:text-xs"
               />
             </div>
           </div>
@@ -244,20 +267,28 @@ function GatePassContent() {
             {/* Pass Metadata Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left bg-slate-50 p-4 rounded-2xl border border-slate-200/60">
               <div>
+                <p className="text-[9px] uppercase font-bold text-slate-400">Company / Partner</p>
+                <p className="font-bold text-slate-900 line-clamp-1">{generatedPass.companyName || "Empanelled Contractor"}</p>
+              </div>
+              <div>
+                <p className="text-[9px] uppercase font-bold text-slate-400">Supervisor / Incharge</p>
+                <p className="font-semibold text-slate-900 line-clamp-1">{generatedPass.visitorName || generatedPass.supervisor || "Site Representative"}</p>
+              </div>
+              <div>
                 <p className="text-[9px] uppercase font-bold text-slate-400">Site Location</p>
                 <p className="font-semibold text-slate-900 line-clamp-1">{generatedPass.siteLocation}</p>
               </div>
               <div>
                 <p className="text-[9px] uppercase font-bold text-slate-400">Work Purpose</p>
-                <p className="font-semibold text-slate-900 line-clamp-1">{generatedPass.purpose}</p>
+                <p className="font-semibold text-slate-900 line-clamp-1">{generatedPass.purpose || "Site Works"}</p>
               </div>
               <div>
                 <p className="text-[9px] uppercase font-bold text-slate-400">Headcount</p>
-                <p className="font-bold text-slate-900">{generatedPass.personsCount} Persons Authorized</p>
+                <p className="font-bold text-slate-900">{(generatedPass.workerCount || generatedPass.personsCount || 1)} Persons Authorized</p>
               </div>
               <div>
-                <p className="text-[9px] uppercase font-bold text-slate-400">Vehicle</p>
-                <p className="font-mono font-bold text-slate-900">{generatedPass.vehicleNumber || "None"}</p>
+                <p className="text-[9px] uppercase font-bold text-slate-400">Vehicle Number</p>
+                <p className="font-mono font-bold text-slate-900">{generatedPass.vehicleNo || generatedPass.vehicleNumber || "None / Foot Entry"}</p>
               </div>
             </div>
 

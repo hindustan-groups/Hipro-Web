@@ -29,9 +29,8 @@ export default function EmpanelmentGuidelinesPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
-        const cleanUrl = rawUrl.replace(/\/+$/, "");
-        const res = await fetch(`${cleanUrl}/api/empanelment/content`, { cache: "no-store" });
+        const prefix = process.env.NEXT_PUBLIC_BACKEND_URL ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/+$/, "") : "";
+        const res = await fetch(`${prefix}/api/empanelment/content`, { cache: "no-store" });
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.content) {

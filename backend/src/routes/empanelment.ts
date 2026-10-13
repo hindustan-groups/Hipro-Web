@@ -367,17 +367,18 @@ router.post("/tenders/:tenderId/bid", async (req: Request, res: Response) => {
  */
 router.post("/gate-pass/generate", async (req: Request, res: Response) => {
   try {
-    const { trackingId, visitorName, workerCount, vehicleNo, siteLocation } = req.body;
+    const { trackingId, siteLocation } = req.body;
+    const rawTracking = (trackingId || "").trim().toUpperCase();
 
-    if (!trackingId || !visitorName || !siteLocation) {
+    if (!rawTracking) {
       return res.status(400).json({
         success: false,
-        error: "Tracking ID, Visitor/Supervisor Name, and Site Location are required",
+        error: "Empanelment Tracking ID is required",
       });
     }
 
     const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: trackingId.trim().toUpperCase() },
+      where: { trackingId: rawTracking },
     });
 
     if (!vendor) {
@@ -391,6 +392,12 @@ router.post("/gate-pass/generate", async (req: Request, res: Response) => {
       });
     }
 
+    const visitorName = (req.body.visitorName || req.body.supervisor || req.body.contactName || vendor.contactName || "Site Incharge").trim();
+    const workerCount = parseInt((req.body.workerCount || req.body.personsCount || 1).toString(), 10) || 1;
+    const vehicleNo = (req.body.vehicleNo || req.body.vehicleNumber || "").trim() || null;
+    const chosenLocation = (siteLocation || "Mansarovar Commercial Site, Jaipur").trim();
+    const purpose = (req.body.purpose || "Authorized Site Work & Execution").trim();
+
     const passSuffix = Math.floor(10000 + Math.random() * 90000).toString();
     const passCode = `HP-GP-${passSuffix}`;
     const validTill = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 Hours valid
@@ -400,9 +407,9 @@ router.post("/gate-pass/generate", async (req: Request, res: Response) => {
         passCode,
         vendorId: vendor.id,
         visitorName,
-        workerCount: workerCount ? parseInt(workerCount, 10) : 1,
-        vehicleNo: vehicleNo || null,
-        siteLocation,
+        workerCount,
+        vehicleNo,
+        siteLocation: chosenLocation,
         validTill,
         status: "ACTIVE",
       },
@@ -415,7 +422,7 @@ router.post("/gate-pass/generate", async (req: Request, res: Response) => {
       companyName: vendor.companyName,
       passCode: pass.passCode,
       siteLocation: pass.siteLocation,
-      purpose: "Authorized Site Entry & Inspection",
+      purpose,
       validUntil: pass.validTill.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       phone: vendor.phone,
     }).catch((mailErr) => {
@@ -428,11 +435,23 @@ router.post("/gate-pass/generate", async (req: Request, res: Response) => {
         passCode: pass.passCode,
         companyName: vendor.companyName,
         visitorName: pass.visitorName,
+        supervisor: pass.visitorName,
         workerCount: pass.workerCount,
+        personsCount: pass.workerCount,
         vehicleNo: pass.vehicleNo,
+        vehicleNumber: pass.vehicleNo,
         siteLocation: pass.siteLocation,
+        purpose,
+        validFrom: pass.validFrom,
         validTill: pass.validTill,
+        validDate: pass.validTill,
         status: pass.status,
+        vendor: {
+          companyName: vendor.companyName,
+          contactName: vendor.contactName,
+          phone: vendor.phone,
+          tier: vendor.tier,
+        },
       },
     });
   } catch (err: any) {
@@ -480,13 +499,25 @@ router.get("/gate-pass/verify/:passCode", async (req: Request, res: Response) =>
         passCode: pass.passCode,
         companyName: pass.vendor.companyName,
         tier: pass.vendor.tier,
+        contactName: pass.vendor.contactName,
+        phone: pass.vendor.phone,
         supervisor: pass.visitorName,
+        visitorName: pass.visitorName,
         workerCount: pass.workerCount,
+        personsCount: pass.workerCount,
         vehicleNo: pass.vehicleNo || "N/A",
+        vehicleNumber: pass.vehicleNo || "None",
         siteLocation: pass.siteLocation,
         validFrom: pass.validFrom,
         validTill: pass.validTill,
+        validDate: pass.validTill,
         status: isValid ? "AUTHORIZED" : isExpired ? "EXPIRED" : pass.status,
+        vendor: {
+          companyName: pass.vendor.companyName,
+          contactName: pass.vendor.contactName,
+          phone: pass.vendor.phone,
+          tier: pass.vendor.tier,
+        },
       },
     });
   } catch (err: any) {
@@ -829,7 +860,7 @@ router.get("/admin/tenders/:id/bids", async (req: Request, res: Response) => {
  */
 router.get("/admin/gate-passes", async (req: Request, res: Response) => {
   try {
-    const passes = await prisma.siteGatePass.findMany({
+    const rawPasses = await prisma.siteGatePass.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
       include: {
@@ -838,10 +869,20 @@ router.get("/admin/gate-passes", async (req: Request, res: Response) => {
             companyName: true,
             tier: true,
             phone: true,
+            contactName: true,
           },
         },
       },
     });
+
+    const passes = rawPasses.map((p) => ({
+      ...p,
+      supervisor: p.visitorName,
+      personsCount: p.workerCount,
+      vehicleNumber: p.vehicleNo,
+      validDate: p.validTill,
+      purpose: "Authorized Site Work & Execution",
+    }));
 
     return res.json({ success: true, passes });
   } catch (err: any) {

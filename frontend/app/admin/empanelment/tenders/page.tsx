@@ -36,6 +36,17 @@ export default function TendersRadarPage() {
         credentials: "include",
         cache: "no-store",
       });
+
+      if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error("Unable to load tenders (Session expired or server error)");
+      }
+
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to load tenders");
 
@@ -59,6 +70,15 @@ export default function TendersRadarPage() {
         credentials: "include",
         cache: "no-store",
       });
+
+      if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) return;
+
       const json = await res.json();
       if (json.success) {
         setBids(json.bids || []);

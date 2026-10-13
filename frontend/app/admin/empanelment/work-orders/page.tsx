@@ -103,11 +103,35 @@ export default function WorkOrdersBillingPage() {
         fetch("/api/empanelment/admin/applications?status=APPROVED", { credentials: "include", cache: "no-store" }),
       ]);
 
-      const [woData, invData, vData] = await Promise.all([woRes.json(), invRes.json(), vendorsRes.json()]);
+      if (
+        woRes.status === 401 ||
+        invRes.status === 401 ||
+        vendorsRes.status === 401 ||
+        (woRes.redirected && woRes.url.includes("admin-login"))
+      ) {
+        window.location.href = "/admin-login";
+        return;
+      }
 
-      if (woData.success) setWorkOrders(woData.workOrders || []);
-      if (invData.success) setInvoices(invData.invoices || []);
-      if (vData.success) setApprovedVendors(vData.applications || []);
+      const parseSafe = async (res: Response) => {
+        const ct = res.headers.get("content-type") || "";
+        if (!ct.includes("application/json")) return null;
+        try {
+          return await res.json();
+        } catch {
+          return null;
+        }
+      };
+
+      const [woData, invData, vData] = await Promise.all([
+        parseSafe(woRes),
+        parseSafe(invRes),
+        parseSafe(vendorsRes),
+      ]);
+
+      if (woData?.success) setWorkOrders(woData.workOrders || []);
+      if (invData?.success) setInvoices(invData.invoices || []);
+      if (vData?.success) setApprovedVendors(vData.applications || []);
     } catch (err) {
       console.error("Failed to load work orders & invoices:", err);
     } finally {

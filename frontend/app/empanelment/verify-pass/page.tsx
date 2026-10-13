@@ -132,33 +132,43 @@ function VerifyPassContent() {
               <div className="space-y-3 bg-emerald-700/60 p-4 rounded-2xl border border-emerald-500/60 text-xs">
                 <div>
                   <p className="text-[10px] uppercase font-bold text-emerald-200">Contractor / Vendor</p>
-                  <p className="text-sm font-black">{verificationResult.pass.vendor?.companyName}</p>
+                  <p className="text-sm font-black">
+                    {verificationResult.pass.companyName || verificationResult.pass.vendor?.companyName || "Empanelled Contractor"}
+                  </p>
                   <p className="text-[11px] text-emerald-100">
-                    {verificationResult.pass.vendor?.contactName} • {verificationResult.pass.vendor?.phone}
+                    Tier: {verificationResult.pass.tier?.replace("_", " ") || "CLASS C"} • Site Supervisor: {verificationResult.pass.supervisor || verificationResult.pass.visitorName || verificationResult.pass.contactName || "Authorized Incharge"}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-600">
                   <div>
                     <p className="text-[10px] uppercase font-bold text-emerald-200">Authorized Headcount</p>
-                    <p className="font-bold text-sm">{verificationResult.pass.personsCount} Persons</p>
+                    <p className="font-bold text-sm">
+                      {verificationResult.pass.workerCount || verificationResult.pass.personsCount || 1} Persons
+                    </p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase font-bold text-emerald-200">Vehicle Number</p>
-                    <p className="font-mono font-bold text-sm">{verificationResult.pass.vehicleNumber || "None"}</p>
+                    <p className="font-mono font-bold text-sm">
+                      {verificationResult.pass.vehicleNo || verificationResult.pass.vehicleNumber || "None / Foot Entry"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-emerald-600">
                   <p className="text-[10px] uppercase font-bold text-emerald-200">Site Location & Purpose</p>
                   <p className="font-semibold">{verificationResult.pass.siteLocation}</p>
-                  <p className="text-[11px] text-emerald-100">{verificationResult.pass.purpose}</p>
+                  <p className="text-[11px] text-emerald-100">{verificationResult.pass.purpose || "Authorized Structural & Finishing Works"}</p>
                 </div>
               </div>
 
               <div className="text-center text-[11px] text-emerald-100 font-medium">
-                ✓ Recorded in Central Security Registry • Date:{" "}
-                {new Date(verificationResult.pass.validDate).toLocaleDateString("en-IN")}
+                ✓ Recorded in Central Security Registry • Valid Till:{" "}
+                {new Date(verificationResult.pass.validTill || verificationResult.pass.validDate || Date.now()).toLocaleString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
               </div>
             </div>
           ) : (

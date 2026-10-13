@@ -242,8 +242,20 @@ export default function EmpanelmentContentCmsPage() {
       const res = await fetch("/api/empanelment/admin/content", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
+
+      if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        throw new Error("Unable to save CMS changes (Session expired or server error)");
+      }
+
       const data = await res.json();
       if (data.success) {
         setNotification({

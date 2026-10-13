@@ -61,6 +61,15 @@ export default function AdminTicketsPage() {
       if (priorityFilter !== "ALL") url += `priority=${priorityFilter}&`;
 
       const res = await fetch(url, { credentials: "include", cache: "no-store" });
+
+      if (res.status === 401 || (res.redirected && res.url.includes("admin-login"))) {
+        window.location.href = "/admin-login";
+        return;
+      }
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) return;
+
       const data = await res.json();
       if (data.success) {
         setTickets(data.tickets || []);
