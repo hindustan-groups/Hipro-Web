@@ -166,6 +166,19 @@ export interface EmpanelmentContent {
   // Site Gate Pass Instructions & Terms
   gatePassInstructions?: string | null;
   gatePassTerms?: string | null;
+
+  // Advanced Portal Announcement Ticker Bar
+  noticeAlertBanner?: string | null;
+  noticeAlertActive?: boolean;
+
+  // Section Visibility Toggles (JSON encoded)
+  sectionVisibility?: string | null;
+
+  // Advanced SEO & Meta Management
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  metaKeywords?: string | null;
+  ogImageUrl?: string | null;
 }
 
 export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
@@ -569,6 +582,33 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
     "Gate passes are issued exclusively to verified and approved vendor contractors. Ensure vehicle registration numbers and accurate worker counts are submitted for smooth security clearance.",
   gatePassTerms:
     "Pass holder must comply with Hindustan Projects on-site safety guidelines, wear prescribed PPE, and present physical or digital pass QR code at gate checkpoint upon entry.",
+
+  // Advanced Portal Announcement Ticker Bar
+  noticeAlertBanner:
+    "📢 FY 2026-27 Vendor & Contractor Empanelment is now open for Civil, MEP, Plant & Raw Material suppliers across Rajasthan.",
+  noticeAlertActive: true,
+
+  // Section Visibility Toggles (JSON encoded)
+  sectionVisibility: JSON.stringify({
+    showHeroPills: true,
+    showStats: true,
+    showCategories: true,
+    showProcess: true,
+    showBenefits: true,
+    showImpact: true,
+    showDocs: true,
+    showFaqs: true,
+    showCta: true,
+    showTendersNotice: true,
+  }),
+
+  // Advanced SEO & Meta Management
+  metaTitle: "Vendor & Contractor Empanelment Portal | Hindustan Projects",
+  metaDescription:
+    "Official contractor empanelment, live construction tenders, and daily site access pass portal for Hindustan Projects across Rajasthan.",
+  metaKeywords:
+    "construction vendor registration, rajasthan contractor empanelment, CPWD vendor portal, live civil tenders jaipur",
+  ogImageUrl: "/images/empanelment/hero-engineers-perfect.jpg",
 };
 
 export async function fetchEmpanelmentContent(): Promise<EmpanelmentContent> {

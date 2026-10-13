@@ -938,6 +938,19 @@ model EmpanelmentContent {
   gatePassInstructions   String?   @db.Text
   gatePassTerms          String?   @db.Text
 
+  // Advanced Portal Announcement Ticker Bar
+  noticeAlertBanner      String?   @default("📢 FY 2026-27 Vendor & Contractor Empanelment is now open for Civil, MEP, Plant & Raw Material suppliers across Rajasthan.")
+  noticeAlertActive      Boolean   @default(true)
+
+  // Section Visibility Toggles (JSON encoded)
+  sectionVisibility      String?   @db.Text
+
+  // Advanced SEO & Meta Management
+  metaTitle              String?   @default("Vendor & Contractor Empanelment Portal | Hindustan Projects")
+  metaDescription        String?   @db.Text
+  metaKeywords           String?   @db.Text
+  ogImageUrl             String?   @default("/images/empanelment/hero-engineers-perfect.jpg")
+
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 }

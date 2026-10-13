@@ -59,7 +59,15 @@ export default function EmpanelmentNavbar() {
   const whatsappClean = (content.supportWhatsapp || "+919876543210").replace(/[^0-9]/g, "");
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <>
+      {/* Live Announcement Ticker Banner from CMS */}
+      {content.noticeAlertActive && content.noticeAlertBanner && (
+        <div className="bg-amber-400 text-slate-950 px-4 py-1.5 text-center text-[11px] sm:text-xs font-bold tracking-tight border-b border-amber-500/30 flex items-center justify-center gap-2">
+          <span>{content.noticeAlertBanner}</span>
+        </div>
+      )}
+
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
         {/* Brand Logo */}
         <Link href="/empanelment" className="flex flex-col group shrink-0">
@@ -272,5 +280,6 @@ export default function EmpanelmentNavbar() {
         </div>
       )}
     </header>
+    </>
   );
 }

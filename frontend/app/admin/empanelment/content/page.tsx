@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Save,
   RefreshCw,
@@ -20,8 +21,27 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  Image as ImageIcon,
+  ImageIcon,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  EyeOff,
+  Smartphone,
+  Monitor,
+  Search,
+  Bell,
+  Phone,
+  Mail,
+  MapPin,
+  MessageSquare,
+  HardHat,
+  Sliders,
+  SlidersHorizontal,
+  ChevronRight,
+  Check,
+  Share2,
+  Copy,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -40,24 +60,66 @@ import {
   parseJsonField,
 } from "@/lib/empanelmentContent";
 
+// Pre-configured High-Resolution Construction Library for 1-Click Image Picking
+const IMAGE_LIBRARY_PRESETS = [
+  {
+    label: "Engineers on Site (Hero Primary)",
+    url: "/images/empanelment/hero-engineers-perfect.jpg",
+    category: "Hero",
+  },
+  {
+    label: "Building Materials (Cement & Steel)",
+    url: "/images/empanelment/cat-building-materials.jpg",
+    category: "Category",
+  },
+  {
+    label: "Civil & Structural (RCC & Fabrication)",
+    url: "/images/empanelment/cat-civil-structural.jpg",
+    category: "Category",
+  },
+  {
+    label: "Machinery & Equipment (Plant Rental)",
+    url: "/images/empanelment/cat-machinery-equipment.jpg",
+    category: "Category",
+  },
+  {
+    label: "Electrical & Plumbing (MEP Works)",
+    url: "/images/empanelment/cat-electrical-plumbing.jpg",
+    category: "Category",
+  },
+  {
+    label: "Interior & Finishing (Flooring & Paints)",
+    url: "/images/empanelment/cat-interior-finishing.jpg",
+    category: "Category",
+  },
+  {
+    label: "Logistics & Fleet (Dumper & Bulk Haulage)",
+    url: "/images/empanelment/cat-logistics-transport.jpg",
+    category: "Category",
+  },
+  {
+    label: "Night Skyline Cranes (Our Impact)",
+    url: "/images/empanelment/impact-skyline.jpg",
+    category: "Impact",
+  },
+];
+
 export default function EmpanelmentContentCmsPage() {
-  const [activeTab, setActiveTab] = useState<
-    | "branding"
-    | "hero"
-    | "stats"
-    | "categories"
-    | "process"
-    | "benefits"
-    | "impact"
-    | "documents"
-    | "faqs"
-    | "banner"
-    | "guidelines"
-    | "tenders_notice"
-  >("hero");
+  // Navigation & Page Selector
+  const [selectedGroup, setSelectedGroup] = useState<
+    "landing" | "guidelines" | "tenders" | "gatepass" | "branding" | "seo" | "visibility"
+  >("landing");
+
+  const [activeSubTab, setActiveSubTab] = useState<string>("hero");
+
+  // View Mode: 'edit' (standard), 'split' (side-by-side preview), 'preview' (full live preview)
+  const [viewMode, setViewMode] = useState<"edit" | "split" | "preview">("edit");
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+  const [previewPage, setPreviewPage] = useState<"home" | "guidelines" | "tenders" | "gatepass" | "track">("home");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [notification, setNotification] = useState<{
     type: "success" | "error";
     message: string;
@@ -78,6 +140,19 @@ export default function EmpanelmentContentCmsPage() {
   const [guidelinesTiers, setGuidelinesTiers] = useState<EmpanelmentTier[]>([]);
   const [guidelinesStatutoryDocs, setGuidelinesStatutoryDocs] = useState<EmpanelmentStatutoryDoc[]>([]);
   const [guidelinesSafetyStandards, setGuidelinesSafetyStandards] = useState<EmpanelmentSafetyStandard[]>([]);
+  const [visibility, setVisibility] = useState<Record<string, boolean>>({
+    showHeroPills: true,
+    showStats: true,
+    showCategories: true,
+    showProcess: true,
+    showBenefits: true,
+    showImpact: true,
+    showDocs: true,
+    showFaqs: true,
+    showCta: true,
+    showTendersNotice: true,
+    showAnnouncementTicker: true,
+  });
 
   // Fetch CMS Content
   const fetchContent = async () => {
@@ -99,9 +174,12 @@ export default function EmpanelmentContentCmsPage() {
         setGuidelinesTiers(parseJsonField(c.guidelinesTiers, []));
         setGuidelinesStatutoryDocs(parseJsonField(c.guidelinesStatutoryDocs, []));
         setGuidelinesSafetyStandards(parseJsonField(c.guidelinesSafetyStandards, []));
+        if (c.sectionVisibility) {
+          setVisibility(parseJsonField(c.sectionVisibility, visibility));
+        }
       }
     } catch (_err) {
-      // Fallback to defaults
+      // Fallback to reference defaults
       setHeroPills(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.heroPills, []));
       setStats(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.stats, []));
       setCategories(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.categoriesList, []));
@@ -115,12 +193,29 @@ export default function EmpanelmentContentCmsPage() {
       setGuidelinesSafetyStandards(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesSafetyStandards, []));
     } finally {
       setLoading(false);
+      setHasUnsavedChanges(false);
     }
   };
 
   useEffect(() => {
     fetchContent();
   }, []);
+
+  const markDirty = () => {
+    setHasUnsavedChanges(true);
+  };
+
+  // Reordering helpers
+  const moveItem = <T,>(arr: T[], index: number, direction: "up" | "down", setter: (v: T[]) => void) => {
+    if ((direction === "up" && index === 0) || (direction === "down" && index === arr.length - 1)) return;
+    const newArr = [...arr];
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    const temp = newArr[index];
+    newArr[index] = newArr[targetIdx];
+    newArr[targetIdx] = temp;
+    setter(newArr);
+    markDirty();
+  };
 
   // Save changes
   const handleSave = async () => {
@@ -140,6 +235,7 @@ export default function EmpanelmentContentCmsPage() {
       guidelinesTiers: JSON.stringify(guidelinesTiers),
       guidelinesStatutoryDocs: JSON.stringify(guidelinesStatutoryDocs),
       guidelinesSafetyStandards: JSON.stringify(guidelinesSafetyStandards),
+      sectionVisibility: JSON.stringify(visibility),
     };
 
     try {
@@ -152,9 +248,10 @@ export default function EmpanelmentContentCmsPage() {
       if (data.success) {
         setNotification({
           type: "success",
-          message: "Portal CMS updated and published live successfully!",
+          message: "✓ All public pages updated and published live across the portal successfully!",
         });
         setFormData({ ...formData, ...data.content });
+        setHasUnsavedChanges(false);
       } else {
         setNotification({
           type: "error",
@@ -172,7 +269,7 @@ export default function EmpanelmentContentCmsPage() {
   };
 
   const handleResetDefaults = () => {
-    if (confirm("Are you sure you want to restore the portal to reference defaults?")) {
+    if (confirm("Are you sure you want to restore the portal to certified reference defaults?")) {
       setFormData(DEFAULT_EMPANELMENT_CONTENT);
       setHeroPills(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.heroPills, []));
       setStats(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.stats, []));
@@ -185,66 +282,112 @@ export default function EmpanelmentContentCmsPage() {
       setGuidelinesTiers(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesTiers, []));
       setGuidelinesStatutoryDocs(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesStatutoryDocs, []));
       setGuidelinesSafetyStandards(parseJsonField(DEFAULT_EMPANELMENT_CONTENT.guidelinesSafetyStandards, []));
+      markDirty();
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Header with Save / Preview Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+    <div className="min-h-screen bg-slate-100/70 p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
+      {/* ================================================================ */}
+      {/* 1. TOP COMMAND BAR (Title, Status, View Modes & Publish Live) */}
+      {/* ================================================================ */}
+      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 sticky top-2 z-40 backdrop-blur-md bg-white/95">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700">
-              Live Page Builder & CMS
+          <div className="flex items-center gap-2.5">
+            <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-50 text-[#dc2626] border border-red-200/60 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#dc2626] animate-pulse" />
+              <span>Advanced Enterprise CMS</span>
             </span>
-            <span className="text-slate-400">•</span>
-            <span className="text-xs text-slate-500 font-medium">Empanelment Portal</span>
+            <span className="text-slate-300">•</span>
+            {hasUnsavedChanges ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                ● Unsaved Changes Pending
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ✓ Live & Published in Sync
+              </span>
+            )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
-            Portal Content Management Suite
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1.5">
+            Public Empanelment Portal Studio
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Live-edit all texts, banners, images, categories, process steps, and FAQs without touching code.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Control all public pages, capacity criteria, tenders bulletin, and site pass terms in real time without code edits.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* View Switchers & Save Actions */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* View Mode Toggle */}
+          <div className="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200/80 text-xs font-bold text-slate-600">
+            <button
+              onClick={() => setViewMode("edit")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === "edit" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              }`}
+            >
+              Editor Only
+            </button>
+            <button
+              onClick={() => setViewMode("split")}
+              className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+                viewMode === "split" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              }`}
+            >
+              <Eye className="w-3.5 h-3.5 text-[#dc2626]" />
+              <span>Split Preview</span>
+            </button>
+            <button
+              onClick={() => setViewMode("preview")}
+              className={`px-3 py-1.5 rounded-lg transition-all ${
+                viewMode === "preview" ? "bg-white text-slate-950 shadow-2xs" : "hover:text-slate-900"
+              }`}
+            >
+              Full Preview
+            </button>
+          </div>
+
+          {/* External Public Link */}
           <Link
             href="/empanelment"
             target="_blank"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-semibold transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all shadow-2xs"
+            title="Open portal in new window"
           >
-            <ExternalLink className="w-4 h-4 text-slate-500" />
-            <span>View Public Portal</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Visit Live</span>
           </Link>
 
+          {/* Reset Defaults */}
           <button
             onClick={handleResetDefaults}
-            className="px-3.5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-semibold transition-all"
-            title="Restore Defaults"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-bold transition-all"
+            title="Reset all sections to verified reference standards"
           >
             Reset
           </button>
 
+          {/* Publish Live Button */}
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-red-600/20 disabled:opacity-60 transition-all"
+            className="inline-flex items-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-red-600/25 disabled:opacity-60 transition-all"
           >
             {saving ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <Save className="w-4 h-4" />
             )}
-            <span>{saving ? "Saving Changes..." : "Publish Live"}</span>
+            <span>{saving ? "Publishing..." : "Publish Live (तुरंत लागू करें)"}</span>
           </button>
         </div>
       </div>
 
-      {/* Notification Banner */}
+      {/* Notification Toast */}
       {notification && (
         <div
-          className={`p-4 rounded-xl flex items-center justify-between text-sm font-medium ${
+          className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in duration-200 ${
             notification.type === "success"
               ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
               : "bg-red-50 text-red-800 border border-red-200"
@@ -252,1667 +395,1615 @@ export default function EmpanelmentContentCmsPage() {
         >
           <div className="flex items-center gap-2.5">
             {notification.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
             )}
             <span>{notification.message}</span>
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-xs font-bold underline opacity-70 hover:opacity-100"
+            className="underline opacity-70 hover:opacity-100 text-[11px]"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-200">
+      {/* ================================================================ */}
+      {/* 2. PRIMARY PAGE GROUP SELECTOR TABS */}
+      {/* ================================================================ */}
+      <div className="bg-white p-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-1.5 overflow-x-auto text-xs font-bold">
         {[
-          { id: "hero", label: "Hero Banner", icon: LayoutTemplate },
-          { id: "stats", label: "Stats Bar", icon: Users },
-          { id: "categories", label: "Categories (6)", icon: Layers },
-          { id: "process", label: "How It Works (4)", icon: ArrowRight },
-          { id: "benefits", label: "Vendor Benefits (6)", icon: Award },
-          { id: "impact", label: "Impact Container", icon: Building2 },
-          { id: "documents", label: "Documents (6)", icon: FileText },
-          { id: "faqs", label: "Quick FAQs", icon: HelpCircle },
-          { id: "banner", label: "Red CTA Banner", icon: Sparkles },
-          { id: "guidelines", label: "Guidelines & Classes", icon: ShieldCheck },
-          { id: "tenders_notice", label: "Tenders Bulletin & Gate Pass", icon: FileText },
-          { id: "branding", label: "Brand & Contact", icon: Globe },
-        ].map((t) => {
-          const Icon = t.icon;
-          const isActive = activeTab === t.id;
+          { id: "landing", label: "🏠 Home / Landing Page", count: `${categories.length} Categories` },
+          { id: "guidelines", label: "📜 Capacity Guidelines", count: `${guidelinesTiers.length} Tiers` },
+          { id: "tenders", label: "📢 Tenders Radar Notice", count: "Live Bulletin" },
+          { id: "gatepass", label: "🎫 Daily Site Gate Pass", count: "Security Policy" },
+          { id: "branding", label: "🌐 Global Branding & Desk", count: "Header / Footer" },
+          { id: "seo", label: "🔍 SEO & Meta Tags", count: "Google Search" },
+          { id: "visibility", label: "⚙️ Section Switches", count: "Show / Hide" },
+        ].map((grp) => {
+          const isActive = selectedGroup === grp.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setActiveTab(t.id as any)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+              key={grp.id}
+              onClick={() => {
+                setSelectedGroup(grp.id as any);
+                if (grp.id === "landing") setActiveSubTab("hero");
+                if (grp.id === "guidelines") setActiveSubTab("tiers");
+                if (grp.id === "tenders") setActiveSubTab("notice");
+                if (grp.id === "gatepass") setActiveSubTab("terms");
+                if (grp.id === "branding") setActiveSubTab("contacts");
+                if (grp.id === "seo") setActiveSubTab("meta");
+                if (grp.id === "visibility") setActiveSubTab("switches");
+              }}
+              className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all flex items-center gap-2 ${
                 isActive
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/60"
+                  ? "bg-slate-900 text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               }`}
             >
-              <Icon className="w-4 h-4" />
-              <span>{t.label}</span>
+              <span>{grp.label}</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                  isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                {grp.count}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Tab Content Panes */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
-        {/* ================================================================ */}
-        {/* TAB 1: HERO BANNER */}
-        {/* ================================================================ */}
-        {activeTab === "hero" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">Hero Section Settings</h2>
-              <p className="text-xs text-slate-500">
-                Primary above-the-fold headline, buttons, and engineer photo
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Top Red Badge Tag
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroBadge}
-                  onChange={(e) => setFormData({ ...formData, heroBadge: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="VENDOR PORTAL"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Headline Prefix
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroTitlePrefix}
-                  onChange={(e) => setFormData({ ...formData, heroTitlePrefix: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Partner with"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Headline Highlight (Red Brand Accent)
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroTitleHighlight}
-                  onChange={(e) => setFormData({ ...formData, heroTitleHighlight: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-red-600 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Hindustan Projects"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Hero Image Path / URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroImageUrl || ""}
-                  onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="/images/empanelment/hero-engineers.jpg"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Hero Subtitle Paragraph
-                </label>
-                <textarea
-                  rows={3}
-                  value={formData.heroSubtitle}
-                  onChange={(e) => setFormData({ ...formData, heroSubtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Join our local vendor network for construction materials..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Primary Button Text (Red CTA)
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroRegisterBtnText}
-                  onChange={(e) => setFormData({ ...formData, heroRegisterBtnText: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Register as a Vendor"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Secondary Button Text (Login CTA)
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroLoginBtnText}
-                  onChange={(e) => setFormData({ ...formData, heroLoginBtnText: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Vendor Login"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Bottom-Right Image Ribbon Overlay Text
-                </label>
-                <input
-                  type="text"
-                  value={formData.heroOverlayBadge}
-                  onChange={(e) => setFormData({ ...formData, heroOverlayBadge: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  placeholder="Building Stronger Partnerships for a Better Rajasthan."
-                />
-              </div>
-            </div>
-
-            {/* Feature Pills */}
-            <div className="pt-6 border-t border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 mb-4">
-                4 Feature Pills Below CTAs
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {heroPills.map((pill, idx) => (
-                  <div key={pill.id || idx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Pill #{idx + 1}
-                    </span>
-                    <input
-                      type="text"
-                      value={pill.title}
-                      onChange={(e) => {
-                        const updated = [...heroPills];
-                        updated[idx].title = e.target.value;
-                        setHeroPills(updated);
-                      }}
-                      className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-semibold"
-                      placeholder="Title"
-                    />
-                    <input
-                      type="text"
-                      value={pill.iconName}
-                      onChange={(e) => {
-                        const updated = [...heroPills];
-                        updated[idx].iconName = e.target.value;
-                        setHeroPills(updated);
-                      }}
-                      className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-[11px] text-slate-500"
-                      placeholder="Icon: Handshake, Users..."
-                    />
-                  </div>
+      {/* ================================================================ */}
+      {/* 3. MAIN WORKSPACE (Form Editor + Split / Full Live Preview) */}
+      {/* ================================================================ */}
+      <div
+        className={`grid gap-6 ${
+          viewMode === "split"
+            ? "grid-cols-1 xl:grid-cols-12"
+            : viewMode === "preview"
+            ? "grid-cols-1"
+            : "grid-cols-1"
+        }`}
+      >
+        {/* LEFT PANE: Form Editors (Visible in 'edit' and 'split' modes) */}
+        {viewMode !== "preview" && (
+          <div className={`${viewMode === "split" ? "xl:col-span-7" : "w-full"} space-y-6`}>
+            {/* SUB-TABS BAR FOR LANDING PAGE */}
+            {selectedGroup === "landing" && (
+              <div className="bg-white p-2 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center gap-1.5 overflow-x-auto text-xs font-semibold text-slate-600">
+                {[
+                  { id: "hero", label: "Hero Banner" },
+                  { id: "hero_pills", label: "4 Feature Pills" },
+                  { id: "stats", label: "Stats Bar" },
+                  { id: "categories", label: "Supply Categories" },
+                  { id: "process", label: "4-Step Process" },
+                  { id: "benefits", label: "Vendor Benefits" },
+                  { id: "impact", label: "Impact Container" },
+                  { id: "documents", label: "Required Docs" },
+                  { id: "faqs", label: "Portal FAQs" },
+                  { id: "cta", label: "Bottom CTA Banner" },
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    onClick={() => setActiveSubTab(st.id)}
+                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                      activeSubTab === st.id
+                        ? "bg-red-50 text-[#dc2626] font-bold border border-red-200"
+                        : "hover:bg-slate-50 text-slate-600"
+                    }`}
+                  >
+                    {st.label}
+                  </button>
                 ))}
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* ================================================================ */}
-        {/* TAB 2: STATS BAR */}
-        {/* ================================================================ */}
-        {activeTab === "stats" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">Stats Counter Bar</h2>
-              <p className="text-xs text-slate-500">
-                The 4 trust metric cards shown right beneath the Hero section
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {stats.map((st, idx) => (
-                <div key={st.id || idx} className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-red-600 uppercase">
-                      Stat #{idx + 1}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Counter Value
-                    </label>
-                    <input
-                      type="text"
-                      value={st.value}
-                      onChange={(e) => {
-                        const updated = [...stats];
-                        updated[idx].value = e.target.value;
-                        setStats(updated);
-                      }}
-                      className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-base font-black text-slate-900"
-                      placeholder="200+"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Label Text
-                    </label>
-                    <input
-                      type="text"
-                      value={st.label}
-                      onChange={(e) => {
-                        const updated = [...stats];
-                        updated[idx].label = e.target.value;
-                        setStats(updated);
-                      }}
-                      className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-700"
-                      placeholder="Trusted Vendors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Icon Name
-                    </label>
-                    <input
-                      type="text"
-                      value={st.iconName}
-                      onChange={(e) => {
-                        const updated = [...stats];
-                        updated[idx].iconName = e.target.value;
-                        setStats(updated);
-                      }}
-                      className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs text-slate-500"
-                      placeholder="Users, FileText, MapPin, ShieldCheck"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 3: CATEGORIES */}
-        {/* ================================================================ */}
-        {activeTab === "categories" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Supply Categories (6 Photographic Cards)
-              </h2>
-              <p className="text-xs text-slate-500">
-                Configure section titles and the 6 construction procurement categories
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.categoriesBadge}
-                  onChange={(e) => setFormData({ ...formData, categoriesBadge: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="CATEGORIES"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.categoriesTitle}
-                  onChange={(e) => setFormData({ ...formData, categoriesTitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Supply to Our Construction Projects"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.categoriesSubtitle}
-                  onChange={(e) => setFormData({ ...formData, categoriesSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="We source high-quality materials, services and solutions..."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((cat, idx) => (
-                <div key={cat.id || idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase">
-                      Category #{idx + 1}
-                    </span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-bold">
-                      Active
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={cat.title}
-                      onChange={(e) => {
-                        const updated = [...categories];
-                        updated[idx].title = e.target.value;
-                        setCategories(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={cat.description}
-                      onChange={(e) => {
-                        const updated = [...categories];
-                        updated[idx].description = e.target.value;
-                        setCategories(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Image URL / Path
-                    </label>
-                    <input
-                      type="text"
-                      value={cat.imageUrl}
-                      onChange={(e) => {
-                        const updated = [...categories];
-                        updated[idx].imageUrl = e.target.value;
-                        setCategories(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Target Link
-                    </label>
-                    <input
-                      type="text"
-                      value={cat.linkUrl}
-                      onChange={(e) => {
-                        const updated = [...categories];
-                        updated[idx].linkUrl = e.target.value;
-                        setCategories(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-500"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 4: HOW IT WORKS / PROCESS */}
-        {/* ================================================================ */}
-        {activeTab === "process" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Vendor Registration Process (4 Steps)
-              </h2>
-              <p className="text-xs text-slate-500">
-                The 4 step sequential roadmap with numbered red badges
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.processBadge}
-                  onChange={(e) => setFormData({ ...formData, processBadge: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="HOW IT WORKS"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.processTitle}
-                  onChange={(e) => setFormData({ ...formData, processTitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Vendor Registration Process"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.processSubtitle}
-                  onChange={(e) => setFormData({ ...formData, processSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="Get registered in a few simple steps..."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {steps.map((st, idx) => (
-                <div key={st.step || idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="w-8 h-8 rounded-full bg-[#dc2626] text-white font-black text-xs flex items-center justify-center">
-                      {st.step}
-                    </span>
-                    <input
-                      type="text"
-                      value={st.step}
-                      onChange={(e) => {
-                        const updated = [...steps];
-                        updated[idx].step = e.target.value;
-                        setSteps(updated);
-                      }}
-                      className="w-12 px-2 py-1 text-center bg-slate-50 rounded-md border border-slate-200 text-xs font-bold"
-                      placeholder="01"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Step Title
-                    </label>
-                    <input
-                      type="text"
-                      value={st.title}
-                      onChange={(e) => {
-                        const updated = [...steps];
-                        updated[idx].title = e.target.value;
-                        setSteps(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={st.description}
-                      onChange={(e) => {
-                        const updated = [...steps];
-                        updated[idx].description = e.target.value;
-                        setSteps(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Icon Name
-                    </label>
-                    <input
-                      type="text"
-                      value={st.iconName}
-                      onChange={(e) => {
-                        const updated = [...steps];
-                        updated[idx].iconName = e.target.value;
-                        setSteps(updated);
-                      }}
-                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-500"
-                      placeholder="UserPlus, FileUp, CheckCircle, Award"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 5: VENDOR BENEFITS */}
-        {/* ================================================================ */}
-        {activeTab === "benefits" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">Benefits for Our Vendors (6 Cards)</h2>
-              <p className="text-xs text-slate-500">
-                The 2x3 grid highlighting partnership perks
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.benefitsBadge}
-                  onChange={(e) => setFormData({ ...formData, benefitsBadge: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="WHY PARTNER WITH US"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.benefitsTitle}
-                  onChange={(e) => setFormData({ ...formData, benefitsTitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Benefits for Our Vendors"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.benefitsSubtitle}
-                  onChange={(e) => setFormData({ ...formData, benefitsSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="We believe in long-term relationships..."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {benefits.map((b, idx) => (
-                <div key={b.id || idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-red-600 uppercase">
-                      Benefit #{idx + 1}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={b.title}
-                      onChange={(e) => {
-                        const updated = [...benefits];
-                        updated[idx].title = e.target.value;
-                        setBenefits(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Description
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={b.description}
-                      onChange={(e) => {
-                        const updated = [...benefits];
-                        updated[idx].description = e.target.value;
-                        setBenefits(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Icon Name
-                    </label>
-                    <input
-                      type="text"
-                      value={b.iconName}
-                      onChange={(e) => {
-                        const updated = [...benefits];
-                        updated[idx].iconName = e.target.value;
-                        setBenefits(updated);
-                      }}
-                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-500"
-                      placeholder="Briefcase, ShieldCheck, IndianRupee..."
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 6: IMPACT CONTAINER */}
-        {/* ================================================================ */}
-        {activeTab === "impact" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Dark Impact Container (&quot;Building a Stronger Rajasthan Together&quot;)
-              </h2>
-              <p className="text-xs text-slate-500">
-                Industrial crane skyline background, message, and 4 impact pillars
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.impactBadge}
-                  onChange={(e) => setFormData({ ...formData, impactBadge: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="OUR IMPACT"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  CTA Button Text
-                </label>
-                <input
-                  type="text"
-                  value={formData.impactBtnText}
-                  onChange={(e) => setFormData({ ...formData, impactBtnText: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-red-600"
-                  placeholder="Join Our Vendor Network"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Impact Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.impactTitle}
-                  onChange={(e) => setFormData({ ...formData, impactTitle: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-black"
-                  placeholder="Building a Stronger Rajasthan Together"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Impact Subtitle
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.impactSubtitle}
-                  onChange={(e) => setFormData({ ...formData, impactSubtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="Empowering local businesses, creating opportunities..."
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Skyline Background Image URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.impactImageUrl || ""}
-                  onChange={(e) => setFormData({ ...formData, impactImageUrl: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="/images/empanelment/impact-skyline.jpg"
-                />
-              </div>
-            </div>
-
-            {/* 4 Impact Pillars */}
-            <div className="pt-6 border-t border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 mb-4">4 Impact Pillars</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {impactPillars.map((p, idx) => (
-                  <div key={p.id || idx} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Pillar #{idx + 1}
-                    </span>
-                    <input
-                      type="text"
-                      value={p.title}
-                      onChange={(e) => {
-                        const updated = [...impactPillars];
-                        updated[idx].title = e.target.value;
-                        setImpactPillars(updated);
-                      }}
-                      className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-xs font-bold"
-                      placeholder="Title"
-                    />
-                    <input
-                      type="text"
-                      value={p.iconName}
-                      onChange={(e) => {
-                        const updated = [...impactPillars];
-                        updated[idx].iconName = e.target.value;
-                        setImpactPillars(updated);
-                      }}
-                      className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-[11px] text-slate-500"
-                      placeholder="Icon: TrendingUp, Building..."
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 7: DOCUMENTS REQUIRED */}
-        {/* ================================================================ */}
-        {activeTab === "documents" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Required Documents (Left Column)
-              </h2>
-              <p className="text-xs text-slate-500">
-                The 6 document readiness cards shown next to the FAQ section
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.docsBadge}
-                  onChange={(e) => setFormData({ ...formData, docsBadge: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="DOCUMENTS REQUIRED"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.docsTitle}
-                  onChange={(e) => setFormData({ ...formData, docsTitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Get Ready for Registration"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.docsSubtitle}
-                  onChange={(e) => setFormData({ ...formData, docsSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="Keep the following documents ready..."
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {docsList.map((doc, idx) => (
-                <div key={doc.id || idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-red-600 uppercase">
-                      Document #{idx + 1}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Document Name
-                    </label>
-                    <input
-                      type="text"
-                      value={doc.title}
-                      onChange={(e) => {
-                        const updated = [...docsList];
-                        updated[idx].title = e.target.value;
-                        setDocsList(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Description / Note
-                    </label>
-                    <input
-                      type="text"
-                      value={doc.description}
-                      onChange={(e) => {
-                        const updated = [...docsList];
-                        updated[idx].description = e.target.value;
-                        setDocsList(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
-                      Icon Name
-                    </label>
-                    <input
-                      type="text"
-                      value={doc.iconName}
-                      onChange={(e) => {
-                        const updated = [...docsList];
-                        updated[idx].iconName = e.target.value;
-                        setDocsList(updated);
-                      }}
-                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-500"
-                      placeholder="FileCheck, CreditCard, Building2, Briefcase..."
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 8: FAQS ACCORDION */}
-        {/* ================================================================ */}
-        {activeTab === "faqs" && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">
-                  Quick Answers (FAQ Accordion)
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Manage common questions shown on the home page
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setFaqsList([
-                    ...faqsList,
-                    {
-                      id: `f_${Date.now()}`,
-                      question: "New Question?",
-                      answer: "Provide clear answer here.",
-                    },
-                  ]);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add FAQ</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.faqBadge}
-                  onChange={(e) => setFormData({ ...formData, faqBadge: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="FREQUENTLY ASKED QUESTIONS"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.faqTitle}
-                  onChange={(e) => setFormData({ ...formData, faqTitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Quick Answers"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.faqSubtitle}
-                  onChange={(e) => setFormData({ ...formData, faqSubtitle: e.target.value })}
-                  className="w-full px-3 py-2 bg-white rounded-xl border border-slate-200 text-sm"
-                  placeholder="Find answers to common questions about vendor registration..."
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {faqsList.map((faq, idx) => (
-                <div key={faq.id || idx} className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400">
-                      Question #{idx + 1}
-                    </span>
-                    <button
-                      onClick={() => {
-                        const updated = faqsList.filter((_, i) => i !== idx);
-                        setFaqsList(updated);
-                      }}
-                      className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1 font-semibold"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
-                    </button>
-                  </div>
-
-                  <div>
-                    <input
-                      type="text"
-                      value={faq.question}
-                      onChange={(e) => {
-                        const updated = [...faqsList];
-                        updated[idx].question = e.target.value;
-                        setFaqsList(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900"
-                      placeholder="Question text"
-                    />
-                  </div>
-
-                  <div>
-                    <textarea
-                      rows={3}
-                      value={faq.answer}
-                      onChange={(e) => {
-                        const updated = [...faqsList];
-                        updated[idx].answer = e.target.value;
-                        setFaqsList(updated);
-                      }}
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed"
-                      placeholder="Detailed answer"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 9: RED CALLOUT BANNER */}
-        {/* ================================================================ */}
-        {activeTab === "banner" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Bottom Red Callout Banner
-              </h2>
-              <p className="text-xs text-slate-500">
-                &quot;Let&apos;s Build a Stronger, Self-Reliant Rajasthan.&quot; full-width section
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-red-50/50 p-6 rounded-2xl border border-red-200">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Tagline Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.ctaBadge}
-                  onChange={(e) => setFormData({ ...formData, ctaBadge: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white"
-                  placeholder="BE A PART OF OUR JOURNEY"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Action Button Text (White Button)
-                </label>
-                <input
-                  type="text"
-                  value={formData.ctaBtnText}
-                  onChange={(e) => setFormData({ ...formData, ctaBtnText: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 bg-white"
-                  placeholder="Register Now"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Banner Headline
-                </label>
-                <input
-                  type="text"
-                  value={formData.ctaTitle}
-                  onChange={(e) => setFormData({ ...formData, ctaTitle: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-base font-black text-slate-900 bg-white"
-                  placeholder="Let's Build a Stronger, Self-Reliant Rajasthan."
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle Paragraph
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.ctaSubtitle}
-                  onChange={(e) => setFormData({ ...formData, ctaSubtitle: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white"
-                  placeholder="Register as a vendor today and become a part of Hindustan Projects' growing network."
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 10: BRAND & COORDINATES */}
-        {/* ================================================================ */}
-        {activeTab === "branding" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">Brand & Contact Coordinates</h2>
-              <p className="text-xs text-slate-500">
-                Shown in the top header, footer, and automated procurement dispatch emails
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Portal Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.portalName}
-                  onChange={(e) => setFormData({ ...formData, portalName: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold"
-                  placeholder="Hindustan Projects"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Tagline
-                </label>
-                <input
-                  type="text"
-                  value={formData.tagline}
-                  onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="Engineering – Construction – Infrastructure"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Procurement Helpline Phone
-                </label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Procurement Email Address
-                </label>
-                <input
-                  type="text"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="procurement@hindustanprojects.in"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Official Office Address
-                </label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="Hindustan Projects, Bhilwara, Rajasthan, India"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  WhatsApp Support Number
-                </label>
-                <input
-                  type="text"
-                  value={formData.supportWhatsapp}
-                  onChange={(e) => setFormData({ ...formData, supportWhatsapp: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* TAB 11: GUIDELINES & CAPACITY TIERS */}
-        {/* ================================================================ */}
-        {activeTab === "guidelines" && (
-          <div className="space-y-8">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Guidelines & Contractor Capacity Standards CMS
-              </h2>
-              <p className="text-xs text-slate-500">
-                Directly configure Class A–D turnover thresholds, statutory documents, and NBC 2016 safety norms displayed on the public Guidelines page.
-              </p>
-            </div>
-
-            {/* Header Section */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200/80">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Section Badge
-                </label>
-                <input
-                  type="text"
-                  value={formData.guidelinesBadge}
-                  onChange={(e) => setFormData({ ...formData, guidelinesBadge: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Main Title
-                </label>
-                <input
-                  type="text"
-                  value={formData.guidelinesTitle}
-                  onChange={(e) => setFormData({ ...formData, guidelinesTitle: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-              <div className="md:col-span-3">
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Subtitle / Preamble
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.guidelinesSubtitle}
-                  onChange={(e) => setFormData({ ...formData, guidelinesSubtitle: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Capacity Tiers (Class A, B, C, D) */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Contractor Capacity Classes</h3>
-                  <p className="text-xs text-slate-500">CPWD / HiPRO financial turnover & single order capacity brackets</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newTier: EmpanelmentTier = {
-                      code: `CLASS_${String.fromCharCode(65 + guidelinesTiers.length)}`,
-                      title: `Class '${String.fromCharCode(65 + guidelinesTiers.length)}' Contractor`,
-                      turnover: "₹ 50 Lakhs+",
-                      capacity: "Up to ₹ 1.00 Cr",
-                      validity: "2 Years",
-                      scope: "General construction and civil works.",
-                    };
-                    setGuidelinesTiers([...guidelinesTiers, newTier]);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Class Tier
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {guidelinesTiers.map((tier, idx) => (
-                  <div key={idx} className="p-5 rounded-xl border border-slate-200 bg-white shadow-sm space-y-3">
-                    <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="px-2.5 py-1 bg-red-100 text-red-700 font-mono text-xs font-bold rounded">
-                          {tier.code || `CLASS_${idx + 1}`}
-                        </span>
-                        <input
-                          type="text"
-                          value={tier.title}
-                          onChange={(e) => {
-                            const updated = [...guidelinesTiers];
-                            updated[idx].title = e.target.value;
-                            setGuidelinesTiers(updated);
-                          }}
-                          className="font-bold text-slate-900 text-sm border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none px-1"
-                          placeholder="Class Title"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = guidelinesTiers.filter((_, i) => i !== idx);
-                          setGuidelinesTiers(updated);
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
-                        title="Delete Tier"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+            {/* FORM CARD CONTAINER */}
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
+              {/* ================================================================ */}
+              {/* SECTION: HERO BANNER */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "hero" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Hero Section Primary Settings</h2>
+                      <p className="text-xs text-slate-500">
+                        Controls headline, subtitle, buttons, and site image
+                      </p>
                     </div>
+                    <span className="text-xs font-mono font-bold text-slate-400">Section 01</span>
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Code</label>
-                        <input
-                          type="text"
-                          value={tier.code}
-                          onChange={(e) => {
-                            const updated = [...guidelinesTiers];
-                            updated[idx].code = e.target.value;
-                            setGuidelinesTiers(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Annual Turnover</label>
-                        <input
-                          type="text"
-                          value={tier.turnover}
-                          onChange={(e) => {
-                            const updated = [...guidelinesTiers];
-                            updated[idx].turnover = e.target.value;
-                            setGuidelinesTiers(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Order Capacity</label>
-                        <input
-                          type="text"
-                          value={tier.capacity}
-                          onChange={(e) => {
-                            const updated = [...guidelinesTiers];
-                            updated[idx].capacity = e.target.value;
-                            setGuidelinesTiers(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Empanelment Validity</label>
-                        <input
-                          type="text"
-                          value={tier.validity}
-                          onChange={(e) => {
-                            const updated = [...guidelinesTiers];
-                            updated[idx].validity = e.target.value;
-                            setGuidelinesTiers(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Top Red Badge Text
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.heroBadge}
+                        onChange={(e) => {
+                          setFormData({ ...formData, heroBadge: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Eligible Work Scope</label>
-                      <textarea
-                        rows={2}
-                        value={tier.scope}
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Headline Prefix
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.heroTitlePrefix}
                         onChange={(e) => {
-                          const updated = [...guidelinesTiers];
-                          updated[idx].scope = e.target.value;
-                          setGuidelinesTiers(updated);
+                          setFormData({ ...formData, heroTitlePrefix: e.target.value });
+                          markDirty();
                         }}
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-slate-200"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                       />
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Statutory Documents Checklist */}
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Statutory Documents Checklist</h3>
-                  <p className="text-xs text-slate-500">Government compliance certificates required from applicants</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newDoc: EmpanelmentStatutoryDoc = {
-                      id: `doc_${Date.now()}`,
-                      title: "New Certificate",
-                      authority: "Issuing Authority",
-                      requiredFor: "All Entities",
-                      desc: "Mandatory compliance certificate copy.",
-                    };
-                    setGuidelinesStatutoryDocs([...guidelinesStatutoryDocs, newDoc]);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Document
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {guidelinesStatutoryDocs.map((doc, idx) => (
-                  <div key={doc.id || idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Headline Brand Highlight (Red)
+                      </label>
                       <input
                         type="text"
-                        value={doc.title}
+                        value={formData.heroTitleHighlight}
                         onChange={(e) => {
-                          const updated = [...guidelinesStatutoryDocs];
-                          updated[idx].title = e.target.value;
-                          setGuidelinesStatutoryDocs(updated);
+                          setFormData({ ...formData, heroTitleHighlight: e.target.value });
+                          markDirty();
                         }}
-                        className="font-bold text-slate-900 text-sm flex-1 border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none"
-                        placeholder="Document Title"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-[#dc2626] focus:outline-none focus:ring-2 focus:ring-red-500/20"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Registration Button Label
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.heroRegisterBtnText}
+                        onChange={(e) => {
+                          setFormData({ ...formData, heroRegisterBtnText: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Hero Paragraph Subtitle
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.heroSubtitle}
+                      onChange={(e) => {
+                        setFormData({ ...formData, heroSubtitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+
+                  {/* Hero Background Image Picker with 1-Click Library Presets */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[10px] uppercase font-bold text-slate-700 flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-[#dc2626]" />
+                        <span>Hero Right Graphic Image URL</span>
+                      </label>
+                      <span className="text-[10px] text-slate-400">Supports direct URLs or presets</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={formData.heroImageUrl || ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, heroImageUrl: e.target.value });
+                          markDirty();
+                        }}
+                        className="flex-1 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-mono text-slate-800 focus:outline-none"
+                        placeholder="/images/empanelment/hero-engineers-perfect.jpg"
+                      />
+                    </div>
+
+                    {/* Presets Gallery */}
+                    <div className="space-y-1.5">
+                      <p className="text-[10px] font-bold text-slate-400">1-Click Certified Presets:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {IMAGE_LIBRARY_PRESETS.map((p) => (
+                          <button
+                            key={p.url}
+                            type="button"
+                            onClick={() => {
+                              setFormData({ ...formData, heroImageUrl: p.url });
+                              markDirty();
+                            }}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                              formData.heroImageUrl === p.url
+                                ? "bg-red-50 text-[#dc2626] border-red-300"
+                                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                            }`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: 4 HERO FEATURE PILLS */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "hero_pills" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">4 Feature Pills (Below Buttons)</h2>
+                      <p className="text-xs text-slate-500">Key pillars with red outline icons</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `p_${Date.now()}`;
+                        setHeroPills([...heroPills, { id: newId, title: "New Feature\nPillar", iconName: "ShieldCheck" }]);
+                        markDirty();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Pill</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {heroPills.map((pill, idx) => (
+                      <div
+                        key={pill.id}
+                        className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex items-center gap-3"
+                      >
+                        <span className="w-6 h-6 rounded-full bg-red-100 text-[#dc2626] text-xs font-black flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Title Text</label>
+                            <input
+                              type="text"
+                              value={pill.title}
+                              onChange={(e) => {
+                                const next = [...heroPills];
+                                next[idx].title = e.target.value;
+                                setHeroPills(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Icon Key</label>
+                            <select
+                              value={pill.iconName}
+                              onChange={(e) => {
+                                const next = [...heroPills];
+                                next[idx].iconName = e.target.value;
+                                setHeroPills(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white text-slate-900"
+                            >
+                              <option value="Handshake">Handshake (Trust & Transparency)</option>
+                              <option value="Users">Users (Local Partners)</option>
+                              <option value="Building2">Building2 (Infrastructure)</option>
+                              <option value="TrendingUp">TrendingUp (Long-term Growth)</option>
+                              <option value="ShieldCheck">ShieldCheck (Compliance)</option>
+                              <option value="Settings">Settings (Quality)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveItem(heroPills, idx, "up", setHeroPills)}
+                            disabled={idx === 0}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItem(heroPills, idx, "down", setHeroPills)}
+                            disabled={idx === heroPills.length - 1}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHeroPills(heroPills.filter((_, i) => i !== idx));
+                              markDirty();
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: FLOATING STATS BAR */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "stats" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Stats Counter Bar (200+, 150+...)</h2>
+                      <p className="text-xs text-slate-500">Key metrics displayed in floating bottom banner</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `s_${Date.now()}`;
+                        setStats([...stats, { id: newId, value: "100+", label: "New Metric", iconName: "Award" }]);
+                        markDirty();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Metric</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {stats.map((stat, idx) => (
+                      <div
+                        key={stat.id}
+                        className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex items-center gap-3"
+                      >
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Value (e.g. 200+)</label>
+                            <input
+                              type="text"
+                              value={stat.value}
+                              onChange={(e) => {
+                                const next = [...stats];
+                                next[idx].value = e.target.value;
+                                setStats(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-black bg-white text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Label (e.g. Trusted Vendors)</label>
+                            <input
+                              type="text"
+                              value={stat.label}
+                              onChange={(e) => {
+                                const next = [...stats];
+                                next[idx].label = e.target.value;
+                                setStats(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Icon Key</label>
+                            <select
+                              value={stat.iconName}
+                              onChange={(e) => {
+                                const next = [...stats];
+                                next[idx].iconName = e.target.value;
+                                setStats(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white text-slate-900"
+                            >
+                              <option value="Users">Users (Vendors / Manpower)</option>
+                              <option value="FileText">FileText (Projects Supplied)</option>
+                              <option value="MapPin">MapPin (Cities & Footprint)</option>
+                              <option value="ShieldCheck">ShieldCheck (Transparency)</option>
+                              <option value="Award">Award (Certifications)</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveItem(stats, idx, "up", setStats)}
+                            disabled={idx === 0}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            title="Move Up"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItem(stats, idx, "down", setStats)}
+                            disabled={idx === stats.length - 1}
+                            className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            title="Move Down"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStats(stats.filter((_, i) => i !== idx));
+                              markDirty();
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: SUPPLY CATEGORIES */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "categories" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Supply Categories Matrix ({categories.length})</h2>
+                      <p className="text-xs text-slate-500">Photographic cards with live trade badges & tags</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `c_${Date.now()}`;
+                        setCategories([
+                          ...categories,
+                          {
+                            id: newId,
+                            title: "New Supply Trade",
+                            description: "Supply description here",
+                            imageUrl: "/images/empanelment/cat-building-materials.jpg",
+                            linkUrl: "/empanelment/apply",
+                          },
+                        ]);
+                        markDirty();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Trade</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {categories.map((cat, idx) => (
+                      <div
+                        key={cat.id}
+                        className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-3"
+                      >
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <span className="font-bold text-xs text-slate-900">
+                            Trade #{idx + 1}: {cat.title}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => moveItem(categories, idx, "up", setCategories)}
+                              disabled={idx === 0}
+                              className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-30"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveItem(categories, idx, "down", setCategories)}
+                              disabled={idx === categories.length - 1}
+                              className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-30"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCategories(categories.filter((_, i) => i !== idx));
+                                markDirty();
+                              }}
+                              className="p-1 rounded-lg hover:bg-red-50 text-red-500"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Title</label>
+                            <input
+                              type="text"
+                              value={cat.title}
+                              onChange={(e) => {
+                                const next = [...categories];
+                                next[idx].title = e.target.value;
+                                setCategories(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Description</label>
+                            <input
+                              type="text"
+                              value={cat.description}
+                              onChange={(e) => {
+                                const next = [...categories];
+                                next[idx].description = e.target.value;
+                                setCategories(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Photo Image URL</label>
+                          <input
+                            type="text"
+                            value={cat.imageUrl}
+                            onChange={(e) => {
+                              const next = [...categories];
+                              next[idx].imageUrl = e.target.value;
+                              setCategories(next);
+                              markDirty();
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-mono text-slate-800"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: 4-STEP PROCESS */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "process" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">Registration Process Steps</h2>
+                    <p className="text-xs text-slate-500">Step 01 to 04 shown in connected sequence</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    {steps.map((st, idx) => (
+                      <div key={st.step} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-black text-xs px-2.5 py-0.5 rounded-md bg-[#dc2626] text-white">
+                            STEP {st.step}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Title</label>
+                            <input
+                              type="text"
+                              value={st.title}
+                              onChange={(e) => {
+                                const next = [...steps];
+                                next[idx].title = e.target.value;
+                                setSteps(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900 bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Description</label>
+                            <input
+                              type="text"
+                              value={st.description}
+                              onChange={(e) => {
+                                const next = [...steps];
+                                next[idx].description = e.target.value;
+                                setSteps(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: VENDOR BENEFITS */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "benefits" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Vendor Benefits ({benefits.length})</h2>
+                      <p className="text-xs text-slate-500">Why partner with Hindustan Projects cards</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {benefits.map((b, idx) => (
+                      <div key={b.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
+                        <label className="block text-[9px] uppercase font-bold text-slate-400">Benefit Title</label>
+                        <input
+                          type="text"
+                          value={b.title}
+                          onChange={(e) => {
+                            const next = [...benefits];
+                            next[idx].title = e.target.value;
+                            setBenefits(next);
+                            markDirty();
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900 bg-white"
+                        />
+                        <label className="block text-[9px] uppercase font-bold text-slate-400">Description</label>
+                        <textarea
+                          rows={2}
+                          value={b.description}
+                          onChange={(e) => {
+                            const next = [...benefits];
+                            next[idx].description = e.target.value;
+                            setBenefits(next);
+                            markDirty();
+                          }}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* SECTION: PORTAL FAQS */}
+              {/* ================================================================ */}
+              {selectedGroup === "landing" && activeSubTab === "faqs" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">Frequently Asked Questions ({faqsList.length})</h2>
+                      <p className="text-xs text-slate-500">Interactive accordion questions on portal home</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `f_${Date.now()}`;
+                        setFaqsList([
+                          ...faqsList,
+                          { id: newId, question: "New FAQ Question?", answer: "Detailed answer goes here." },
+                        ]);
+                        markDirty();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add FAQ</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {faqsList.map((faq, idx) => (
+                      <div key={faq.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-xs text-slate-700">FAQ #{idx + 1}</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => moveItem(faqsList, idx, "up", setFaqsList)}
+                              disabled={idx === 0}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveItem(faqsList, idx, "down", setFaqsList)}
+                              disabled={idx === faqsList.length - 1}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFaqsList(faqsList.filter((_, i) => i !== idx));
+                                markDirty();
+                              }}
+                              className="p-1 rounded-lg hover:bg-red-50 text-red-500"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Question</label>
+                          <input
+                            type="text"
+                            value={faq.question}
+                            onChange={(e) => {
+                              const next = [...faqsList];
+                              next[idx].question = e.target.value;
+                              setFaqsList(next);
+                              markDirty();
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-900 bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Answer</label>
+                          <textarea
+                            rows={2}
+                            value={faq.answer}
+                            onChange={(e) => {
+                              const next = [...faqsList];
+                              next[idx].answer = e.target.value;
+                              setFaqsList(next);
+                              markDirty();
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white leading-relaxed"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: CAPACITY GUIDELINES & TIERS */}
+              {/* ================================================================ */}
+              {selectedGroup === "guidelines" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slate-900">
+                        Capacity Classification Standards & Tiers ({guidelinesTiers.length})
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Controls /empanelment/guidelines tiers, statutory checklist, and NBC 2016 rules
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGuidelinesTiers([
+                          ...guidelinesTiers,
+                          {
+                            code: "CLASS_NEW",
+                            title: "New Capacity Tier",
+                            turnover: "₹ 50 Lakhs+",
+                            capacity: "Single Work Order",
+                            validity: "2 Years",
+                            scope: "Scope description",
+                          },
+                        ]);
+                        markDirty();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5 hover:bg-black transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Tier</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {guidelinesTiers.map((tier, idx) => (
+                      <div key={tier.code || idx} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                          <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-slate-900 text-white">
+                            {tier.code}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => moveItem(guidelinesTiers, idx, "up", setGuidelinesTiers)}
+                              disabled={idx === 0}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveItem(guidelinesTiers, idx, "down", setGuidelinesTiers)}
+                              disabled={idx === guidelinesTiers.length - 1}
+                              className="p-1 rounded-lg hover:bg-slate-200 text-slate-500 disabled:opacity-30"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGuidelinesTiers(guidelinesTiers.filter((_, i) => i !== idx));
+                                markDirty();
+                              }}
+                              className="p-1 rounded-lg hover:bg-red-50 text-red-500"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Tier Title</label>
+                            <input
+                              type="text"
+                              value={tier.title}
+                              onChange={(e) => {
+                                const next = [...guidelinesTiers];
+                                next[idx].title = e.target.value;
+                                setGuidelinesTiers(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white text-slate-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Annual Turnover</label>
+                            <input
+                              type="text"
+                              value={tier.turnover}
+                              onChange={(e) => {
+                                const next = [...guidelinesTiers];
+                                next[idx].turnover = e.target.value;
+                                setGuidelinesTiers(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white text-slate-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Order Capability</label>
+                            <input
+                              type="text"
+                              value={tier.capacity}
+                              onChange={(e) => {
+                                const next = [...guidelinesTiers];
+                                next[idx].capacity = e.target.value;
+                                setGuidelinesTiers(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-[#dc2626] bg-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Validity Period</label>
+                            <input
+                              type="text"
+                              value={tier.validity}
+                              onChange={(e) => {
+                                const next = [...guidelinesTiers];
+                                next[idx].validity = e.target.value;
+                                setGuidelinesTiers(next);
+                                markDirty();
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white text-slate-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Eligible Scope</label>
+                          <textarea
+                            rows={2}
+                            value={tier.scope}
+                            onChange={(e) => {
+                              const next = [...guidelinesTiers];
+                              next[idx].scope = e.target.value;
+                              setGuidelinesTiers(next);
+                              markDirty();
+                            }}
+                            className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 bg-white"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: TENDERS RADAR NOTICE & DIRECT HELPDESK */}
+              {/* ================================================================ */}
+              {selectedGroup === "tenders" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">
+                      Procurement Directorate Live Bulletin & Contact Desk
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Dynamic notification banner displayed above the active tenders radar
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Notice Badge Tag
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tendersNoticeBadge || ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, tendersNoticeBadge: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Notice Title
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tendersNoticeTitle || ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, tendersNoticeTitle: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Notice Bulletin Text
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={formData.tendersNoticeText || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, tendersNoticeText: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Tenders Helpline Phone
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tendersHelplinePhone || ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, tendersHelplinePhone: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Tenders Helpline Email
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tendersHelplineEmail || ""}
+                        onChange={(e) => {
+                          setFormData({ ...formData, tendersHelplineEmail: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: DAILY GATE PASS TERMS */}
+              {/* ================================================================ */}
+              {selectedGroup === "gatepass" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">
+                      Daily Site Gate Pass Policies & Security Terms
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Displayed on the pass generation form and bottom of printed QR badge
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Entry Instructions (Blue/Rose Info Callout)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.gatePassInstructions || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, gatePassInstructions: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Security Pass Terms & Conditions (Printed Footer)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={formData.gatePassTerms || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, gatePassTerms: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: GLOBAL BRANDING & HELPDESK */}
+              {/* ================================================================ */}
+              {selectedGroup === "branding" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">Global Corporate Identity & Helpdesk</h2>
+                    <p className="text-xs text-slate-500">Synchronized across navbar, drawer, footer, and tracker</p>
+                  </div>
+
+                  {/* Announcement Ticker */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-[10px] uppercase font-bold text-slate-700">
+                        Top Announcement Ticker Bar
+                      </label>
                       <button
                         type="button"
                         onClick={() => {
-                          const updated = guidelinesStatutoryDocs.filter((_, i) => i !== idx);
-                          setGuidelinesStatutoryDocs(updated);
+                          setFormData({ ...formData, noticeAlertActive: !formData.noticeAlertActive });
+                          markDirty();
                         }}
-                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                        className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                          formData.noticeAlertActive ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                        }`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {formData.noticeAlertActive ? "ACTIVE" : "HIDDEN"}
                       </button>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Issuing Authority</label>
-                        <input
-                          type="text"
-                          value={doc.authority}
-                          onChange={(e) => {
-                            const updated = [...guidelinesStatutoryDocs];
-                            updated[idx].authority = e.target.value;
-                            setGuidelinesStatutoryDocs(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Applicable Classes</label>
-                        <input
-                          type="text"
-                          value={doc.requiredFor}
-                          onChange={(e) => {
-                            const updated = [...guidelinesStatutoryDocs];
-                            updated[idx].requiredFor = e.target.value;
-                            setGuidelinesStatutoryDocs(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Requirement Note</label>
-                        <input
-                          type="text"
-                          value={doc.desc}
-                          onChange={(e) => {
-                            const updated = [...guidelinesStatutoryDocs];
-                            updated[idx].desc = e.target.value;
-                            setGuidelinesStatutoryDocs(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
-                    </div>
+                    <input
+                      type="text"
+                      value={formData.noticeAlertBanner || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, noticeAlertBanner: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 bg-white"
+                      placeholder="📢 FY 2026-27 Vendor & Contractor Empanelment is now open..."
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Safety & NBC 2016 Standards */}
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Safety & NBC 2016 Protocols</h3>
-                  <p className="text-xs text-slate-500">On-site occupational safety and statutory insurance standards</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newSafe: EmpanelmentSafetyStandard = {
-                      id: `safe_${Date.now()}`,
-                      title: "Site Safety Mandate",
-                      codeRef: "NBC 2016 Standard",
-                      desc: "Mandatory personal protective equipment and site safety compliance.",
-                    };
-                    setGuidelinesSafetyStandards([...guidelinesSafetyStandards, newSafe]);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Safety Rule
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {guidelinesSafetyStandards.map((safe, idx) => (
-                  <div key={safe.id || idx} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm space-y-2">
-                    <div className="flex items-center justify-between gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Portal Official Name
+                      </label>
                       <input
                         type="text"
-                        value={safe.title}
+                        value={formData.portalName}
                         onChange={(e) => {
-                          const updated = [...guidelinesSafetyStandards];
-                          updated[idx].title = e.target.value;
-                          setGuidelinesSafetyStandards(updated);
+                          setFormData({ ...formData, portalName: e.target.value });
+                          markDirty();
                         }}
-                        className="font-bold text-slate-900 text-sm flex-1 border-b border-transparent hover:border-slate-300 focus:border-red-500 outline-none"
-                        placeholder="Protocol Title"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900"
                       />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updated = guidelinesSafetyStandards.filter((_, i) => i !== idx);
-                          setGuidelinesSafetyStandards(updated);
-                        }}
-                        className="p-1 text-slate-400 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Code Reference</label>
-                        <input
-                          type="text"
-                          value={safe.codeRef}
-                          onChange={(e) => {
-                            const updated = [...guidelinesSafetyStandards];
-                            updated[idx].codeRef = e.target.value;
-                            setGuidelinesSafetyStandards(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 font-mono"
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase">Protocol Description</label>
-                        <input
-                          type="text"
-                          value={safe.desc}
-                          onChange={(e) => {
-                            const updated = [...guidelinesSafetyStandards];
-                            updated[idx].desc = e.target.value;
-                            setGuidelinesSafetyStandards(updated);
-                          }}
-                          className="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Official Tagline
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.tagline}
+                        onChange={(e) => {
+                          setFormData({ ...formData, tagline: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800"
+                      />
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Primary Phone / Helpdesk
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          setFormData({ ...formData, phone: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Procurement Email
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => {
+                          setFormData({ ...formData, email: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                        Support WhatsApp Number
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.supportWhatsapp}
+                        onChange={(e) => {
+                          setFormData({ ...formData, supportWhatsapp: e.target.value });
+                          markDirty();
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Head Office Address
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => {
+                        setFormData({ ...formData, address: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: SEO & META TAGS */}
+              {/* ================================================================ */}
+              {selectedGroup === "seo" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">SEO & Social Meta Tag Configuration</h2>
+                    <p className="text-xs text-slate-500">
+                      Directly optimizes Google search rank, WhatsApp preview cards, and social links
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Browser Page Title &lt;title&gt;
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.metaTitle || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, metaTitle: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Meta Description (Search Snippet)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formData.metaDescription || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, metaDescription: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 leading-relaxed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1.5">
+                      Target Search Keywords
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.metaKeywords || ""}
+                      onChange={(e) => {
+                        setFormData({ ...formData, metaKeywords: e.target.value });
+                        markDirty();
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800"
+                    />
+                  </div>
+
+                  {/* Google Snippet Live Simulation */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Google Search Snippet Simulation:
+                    </p>
+                    <p className="text-[11px] text-slate-500">empanelment.hindustanprojects.in</p>
+                    <h3 className="text-sm font-semibold text-blue-700 hover:underline cursor-pointer">
+                      {formData.metaTitle || "Vendor & Contractor Empanelment Portal | Hindustan Projects"}
+                    </h3>
+                    <p className="text-xs text-slate-600 line-clamp-2">
+                      {formData.metaDescription ||
+                        "Official contractor empanelment, live construction tenders, and daily site access pass portal for Hindustan Projects across Rajasthan."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* ================================================================ */}
+              {/* PAGE: SECTION VISIBILITY SWITCHES */}
+              {/* ================================================================ */}
+              {selectedGroup === "visibility" && (
+                <div className="space-y-6">
+                  <div className="border-b border-slate-100 pb-4">
+                    <h2 className="text-base font-bold text-slate-900">Section Visibility Switches</h2>
+                    <p className="text-xs text-slate-500">
+                      Instantly turn entire sections ON or OFF without touching frontend code
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { key: "showHeroPills", label: "Hero 4 Feature Pills", desc: "Fair procurement, local partners..." },
+                      { key: "showStats", label: "Floating Stats Bar", desc: "200+ Vendors, 150+ Projects..." },
+                      { key: "showCategories", label: "Supply Categories Matrix", desc: "6 Trade photographic cards" },
+                      { key: "showProcess", label: "4-Step Registration Process", desc: "Profile, KYC, Review, List" },
+                      { key: "showBenefits", label: "Vendor Benefits", desc: "6 Partnership advantage cards" },
+                      { key: "showImpact", label: "Dark Skyline Impact Container", desc: "Building stronger Rajasthan" },
+                      { key: "showDocs", label: "Required Documents Matrix", desc: "GST, PAN, Cheque, MSME" },
+                      { key: "showFaqs", label: "Portal FAQ Accordions", desc: "Frequently asked questions" },
+                      { key: "showCta", label: "Bottom Red Callout Banner", desc: "Be a part of our journey" },
+                      { key: "showTendersNotice", label: "Tenders Directorate Bulletin", desc: "Active notice board on /tenders" },
+                    ].map((sec) => {
+                      const isVisible = visibility[sec.key] !== false;
+                      return (
+                        <div
+                          key={sec.key}
+                          className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/50 flex items-center justify-between gap-3"
+                        >
+                          <div>
+                            <h4 className="font-bold text-xs text-slate-900">{sec.label}</h4>
+                            <p className="text-[10px] text-slate-500">{sec.desc}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVisibility({ ...visibility, [sec.key]: !isVisible });
+                              markDirty();
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                              isVisible
+                                ? "bg-emerald-600 text-white shadow-2xs"
+                                : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                            }`}
+                          >
+                            {isVisible ? "VISIBLE" : "HIDDEN"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* ================================================================ */}
-        {/* TAB 12: TENDERS BULLETIN & GATE PASS POLICIES */}
+        {/* RIGHT PANE: LIVE INTERACTIVE PREVIEW (In Split or Full mode) */}
         {/* ================================================================ */}
-        {activeTab === "tenders_notice" && (
-          <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <h2 className="text-lg font-bold text-slate-900">
-                Tenders Notice Board & Site Gate Pass CMS
-              </h2>
-              <p className="text-xs text-slate-500">
-                Manage the live procurement bulletin broadcasted to contractors, bidding instructions, and on-site gate pass safety rules.
-              </p>
-            </div>
+        {viewMode !== "edit" && (
+          <div
+            className={`${
+              viewMode === "split" ? "xl:col-span-5" : "w-full max-w-5xl mx-auto"
+            } space-y-4 sticky top-28`}
+          >
+            {/* Preview Toolbar */}
+            <div className="bg-slate-900 text-white p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-bold tracking-wide">Live Preview Engine</span>
+              </div>
 
-            {/* Public Tenders Announcement Bulletin */}
-            <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 space-y-4">
-              <h3 className="text-sm font-bold text-slate-900">Live Tenders Notice Board Banner</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Notice Badge
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tendersNoticeBadge}
-                    onChange={(e) => setFormData({ ...formData, tendersNoticeBadge: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Notice Title
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tendersNoticeTitle}
-                    onChange={(e) => setFormData({ ...formData, tendersNoticeTitle: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Bulletin Text / Broadcast Message
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.tendersNoticeText || ""}
-                    onChange={(e) => setFormData({ ...formData, tendersNoticeText: e.target.value })}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white"
-                    placeholder="Broadcast notices, E-bidding timings, EMD guidelines..."
-                  />
+              {/* Page Selector */}
+              <div className="flex items-center gap-1.5">
+                <select
+                  value={previewPage}
+                  onChange={(e) => setPreviewPage(e.target.value as any)}
+                  className="bg-slate-800 text-white border border-slate-700 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none"
+                >
+                  <option value="home">Landing (Home)</option>
+                  <option value="guidelines">Guidelines Standards</option>
+                  <option value="tenders">Tenders Notice</option>
+                  <option value="gatepass">Gate Pass Preview</option>
+                </select>
+
+                {/* Device Selector */}
+                <div className="bg-slate-800 p-0.5 rounded-xl flex items-center border border-slate-700 text-xs">
+                  <button
+                    onClick={() => setPreviewDevice("desktop")}
+                    className={`p-1.5 rounded-lg ${previewDevice === "desktop" ? "bg-slate-700 text-white" : "text-slate-400"}`}
+                    title="Desktop Preview"
+                  >
+                    <Monitor className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setPreviewDevice("mobile")}
+                    className={`p-1.5 rounded-lg ${previewDevice === "mobile" ? "bg-slate-700 text-white" : "text-slate-400"}`}
+                    title="Mobile Viewport (390px)"
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Procurement Tender Contacts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 rounded-xl border border-slate-200 bg-white">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Tenders Helpline Phone
-                </label>
-                <input
-                  type="text"
-                  value={formData.tendersHelplinePhone || ""}
-                  onChange={(e) => setFormData({ ...formData, tendersHelplinePhone: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="+91 98765 43210"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Tenders Helpline Email
-                </label>
-                <input
-                  type="text"
-                  value={formData.tendersHelplineEmail || ""}
-                  onChange={(e) => setFormData({ ...formData, tendersHelplineEmail: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm"
-                  placeholder="tenders@hindustanprojects.in"
-                />
-              </div>
-            </div>
+            {/* Simulated Live Viewport Container */}
+            <div
+              className={`mx-auto bg-white border-4 rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${
+                previewDevice === "mobile"
+                  ? "w-[390px] border-slate-800 min-h-[700px] max-h-[820px] overflow-y-auto"
+                  : "w-full border-slate-200 min-h-[700px] max-h-[820px] overflow-y-auto"
+              }`}
+            >
+              {/* Simulated Mobile Notch / Browser Header */}
+              {previewDevice === "mobile" && (
+                <div className="bg-slate-900 text-white text-[10px] py-1 px-4 flex items-center justify-between font-mono">
+                  <span>9:41</span>
+                  <div className="w-14 h-3 bg-black rounded-full" />
+                  <span>5G 100%</span>
+                </div>
+              )}
 
-            {/* Site Gate Pass Policy & Terms */}
-            <div className="p-5 rounded-xl border border-slate-200 bg-white space-y-4">
-              <h3 className="text-sm font-bold text-slate-900">Site Gate Pass Policies & Disclaimer</h3>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Gate Pass Request Instructions (Shown on Form)
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.gatePassInstructions || ""}
-                  onChange={(e) => setFormData({ ...formData, gatePassInstructions: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                  placeholder="Instructions for vehicle registration and personnel entry..."
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Gate Pass Safety Terms & Liability Disclaimer (Printed on Pass)
-                </label>
-                <textarea
-                  rows={2}
-                  value={formData.gatePassTerms || ""}
-                  onChange={(e) => setFormData({ ...formData, gatePassTerms: e.target.value })}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"
-                  placeholder="Legal indemnity and on-site PPE compliance notice..."
-                />
-              </div>
+              {/* RENDER SELECTED PREVIEW PAGE */}
+              {previewPage === "home" && (
+                <div className="bg-white text-slate-900 font-sans text-xs">
+                  {/* Announcement Bar */}
+                  {formData.noticeAlertActive && formData.noticeAlertBanner && (
+                    <div className="bg-amber-500 text-slate-950 px-3 py-1.5 text-center text-[10px] font-bold">
+                      {formData.noticeAlertBanner}
+                    </div>
+                  )}
+
+                  {/* Header Mockup */}
+                  <div className="border-b border-slate-100 p-3 flex items-center justify-between">
+                    <div>
+                      <span className="font-black text-xs text-slate-950">HINDUSTAN </span>
+                      <span className="font-black text-xs text-[#dc2626]">PROJECTS</span>
+                      <p className="text-[8px] text-slate-400">{formData.tagline}</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-[#dc2626] font-bold text-[9px]">
+                      PORTAL
+                    </span>
+                  </div>
+
+                  {/* Hero Section Live */}
+                  <div className="p-4 sm:p-6 space-y-3 bg-gradient-to-b from-white via-white to-slate-50">
+                    <span className="text-[10px] font-bold text-[#dc2626] uppercase tracking-wider block">
+                      — {formData.heroBadge}
+                    </span>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-950 leading-tight">
+                      <span>{formData.heroTitlePrefix} </span>
+                      <span className="text-[#dc2626]">{formData.heroTitleHighlight}</span>
+                    </h2>
+                    <p className="text-slate-600 text-[11px] leading-relaxed">
+                      {formData.heroSubtitle}
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                      <button className="px-4 py-2.5 rounded-xl bg-[#dc2626] text-white font-bold text-center">
+                        {formData.heroRegisterBtnText}
+                      </button>
+                      <button className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 font-bold text-center">
+                        {formData.heroLoginBtnText}
+                      </button>
+                    </div>
+
+                    {/* Feature Pills */}
+                    {visibility.showHeroPills !== false && (
+                      <div className="pt-3 grid grid-cols-2 gap-2 border-t border-slate-100">
+                        {heroPills.slice(0, 4).map((p) => (
+                          <div key={p.id} className="flex items-start gap-1.5">
+                            <span className="text-[#dc2626] font-bold">✓</span>
+                            <span className="text-[10px] font-bold text-slate-800 leading-tight">{p.title}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stats Bar Live */}
+                  {visibility.showStats !== false && (
+                    <div className="m-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-sm grid grid-cols-2 gap-2">
+                      {stats.slice(0, 4).map((s) => (
+                        <div key={s.id} className="p-1.5 text-center">
+                          <p className="text-base font-black text-slate-950">{s.value}</p>
+                          <p className="text-[9px] text-slate-500 font-semibold">{s.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Supply Categories */}
+                  {visibility.showCategories !== false && (
+                    <div className="p-3 space-y-2 bg-slate-50/70">
+                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.categoriesBadge}</p>
+                      <h3 className="font-black text-sm text-slate-900">{formData.categoriesTitle}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {categories.slice(0, 4).map((c) => (
+                          <div key={c.id} className="p-2.5 rounded-xl bg-white border border-slate-200 space-y-1">
+                            <p className="font-bold text-[11px] text-slate-900">{c.title}</p>
+                            <p className="text-[10px] text-slate-500 line-clamp-1">{c.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* FAQs */}
+                  {visibility.showFaqs !== false && (
+                    <div className="p-3 space-y-2">
+                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.faqBadge}</p>
+                      <div className="space-y-1.5">
+                        {faqsList.slice(0, 3).map((f) => (
+                          <div key={f.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200">
+                            <p className="font-bold text-[11px] text-slate-900">{f.question}</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2">{f.answer}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* RENDER GUIDELINES PREVIEW */}
+              {previewPage === "guidelines" && (
+                <div className="p-4 space-y-4 bg-slate-50 text-xs">
+                  <div className="text-center space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#dc2626]">
+                      {formData.guidelinesBadge}
+                    </span>
+                    <h2 className="text-base font-black text-slate-900">{formData.guidelinesTitle}</h2>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {guidelinesTiers.map((t) => (
+                      <div key={t.code} className="p-3 rounded-2xl bg-white border border-slate-200 space-y-1.5 shadow-2xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-black text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                            {t.code}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold">Validity: {t.validity}</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-slate-900">{t.title}</h4>
+                        <div className="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 p-2 rounded-xl">
+                          <div>
+                            <span className="text-slate-400 block">Turnover:</span>
+                            <span className="font-bold text-slate-800">{t.turnover}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block">Capability:</span>
+                            <span className="font-bold text-[#dc2626]">{t.capacity}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* RENDER TENDERS PREVIEW */}
+              {previewPage === "tenders" && (
+                <div className="p-4 space-y-4 text-xs">
+                  {formData.tendersNoticeText && (
+                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
+                      <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[9px] font-bold uppercase">
+                        {formData.tendersNoticeBadge || "NOTICE"}
+                      </span>
+                      <h4 className="font-bold text-xs text-slate-900">{formData.tendersNoticeTitle}</h4>
+                      <p className="text-[10px] text-slate-600 leading-relaxed">{formData.tendersNoticeText}</p>
+                    </div>
+                  )}
+                  <p className="text-center text-slate-400 text-[11px] pt-4">
+                    Active tenders from database rendered below this bulletin.
+                  </p>
+                </div>
+              )}
+
+              {/* RENDER GATE PASS PREVIEW */}
+              {previewPage === "gatepass" && (
+                <div className="p-4 space-y-4 text-xs">
+                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 space-y-1">
+                    <p className="font-bold text-[11px] text-rose-900">Security Checkpoint Notice</p>
+                    <p className="text-[10px] text-rose-700 leading-relaxed">
+                      {formData.gatePassInstructions}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-2">
+                    <div className="w-24 h-24 mx-auto bg-white border border-slate-300 rounded-xl flex items-center justify-center font-mono font-bold text-slate-400 text-xs">
+                      [QR SCAN]
+                    </div>
+                    <p className="text-[10px] text-slate-500">{formData.gatePassTerms}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
