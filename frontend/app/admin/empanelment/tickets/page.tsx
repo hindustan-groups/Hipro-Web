@@ -135,7 +135,7 @@ export default function AdminTicketsPage() {
   const resolvedCount = tickets.filter((t) => t.status === "RESOLVED").length;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

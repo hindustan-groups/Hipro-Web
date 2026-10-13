@@ -262,7 +262,7 @@ export default function WorkOrdersBillingPage() {
   const totalPaidVal = invoices.filter((i) => i.status === "PAID").reduce((acc, inv) => acc + (inv.netPayable || 0), 0);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
+    <div className="space-y-6 font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -198,6 +198,7 @@ export default function EmpanelmentContentCmsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchContent();
   }, []);
 
@@ -299,7 +300,7 @@ export default function EmpanelmentContentCmsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto font-sans">
+    <div className="space-y-6 font-sans">
       {/* ================================================================ */}
       {/* 1. TOP COMMAND BAR (Title, Status, View Modes & Publish Live) */}
       {/* ================================================================ */}

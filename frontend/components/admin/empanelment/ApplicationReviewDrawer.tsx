@@ -71,7 +71,7 @@ export default function ApplicationReviewDrawer({
   onStatusUpdated,
 }: ApplicationReviewDrawerProps) {
   const [saving, setSaving] = useState(false);
-  const [tier, setTier] = useState("TIER_C");
+  const [tier, setTier] = useState("CLASS_C");
   const [score, setScore] = useState(85);
   const [remarks, setRemarks] = useState("");
   const [ceoSigned, setCeoSigned] = useState(false);
@@ -80,7 +80,8 @@ export default function ApplicationReviewDrawer({
 
   useEffect(() => {
     if (application) {
-      setTier(application.tier || "TIER_C");
+      const normalizedTier = (application.tier || "CLASS_C").replace(/^TIER_/, "CLASS_");
+      setTier(normalizedTier);
       setScore(application.eligibilityScore || 85);
       setRemarks(application.adminRemarks || "");
       setCeoSigned(application.ceoSigned || false);
@@ -135,12 +136,38 @@ export default function ApplicationReviewDrawer({
     }
   };
 
+  const appAny = application as any;
   const docs = [
-    { label: "GST Certificate", url: application.gstDocUrl, required: true },
-    { label: "PAN Card Document", url: application.panDocUrl, required: true },
-    { label: "Cancelled Cheque / Bank Passbook", url: application.chequeDocUrl, required: true },
-    { label: "MSME / Udyam Certificate", url: application.msmeDocUrl, required: false },
-    { label: "Past Work / Experience Portfolio", url: application.pastWorkDocUrl, required: false },
+    {
+      label: "GST Certificate",
+      url: appAny.gstCertificateUrl || application.gstDocUrl,
+      required: true,
+    },
+    {
+      label: "PAN Card Document",
+      url: appAny.panCardUrl || application.panDocUrl,
+      required: true,
+    },
+    {
+      label: "Cancelled Cheque / Bank Passbook",
+      url: appAny.bankChequeUrl || application.chequeDocUrl,
+      required: true,
+    },
+    {
+      label: "Work Experience / Past Order Proof",
+      url: appAny.workExperienceDocUrl || application.pastWorkDocUrl,
+      required: false,
+    },
+    {
+      label: "MSME / Udyam Certificate",
+      url: appAny.msmeDocUrl || appAny.msmeCertificateUrl,
+      required: false,
+    },
+    {
+      label: "Authorized Signatory Proof",
+      url: appAny.signatureUrl,
+      required: false,
+    },
   ];
 
   return (
@@ -359,10 +386,10 @@ export default function ApplicationReviewDrawer({
                   onChange={(e) => setTier(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
-                  <option value="TIER_A">Tier A — Mega / Turnkey (&gt; ₹2 Crore)</option>
-                  <option value="TIER_B">Tier B — Core Civil & MEP (₹50 Lakh – ₹2 Crore)</option>
-                  <option value="TIER_C">Tier C — Specialized Works (₹10 Lakh – ₹50 Lakh)</option>
-                  <option value="TIER_D">Tier D — Local Vendor / Supply (&lt; ₹10 Lakh)</option>
+                  <option value="CLASS_A">Class A — Turnkey / Unlimited (&gt; ₹25 Cr)</option>
+                  <option value="CLASS_B">Class B — Major Contracts (₹5 Cr – ₹25 Cr)</option>
+                  <option value="CLASS_C">Class C — Specialized &amp; Trade Works (₹50 Lakh – ₹5 Cr)</option>
+                  <option value="CLASS_D">Class D — Local &amp; Site Supply (&lt; ₹50 Lakh)</option>
                 </select>
               </div>
 

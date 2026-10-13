@@ -55,40 +55,50 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       value: totalApps,
       sub: "Registrations received",
       icon: Inbox,
+      href: "/admin/empanelment/applications",
       badge: "All Categories",
       badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+      iconColor: "text-slate-700 bg-slate-100 border-slate-200",
     },
     {
       label: "Pending KYC Review",
       value: pendingKyc,
       sub: pendingKyc > 0 ? `${pendingKyc} requires approval` : "All reviews up to date",
       icon: Clock,
+      href: "/admin/empanelment/applications?status=PENDING",
       badge: pendingKyc > 0 ? "Action Required" : "Cleared",
       badgeColor: pendingKyc > 0 ? "bg-amber-50 text-amber-800 border-amber-300" : "bg-emerald-50 text-emerald-700 border-emerald-200",
+      iconColor: pendingKyc > 0 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200",
     },
     {
       label: "Empanelled Partners",
       value: approvedPartners,
       sub: "Verified vendors & firms",
       icon: CheckCircle2,
+      href: "/admin/empanelment/directory",
       badge: "Verified",
       badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      iconColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
     },
     {
       label: "Active Tenders",
       value: activeTendersCount,
       sub: `${s.totalBids || 0} commercial bids received`,
       icon: Briefcase,
+      href: "/admin/empanelment/tenders",
       badge: "Live Packages",
       badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
+      iconColor: "text-blue-700 bg-blue-50 border-blue-200",
     },
     {
       label: "Today's Gate Passes",
       value: todayPasses,
       sub: "Site entries logged today",
       icon: QrCode,
+      href: "/admin/empanelment/gate-passes",
       badge: "Site Security",
-      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
+      iconColor: "text-rose-700 bg-rose-50 border-rose-200",
     },
   ];
 
@@ -97,15 +107,16 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
       {cards.map((c, i) => {
         const Icon = c.icon;
         return (
-          <div
+          <a
             key={i}
-            className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between"
+            href={c.href}
+            className="group bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5 transition-all flex flex-col justify-between select-none"
           >
             <div className="flex items-start justify-between gap-2">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide leading-tight group-hover:text-slate-900 transition-colors">
                 {c.label}
               </span>
-              <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center shrink-0 text-slate-600">
+              <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${c.iconColor}`}>
                 <Icon className="w-4 h-4" />
               </div>
             </div>
@@ -123,7 +134,7 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
                 {c.sub}
               </p>
             </div>
-          </div>
+          </a>
         );
       })}
     </div>

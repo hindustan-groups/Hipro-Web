@@ -215,91 +215,71 @@ export default function EmpanelmentAdminDashboard() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Top Header Card - Clean Enterprise Styling */}
-      <div className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <span>Admin</span>
-            <span>/</span>
-            <span className="text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200/60">
-              Vendor Management
+      {/* Sub-Header Operational Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-black text-slate-900 tracking-tight font-display">
+              Operations & Procurement Control Desk
+            </h2>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-2xs">
+              Live Real-Time
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            Vendor Empanelment & Procurement
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-normal">
-            Manage contractor registrations, KYC verification, commercial tender bidding, and daily site access passes.
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time pipeline of incoming contractor KYC registrations, verified partners, and commercial tenders.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => fetchDashboardData()}
-            className="p-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/90 transition-all shadow-2xs"
-            title="Refresh Data"
+            className="p-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 transition-all shadow-2xs"
+            title="Refresh All Metrics"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           </button>
-
-          <Link
-            href="/admin/empanelment/gate-passes"
-            className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
-          >
-            <QrCode className="w-3.5 h-3.5 text-slate-500" />
-            <span>Site Passes</span>
-          </Link>
-
-          <a
-            href="https://empanelment.hindustanprojects.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 font-semibold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
-          >
-            <span>Public Portal</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-          </a>
 
           <button
             onClick={() => setIsTenderModalOpen(true)}
-            className="px-4 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
+            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5 text-rose-400" />
             <span>Post New Tender</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 font-medium">
+        <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 font-medium">
           <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* KPI Cards Row */}
+      {/* KPI Cards Row with Interactive Drilldowns */}
       <EmpanelmentKpiCards stats={stats} loading={loading} />
 
-      {/* Main Section: KYC Applications Verification Queue (Full Width on Desktop) */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+      {/* Main Section: KYC Applications Verification Queue */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
         {/* Table Toolbar */}
-        <div className="p-4 sm:p-5 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-slate-50/50">
+        <div className="p-4 sm:p-5 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-3.5 bg-slate-50/70">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <Inbox className="w-4 h-4 text-amber-600" />
-              <h2 className="text-sm font-bold text-slate-900">
+              <Inbox className="w-4 h-4 text-slate-700" />
+              <h3 className="text-sm font-bold text-slate-900">
                 Recent Applications Queue
-              </h2>
+              </h3>
               <span className="text-xs font-mono font-bold bg-white text-slate-700 border border-slate-200 px-2 py-0.5 rounded-full">
                 {recentApplications.length}
               </span>
             </div>
 
             {/* Quick Filter Tabs */}
-            <div className="flex items-center gap-1 p-0.5 bg-slate-200/60 rounded-lg text-xs font-medium">
+            <div className="flex items-center gap-1 p-1 bg-slate-200/60 rounded-xl text-xs font-medium">
               <button
                 onClick={() => setPipelineFilter("ALL")}
-                className={`px-2.5 py-1 rounded-md transition-all ${
+                className={`px-3 py-1 rounded-lg transition-all ${
                   pipelineFilter === "ALL"
                     ? "bg-white text-slate-900 font-bold shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
@@ -309,9 +289,9 @@ export default function EmpanelmentAdminDashboard() {
               </button>
               <button
                 onClick={() => setPipelineFilter("PENDING")}
-                className={`px-2.5 py-1 rounded-md transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
                   pipelineFilter === "PENDING"
-                    ? "bg-white text-amber-800 font-bold shadow-2xs"
+                    ? "bg-white text-amber-900 font-bold shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -324,9 +304,9 @@ export default function EmpanelmentAdminDashboard() {
               </button>
               <button
                 onClick={() => setPipelineFilter("APPROVED")}
-                className={`px-2.5 py-1 rounded-md transition-all ${
+                className={`px-3 py-1 rounded-lg transition-all ${
                   pipelineFilter === "APPROVED"
-                    ? "bg-white text-emerald-800 font-bold shadow-2xs"
+                    ? "bg-white text-emerald-900 font-bold shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -334,9 +314,9 @@ export default function EmpanelmentAdminDashboard() {
               </button>
               <button
                 onClick={() => setPipelineFilter("REJECTED")}
-                className={`px-2.5 py-1 rounded-md transition-all ${
+                className={`px-3 py-1 rounded-lg transition-all ${
                   pipelineFilter === "REJECTED"
-                    ? "bg-white text-red-800 font-bold shadow-2xs"
+                    ? "bg-white text-red-900 font-bold shadow-2xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
@@ -347,21 +327,21 @@ export default function EmpanelmentAdminDashboard() {
 
           <div className="flex items-center gap-2.5">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search firm, phone, tracking ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-amber-500 w-56 sm:w-64 transition-all"
+                className="pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-slate-900 w-56 sm:w-64 transition-all"
               />
             </div>
 
             <Link
               href="/admin/empanelment/applications"
-              className="text-xs font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 shrink-0 px-2 py-1 rounded-lg hover:bg-amber-50 transition-colors"
+              className="text-xs font-bold text-slate-700 hover:text-black flex items-center gap-1 shrink-0 px-2.5 py-2 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              <span>View All</span>
+              <span>Full Pipeline</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
