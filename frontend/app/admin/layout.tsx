@@ -30,9 +30,15 @@ export default async function AdminLayout({
       <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-indigo-200/15 rounded-full blur-3xl pointer-events-none" />
 
       <AdminSidebar user={user} />
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+      <div
+        id="admin-content-column"
+        className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative overscroll-none"
+      >
         <AdminHeader user={user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-full">
+        <main
+          id="admin-main-viewport"
+          className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8 w-full max-w-full overscroll-contain"
+        >
           <AdminAccessWrapper user={user}>
             {children}
           </AdminAccessWrapper>

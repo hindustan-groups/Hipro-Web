@@ -311,6 +311,7 @@ export default function PortalSwitcherDropdown({
                   ) : (
                     <Link
                       href={portal.href}
+                      scroll={false}
                       onClick={() => setIsOpen(false)}
                       className={itemClass}
                     >

@@ -224,6 +224,7 @@ export default function SnapTechAdminBridgePage() {
         <div className="grid sm:grid-cols-2 gap-4">
           <Link
             href="/admin"
+            scroll={false}
             className="p-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl shadow-2xs flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">
@@ -239,6 +240,7 @@ export default function SnapTechAdminBridgePage() {
 
           <Link
             href="/admin/hbs"
+            scroll={false}
             className="p-4 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-xl shadow-2xs flex items-center justify-between group transition-all"
           >
             <div className="flex items-center gap-3">

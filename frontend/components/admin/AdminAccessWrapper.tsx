@@ -15,14 +15,44 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
+    // Guard: ensure admin content column holding AdminHeader can NEVER be scrolled off
+    const contentCol = document.getElementById("admin-content-column");
+    const guardScroll = () => {
+      if (contentCol) {
+        if (contentCol.scrollTop !== 0) contentCol.scrollTop = 0;
+        if (contentCol.scrollLeft !== 0) contentCol.scrollLeft = 0;
+      }
+    };
+    if (contentCol) {
+      contentCol.addEventListener("scroll", guardScroll, { passive: true });
+    }
+
     return () => {
       document.body.style.overflow = origBodyOverflow;
       document.documentElement.style.overflow = origHtmlOverflow;
+      if (contentCol) {
+        contentCol.removeEventListener("scroll", guardScroll);
+      }
     };
   }, []);
 
   useEffect(() => {
+    // 1. Reset window and body scroll
     window.scrollTo(0, 0);
+    if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
+    if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
+
+    // 2. Lock content column scrollTop to 0 so header is never scrolled away
+    const contentCol = document.getElementById("admin-content-column");
+    if (contentCol && contentCol.scrollTop !== 0) {
+      contentCol.scrollTop = 0;
+    }
+
+    // 3. Reset main viewport scroll to top cleanly on route/portal switch
+    const mainViewport = document.getElementById("admin-main-viewport") || document.querySelector("main");
+    if (mainViewport) {
+      mainViewport.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    }
   }, [pathname]);
   
   if (user?.role === "admin") {

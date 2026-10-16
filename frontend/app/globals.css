@@ -17,6 +17,7 @@ html:has(.admin-root-viewport) {
   overflow: hidden !important;
   height: 100% !important;
   max-height: 100vh !important;
+  scroll-behavior: auto !important;
 }
 
 body {

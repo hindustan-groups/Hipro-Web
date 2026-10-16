@@ -493,7 +493,7 @@ export default function EmpanelmentContentCmsPage() {
       {/* ================================================================ */}
       {/* 1. TOP COMMAND BAR (macOS Translucent Studio Bar) */}
       {/* ================================================================ */}
-      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl border border-slate-200/70 p-3.5 sm:px-4.5 sm:py-3 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-3 sticky top-2 z-40">
+      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl border border-slate-200/70 p-3.5 sm:px-4.5 sm:py-3 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-3 sticky top-0 z-20">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
             {/* macOS Traffic Lights */}

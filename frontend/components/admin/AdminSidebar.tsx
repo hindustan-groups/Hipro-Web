@@ -368,7 +368,7 @@ export default function AdminSidebar({ user }: { user: any }) {
               </div>
 
               {/* Compact Brand Identity */}
-              <Link href="/admin/empanelment" className="flex items-center gap-2 group">
+              <Link href="/admin/empanelment" scroll={false} className="flex items-center gap-2 group">
                 <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs shrink-0">
                   <ShieldCheck className="w-3.5 h-3.5" />
                 </div>
@@ -472,7 +472,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           <>
             {/* 1. Hind Build Admin Header (Apple Frosted Glass) */}
             <div className="h-16 px-4 border-b border-slate-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
-              <Link href="/admin/hbs" className="flex items-center gap-2.5 group">
+              <Link href="/admin/hbs" scroll={false} className="flex items-center gap-2.5 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/hibuild-logo.png"
@@ -642,7 +642,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           <>
         {/* Brand Header (Frosted Glass) with Official HiPRO Logo */}
         <div className="h-16 px-4 border-b border-white/80 flex items-center justify-between bg-white/50 backdrop-blur-md shrink-0">
-          <Link href="/admin" className="flex items-center gap-2.5 group">
+          <Link href="/admin" scroll={false} className="flex items-center gap-2.5 group">
             <div className="h-10 w-10 shrink-0 bg-white rounded-xl p-1 border border-slate-200/80 shadow-xs flex items-center justify-center transition-transform group-hover:scale-105">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -813,6 +813,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           {isAdmin && (
             <Link
               href="/admin/users"
+              scroll={false}
               className={`flex items-center justify-between px-3 py-1.5 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group ${
                 pathname === "/admin/users"
                   ? "bg-construction-navy text-white shadow-xs"
@@ -837,6 +838,7 @@ export default function AdminSidebar({ user }: { user: any }) {
 
           <Link
             href="/admin/settings"
+            scroll={false}
             className={`flex items-center justify-between px-3 py-1.5 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group ${
               pathname === "/admin/settings"
                 ? "bg-construction-navy text-white shadow-xs"

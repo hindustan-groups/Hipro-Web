@@ -9,6 +9,7 @@ const montserrat = Montserrat({
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-montserrat",
   display: "swap",
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
   adjustFontFallback: true,
 });
 
@@ -18,6 +19,7 @@ const playfair = Playfair_Display({
   style: ["normal", "italic"],
   variable: "--font-playfair",
   display: "swap",
+  fallback: ["Georgia", "serif"],
   adjustFontFallback: true,
 });
 

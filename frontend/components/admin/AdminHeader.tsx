@@ -11,19 +11,23 @@ const titles: Record<string, string> = {
   "/admin":             "Dashboard",
   "/admin/stats":       "Site Stats & Analytics",
   "/admin/leads":       "Leads Hub",
+  "/admin/automail":    "AutoMail Studio",
   "/admin/quotes":      "Quote Requests",
   "/admin/contacts":    "Contact Inquiries",
   "/admin/applications":"Job Applications",
   "/admin/newsletter":  "Newsletter Subscribers",
   "/admin/projects":    "Projects Portfolio",
+  "/admin/projects-hero":"Projects Hero CMS",
   "/admin/services":    "Services Management",
   "/admin/blogs":       "Blog Articles",
+  "/admin/blogs-hero":  "Blogs Hero CMS",
   "/admin/testimonials":"Client Reviews",
   "/admin/team":        "Team Members",
   "/admin/hero":        "Hero Section CMS",
   "/admin/about":       "About Page CMS",
   "/admin/contact-page":"Contact Page CMS",
   "/admin/cost-estimator": "Cost Estimator CMS",
+  "/admin/image-showcase": "Image Showcase CMS",
   "/admin/jobs":        "Job Openings",
   "/admin/cta-management": "CTA Management",
   "/admin/navigation":  "Navigation Menus",
@@ -72,7 +76,7 @@ export default function AdminHeader({ user }: { user: any }) {
   const title = getTitle();
 
   return (
-    <header className="h-[70px] shrink-0 bg-white/70 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
+    <header className="h-[70px] shrink-0 bg-white/85 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-40 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
       <div className="flex items-center gap-3 min-w-0">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}

@@ -824,7 +824,7 @@ export default function AdminProjects() {
       {showEditor && (
         <div className="bg-white border border-slate-300 shadow-sm rounded-none">
           {/* SINGLE UNIFIED STICKY COMMAND BAR */}
-          <div className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+          <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
             {/* Upper Command Bar */}
             <div className="px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border-b border-slate-200 text-slate-900">
               {/* Left Group */}
