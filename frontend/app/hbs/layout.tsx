@@ -141,6 +141,43 @@ export default async function HbsLayout({
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-amber-500 selection:text-white font-sans hbs-shell">
+      {/* ── Direct Google Fonts CDN Link for Hind Build (Guarantees exact font match on mobile devices) ── */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700;1,800;1,900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        /* Guarantee 100% exact Montserrat desktop font rendering across all mobile browsers */
+        .hbs-shell,
+        .hbs-shell * {
+          font-family: 'Montserrat', var(--font-montserrat), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          -webkit-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+        }
+        .hbs-shell h1,
+        .hbs-shell h2,
+        .hbs-shell h3,
+        .hbs-shell h4,
+        .hbs-shell h5,
+        .hbs-shell h6,
+        .hbs-shell .font-display {
+          font-family: 'Montserrat', var(--font-montserrat), system-ui, -apple-system, sans-serif !important;
+          letter-spacing: -0.02em;
+        }
+        .hbs-shell .font-mono,
+        .hbs-shell [class*="font-mono"] {
+          font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+        }
+        .hbs-shell .font-serif,
+        .hbs-shell .font-accent,
+        .hbs-shell .headline-accent,
+        .hbs-shell .font-accent-word {
+          font-family: 'Playfair Display', Georgia, serif !important;
+        }
+      `}</style>
       {content.gaMeasurementId && (
         <>
           <Script
