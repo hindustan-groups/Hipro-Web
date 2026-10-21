@@ -16,8 +16,235 @@ export interface AutomailBusinessTemplate {
   html: string;
 }
 
+interface HeaderOptions {
+  badge: string;
+  title?: string;
+  subtitle?: string;
+}
+
+/**
+ * Standardized Corporate Brand Header for HTML Email Templates
+ */
+export function getCorporateEmailHeader(
+  brand: "hipro" | "hbs" | "empanelment" | "all",
+  options: HeaderOptions
+): string {
+  const isHbs = brand === "hbs";
+  const isEmp = brand === "empanelment";
+  const isAll = brand === "all";
+
+  const brandTitle = isHbs
+    ? "HIND BUILDING SOLUTIONS"
+    : isEmp
+    ? "HINDUSTAN PROJECTS"
+    : isAll
+    ? "HINDUSTAN PROJECTS GROUP"
+    : "HINDUSTAN PROJECTS";
+
+  const brandTagline = isHbs
+    ? "Structural Repair • 100% Guaranteed Waterproofing • PU Crack Injection • AMC"
+    : isEmp
+    ? "Procurement Directorate • Vendor & Contractor Empanelment Board"
+    : isAll
+    ? "Civil Engineering • Building Care • Turnkey Construction • Procurement Hub"
+    : "Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design";
+
+  const headerBg = isHbs
+    ? "linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #991b1b 100%)"
+    : isEmp
+    ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #78350f 100%)"
+    : "linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%)";
+
+  const accentBorder = isHbs ? "#b91c1c" : isEmp ? "#d97706" : "#dc2626";
+  const badgeBg = isHbs ? "rgba(239, 68, 68, 0.25)" : isEmp ? "rgba(245, 158, 11, 0.25)" : "rgba(220, 38, 38, 0.25)";
+  const badgeColor = isHbs ? "#fecaca" : isEmp ? "#fef3c7" : "#fca5a5";
+
+  const trust1 = isHbs ? "10-Yr Waterproofing Warranty" : isEmp ? "Central Vendor Registry" : "ISO 9001:2015 Certified";
+  const trust2 = isHbs ? "Thermal Moisture Audit" : isEmp ? "14-Day RA Bill Clearance" : "Govt Approved EPC";
+  const trust3 = isHbs ? "German Polymer PU Tech" : isEmp ? "Active Commercial Tenders" : "150+ Landmarks Built";
+
+  return `<!-- Top Metadata Strip -->
+<tr>
+  <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+          <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+          <span>OFFICIAL TRANSMISSION</span>
+          <span style="color: #475569; margin: 0 6px;">•</span>
+          <span style="color: #cbd5e1;">{{date}}</span>
+        </td>
+        <td align="right" style="font-size: 10px; font-family: monospace; color: #94a3b8;">
+          REF: <strong style="color: #e2e8f0;">#HP-{{year}}-DISPATCH</strong>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+
+<!-- Corporate Brand Header -->
+<tr>
+  <td style="background: ${headerBg}; padding: 28px 24px 22px; text-align: center; border-bottom: 4px solid ${accentBorder};">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="center">
+          
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
+            <tr>
+              <td align="center" style="background-color: ${badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 4px 14px;">
+                <span style="color: ${badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
+                  ${options.badge}
+                </span>
+              </td>
+            </tr>
+          </table>
+
+          <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; line-height: 1.2;">
+            ${brandTitle}
+          </h1>
+
+          <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; line-height: 1.4;">
+            ${brandTagline}
+          </p>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px;">
+            <tr>
+              <td align="center">
+                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
+                  🏛️ ${trust1}
+                </span>
+                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
+                  🛡️ ${trust2}
+                </span>
+                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
+                  ⚡ ${trust3}
+                </span>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>`;
+}
+
+/**
+ * Standardized Corporate Brand Footer for HTML Email Templates
+ */
+export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" | "all"): string {
+  const isHbs = brand === "hbs";
+  const isEmp = brand === "empanelment";
+  const websiteUrl = isHbs
+    ? "https://hindbuilding.hindustanprojects.in"
+    : isEmp
+    ? "https://empanelment.hindustanprojects.in"
+    : "https://www.hindustanprojects.in";
+
+  const websiteDisplay = isHbs
+    ? "hindbuilding.hindustanprojects.in"
+    : isEmp
+    ? "empanelment.hindustanprojects.in"
+    : "www.hindustanprojects.in";
+
+  const contactEmail = isHbs
+    ? "hbs@hindustanprojects.in"
+    : isEmp
+    ? "empanelment@hindustanprojects.in"
+    : "info@hindustanprojects.in";
+
+  const divisionName = isHbs
+    ? "Hind Building Solutions (HiBUILD) • A Hindustan Projects Specialized Division"
+    : isEmp
+    ? "Hindustan Projects Procurement & Vendor Empanelment Directorate"
+    : "Hindustan Projects Private Limited • Civil Infrastructure & Turnkey EPC Contractors";
+
+  return `<!-- Quick Action & Verification Bar -->
+<tr>
+  <td style="background-color: #f8fafc; padding: 16px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td align="center" style="padding: 4px 8px;">
+                <a href="${websiteUrl}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
+                  🌐 Visit ${websiteDisplay}
+                </a>
+              </td>
+              <td align="center" style="padding: 4px 8px;">
+                <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
+                  💬 Direct Helpline: +91 75970 00601
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+
+<!-- Official Corporate Headquarters & Credentials Footer -->
+<tr data-hipro-corporate-footer="true">
+  <td style="background-color: #0f172a; color: #cbd5e1; padding: 26px 24px 20px; font-size: 11px; line-height: 1.6;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      
+      <tr>
+        <td align="center" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
+            ${divisionName}
+          </div>
+        </td>
+      </tr>
+
+      <tr>
+        <td align="center" style="padding: 12px 8px 8px;">
+          <p style="margin: 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
+            📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+          </p>
+          <p style="margin: 6px 0 0; color: #94a3b8; font-size: 11px;">
+            📞 <strong>Helpline:</strong> <a href="tel:+917597000601" style="color: #38bdf8; text-decoration: none;">+91 75970 00601</a>
+            <span style="color: #475569; margin: 0 6px;">•</span>
+            ✉️ <strong>Official Email:</strong> <a href="mailto:${contactEmail}" style="color: #38bdf8; text-decoration: none;">${contactEmail}</a>
+          </p>
+          <p style="margin: 4px 0 0; color: #94a3b8; font-size: 10px;">
+            🏗️ Operational across Bhilwara, Jaipur, Udaipur, Jodhpur, Kota & Pan-Rajasthan
+          </p>
+        </td>
+      </tr>
+
+      <!-- Legal Confidentiality Notice -->
+      <tr>
+        <td style="padding: 10px; background-color: rgba(0, 0, 0, 0.35); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+          <p style="margin: 0; font-size: 9.5px; line-height: 1.45; color: #94a3b8; text-align: justify;">
+            <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic mail transmission, including any attachments, contains information which may be confidential, legally privileged, and protected from disclosure. It is intended solely for the use of the intended recipient ({{email}}). If you are not the intended recipient, any dissemination, copying, or action in reliance upon this transmission is strictly prohibited.
+          </p>
+        </td>
+      </tr>
+
+      <!-- System Attribution -->
+      <tr>
+        <td align="center" style="padding-top: 12px; font-size: 10px; color: #64748b;">
+          <p style="margin: 0;">
+            ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • Recipient: <strong style="color: #94a3b8;">{{email}}</strong>
+          </p>
+          <p style="margin: 4px 0 0;">
+            © {{year}} <strong>Hindustan Projects Group</strong>. All rights reserved.
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </td>
+</tr>`;
+}
+
 export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
+  // ─────────────────────────────────────────────────────────────
   // 1. HiPRO Turnkey Construction Proposal
+  // ─────────────────────────────────────────────────────────────
   {
     id: "hipro_turnkey_pitch",
     title: "HiPRO Turnkey Construction & Engineering Pitch",
@@ -29,53 +256,32 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hindustan Projects",
     senderEmail: "info@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hindustan Projects</title>
+  <title>Turnkey Construction Proposal - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <!-- Main Card -->
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); border: 1px solid #cbd5e1;">
           
-          <!-- Header Bar -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 4px solid #dc2626;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
-                      Hindustan Projects
-                    </h1>
-                    <p style="margin: 6px 0 0; color: #94a3b8; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">
-                      Civil Engineering • Infrastructure • Commercial Build
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("hipro", { badge: "HiPRO Master • Turnkey Proposal" })}
 
-          <!-- Banner Intro -->
+          <!-- Body Content -->
           <tr>
-            <td style="padding: 32px 28px 20px; color: #1e293b;">
+            <td style="padding: 30px 28px 20px; color: #1e293b;">
               <p style="font-size: 16px; margin: 0 0 14px; font-weight: 700; color: #0f172a;">
                 Dear {{name}},
               </p>
               <p style="font-size: 14px; line-height: 1.6; color: #334155; margin: 0 0 20px;">
                 Are you planning a new residential villa, commercial complex, or industrial warehouse in Rajasthan? <strong>Hindustan Projects</strong> provides end-to-end turnkey construction with disciplined site management, transparent structural estimates, and certified architectural design.
               </p>
-            </td>
-          </tr>
 
-          <!-- 3 Value Pillars -->
-          <tr>
-            <td style="padding: 0 28px 20px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+              <!-- 3 Value Pillars -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                 <tr>
                   <td style="padding: 8px 12px; vertical-align: top;">
                     <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">🏗️ Full Turnkey Execution</p>
@@ -95,13 +301,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
 
-          <!-- Key Stats Counters -->
-          <tr>
-            <td style="padding: 10px 28px 24px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              <!-- Key Stats Counters -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center" style="width: 33.3%; padding: 12px; background-color: #0f172a; border-radius: 8px 0 0 8px; color: #ffffff;">
                     <span style="font-size: 20px; font-weight: 800; color: #38bdf8;">150+</span><br/>
@@ -117,47 +319,24 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
 
-          <!-- Primary CTA Button -->
-          <tr>
-            <td align="center" style="padding: 10px 28px 30px;">
-              <table role="presentation" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center" style="background-color: #dc2626; border-radius: 8px;">
-                    <a href="https://www.hindustanprojects.in" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 14px; font-weight: bold; color: #ffffff; text-decoration: none; letter-spacing: 0.5px;">
-                      Schedule Free Consultation & Estimate
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <p style="margin: 12px 0 0; font-size: 12px; color: #64748b;">
-                Direct Site Helpline: <strong>+91 75970 00601</strong>
-              </p>
-            </td>
-          </tr>
+              <!-- CTA Button -->
+              <div align="center" style="margin-bottom: 20px;">
+                <a href="https://www.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #dc2626; color: #ffffff; padding: 14px 32px; font-size: 14px; font-weight: bold; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.35);">
+                  Schedule Free Consultation & Estimate →
+                </a>
+              </div>
 
-          <!-- Corporate Sign-Off -->
-          <tr>
-            <td style="padding: 0 28px 24px; color: #475569; font-size: 13px; line-height: 1.5; border-top: 1px solid #f1f5f9;">
-              <p style="margin: 16px 0 0;">
+              <!-- Sign-Off -->
+              <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; font-size: 13px; color: #475569;">
                 Warm Regards,<br/>
-                <strong>Yogesh Kharol & Executive Engineering Team</strong><br/>
+                <strong style="color: #0f172a;">Executive Engineering & Civil Directorate</strong><br/>
                 Hindustan Projects, Bhopal Ganj, Bhilwara, Rajasthan
-              </p>
+              </div>
             </td>
           </tr>
 
-          <!-- Official Legal Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 20px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; line-height: 1.5;">
-              <p style="margin: 0;">This email was sent to <strong>{{email}}</strong> regarding construction & engineering services.</p>
-              <p style="margin: 6px 0 0;">
-                Hindustan Projects • Opposite Mukherji Park, Bhopal Ganj, Bhilwara 311001 • <a href="https://www.hindustanprojects.in" style="color: #0284c7; text-decoration: none;">www.hindustanprojects.in</a>
-              </p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hipro")}
 
         </table>
       </td>
@@ -167,7 +346,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
+  // ─────────────────────────────────────────────────────────────
   // 2. HiPRO Formal Quotation & Estimate Follow-up
+  // ─────────────────────────────────────────────────────────────
   {
     id: "hipro_quote_followup",
     title: "Official Project Estimate & Quotation Follow-up",
@@ -179,47 +360,32 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hindustan Projects Estimates",
     senderEmail: "info@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Estimate - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
-          <!-- Header -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 24px; text-align: left; border-bottom: 3px solid #0284c7;">
-              <table role="presentation" width="100%">
-                <tr>
-                  <td>
-                    <h2 style="margin: 0; color: #ffffff; font-size: 18px; text-transform: uppercase; font-weight: 800;">Hindustan Projects</h2>
-                    <p style="margin: 2px 0 0; color: #94a3b8; font-size: 11px;">Official Estimation & Commercial Review</p>
-                  </td>
-                  <td align="right">
-                    <span style="display: inline-block; padding: 4px 10px; background-color: rgba(255,255,255,0.1); color: #38bdf8; font-size: 10px; font-mono; font-weight: bold; border-radius: 4px;">QUOTE REF: #HIPRO-EST</span>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("hipro", { badge: "Commercial Estimates • Build BOQ" })}
 
-          <!-- Message -->
           <tr>
             <td style="padding: 28px 24px; color: #334155;">
               <p style="margin: 0 0 12px; font-size: 15px; color: #0f172a; font-weight: 700;">Dear {{name}},</p>
               <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6;">
-                Thank you for your recent inquiry regarding construction and development with Hindustan Projects. Our senior engineering estimator has reviewed your requirements.
+                Thank you for your recent inquiry regarding construction and structural development with Hindustan Projects. Our senior engineering estimator has reviewed your scope and compiled your project parameters.
               </p>
 
               <!-- Estimation Overview Box -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin: 18px 0; font-size: 12px;">
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                   <td style="padding: 12px; font-weight: bold; color: #64748b; width: 40%;">Project Category:</td>
-                  <td style="padding: 12px; font-weight: 600; color: #0f172a;">Civil Construction / Turnkey</td>
+                  <td style="padding: 12px; font-weight: 600; color: #0f172a;">Civil Construction / Turnkey EPC</td>
                 </tr>
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                   <td style="padding: 12px; font-weight: bold; color: #64748b;">Target Location:</td>
@@ -227,7 +393,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 </tr>
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                   <td style="padding: 12px; font-weight: bold; color: #64748b;">Material Specification:</td>
-                  <td style="padding: 12px; font-weight: 600; color: #0f172a;">UltraTech / ACC Cement & Fe550 TMT Grade</td>
+                  <td style="padding: 12px; font-weight: 600; color: #0f172a;">UltraTech / ACC Cement & Fe550D TMT Steel</td>
                 </tr>
                 <tr>
                   <td style="padding: 12px; font-weight: bold; color: #64748b;">Consultation Status:</td>
@@ -235,30 +401,25 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 </tr>
               </table>
 
-              <p style="margin: 0 0 24px; font-size: 13px; line-height: 1.6;">
+              <p style="margin: 0 0 20px; font-size: 13px; line-height: 1.6;">
                 We invite you to discuss the detailed Bill of Quantities (BOQ), floor layouts, and milestone payment schedules with our technical team.
               </p>
 
               <!-- CTA -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <a href="https://www.hindustanprojects.in" style="background-color: #0f172a; color: #ffffff; padding: 12px 28px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block;">
-                      Schedule On-Site Inspection Call
-                    </a>
-                  </td>
-                </tr>
-              </table>
+              <div align="center" style="margin: 20px 0;">
+                <a href="https://www.hindustanprojects.in" style="background-color: #0f172a; color: #ffffff; padding: 13px 30px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Schedule On-Site Inspection Call →
+                </a>
+              </div>
+
+              <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 12px; color: #64748b;">
+                Commercial Estimates Desk • Hindustan Projects<br/>
+                Bhopal Ganj, Bhilwara 311001, Rajasthan
+              </div>
             </td>
           </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0;">Sent to {{email}} by Hindustan Projects Commercial Estimates Office.</p>
-              <p style="margin: 4px 0 0;">Call +91 75970 00601 | Email: info@hindustanprojects.in</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hipro")}
 
         </table>
       </td>
@@ -268,7 +429,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 3. Hind Build (HiBUILD) Property Inspection & Leakage Audit Offer
+  // ─────────────────────────────────────────────────────────────
+  // 3. Hind Build Property Inspection & Leakage Audit Offer
+  // ─────────────────────────────────────────────────────────────
   {
     id: "hbs_waterproofing_inspection",
     title: "Hind Build Waterproofing & Inspection Offer",
@@ -280,94 +443,67 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hind Building Solutions",
     senderEmail: "hbs@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waterproofing & Inspection Offer - Hind Build</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #fef2f2; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #fecaca; box-shadow: 0 4px 20px rgba(185,28,28,0.08);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #fecaca; box-shadow: 0 10px 30px rgba(185,28,28,0.08);">
           
-          <!-- Red Brand Header -->
-          <tr>
-            <td style="background-color: #b91c1c; padding: 26px 24px; text-align: center; border-bottom: 4px solid #7f1d1d;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">
-                Hind Building Solutions
-              </h1>
-              <p style="margin: 4px 0 0; color: #fecaca; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;">
-                Building Repair • Waterproofing • Structural Health
-              </p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("hbs", { badge: "HiBUILD Special • Monsoon Seepage Alert" })}
 
-          <!-- Body -->
           <tr>
-            <td style="padding: 30px 24px; color: #1e293b;">
-              <div style="background-color: #fef2f2; border: 1px dashed #ef4444; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; text-align: center;">
-                <span style="color: #b91c1c; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
-                  ⚠️ Monsoon & Seepage Alert for Property Owners
-                </span>
-              </div>
-
-              <p style="margin: 0 0 14px; font-size: 15px; color: #0f172a; font-weight: 700;">
+            <td style="padding: 28px 24px; color: #1e293b;">
+              <p style="margin: 0 0 12px; font-size: 15px; color: #0f172a; font-weight: 700;">
                 Namaste {{name}},
               </p>
-
               <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #334155;">
-                Is your building suffering from damp walls, paint peeling, terrace cracks, or basement water logging? Neglecting water seepage can weaken steel reinforcement and damage the RCC structure permanently.
+                Is your building suffering from damp walls, paint peeling, terrace cracks, or basement water intrusion? Neglecting water seepage weakens concrete slabs and corrodes internal steel reinforcement.
               </p>
 
               <!-- Services List -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 18px 0;">
                 <tr>
-                  <td style="padding: 10px 14px; background-color: #fff1f2; border-radius: 6px; margin-bottom: 8px;">
+                  <td style="padding: 12px 14px; background-color: #fff1f2; border-radius: 6px; border-left: 4px solid #b91c1c;">
                     <p style="margin: 0; font-size: 13px; font-weight: 700; color: #991b1b;">1. 100% Guaranteed Terrace Waterproofing</p>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #4b5563;">Multi-layer elastomeric polymer coating with 5-to-10 year warranty certificate.</p>
                   </td>
                 </tr>
                 <tr><td style="height: 8px;"></td></tr>
                 <tr>
-                  <td style="padding: 10px 14px; background-color: #fff1f2; border-radius: 6px; margin-bottom: 8px;">
-                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #991b1b;">2. Low-Pressure Polyurethane Crack Injection</p>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #4b5563;">Stops live active water leaks inside concrete slabs and basements in hours.</p>
+                  <td style="padding: 12px 14px; background-color: #fff1f2; border-radius: 6px; border-left: 4px solid #b91c1c;">
+                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #991b1b;">2. Low-Pressure Polyurethane (PU) Crack Injection</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #4b5563;">Stops live active water leaks inside RCC slabs, lift pits, and basements in hours.</p>
                   </td>
                 </tr>
                 <tr><td style="height: 8px;"></td></tr>
                 <tr>
-                  <td style="padding: 10px 14px; background-color: #fff1f2; border-radius: 6px;">
-                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #991b1b;">3. Non-Destructive Thermal & Moisture Audit</p>
+                  <td style="padding: 12px 14px; background-color: #fff1f2; border-radius: 6px; border-left: 4px solid #b91c1c;">
+                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #991b1b;">3. Non-Destructive Thermal Leakage Audit</p>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #4b5563;">Pinpoint exact hidden leakage sources behind tiles without breaking walls.</p>
                   </td>
                 </tr>
               </table>
 
-              <!-- Big Red Button -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 24px 0 16px;">
-                <tr>
-                  <td align="center">
-                    <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #b91c1c; color: #ffffff; padding: 14px 30px; font-size: 14px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(185,28,28,0.25);">
-                      Book Free Expert Site Inspection
-                    </a>
-                  </td>
-                </tr>
-              </table>
+              <!-- Big Button -->
+              <div align="center" style="margin: 22px 0 14px;">
+                <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #b91c1c; color: #ffffff; padding: 14px 32px; font-size: 14px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block; box-shadow: 0 4px 15px rgba(185,28,28,0.3);">
+                  Book Free Expert Site Inspection →
+                </a>
+              </div>
 
               <p style="margin: 0; text-align: center; font-size: 12px; color: #64748b;">
-                Quick WhatsApp Support: <a href="https://wa.me/917597000601" style="color: #16a34a; font-weight: bold; text-decoration: none;">+91 75970 00601</a>
+                Direct WhatsApp Helpline: <a href="https://wa.me/917597000601" style="color: #16a34a; font-weight: bold; text-decoration: none;">+91 75970 00601</a>
               </p>
             </td>
           </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #fef2f2; padding: 18px 24px; text-align: center; font-size: 11px; color: #7f1d1d; border-top: 1px solid #fee2e2;">
-              <p style="margin: 0;">Hind Building Solutions (HiBUILD) • A Hindustan Projects Division</p>
-              <p style="margin: 4px 0 0;">Opposite Mukherji Park, Bhopal Ganj, Bhilwara 311001</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hbs")}
 
         </table>
       </td>
@@ -377,7 +513,137 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 4. Commercial Building Maintenance (AMC) Contract Pitch
+  // ─────────────────────────────────────────────────────────────
+  // 4. Hind Build Building Repair & Structural Protection Suite
+  // ─────────────────────────────────────────────────────────────
+  {
+    id: "hbs_building_repair_suite",
+    title: "Hind Build Specialized Building Repair Suite",
+    category: "Building Repair & Maintenance",
+    brand: "hbs",
+    badge: "Structural Health",
+    description: "Comprehensive building rehabilitation, polymer jacketing, crack repair, and corrosion treatment.",
+    subject: "Specialized Building Repair & Structural Protection Solutions for {{name}}",
+    senderName: "Hind Building Solutions",
+    senderEmail: "hbs@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Repair Solutions - Hind Build</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
+          
+          ${getCorporateEmailHeader("hbs", { badge: "HiBUILD Structural Repair & Restoration" })}
+
+          <tr>
+            <td style="padding: 28px 24px; color: #1e293b;">
+              <p style="margin: 0 0 12px; font-size: 15px; color: #0f172a; font-weight: 700;">Dear {{name}},</p>
+              <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #334155;">
+                Aging buildings face concrete carbonation, rebar corrosion, and settling cracks. <strong>Hind Building Solutions (HiBUILD)</strong> delivers advanced civil rehabilitation to restore load-bearing strength and extend structural lifespan by decades.
+              </p>
+
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin: 16px 0; font-size: 12px;">
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 10px 14px; font-weight: bold; color: #64748b; width: 35%;">RCC Strengthening:</td>
+                  <td style="padding: 10px 14px; color: #0f172a;">Micro-concrete micro-jacketing & carbon fiber wrapping (CFRP)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">Rebar Rust Treatment:</td>
+                  <td style="padding: 10px 14px; color: #0f172a;">Zinc-rich rust conversion primers & anti-corrosion barrier coats</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">Expansion Joint Sealing:</td>
+                  <td style="padding: 10px 14px; color: #0f172a;">High-movement polysulphide and polyurethane joint elastomeric sealants</td>
+                </tr>
+              </table>
+
+              <div align="center" style="margin: 22px 0 10px;">
+                <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #0f172a; color: #ffffff; padding: 13px 30px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Request Engineering Structural Audit →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          ${getCorporateEmailFooter("hbs")}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 5. Hind Build 10-Year Terrace Waterproofing Proposal
+  // ─────────────────────────────────────────────────────────────
+  {
+    id: "hbs_roof_waterproofing_quote",
+    title: "Terrace Waterproofing Proposal & 10-Year Warranty",
+    category: "Building Repair & Maintenance",
+    brand: "hbs",
+    badge: "10-Yr Warranty",
+    description: "Detailed proposal for terrace waterproofing with multi-coat acrylic & polyurethane elastomeric systems.",
+    subject: "Terrace Waterproofing Proposal & 10-Year Warranty for {{name}}",
+    senderName: "Hind Building Waterproofing Desk",
+    senderEmail: "hbs@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terrace Waterproofing Proposal - Hind Build</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
+          
+          ${getCorporateEmailHeader("hbs", { badge: "Certified 10-Year Waterproofing Warranty" })}
+
+          <tr>
+            <td style="padding: 28px 24px; color: #1e293b;">
+              <p style="margin: 0 0 12px; font-size: 15px; color: #0f172a; font-weight: 700;">Dear {{name}},</p>
+              <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #334155;">
+                Thank you for inquiring about roof and terrace waterproofing with Hind Building Solutions. We have prepared an engineering scope designed specifically for Rajasthan weather conditions (resisting UV heat up to 48°C and intense monsoon downpours).
+              </p>
+
+              <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 13px; font-weight: 800; color: #065f46;">🛡️ Official 10-Year Stamp Certificate Included</p>
+                <p style="margin: 4px 0 0; font-size: 12px; color: #047857; line-height: 1.5;">
+                  Covers crack-bridging capability, thermal insulation reduction (lowers terrace temperature by 5-7°C), and zero seepage guarantee.
+                </p>
+              </div>
+
+              <div align="center" style="margin: 22px 0 10px;">
+                <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #b91c1c; color: #ffffff; padding: 14px 32px; font-size: 14px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">
+                  View Detailed BOQ & Schedule Site Visit →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          ${getCorporateEmailFooter("hbs")}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 6. Commercial Building Maintenance (AMC) Contract Pitch
+  // ─────────────────────────────────────────────────────────────
   {
     id: "hbs_amc_commercial",
     title: "Annual Building Maintenance (AMC) Proposal",
@@ -389,51 +655,43 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hind Building Corporate Care",
     senderEmail: "hbs@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annual Building Maintenance Contract - Hind Build</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #cbd5e1;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
-          <tr style="background-color: #1e293b; color: #ffffff;">
-            <td style="padding: 24px; text-align: center; border-bottom: 3px solid #dc2626;">
-              <h2 style="margin: 0; font-size: 19px; text-transform: uppercase;">Hind Building Solutions</h2>
-              <p style="margin: 4px 0 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Corporate Property Management & AMC</p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("hbs", { badge: "B2B Property Management & AMC Care" })}
 
           <tr>
             <td style="padding: 28px 24px; color: #334155; font-size: 13px; line-height: 1.6;">
               <p style="font-size: 15px; font-weight: bold; color: #0f172a; margin-top: 0;">Dear {{name}},</p>
               <p>
-                Managing a large residential complex or commercial property demands continuous structural maintenance before minor seepage turns into massive renovation costs.
+                Managing a large residential society, hotel, or commercial establishment requires disciplined structural maintenance before small seepage leads to costly emergency repairs.
               </p>
               <p>
-                We offer tailored <strong>Annual Maintenance Contracts (AMC)</strong> covering:
+                Our comprehensive <strong>Annual Maintenance Contract (AMC)</strong> includes:
               </p>
               <ul style="padding-left: 20px; color: #475569; margin: 12px 0;">
                 <li><strong>Pre-Monsoon Roof & Drain Audits:</strong> Complete cleaning, seal checks, and chemical coatings.</li>
-                <li><strong>Facade & Exterior Protection:</strong> Weatherproof exterior coats and expansion joint sealing.</li>
+                <li><strong>Facade & Exterior Weatherproofing:</strong> Weatherproof exterior coats and expansion joint sealing.</li>
                 <li><strong>Priority Emergency Response:</strong> On-call technical team for sudden plumbing and water intrusion crises.</li>
               </ul>
-              <div style="text-align: center; margin: 24px 0;">
-                <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #dc2626; color: #ffffff; padding: 12px 28px; text-decoration: none; font-weight: bold; font-size: 13px; border-radius: 6px; display: inline-block;">
-                  Request Customized AMC Proposal
+              <div align="center" style="margin: 24px 0 10px;">
+                <a href="https://hindbuilding.hindustanprojects.in" style="background-color: #0f172a; color: #ffffff; padding: 13px 30px; text-decoration: none; font-weight: bold; font-size: 13px; border-radius: 6px; display: inline-block;">
+                  Request Customized AMC Proposal →
                 </a>
               </div>
             </td>
           </tr>
 
-          <tr>
-            <td style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0;">Hind Building Solutions • Contact: +91 75970 00601 • Email: hbs@hindustanprojects.in</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hbs")}
 
         </table>
       </td>
@@ -443,55 +701,60 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 5. Client Review & Testimonial Request
+  // ─────────────────────────────────────────────────────────────
+  // 7. HiPRO Site Survey & Consultation Confirmation
+  // ─────────────────────────────────────────────────────────────
   {
-    id: "client_review_request",
-    title: "Post-Service Review & Client Feedback",
-    category: "Client Relations",
-    brand: "all",
-    badge: "5-Star Google",
-    description: "Send after completing a project or service to collect 5-star Google reviews and strengthen brand trust.",
-    subject: "How was your experience with {{brand}}? Your feedback matters to us",
-    senderName: "Customer Relations Team",
+    id: "hipro_client_satisfaction",
+    title: "Site Survey & Engineering Consultation Confirmation",
+    category: "Construction & Engineering",
+    brand: "hipro",
+    badge: "Inspection Scheduled",
+    description: "Official confirmation sent to clients booking an architectural review or engineer site survey.",
+    subject: "Site Inspection & Engineering Consultation Confirmation for {{name}}",
+    senderName: "Hindustan Projects Site Engineering",
     senderEmail: "info@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Inspection Confirmation - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; text-align: center;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
+          ${getCorporateEmailHeader("hipro", { badge: "Site Survey & Engineering Review" })}
+
           <tr>
-            <td style="padding: 36px 24px 20px;">
-              <div style="font-size: 40px; margin-bottom: 12px;">⭐ ⭐ ⭐ ⭐ ⭐</div>
-              <h2 style="margin: 0 0 10px; font-size: 20px; color: #0f172a; font-weight: 800;">We Value Your Opinion, {{name}}!</h2>
-              <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.6;">
-                Thank you for trusting <strong>{{brand}}</strong> with your property. Our goal is 100% engineering satisfaction and long-term durability.
+            <td style="padding: 28px 24px; color: #1e293b;">
+              <p style="margin: 0 0 12px; font-size: 15px; color: #0f172a; font-weight: 700;">Dear {{name}},</p>
+              <p style="margin: 0 0 16px; font-size: 13px; line-height: 1.6; color: #334155;">
+                Your request for an on-site structural consultation and architectural review has been confirmed with our senior engineering division.
               </p>
+
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">Inspection Agenda:</p>
+                <ol style="margin: 6px 0 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6;">
+                  <li>Plot & boundary dimension verification</li>
+                  <li>Soil bearing assessment and foundation recommendations</li>
+                  <li>Initial 2D floor planning & vastu compliance discussion</li>
+                  <li>Itemized Bill of Quantities (BOQ) cost estimate</li>
+                </ol>
+              </div>
+
+              <div align="center" style="margin: 20px 0 10px;">
+                <a href="https://www.hindustanprojects.in" style="background-color: #0f172a; color: #ffffff; padding: 12px 28px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  View Engineer Profile & Site Location →
+                </a>
+              </div>
             </td>
           </tr>
 
-          <tr>
-            <td style="padding: 0 24px 30px;">
-              <p style="font-size: 14px; color: #334155; margin-bottom: 24px;">
-                Could you take 30 seconds to share your experience? Your feedback helps fellow property owners make informed decisions.
-              </p>
-              <a href="{{website}}" style="background-color: #0f172a; color: #ffffff; padding: 13px 32px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">
-                Leave A 5-Star Review
-              </a>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="background-color: #f1f5f9; padding: 16px; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-              <p style="margin: 0;">Sent with gratitude to {{email}} by {{brand}}.</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hipro")}
 
         </table>
       </td>
@@ -501,71 +764,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 6. Festive Corporate Greeting & Special Announcement
-  {
-    id: "corporate_festive_wish",
-    title: "Executive Festive Greeting & Company Wish",
-    category: "Client Relations",
-    brand: "all",
-    badge: "Festive Special",
-    description: "Elegant holiday/Diwali/New Year celebration email to build warm relationships with clients & partners.",
-    subject: "Warm Festive Greetings & Best Wishes from {{brand}} to {{name}} and Family",
-    senderName: "Hindustan Projects Management",
-    senderEmail: "info@hindustanprojects.in",
-    html: `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #1e293b; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); text-align: center; color: #ffffff;">
-          
-          <tr>
-            <td style="padding: 40px 24px 20px;">
-              <div style="font-size: 36px; margin-bottom: 12px;">✨ 🪔 ✨</div>
-              <h1 style="margin: 0 0 10px; font-size: 22px; color: #facc15; font-weight: 800; letter-spacing: 1px;">
-                Warm Festive Greetings!
-              </h1>
-              <p style="margin: 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;">
-                From The Entire Team at {{brand}}
-              </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 0 28px 36px; font-size: 14px; line-height: 1.7; color: #e2e8f0;">
-              <p style="margin-top: 0;">Dear <strong>{{name}}</strong>,</p>
-              <p>
-                On this auspicious occasion, we extend our heartfelt gratitude for your continued trust and partnership with us. It is an honor to engineer and protect homes and commercial landmarks across Rajasthan with you.
-              </p>
-              <p>
-                May this festive season bring prosperity, robust health, and joyful success to you and your loved ones!
-              </p>
-              <p style="margin-top: 24px; font-size: 13px; color: #94a3b8;">
-                Warm Regards,<br/>
-                <strong style="color: #ffffff;">Yogesh Kharol & The Leadership Team</strong><br/>
-                Hindustan Projects Group
-              </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="background-color: #0f172a; padding: 18px; font-size: 11px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.05);">
-              <p style="margin: 0;">Sent to {{email}} • <a href="https://www.hindustanprojects.in" style="color: #38bdf8; text-decoration: none;">www.hindustanprojects.in</a></p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`,
-  },
+  // ─────────────────────────────────────────────────────────────
+  // 8. Instant Inquiry Acknowledgment & Follow-Up (CRM Action)
+  // ─────────────────────────────────────────────────────────────
   {
     id: "lead_inquiry_followup",
     title: "Instant Inquiry Acknowledgment & Follow-Up",
@@ -577,61 +778,45 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hindustan Projects Client Desk",
     senderEmail: "info@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inquiry Received</title>
+  <title>Inquiry Received - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 580px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 16px rgba(0,0,0,0.05);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
-          <tr>
-            <td style="background-color: #0f172a; padding: 24px 28px; border-bottom: 4px solid #3b82f6;">
-              <h1 style="margin: 0; font-size: 20px; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">
-                {{brand}}
-              </h1>
-              <p style="margin: 4px 0 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px;">
-                Engineering • Turnkey Construction • Structural Protection
-              </p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("all", { badge: "Inquiry Desk • Quick Response" })}
 
           <tr>
-            <td style="padding: 30px 28px 20px; color: #1e293b; font-size: 14px; line-height: 1.6;">
+            <td style="padding: 28px 24px; color: #1e293b; font-size: 14px; line-height: 1.6;">
               <p style="margin: 0 0 14px; font-size: 16px; font-weight: 700; color: #0f172a;">
                 Hello {{name}},
               </p>
               <p style="margin: 0 0 16px;">
                 Thank you for reaching out to <strong>{{brand}}</strong>. We have successfully logged your project inquiry in our central engineering desk.
               </p>
-              <div style="background-color: #f1f5f9; border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+              
+              <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
                 <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">What Happens Next?</p>
-                <p style="margin: 4px 0 0; font-size: 12px; color: #475569;">
+                <p style="margin: 4px 0 0; font-size: 12px; color: #475569; line-height: 1.5;">
                   1. Our senior site engineer is reviewing your structural details.<br/>
                   2. We will contact you at this email or via phone within 24 business hours.<br/>
                   3. If needed, a complimentary site inspection will be scheduled.
                 </p>
               </div>
+
               <p style="margin: 0 0 20px;">
-                If your project is time-critical, you can directly reach our desk via WhatsApp or phone at <strong style="color: #0f172a;">+91 95499 99401</strong>.
-              </p>
-              <p style="margin: 0; font-size: 13px; color: #64748b;">
-                Warm Regards,<br/>
-                <strong style="color: #0f172a;">Client Relationship Team</strong><br/>
-                {{brand}} • Rajasthan, India
+                If your project is urgent, feel free to directly call or WhatsApp our helpline at <strong style="color: #0f172a;">+91 75970 00601</strong>.
               </p>
             </td>
           </tr>
 
-          <tr>
-            <td style="background-color: #f8fafc; padding: 16px 28px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              <p style="margin: 0;">Sent automatically to {{email}} • Official Website: <a href="{{website}}" style="color: #3b82f6; text-decoration: none;">{{website}}</a></p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("all")}
 
         </table>
       </td>
@@ -640,6 +825,118 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </body>
 </html>`,
   },
+
+  // ─────────────────────────────────────────────────────────────
+  // 9. Client Review & Testimonial Request
+  // ─────────────────────────────────────────────────────────────
+  {
+    id: "client_review_request",
+    title: "Post-Service Review & Client Feedback",
+    category: "Client Relations",
+    brand: "all",
+    badge: "5-Star Google",
+    description: "Send after completing a project or service to collect 5-star Google reviews and strengthen brand trust.",
+    subject: "How was your experience with {{brand}}? Your feedback matters to us",
+    senderName: "Customer Relations Team",
+    senderEmail: "info@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Review Request</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
+          
+          ${getCorporateEmailHeader("all", { badge: "Client Satisfaction & Experience" })}
+
+          <tr>
+            <td style="padding: 32px 24px 20px; text-align: center;">
+              <div style="font-size: 36px; margin-bottom: 10px;">⭐ ⭐ ⭐ ⭐ ⭐</div>
+              <h2 style="margin: 0 0 10px; font-size: 20px; color: #0f172a; font-weight: 800;">We Value Your Opinion, {{name}}!</h2>
+              <p style="margin: 0 auto 20px; max-width: 480px; font-size: 13.5px; color: #64748b; line-height: 1.6;">
+                Thank you for trusting <strong>{{brand}}</strong> with your property. Our goal is 100% engineering satisfaction and long-term durability.
+              </p>
+              <div style="margin-bottom: 24px;">
+                <a href="{{website}}" style="background-color: #0f172a; color: #ffffff; padding: 14px 32px; font-size: 13px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block;">
+                  Leave A 5-Star Review On Google →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          ${getCorporateEmailFooter("all")}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 10. Festive Corporate Greeting & Special Announcement
+  // ─────────────────────────────────────────────────────────────
+  {
+    id: "corporate_festive_wish",
+    title: "Executive Festive Greeting & Company Wish",
+    category: "Client Relations",
+    brand: "all",
+    badge: "Festive Special",
+    description: "Elegant holiday/Diwali/New Year celebration email to build warm relationships with clients & partners.",
+    subject: "Warm Festive Greetings & Best Wishes from {{brand}} to {{name}} and Family",
+    senderName: "Hindustan Projects Management",
+    senderEmail: "info@hindustanprojects.in",
+    html: `<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Festive Greetings - Hindustan Projects</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
+          
+          ${getCorporateEmailHeader("all", { badge: "Executive Corporate Greetings" })}
+
+          <tr>
+            <td style="padding: 30px 28px; font-size: 14px; line-height: 1.7; color: #334155;">
+              <p style="margin-top: 0; font-size: 16px; font-weight: bold; color: #0f172a;">Dear {{name}},</p>
+              <p>
+                On this auspicious occasion, we extend our heartfelt gratitude for your continued trust and partnership with us. It is an honor to engineer and protect homes and commercial landmarks across Rajasthan with you.
+              </p>
+              <p>
+                May this festive season bring prosperity, robust health, and joyful success to you and your loved ones!
+              </p>
+              <p style="margin-top: 24px; font-size: 13px; color: #64748b;">
+                Warm Regards,<br/>
+                <strong style="color: #0f172a;">Yogesh Kharol & The Leadership Team</strong><br/>
+                Hindustan Projects Group
+              </p>
+            </td>
+          </tr>
+
+          ${getCorporateEmailFooter("all")}
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`,
+  },
+
+  // ─────────────────────────────────────────────────────────────
+  // 11. Monthly Newsletter & Engineering Digest
+  // ─────────────────────────────────────────────────────────────
   {
     id: "newsletter_digest",
     title: "HiPRO Monthly Construction & Insights Digest",
@@ -651,29 +948,19 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "Hindustan Projects Editorial",
     senderEmail: "info@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HiPRO Monthly Newsletter</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
-          <tr>
-            <td style="background-color: #0f172a; padding: 32px 24px; text-align: center; border-bottom: 4px solid #ef4444;">
-              <span style="background-color: rgba(239,68,68,0.2); color: #f87171; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 1px;">Monthly Edition</span>
-              <h1 style="margin: 12px 0 4px; font-size: 24px; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">
-                Hindustan Projects Gazette
-              </h1>
-              <p style="margin: 0; font-size: 12px; color: #94a3b8;">
-                Architectural Innovation • Civil Engineering • Property Value Growth
-              </p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("hipro", { badge: "HiPRO Monthly Insights & Milestones" })}
 
           <tr>
             <td style="padding: 28px 24px 16px; font-size: 14px; line-height: 1.6; color: #1e293b;">
@@ -681,7 +968,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 Greetings {{name}},
               </p>
               <p style="margin: 0 0 16px;">
-                Welcome to this month&rsquo;s edition of the <strong>HiPRO Gazette</strong>. Here are our highlighted civil engineering breakthroughs, active site milestones, and recommended construction best practices.
+                Welcome to this month's edition of the <strong>HiPRO Gazette</strong>. Here are our highlighted civil engineering breakthroughs, active site milestones, and recommended construction best practices.
               </p>
 
               <!-- Article 1 -->
@@ -710,7 +997,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 </tr>
               </table>
 
-              <div align="center" style="margin: 24px 0 10px;">
+              <div align="center" style="margin: 20px 0 10px;">
                 <a href="{{website}}" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
                   Explore Completed Projects →
                 </a>
@@ -718,12 +1005,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
             </td>
           </tr>
 
-          <tr>
-            <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              <p style="margin: 0;">You are receiving this newsletter as a subscribed client of {{brand}}.</p>
-              <p style="margin: 4px 0 0;">Sent to {{email}} • © 2026 Hindustan Projects. All rights reserved.</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("hipro")}
 
         </table>
       </td>
@@ -734,10 +1016,8 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
   },
 
   // ─────────────────────────────────────────────────────────────
-  // VENDOR EMPANELMENT & PROCUREMENT TEMPLATES
+  // 12. Vendor Empanelment KYC Approval Letter
   // ─────────────────────────────────────────────────────────────
-
-  // 7. Vendor Empanelment KYC Approval Letter
   {
     id: "empanelment_kyc_approval",
     title: "Vendor Empanelment KYC Approval & Tier Classification",
@@ -749,109 +1029,69 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "HiPRO Empanelment Desk",
     senderEmail: "empanelment@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vendor Empanelment Approved - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); border: 1px solid #cbd5e1;">
           
-          <!-- Gold Amber Header -->
-          <tr>
-            <td style="background: linear-gradient(135deg, #78350f, #d97706); padding: 28px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td align="center">
-                    <span style="display: inline-block; padding: 4px 12px; background-color: rgba(255,255,255,0.2); border-radius: 20px; color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                      OFFICIAL PROCUREMENT LETTER
-                    </span>
-                    <h1 style="margin: 10px 0 4px; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: 1px;">
-                      HINDUSTAN PROJECTS
-                    </h1>
-                    <p style="margin: 0; color: #fef3c7; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700;">
-                      Vendor & Contractor Empanelment Directorate
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("empanelment", { badge: "Official Procurement Letter • Verified Partner" })}
 
-          <!-- Success Alert Box -->
           <tr>
-            <td style="padding: 28px 28px 10px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 16px;">
+            <td style="padding: 24px 28px 20px; color: #1e293b;">
+              
+              <!-- Success Alert Box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
                 <tr>
                   <td>
                     <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 700;">
-                      ✅ Verification Status: KYC VERIFIED & APPROVED
+                      ✅ Verification Status: KYC AUDIT CLEARED & APPROVED
                     </p>
                     <p style="margin: 4px 0 0; color: #047857; font-size: 12px; line-height: 1.5;">
-                      Your enterprise documents, GST compliance, and audited turnover have cleared preliminary verification. You are officially enrolled in our centralized procurement network.
+                      Your enterprise dossiers, GST compliance, and audited turnover have been accepted by the Procurement Board.
                     </p>
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
 
-          <!-- Letter Body -->
-          <tr>
-            <td style="padding: 16px 28px 20px; color: #1e293b;">
               <p style="font-size: 15px; margin: 0 0 14px; font-weight: 700; color: #0f172a;">
                 Dear {{name}},
               </p>
               <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-                We are pleased to inform you that your registration under <strong>Hindustan Projects Vendor Empanelment Program</strong> has been successfully approved. You are now authorized to participate in competitive bidding, submit technical quotations, and receive commercial work packages across our residential, industrial, and infrastructure project sites.
+                We are pleased to inform you that your registration under <strong>Hindustan Projects Vendor Empanelment Program</strong> has been officially approved. You are now authorized to participate in competitive bidding, submit technical quotations, and receive commercial work packages.
               </p>
-            </td>
-          </tr>
 
-          <!-- Partner Entitlements -->
-          <tr>
-            <td style="padding: 0 28px 20px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px;">
+              <!-- Benefits Card -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 16px; margin-bottom: 22px;">
                 <tr>
                   <td>
                     <p style="margin: 0 0 8px; font-size: 12px; font-weight: 800; color: #92400e; text-transform: uppercase;">
-                      📋 YOUR EMPANELMENT BENEFITS
+                      📋 YOUR EMPANELLED PRIVILEGES
                     </p>
                     <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #78350f; line-height: 1.7;">
-                      <li><strong>Direct Work Package Alerts:</strong> Immediate notification upon tender release matching your scope.</li>
-                      <li><strong>Fast-Track Milestone Billing:</strong> Automated RA bill approvals with strict 14-day payment cycles.</li>
-                      <li><strong>24-Hour Digital Site Gate Passes:</strong> Automated worker clearance for site logistics.</li>
-                      <li><strong>Priority Supply Order Agreements:</strong> Preferred supplier status for high-volume cement, steel & hardware.</li>
+                      <li><strong>Direct Tender Package Alerts:</strong> Immediate dispatch when relevant scopes are released.</li>
+                      <li><strong>14-Day Running Account (RA) Billing:</strong> Guaranteed payment turnaround cycle.</li>
+                      <li><strong>24-Hour Digital Site Gate Passes:</strong> Instant crew security clearance.</li>
                     </ul>
                   </td>
                 </tr>
               </table>
+
+              <div align="center" style="margin-bottom: 20px;">
+                <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+                  Access Partner Portal & Bidding Radar →
+                </a>
+              </div>
             </td>
           </tr>
 
-          <!-- Action Button -->
-          <tr>
-            <td style="padding: 10px 28px 30px; text-align: center;">
-              <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
-                Access Partner Portal & Bidding Radar →
-              </a>
-              <p style="margin: 12px 0 0; font-size: 11px; color: #64748b;">
-                Support Hotline: +91 98290 82821 • procurement@hindustanprojects.in
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              <p style="margin: 0;">Sent by Hindustan Projects Vendor Directorate • Jaipur & Jodhpur Central Offices</p>
-              <p style="margin: 4px 0 0;">Recipient: {{email}} • Confidential partner communication.</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("empanelment")}
 
         </table>
       </td>
@@ -861,7 +1101,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 8. Tender Notification & Bidding Invitation
+  // ─────────────────────────────────────────────────────────────
+  // 13. Active Tender Notice & Commercial Work Package Bidding
+  // ─────────────────────────────────────────────────────────────
   {
     id: "empanelment_tender_invite",
     title: "Active Tender Notice & Commercial Work Package Bidding",
@@ -873,90 +1115,54 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "HiPRO Procurement & Tenders",
     senderEmail: "empanelment@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tender Invitation - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); border: 1px solid #cbd5e1;">
           
-          <!-- Header Bar -->
-          <tr>
-            <td style="background-color: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 4px solid #f59e0b;">
-              <span style="display: inline-block; padding: 4px 12px; background-color: #d97706; border-radius: 20px; color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
-                PROCUREMENT NOTICE • RFQ ALLOTMENT
-              </span>
-              <h1 style="margin: 10px 0 4px; color: #ffffff; font-size: 20px; font-weight: 800;">
-                HINDUSTAN PROJECTS
-              </h1>
-              <p style="margin: 0; color: #94a3b8; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;">
-                Tender Allotment & Contractor Bidding Hub
-              </p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("empanelment", { badge: "Active Tender Notice • Commercial RFQ" })}
 
-          <!-- Intro Message -->
           <tr>
             <td style="padding: 28px 28px 16px; color: #1e293b;">
               <p style="font-size: 15px; margin: 0 0 12px; font-weight: 700; color: #0f172a;">
                 Respected Partner {{name}},
               </p>
               <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-                You are cordially invited to submit your competitive technical quotation and rates for an active commercial work package currently open on our central bidding radar.
+                You are cordially invited to submit your competitive commercial quote and rates for an active structural work package open for bidding.
               </p>
-            </td>
-          </tr>
 
-          <!-- Work Package Highlight Table -->
-          <tr>
-            <td style="padding: 0 28px 24px;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden;">
-                <tr style="background-color: #0f172a;">
-                  <td colspan="2" style="padding: 10px 16px; color: #f59e0b; font-size: 12px; font-weight: 800; text-transform: uppercase;">
-                    📌 ACTIVE TENDER HIGHLIGHT
-                  </td>
+              <!-- Highlight Table -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 22px;">
+                <tr>
+                  <td style="padding: 10px 14px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Package Scope:</td>
+                  <td style="padding: 10px 14px; font-size: 12px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0;">Civil RCC, MEP, or Material Package</td>
                 </tr>
                 <tr>
-                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0; width: 35%;">Project Scope:</td>
-                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0;">Civil Structural, MEP or Material Package</td>
+                  <td style="padding: 10px 14px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0;">Location:</td>
+                  <td style="padding: 10px 14px; font-size: 12px; color: #334155; border-bottom: 1px solid #e2e8f0;">Bhilwara / Rajasthan Region</td>
                 </tr>
                 <tr>
-                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0;">Location:</td>
-                  <td style="padding: 12px 16px; font-size: 12px; color: #334155; border-bottom: 1px solid #e2e8f0;">Rajasthan (Jaipur / Jodhpur Region)</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0;">Eligibility:</td>
-                  <td style="padding: 12px 16px; font-size: 12px; color: #065f46; font-weight: 700; border-bottom: 1px solid #e2e8f0;">Verified Class A, B, or C Empanelled Partners</td>
-                </tr>
-                <tr>
-                  <td style="padding: 12px 16px; font-size: 12px; font-weight: 700; color: #64748b;">Terms:</td>
-                  <td style="padding: 12px 16px; font-size: 12px; color: #334155;">14-Day Running Account (RA) Billing Clearance</td>
+                  <td style="padding: 10px 14px; font-size: 12px; font-weight: 700; color: #64748b;">Terms:</td>
+                  <td style="padding: 10px 14px; font-size: 12px; color: #065f46; font-weight: 700;">14-Day Running Account Billing Clearance</td>
                 </tr>
               </table>
+
+              <div align="center" style="margin-bottom: 14px;">
+                <a href="https://empanelment.hindustanprojects.in/tenders" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 13px 30px; border-radius: 6px;">
+                  Review Specifications & Submit Rates →
+                </a>
+              </div>
             </td>
           </tr>
 
-          <!-- CTA Button -->
-          <tr>
-            <td style="padding: 0 28px 30px; text-align: center;">
-              <a href="https://empanelment.hindustanprojects.in/tenders" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 14px 32px; border-radius: 8px; border: 1px solid #f59e0b;">
-                Review Tender Specs & Submit Quote →
-              </a>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f8fafc; padding: 18px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              <p style="margin: 0;">Automated Dispatch by HiPRO AutoMail Engine • Empanelment Desk</p>
-              <p style="margin: 4px 0 0;">Recipient: {{email}}</p>
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("empanelment")}
 
         </table>
       </td>
@@ -966,7 +1172,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 9. Site Gate Pass Clearance & Security Permit
+  // ─────────────────────────────────────────────────────────────
+  // 14. Daily Site Security & Digital Gate Pass Authorization
+  // ─────────────────────────────────────────────────────────────
   {
     id: "empanelment_gate_pass_clearance",
     title: "Daily Site Security & Digital Gate Pass Authorization",
@@ -978,57 +1186,43 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "HiPRO Site Safety & Security",
     senderEmail: "empanelment@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Site Security Clearance - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); border: 1px solid #cbd5e1;">
           
-          <tr style="background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 4px solid #10b981;">
-            <td style="padding: 24px; text-align: center;">
-              <span style="display: inline-block; padding: 3px 10px; background-color: #10b981; border-radius: 12px; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase;">
-                SECURITY ACCESS PERMIT
-              </span>
-              <h1 style="margin: 8px 0 0; color: #ffffff; font-size: 20px; font-weight: 800;">
-                24-HR DIGITAL GATE PASS
-              </h1>
-              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">Hindustan Projects Construction Operations</p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("empanelment", { badge: "Security Access Permit • 24-Hr Gate Pass" })}
 
           <tr>
             <td style="padding: 24px 28px; color: #1e293b;">
               <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700;">Authorized Contractor: {{name}}</p>
               <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-                Your site security entry permit has been validated and authorized by the site safety engineer. Present this verification slip at the perimeter checkpoint for immediate vehicle and labor check-in.
+                Your site security entry permit has been authorized. Present this digital verification slip at the perimeter security checkpoint for vehicle and labor entry.
               </p>
 
               <div style="background-color: #f1f5f9; border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 4px; margin-bottom: 20px;">
-                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">🛡️ Mandatory Safety Compliance:</p>
+                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">🛡️ Mandatory Site Safety Rules:</p>
                 <p style="margin: 4px 0 0; font-size: 11px; color: #475569; line-height: 1.5;">
                   All site crew must possess standard PPE (Steel-Toe Boots, Hard Hats & High-Visibility Vests). No entry permitted without safety equipment.
                 </p>
               </div>
 
-              <div style="text-align: center; margin: 20px 0 10px;">
-                <a href="https://empanelment.hindustanprojects.in/gate-pass" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
+              <div align="center" style="margin: 20px 0 10px;">
+                <a href="https://empanelment.hindustanprojects.in/gate-pass" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
                   View & Download Security Gate Pass Slip →
                 </a>
               </div>
             </td>
           </tr>
 
-          <tr>
-            <td style="background-color: #f8fafc; padding: 14px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              Central Operations Desk • Hindustan Projects Site Security Directorate
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("empanelment")}
 
         </table>
       </td>
@@ -1038,7 +1232,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
 </html>`,
   },
 
-  // 10. Contractor Work Order Milestone & Billing Release
+  // ─────────────────────────────────────────────────────────────
+  // 15. Contractor Work Order Milestone & Billing Clearance
+  // ─────────────────────────────────────────────────────────────
   {
     id: "empanelment_work_order_billing",
     title: "Contractor Work Order Milestone & Billing Clearance",
@@ -1050,61 +1246,47 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
     senderName: "HiPRO Procurement Billing",
     senderEmail: "empanelment@hindustanprojects.in",
     html: `<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Work Order Milestone Release - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: 'Segoe UI', Arial, sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 24px 12px;">
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(15,23,42,0.08); border: 1px solid #cbd5e1;">
           
-          <tr style="background: linear-gradient(135deg, #065f46, #047857); border-bottom: 4px solid #10b981;">
-            <td style="padding: 24px; text-align: center;">
-              <span style="display: inline-block; padding: 3px 10px; background-color: rgba(255,255,255,0.2); border-radius: 12px; color: #ffffff; font-size: 10px; font-weight: 800; text-transform: uppercase;">
-                COMMERCIAL BILLING RELEASE
-              </span>
-              <h1 style="margin: 8px 0 0; color: #ffffff; font-size: 20px; font-weight: 800;">
-                WORK ORDER MILESTONE APPROVED
-              </h1>
-              <p style="margin: 4px 0 0; color: #a7f3d0; font-size: 11px;">Hindustan Projects Financial & Procurement Accounts</p>
-            </td>
-          </tr>
+          ${getCorporateEmailHeader("empanelment", { badge: "Commercial Billing Release • Milestone Approved" })}
 
           <tr>
             <td style="padding: 24px 28px; color: #1e293b;">
               <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700;">Partner: {{name}}</p>
               <p style="font-size: 13px; line-height: 1.6; color: #334155; margin: 0 0 16px;">
-                This notification confirms that the milestone inspection report for your active work package has been accepted and certified by our site project engineer. Your running account (RA) invoice has been processed for direct bank disbursement.
+                This notification confirms that the milestone inspection report for your active work package has been certified by our site project engineer. Your running account (RA) invoice has been cleared for disbursement.
               </p>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
                 <tr>
                   <td>
-                    <p style="margin: 0; font-size: 12px; font-weight: 700; color: #065f46;">Payment Schedule:</p>
+                    <p style="margin: 0; font-size: 12px; font-weight: 700; color: #065f46;">Disbursement Schedule:</p>
                     <p style="margin: 4px 0 0; font-size: 12px; color: #047857;">
-                      NEFT / RTGS transmission is scheduled within 3 business days directly to your verified bank account on file.
+                      Direct NEFT / RTGS transfer is processed within 3 business days to your verified bank account on file.
                     </p>
                   </td>
                 </tr>
               </table>
 
-              <div style="text-align: center; margin: 20px 0 10px;">
-                <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #047857; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
-                  View Detailed Payment Voucher & Statements →
+              <div align="center" style="margin: 20px 0 10px;">
+                <a href="https://empanelment.hindustanprojects.in" style="display: inline-block; background-color: #047857; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 12px 28px; border-radius: 6px;">
+                  View Detailed Payment Statements →
                 </a>
               </div>
             </td>
           </tr>
 
-          <tr>
-            <td style="background-color: #f8fafc; padding: 14px 24px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8;">
-              Accounts Directorate • Hindustan Projects Private Limited
-            </td>
-          </tr>
+          ${getCorporateEmailFooter("empanelment")}
 
         </table>
       </td>

@@ -340,8 +340,36 @@ router.post("/send-test", async (req: Request, res: Response) => {
       customConfig.smtpPass = current.smtpPass;
     }
 
-    const testSubject = subject ? `[TEST] ${subject}` : "[TEST] Hindustan Projects Email Test";
-    const testBody = htmlBody || `<p>This is a test email sent from <strong>Hindustan Projects AutoMail Engine</strong>.</p>`;
+    const testSubject = subject ? `[TEST] ${subject}` : "[VERIFIED] Hindustan Projects AutoMail Engine Test";
+    const testBody = htmlBody || `
+      <div style="padding: 6px 0;">
+        <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 6px; color: #065f46; font-size: 16px; font-weight: 800;">
+            🎉 AutoMail Delivery System 100% Operational!
+          </h3>
+          <p style="margin: 0; color: #047857; font-size: 13px; line-height: 1.5;">
+            This test transmission verifies that your official mail dispatch pipeline is fully authenticated, operational, and formatting emails with corporate header & footer branding.
+          </p>
+        </div>
+        <p style="color: #334155; font-size: 13.5px; line-height: 1.6; margin: 0 0 16px;">
+          All emails sent through the AutoMail Engine automatically include your verified company credentials, corporate office address, direct site helplines, ISO certification badges, and legal confidentiality disclaimers.
+        </p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 10px 14px; font-weight: bold; color: #64748b; width: 35%;">Protocol & Port:</td>
+            <td style="padding: 10px 14px; font-weight: 600; color: #0f172a;">${deliveryMethod === "hostinger_api" ? "Hostinger Mail API (HTTPS Port 443 — Cloud Safe)" : "Hostinger SMTP (Port 465 / 587)"}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">Brand Profile:</td>
+            <td style="padding: 10px 14px; font-weight: 600; color: #0f172a;">${brand ? brand.toUpperCase() : "HIPRO"}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 14px; font-weight: bold; color: #64748b;">Verification Timestamp:</td>
+            <td style="padding: 10px 14px; color: #0f172a;">${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</td>
+          </tr>
+        </table>
+      </div>
+    `;
 
     const info = await sendOneEmail({
       to,

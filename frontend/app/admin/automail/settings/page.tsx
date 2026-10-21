@@ -242,31 +242,32 @@ export default function AutoMailSettingsPage() {
         body: JSON.stringify({
           to: testRecipient,
           subject: "Hostinger AutoMail Delivery Verification",
-          htmlBody: `<div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #2563eb, #1d4ed8); padding: 16px; border-radius: 8px; color: #ffffff; margin-bottom: 16px;">
-              <h2 style="margin: 0; font-size: 20px;">🎉 Hindustan Projects AutoMail Verified!</h2>
-              <p style="margin: 4px 0 0; opacity: 0.9; font-size: 13px;">Enterprise Delivery Engine Active</p>
+          htmlBody: `<div style="padding: 4px 0;">
+            <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px;">
+              <h3 style="margin: 0 0 6px; color: #065f46; font-size: 16px; font-weight: 800;">
+                🎉 AutoMail Delivery & Credentials Handshake Succeeded!
+              </h3>
+              <p style="margin: 0; color: #047857; font-size: 13px; line-height: 1.5;">
+                This test transmission verifies that your official mail dispatch pipeline is fully authenticated, operational, and formatting emails with official corporate header & footer branding.
+              </p>
             </div>
-            <p style="color: #334155; font-size: 14px; line-height: 1.6;">
-              This test email confirms that your email engine is 100% operational and delivering without any firewall or port issues.
+            <p style="color: #334155; font-size: 13.5px; line-height: 1.6; margin: 0 0 16px;">
+              All emails dispatched through the AutoMail Engine automatically include your verified company credentials, corporate office address in Bhilwara, direct site helplines, ISO certification badges, and statutory legal disclaimers.
             </p>
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0;">
-              <tr>
-                <td style="padding: 6px 0; color: #64748b; font-weight: bold;">Protocol:</td>
-                <td style="padding: 6px 0; color: #0f172a; font-weight: bold;">${deliveryMethod === "hostinger_api" ? "Hostinger Mail API (HTTPS Port 443 — Render Safe)" : `Hostinger SMTP (${smtpHost}:${smtpPort})`}</td>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px 14px; color: #64748b; font-weight: bold; width: 35%;">Protocol & Port:</td>
+                <td style="padding: 10px 14px; color: #0f172a; font-weight: 600;">\${deliveryMethod === "hostinger_api" ? "Hostinger Mail API (HTTPS Port 443 — Cloud Safe)" : \`Hostinger SMTP (\${smtpHost}:\${smtpPort})\`}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 10px 14px; color: #64748b; font-weight: bold;">Sender Identity:</td>
+                <td style="padding: 10px 14px; color: #0f172a; font-weight: 600;">\${testBrand === "hipro" ? \`\${senderNameHipro} (\${senderEmailHipro})\` : \`\${senderNameHbs} (\${senderEmailHbs})\`}</td>
               </tr>
               <tr>
-                <td style="padding: 6px 0; color: #64748b; font-weight: bold;">Sender Identity:</td>
-                <td style="padding: 6px 0; color: #0f172a;">${testBrand === "hipro" ? `${senderNameHipro} (${senderEmailHipro})` : `${senderNameHbs} (${senderEmailHbs})`}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #64748b; font-weight: bold;">Timestamp:</td>
-                <td style="padding: 6px 0; color: #0f172a;">${new Date().toLocaleString()}</td>
+                <td style="padding: 10px 14px; color: #64748b; font-weight: bold;">Verification Timestamp:</td>
+                <td style="padding: 10px 14px; color: #0f172a;">\${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</td>
               </tr>
             </table>
-            <p style="font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 16px;">
-              Hindustan Projects • Hind Building Solutions • Automated Delivery System
-            </p>
           </div>`,
           brand: testBrand,
           deliveryMethod,

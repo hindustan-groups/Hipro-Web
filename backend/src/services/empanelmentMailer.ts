@@ -46,30 +46,50 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
   }
 
   const trackUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
+  const currentYear = new Date().getFullYear();
 
   const htmlBody = `
 <!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Empanelment Application Received - Hindustan Projects</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Arial, sans-serif; color: #f1f5f9;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 30px 15px;">
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 30px 15px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(251, 146, 60, 0.3); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(251, 146, 60, 0.3); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          
+          <!-- Top Metadata Bar -->
+          <tr>
+            <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+                    <span>OFFICIAL PROCUREMENT DISPATCH</span>
+                  </td>
+                  <td align="right" style="font-size: 10px; font-family: monospace; color: #fdba74;">
+                    TRACKING: <strong>${trackingId}</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); padding: 24px 30px; text-align: left;">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); padding: 26px 30px; text-align: left; border-bottom: 4px solid #f59e0b;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <div style="font-size: 20px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff;">HINDUSTAN PROJECTS</div>
-                    <div style="font-size: 12px; color: #fed7aa; margin-top: 2px; text-transform: uppercase; letter-spacing: 1px;">Procurement & Vendor Empanelment Board</div>
+                    <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase;">HINDUSTAN PROJECTS</div>
+                    <div style="font-size: 11px; color: #fed7aa; margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Procurement Directorate • Vendor & Contractor Empanelment Board</div>
                   </td>
                   <td align="right">
-                    <span style="background: rgba(0,0,0,0.25); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">OFFICIAL DISPATCH</span>
+                    <span style="background: rgba(0,0,0,0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 1px;">STATUTORY DOSSIER</span>
                   </td>
                 </tr>
               </table>
@@ -86,7 +106,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
               </p>
 
               <!-- Tracking Highlight Card -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(251, 146, 60, 0.08); border: 1px dashed rgba(251, 146, 60, 0.4); border-radius: 12px; padding: 18px 20px; margin-bottom: 24px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: rgba(251, 146, 60, 0.08); border: 1px dashed rgba(251, 146, 60, 0.4); border-radius: 12px; padding: 18px 20px; margin-bottom: 24px;">
                 <tr>
                   <td>
                     <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #fdba74; font-weight: 700;">YOUR APPLICATION TRACKING ID</div>
@@ -97,7 +117,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
               </table>
 
               <!-- Application Details -->
-              <table width="100%" cellpadding="8" cellspacing="0" style="background: #1e293b; border-radius: 8px; font-size: 13px; color: #e2e8f0; margin-bottom: 24px; border: 1px solid #334155;">
+              <table role="presentation" width="100%" cellpadding="8" cellspacing="0" style="background: #1e293b; border-radius: 8px; font-size: 13px; color: #e2e8f0; margin-bottom: 24px; border: 1px solid #334155;">
                 <tr>
                   <td width="35%" style="color: #94a3b8; border-bottom: 1px solid #334155;">Company:</td>
                   <td style="font-weight: 600; border-bottom: 1px solid #334155;">${companyName}</td>
@@ -126,7 +146,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
               <ol style="color: #94a3b8; font-size: 13px; line-height: 1.6; padding-left: 20px; margin-top: 0; margin-bottom: 28px;">
                 <li><strong>Document Audit:</strong> CA turnover, GST/PAN compliance cross-checked.</li>
                 <li><strong>Technical Scoring:</strong> Past civil work orders and capacity tier verification.</li>
-                <li><strong>Approval & Smart Card:</strong> CEO digital authorization and PVC ID card release.</li>
+                <li><strong>Approval & Smart Card:</strong> Digital authorization and PVC smart ID release.</li>
               </ol>
 
               <!-- Action Button -->
@@ -142,13 +162,41 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
             </td>
           </tr>
 
-          <!-- Footer -->
+          <!-- Quick Action & Verification Bar -->
           <tr>
-            <td style="background: #090d16; padding: 20px 30px; text-align: center; border-top: 1px solid #1e293b; color: #64748b; font-size: 11px;">
-              Hindustan Projects &bull; Civil Infrastructure, Industrial PEB & EPC Contractors<br>
-              Head Office: Bhilwara, Rajasthan &bull; Website: <a href="https://empanelment.hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment.hindustanprojects.in</a>
+            <td style="background-color: #0b1120; padding: 16px 24px; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; text-align: center;">
+              <a href="https://empanelment.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; margin-right: 8px;">
+                🌐 Visit empanelment.hindustanprojects.in
+              </a>
+              <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
+                💬 Helpline: +91 75970 00601
+              </a>
             </td>
           </tr>
+
+          <!-- Corporate Headquarters & Credentials Footer -->
+          <tr data-hipro-corporate-footer="true">
+            <td style="background: #090d16; padding: 26px 30px 20px; text-align: center; border-top: 1px solid #1e293b; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+              <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
+                Hindustan Projects Procurement & Vendor Empanelment Directorate
+              </div>
+              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
+                📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+              </p>
+              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">
+                📞 <strong>Direct Helpline:</strong> <a href="tel:+917597000601" style="color: #fb923c; text-decoration: none;">+91 75970 00601</a>
+                <span style="color: #475569; margin: 0 6px;">•</span>
+                ✉️ <strong>Official Desk:</strong> <a href="mailto:empanelment@hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment@hindustanprojects.in</a>
+              </p>
+              <div style="margin: 12px 0 8px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; font-size: 9.5px; color: #94a3b8; text-align: justify; border: 1px solid rgba(255,255,255,0.06);">
+                <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic transmission is intended solely for the designated contractor recipient (${email}). It contains statutory empanelment credentials. Any unauthorized review, dissemination, or reproduction is strictly prohibited.
+              </div>
+              <p style="margin: 8px 0 0; font-size: 10px; color: #64748b;">
+                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} Hindustan Projects Group. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </td>
     </tr>
@@ -185,6 +233,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
   const isApproved = status === "APPROVED";
   const portalUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
   const tendersUrl = `https://empanelment.hindustanprojects.in/tenders`;
+  const currentYear = new Date().getFullYear();
 
   const subject = isApproved
     ? `Congratulations! Empanelment Approved [${registrationNo || trackingId}] - Hindustan Projects`
@@ -195,27 +244,46 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
 
   const htmlBody = `
 <!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Arial, sans-serif; color: #f1f5f9;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 30px 15px;">
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 30px 15px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          
+          <!-- Top Metadata Bar -->
+          <tr>
+            <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: ${isApproved ? "#22c55e" : "#ef4444"}; margin-right: 6px; vertical-align: middle;"></span>
+                    <span>OFFICIAL STATUS AUDIT NOTICE</span>
+                  </td>
+                  <td align="right" style="font-size: 10px; font-family: monospace; color: #fdba74;">
+                    REG: <strong>${registrationNo || trackingId}</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
           <!-- Header -->
           <tr>
-            <td style="background: ${bannerColor}; padding: 24px 30px; text-align: left;">
-              <table width="100%" cellpadding="0" cellspacing="0">
+            <td style="background: ${bannerColor}; padding: 24px 30px; text-align: left; border-bottom: 4px solid rgba(255,255,255,0.2);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
-                    <div style="font-size: 20px; font-weight: 800; color: #ffffff;">HINDUSTAN PROJECTS</div>
-                    <div style="font-size: 12px; color: rgba(255,255,255,0.85); margin-top: 2px;">Procurement & Vendor Empanelment Board</div>
+                    <div style="font-size: 20px; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase;">HINDUSTAN PROJECTS</div>
+                    <div style="font-size: 11px; color: rgba(255,255,255,0.85); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Procurement Directorate • Vendor & Contractor Empanelment Board</div>
                   </td>
                   <td align="right">
-                    <span style="background: rgba(0,0,0,0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;">${statusBadge}</span>
+                    <span style="background: rgba(0,0,0,0.3); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800;">${statusBadge}</span>
                   </td>
                 </tr>
               </table>
@@ -232,7 +300,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                 </p>
 
                 <!-- Approved Credentials Box -->
-                <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 18px 20px; margin: 20px 0;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 18px 20px; margin: 20px 0;">
                   <tr>
                     <td>
                       <div style="font-size: 11px; text-transform: uppercase; color: #6ee7b7; font-weight: 700;">OFFICIAL VENDOR REGISTRATION NUMBER</div>
@@ -261,7 +329,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                   Following technical and statutory evaluation, your application for empanelment (Tracking ID: <strong>${trackingId}</strong>) could not be approved at this time.
                 </p>
 
-                <table width="100%" cellpadding="0" cellspacing="0" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 16px; margin: 20px 0;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; padding: 16px; margin: 20px 0;">
                   <tr>
                     <td>
                       <div style="font-size: 11px; text-transform: uppercase; color: #fca5a5; font-weight: 700;">AUDIT COMMITTEE REMARKS</div>
@@ -277,13 +345,41 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
             </td>
           </tr>
 
-          <!-- Footer -->
+          <!-- Quick Action & Verification Bar -->
           <tr>
-            <td style="background: #090d16; padding: 20px 30px; text-align: center; border-top: 1px solid #1e293b; color: #64748b; font-size: 11px;">
-              Hindustan Projects Procurement Directorate &bull; Bhilwara, Rajasthan<br>
-              <a href="https://empanelment.hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment.hindustanprojects.in</a>
+            <td style="background-color: #0b1120; padding: 16px 24px; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; text-align: center;">
+              <a href="https://empanelment.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; margin-right: 8px;">
+                🌐 Visit empanelment.hindustanprojects.in
+              </a>
+              <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
+                💬 Helpline: +91 75970 00601
+              </a>
             </td>
           </tr>
+
+          <!-- Corporate Headquarters & Credentials Footer -->
+          <tr data-hipro-corporate-footer="true">
+            <td style="background: #090d16; padding: 26px 30px 20px; text-align: center; border-top: 1px solid #1e293b; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+              <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
+                Hindustan Projects Procurement & Vendor Empanelment Directorate
+              </div>
+              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
+                📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+              </p>
+              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">
+                📞 <strong>Direct Helpline:</strong> <a href="tel:+917597000601" style="color: #fb923c; text-decoration: none;">+91 75970 00601</a>
+                <span style="color: #475569; margin: 0 6px;">•</span>
+                ✉️ <strong>Official Desk:</strong> <a href="mailto:empanelment@hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment@hindustanprojects.in</a>
+              </p>
+              <div style="margin: 12px 0 8px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; font-size: 9.5px; color: #94a3b8; text-align: justify; border: 1px solid rgba(255,255,255,0.06);">
+                <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic transmission is intended solely for the designated contractor recipient (${email}). It contains statutory empanelment credentials. Any unauthorized review, dissemination, or reproduction is strictly prohibited.
+              </div>
+              <p style="margin: 8px 0 0; font-size: 10px; color: #64748b;">
+                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} Hindustan Projects Group. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </td>
     </tr>
@@ -317,25 +413,48 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
   }
 
   const verifyUrl = `https://empanelment.hindustanprojects.in/verify-pass?passCode=${encodeURIComponent(passCode)}`;
+  const currentYear = new Date().getFullYear();
 
   const htmlBody = `
 <!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HiPRO Site Gate Pass - ${passCode}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: 'Segoe UI', Arial, sans-serif; color: #f1f5f9;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 25px 15px;">
+<body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #0f172a; padding: 25px 15px;">
     <tr>
       <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0" style="background: #1e293b; border: 2px solid #3b82f6; border-radius: 14px; overflow: hidden;">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width: 560px; background: #1e293b; border: 2px solid #3b82f6; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          
+          <!-- Top Metadata Bar -->
           <tr>
-            <td style="background: #1d4ed8; padding: 18px 24px; color: #ffffff;">
-              <div style="font-size: 18px; font-weight: 800;">HINDUSTAN PROJECTS</div>
-              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #bfdbfe;">Site Security & Gate Pass Authorization</div>
+            <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+                    <span>SITE ACCESS CLEARANCE PERMIT</span>
+                  </td>
+                  <td align="right" style="font-size: 10px; font-family: monospace; color: #60a5fa;">
+                    PASS: <strong>${passCode}</strong>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
+
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); padding: 20px 24px; color: #ffffff; border-bottom: 3px solid #60a5fa;">
+              <div style="font-size: 18px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">HINDUSTAN PROJECTS</div>
+              <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #bfdbfe; font-weight: 700; margin-top: 2px;">Site Security Directorate &bull; 24-Hour Digital Gate Pass</div>
+            </td>
+          </tr>
+
+          <!-- Pass Details -->
           <tr>
             <td style="padding: 24px;">
               <div style="text-align: center; margin-bottom: 20px;">
@@ -344,7 +463,7 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
                 <div style="font-size: 12px; color: #34d399; font-weight: 600; margin-top: 4px;">&#10004; ACTIVE & VALID</div>
               </div>
 
-              <table width="100%" cellpadding="8" cellspacing="0" style="font-size: 13px; color: #e2e8f0; border-top: 1px solid #334155; margin-bottom: 20px;">
+              <table role="presentation" width="100%" cellpadding="8" cellspacing="0" style="font-size: 13px; color: #e2e8f0; border-top: 1px solid #334155; margin-bottom: 20px;">
                 <tr>
                   <td width="35%" style="color: #94a3b8;">Visitor / Lead:</td>
                   <td style="font-weight: 700;">${visitorName}</td>
@@ -368,16 +487,32 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
               </table>
 
               <div style="text-align: center; margin: 20px 0;">
-                <a href="${verifyUrl}" target="_blank" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 13px;">
+                <a href="${verifyUrl}" target="_blank" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 13px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
                   Open Security QR Verification &rarr;
                 </a>
               </div>
 
-              <div style="font-size: 11px; color: #64748b; text-align: center; line-height: 1.4;">
+              <div style="font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.4;">
                 Present this digital pass or QR code at site checkpoint security. Pass expires automatically after 24 hours.
               </div>
             </td>
           </tr>
+
+          <!-- Corporate Headquarters & Credentials Footer -->
+          <tr data-hipro-corporate-footer="true">
+            <td style="background: #090d16; padding: 22px 24px 18px; text-align: center; border-top: 1px solid #1e293b; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+              <div style="font-size: 12px; font-weight: 800; color: #ffffff; text-transform: uppercase;">
+                Hindustan Projects Site Security Directorate
+              </div>
+              <p style="margin: 6px 0 0; color: #e2e8f0; font-size: 10.5px;">
+                📍 Corporate HQ: Bhopal Ganj, Bhilwara 311001, Rajasthan &bull; Helpline: +91 75970 00601
+              </p>
+              <p style="margin: 6px 0 0; font-size: 10px; color: #64748b;">
+                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} All rights reserved.
+              </p>
+            </td>
+          </tr>
+
         </table>
       </td>
     </tr>
