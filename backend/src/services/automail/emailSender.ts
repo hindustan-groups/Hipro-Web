@@ -3,6 +3,13 @@ import nodemailer from "nodemailer";
 import { Configuration, AccountApi, SendApi } from "hostinger-mail-api-sdk";
 import { prisma } from "../../lib/db";
 import { getAutomailSettings, AutomailSettings } from "./settingsService";
+import {
+  wrapWithCorporateTemplate,
+  getBrandMetadata,
+  isAlreadyCorporatelyBranded,
+} from "./emailTemplateWrapper";
+
+export { wrapWithCorporateTemplate, getBrandMetadata, isAlreadyCorporatelyBranded };
 
 // Enforce IPv4 DNS resolution across all SMTP socket operations (fixes ENETUNREACH on IPv6)
 if (dns.setDefaultResultOrder) {
@@ -423,14 +430,21 @@ export async function sendEmailViaHostingerApi({
 
   const { sendApi } = await getHostingerSdk(token);
   const resolvedMailboxId = await resolveHostingerMailboxId(fromEmail, token, mailboxId);
-  const plainText = textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : "");
+  const brandedHtml = wrapWithCorporateTemplate(htmlBody, {
+    brand,
+    subject,
+    recipientEmail: to,
+    senderName: fromName,
+    senderEmail: fromEmail,
+  });
+  const plainText = textBody || (brandedHtml ? brandedHtml.replace(/<[^>]*>/g, "") : "");
 
   await sendApi.sendEmail(resolvedMailboxId, {
     to: [to.trim()],
     displayName: fromName,
     subject,
     text: plainText || " ",
-    html: htmlBody,
+    html: brandedHtml,
     cc: [],
     bcc: [],
     attachments: [],
@@ -601,14 +615,22 @@ export async function sendOneEmail({
     );
   }
 
+  const brandedHtml = wrapWithCorporateTemplate(htmlBody, {
+    brand,
+    subject,
+    recipientEmail: to,
+    senderName: fromName,
+    senderEmail: fromEmail,
+  });
+
   const authSender = user || fromEmail;
   const mailOptions = {
     from: `"${fromName}" <${authSender}>`,
     replyTo: fromEmail && fromEmail !== authSender ? `"${fromName}" <${fromEmail}>` : undefined,
     to,
     subject,
-    text: textBody || (htmlBody ? htmlBody.replace(/<[^>]*>/g, "") : ""),
-    html: htmlBody,
+    text: textBody || (brandedHtml ? brandedHtml.replace(/<[^>]*>/g, "") : ""),
+    html: brandedHtml,
   };
 
   try {

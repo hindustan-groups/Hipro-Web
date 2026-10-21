@@ -188,38 +188,107 @@ export default function AutoMailTemplatesPage() {
     setEditorBrand(selectedBrand !== "all" ? (selectedBrand as any) : "hipro");
     setEditorDescription("");
     setEditorSubject("Hindustan Projects Official Update for {{name}}");
-    setEditorSenderName(selectedBrand === "hbs" ? "Hind Build Solutions" : "Hindustan Projects");
+    setEditorSenderName(selectedBrand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects");
     setEditorSenderEmail(selectedBrand === "hbs" ? "hbs@hindustanprojects.in" : "info@hindustanprojects.in");
     setEditorHtml(`<!DOCTYPE html>
-<html>
+<html lang="en" data-hipro-branded="true">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hindustan Projects Official</title>
 </head>
-<body style="margin: 0; padding: 24px; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f8fafc; color: #1e293b;">
-  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background-color: #0f172a; padding: 24px; text-align: center; border-bottom: 4px solid #2563eb;">
-      <h1 style="color: #ffffff; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">Hindustan Projects</h1>
-      <p style="color: #94a3b8; font-size: 11px; margin: 4px 0 0; text-transform: uppercase;">Engineering • Civil Infrastructure • Quality Build</p>
-    </div>
-    <div style="padding: 28px;">
-      <h2 style="font-size: 16px; color: #0f172a; margin-top: 0;">Dear {{name}},</h2>
-      <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-        Thank you for choosing Hindustan Projects. We are delighted to share this official communication regarding our turnkey civil and engineering solutions.
-      </p>
-      <div style="margin: 24px 0; padding: 16px; background-color: #f1f5f9; border-left: 4px solid #2563eb; border-radius: 4px;">
-        <p style="margin: 0; font-size: 13px; font-weight: bold; color: #0f172a;">Custom Project Highlight</p>
-        <p style="margin: 4px 0 0; font-size: 13px; color: #475569;">Insert custom specifications, quotation estimates, or inspection reports here.</p>
-      </div>
-      <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-        If you have any questions, feel free to reply directly to this email or reach us at <strong style="color: #2563eb;">+91 98765 43210</strong>.
-      </p>
-      <p style="font-size: 14px; color: #0f172a; margin-bottom: 0;">Warm regards,<br><strong>Team Hindustan Projects</strong></p>
-    </div>
-    <div style="background-color: #f8fafc; padding: 16px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b;">
-      © ${new Date().getFullYear()} Hindustan Projects. All rights reserved.
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
+          
+          <!-- Top Verification Strip -->
+          <tr>
+            <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+                    <span>OFFICIAL TRANSMISSION</span>
+                    <span style="color: #475569; margin: 0 6px;">•</span>
+                    <span style="color: #cbd5e1;">{{date}}</span>
+                  </td>
+                  <td align="right" style="font-size: 10px; font-family: monospace; color: #94a3b8;">
+                    REF: <strong style="color: #e2e8f0;">#HP-CUSTOM-EST</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Corporate Brand Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%); padding: 28px 24px 22px; text-align: center; border-bottom: 4px solid #dc2626;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">Hindustan Projects</h1>
+              <p style="color: #cbd5e1; font-size: 11px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
+                Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design
+              </p>
+              <div style="margin-top: 12px; font-size: 10px; color: #94a3b8; font-weight: 600;">
+                🏛️ ISO 9001:2015 Certified &bull; 🛡️ Govt Approved EPC &bull; ⚡ 150+ Landmarks Built
+              </div>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding: 28px; color: #1e293b;">
+              <h2 style="font-size: 16px; color: #0f172a; margin-top: 0;">Dear {{name}},</h2>
+              <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+                Thank you for choosing Hindustan Projects. We are delighted to share this official communication regarding our turnkey civil engineering and structural solutions.
+              </p>
+              <div style="margin: 20px 0; padding: 16px; background-color: #f8fafc; border-left: 4px solid #2563eb; border-radius: 4px; border: 1px solid #e2e8f0;">
+                <p style="margin: 0; font-size: 13px; font-weight: bold; color: #0f172a;">Custom Project Highlight</p>
+                <p style="margin: 4px 0 0; font-size: 13px; color: #475569;">Insert custom specifications, quotation estimates, or inspection reports here.</p>
+              </div>
+              <p style="font-size: 14px; line-height: 1.6; color: #334155;">
+                If you have any questions, feel free to reply directly to this email or call our helpline at <strong style="color: #0f172a;">+91 75970 00601</strong>.
+              </p>
+              <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">
+                Warm Regards,<br/><strong style="color: #0f172a;">Team Hindustan Projects</strong><br/>Bhopal Ganj, Bhilwara, Rajasthan
+              </p>
+            </td>
+          </tr>
+
+          <!-- Quick Action Bar -->
+          <tr>
+            <td style="background-color: #f8fafc; padding: 14px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; text-align: center;">
+              <a href="https://www.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; margin-right: 8px;">
+                🌐 Visit www.hindustanprojects.in
+              </a>
+              <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
+                💬 WhatsApp: +91 75970 00601
+              </a>
+            </td>
+          </tr>
+
+          <!-- Official Corporate Footer -->
+          <tr data-hipro-corporate-footer="true">
+            <td style="background-color: #0f172a; padding: 22px 24px; text-align: center; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
+              <p style="margin: 0; color: #ffffff; font-weight: bold; text-transform: uppercase;">
+                Hindustan Projects Private Limited &bull; Bhopal Ganj, Bhilwara 311001, Rajasthan
+              </p>
+              <p style="margin: 4px 0 0; color: #94a3b8;">
+                Helpline: +91 75970 00601 &bull; Email: info@hindustanprojects.in
+              </p>
+              <div style="margin: 10px 0; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 9.5px; color: #94a3b8; text-align: justify;">
+                CONFIDENTIALITY NOTICE: This transmission is intended solely for {{email}}. It contains privileged corporate information. Any unauthorized review or copying is strictly prohibited.
+              </div>
+              <p style="margin: 0; font-size: 10px; color: #64748b;">
+                © \${new Date().getFullYear()} Hindustan Projects Group. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`);
     setShowEditorModal(true);
@@ -1032,7 +1101,7 @@ export default function AutoMailTemplatesPage() {
               {/* Code Editor & Live Preview Tabs or Split */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-slate-600 uppercase mb-1 flex items-center justify-between">
                     <span>HTML Email Code *</span>
                     <span className="text-[10px] text-slate-400 font-mono">Full HTML supported</span>
                   </label>
