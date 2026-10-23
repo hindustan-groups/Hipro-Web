@@ -203,7 +203,7 @@ export async function resolveWorkingHostingerToken(rawToken: string): Promise<st
   // Detect if user pasted email password or app password instead of API Token
   if (clean.length < 30) {
     throw new Error(
-      `Entered value is only ${clean.length} characters long (looks like an email password). Hostinger API Token is a long security string (50+ characters). Please generate an API Token from Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail).`
+      `Entered value is only ${clean.length} characters long (looks like an email password). Hostinger API Token is a long security string (50+ characters). Please generate an API Token from Webmail (mail.hostinger.com -> Settings ΓÜÖ∩╕Å -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail).`
     );
   }
 
@@ -286,7 +286,7 @@ export async function resolveWorkingHostingerToken(rawToken: string): Promise<st
   }
 
   throw new Error(
-    "Invalid Hostinger API Token (Unauthorized). Hostinger rejected this token. In Hostinger Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions."
+    "Invalid Hostinger API Token (Unauthorized). Hostinger rejected this token. In Hostinger Webmail (mail.hostinger.com -> Settings ΓÜÖ∩╕Å -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions."
   );
 }
 
@@ -364,6 +364,20 @@ export async function resolveHostingerMailboxId(senderEmail?: string, tokenOverr
  * Test Hostinger Mail API connection and fetch connected mailboxes
  */
 export async function testHostingerMailApi(tokenOverride?: string) {
+  // SEC-HIGH-02: Fail-closed diagnostic guard.
+  // Real HTTPS calls to api.hostinger.com are only permitted in production.
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[DEV EMAIL DIAGNOSTIC INTERCEPTED] testHostingerMailApi() blocked in non-production mode.\n" +
+      "  No HTTPS request was made to api.hostinger.com.\n" +
+      "  Set NODE_ENV=production to test against real Hostinger infrastructure."
+    );
+    return {
+      success: true,
+      message: "[DEV MOCK] Hostinger Mail API diagnostic intercepted in development mode. No live HTTPS call was made.",
+      isMock: true,
+    };
+  }
   try {
     const mailboxes = await getHostingerMailboxes(tokenOverride);
     if (!mailboxes || mailboxes.length === 0) {
@@ -383,7 +397,7 @@ export async function testHostingerMailApi(tokenOverride?: string) {
     const status = err.response?.status;
     let msg = rawError || "Failed to verify Hostinger Mail API.";
     if (status === 401 || status === 403) {
-      msg = `Invalid Hostinger API Token (${status}: ${rawError || "Unauthorized"}). In Hostinger Webmail (mail.hostinger.com -> Settings ⚙️ -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions. (Note: Email account password will not work here).`;
+      msg = `Invalid Hostinger API Token (${status}: ${rawError || "Unauthorized"}). In Hostinger Webmail (mail.hostinger.com -> Settings ΓÜÖ∩╕Å -> Agentic Mail) or hPanel (Emails -> hindustanprojects.in -> Agentic Mail), generate a new Access Token with Mailbox Send permissions. (Note: Email account password will not work here).`;
     }
     return {
       success: false,
@@ -393,7 +407,7 @@ export async function testHostingerMailApi(tokenOverride?: string) {
 }
 
 /**
- * Send an email directly via Hostinger REST API (HTTPS Port 443 — Bypasses Render SMTP port blocking)
+ * Send an email directly via Hostinger REST API (HTTPS Port 443 ΓÇö Bypasses Render SMTP port blocking)
  */
 export async function sendEmailViaHostingerApi({
   to,
@@ -416,6 +430,39 @@ export async function sendEmailViaHostingerApi({
   token?: string;
   mailboxId?: string;
 }) {
+  // ============================================================
+  // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
+  // ============================================================
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (!isProduction) {
+    const brandMap = getBrandConfigs();
+    const brandDefaults = brandMap[brand || "all"] || brandMap.all;
+    const fromName = senderName?.trim() || brandDefaults.name;
+    const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
+
+    console.warn(
+      `[DEV EMAIL INTERCEPTED - FAIL-CLOSED] Live email delivery is unconditionally blocked outside production.\n` +
+      `  ├── To: ${to}\n` +
+      `  ├── From: "${fromName}" <${fromEmail}>\n` +
+      `  ├── Subject: "${subject}"\n` +
+      `  ├── Brand: ${brand || "all"}\n` +
+      `  └── Timestamp: ${new Date().toISOString()}\n` +
+      `  (Fail-closed email policy: No live email delivery allowed in development or testing)`
+    );
+
+    return {
+      accepted: [to],
+      rejected: [],
+      envelopeTime: 0,
+      messageTime: 0,
+      messageSize: 0,
+      response: "250 Intercepted in development (Strict Fail-Closed Email Guard active)",
+      envelope: { from: fromEmail, to: [to] },
+      messageId: `<dev-mock-${Date.now()}-${Math.random().toString(36).substring(2, 8)}@localhost>`,
+      isMock: true,
+    };
+  }
   const brandMap = getBrandConfigs();
   const brandDefaults = brandMap[brand] || brandMap.all;
   const fromName = senderName?.trim() || brandDefaults.name;
@@ -465,6 +512,22 @@ export function isEmailDeliveryConfigured(customConfig?: Partial<AutomailSetting
  * Verify email connection (SMTP or Hostinger API) with intelligent diagnostics
  */
 export async function testSmtpConnection(customConfig?: Partial<AutomailSettings>) {
+  // SEC-HIGH-02: Fail-closed diagnostic guard.
+  // Real DNS lookups and TCP/TLS socket connections to SMTP hosts are only
+  // permitted in production. This prevents local dev from opening outbound
+  // connections to smtp.hostinger.com:465.
+  if (process.env.NODE_ENV !== "production") {
+    console.warn(
+      "[DEV EMAIL DIAGNOSTIC INTERCEPTED] testSmtpConnection() blocked in non-production mode.\n" +
+      "  No DNS lookup or TCP socket was opened to the mail server.\n" +
+      "  Set NODE_ENV=production to test against real SMTP infrastructure."
+    );
+    return {
+      success: true,
+      message: "[DEV MOCK] SMTP connection diagnostic intercepted in development mode. No live connection was made.",
+      isMock: true,
+    };
+  }
   const settings = getAutomailSettings();
   const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
   const token = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
@@ -552,6 +615,39 @@ export async function sendOneEmail({
   brand?: string;
   customConfig?: Partial<AutomailSettings>;
 }) {
+  // ============================================================
+  // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
+  // ============================================================
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (!isProduction) {
+    const brandMap = getBrandConfigs();
+    const brandDefaults = brandMap[brand || "all"] || brandMap.all;
+    const fromName = senderName?.trim() || brandDefaults.name;
+    const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
+
+    console.warn(
+      `[DEV EMAIL INTERCEPTED - FAIL-CLOSED] Live email delivery is unconditionally blocked outside production.\n` +
+      `  ├── To: ${to}\n` +
+      `  ├── From: "${fromName}" <${fromEmail}>\n` +
+      `  ├── Subject: "${subject}"\n` +
+      `  ├── Brand: ${brand || "all"}\n` +
+      `  └── Timestamp: ${new Date().toISOString()}\n` +
+      `  (Fail-closed email policy: No live email delivery allowed in development or testing)`
+    );
+
+    return {
+      accepted: [to],
+      rejected: [],
+      envelopeTime: 0,
+      messageTime: 0,
+      messageSize: 0,
+      response: "250 Intercepted in development (Strict Fail-Closed Email Guard active)",
+      envelope: { from: fromEmail, to: [to] },
+      messageId: `<dev-mock-${Date.now()}-${Math.random().toString(36).substring(2, 8)}@localhost>`,
+      isMock: true,
+    };
+  }
   const settings = getAutomailSettings();
   const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
   const apiToken = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();

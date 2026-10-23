@@ -17,6 +17,7 @@ console.log("==========================================================\n");
 
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 
 function it(desc, fn) {
   try {
@@ -40,6 +41,12 @@ async function itAsync(desc, fn) {
     console.error(`       Error: ${err.message}`);
     failed++;
   }
+}
+
+function skip(desc, reason) {
+  console.log(`[SKIP] ${desc}`);
+  console.log(`       Reason: ${reason}`);
+  skipped++;
 }
 
 // -------------------------------------------------------------
@@ -133,10 +140,17 @@ it("Home Page fetches 'stats' via findAll<StatType>('stats')", () => {
   );
 });
 
-it("Home Page passes statsdata to <Hero />", () => {
+it("Home Page passes statsdata to <Hero /> (partial prop match — tolerates additional props)", () => {
+  // Use partial matches so the assertion remains stable when new props are added to <Hero />.
+  // The brittle exact-order full-tag regex was removed in Phase 2C-1O (F-04).
   assert.match(
     homePageContent,
-    /<Hero\s+initialSlides=\{slidedata\}\s+initialStats=\{statsdata\}\s*\/>/,
+    /initialSlides=\{slidedata\}/,
+    "page.tsx must pass slidedata as initialSlides to Hero"
+  );
+  assert.match(
+    homePageContent,
+    /initialStats=\{statsdata\}/,
     "page.tsx must pass dynamic statsdata as initialStats to Hero"
   );
 });
@@ -146,48 +160,55 @@ it("Home Page passes statsdata to <Hero />", () => {
 // -------------------------------------------------------------
 console.log("\n--- 4. Live Local SSR Verification ---");
 
-await itAsync("Local SSR renders dynamic stats matching /api/stats exactly", async () => {
-  const statsRes = await fetch("http://localhost:3000/api/stats");
-  const statsJson = await statsRes.json();
-  assert.ok(statsJson.success, "Failed to fetch /api/stats");
-  const dbStats = statsJson.data;
+if (process.env.RUN_LIVE_SSR === "1" || process.env.RUN_LIVE_SSR === "true") {
+  await itAsync("Local SSR renders dynamic stats matching /api/stats exactly", async () => {
+    const statsRes = await fetch("http://localhost:3000/api/stats");
+    const statsJson = await statsRes.json();
+    assert.ok(statsJson.success, "Failed to fetch /api/stats");
+    const dbStats = statsJson.data;
 
-  const res = await fetch("http://localhost:3000");
-  assert.strictEqual(res.status, 200, "Home page returned non-200");
-  const html = await res.text();
-  
-  const statsMatch = html.match(/divide-x divide-white\/10[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
-  assert.ok(statsMatch, "Stats bar rendered in HTML");
-  const bar = statsMatch[0];
+    const res = await fetch("http://localhost:3000");
+    assert.strictEqual(res.status, 200, "Home page returned non-200");
+    const html = await res.text();
+    
+    const statsMatch = html.match(/divide-x divide-white\/10[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/);
+    assert.ok(statsMatch, "Stats bar rendered in HTML");
+    const bar = statsMatch[0];
 
-  // Dynamic values for top 4 stats must appear in hero stats bar
-  for (const s of dbStats.slice(0, 4)) {
-    assert.ok(
-      bar.includes(s.value),
-      `Dynamic value "${s.value}" for "${s.label}" was not found in hero stats bar`
-    );
-  }
+    // Dynamic values for top 4 stats must appear in hero stats bar
+    for (const s of dbStats.slice(0, 4)) {
+      assert.ok(
+        bar.includes(s.value),
+        `Dynamic value "${s.value}" for "${s.label}" was not found in hero stats bar`
+      );
+    }
 
-  // HomeAbout badge must use the dynamic project count
-  const projectStat = dbStats.find((s) => /project/i.test(s.label));
-  if (projectStat) {
-    assert.ok(
-      html.includes(`${projectStat.value}<!-- --> Projects Handed Over`) || html.includes(`${projectStat.value} Projects Handed Over`),
-      `HomeAbout did not render dynamic project count "${projectStat.value} Projects Handed Over"`
-    );
-    assert.strictEqual(
-      html.includes("150+ Projects Handed Over") && projectStat.value !== "150+",
-      false,
-      "Hardcoded '150+ Projects Handed Over' should not appear when DB has a different value"
-    );
-  }
-});
+    // HomeAbout badge must use the dynamic project count
+    const projectStat = dbStats.find((s) => /project/i.test(s.label));
+    if (projectStat) {
+      assert.ok(
+        html.includes(`${projectStat.value}<!-- --> Projects Handed Over`) || html.includes(`${projectStat.value} Projects Handed Over`),
+        `HomeAbout did not render dynamic project count "${projectStat.value} Projects Handed Over"`
+      );
+      assert.strictEqual(
+        html.includes("150+ Projects Handed Over") && projectStat.value !== "150+",
+        false,
+        "Hardcoded '150+ Projects Handed Over' should not appear when DB has a different value"
+      );
+    }
+  });
+} else {
+  skip(
+    "Local SSR renders dynamic stats matching /api/stats exactly",
+    "Requires active Next.js server on localhost:3000 (opt in via RUN_LIVE_SSR=1)"
+  );
+}
 
 // -------------------------------------------------------------
 // Summary
 // -------------------------------------------------------------
 console.log("\n==========================================================");
-console.log(`TOTAL TESTS: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
+console.log(`TOTAL TESTS: ${passed + failed + skipped} | PASSED: ${passed} | FAILED: ${failed} | SKIPPED: ${skipped}`);
 console.log("==========================================================");
 
 if (failed > 0) {

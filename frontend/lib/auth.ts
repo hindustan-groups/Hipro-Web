@@ -1,17 +1,6 @@
 import { cookies } from "next/headers";
 
-let rawUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
-if (rawUrl.includes("hipro-web-1.onrender.com")) {
-  rawUrl = "https://hipro-backend-749v.onrender.com";
-}
-if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
-  rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
-} else if (rawUrl.startsWith("http:") && !rawUrl.startsWith("http://")) {
-  rawUrl = rawUrl.replace(/^http:?\/*/, "http://");
-} else if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
-  rawUrl = `https://${rawUrl}`;
-}
-const BACKEND_URL = rawUrl.replace(/\/+$/, "");
+import { BACKEND_URL } from "./backendUrl";
 
 interface CachedSession {
   user: any;
