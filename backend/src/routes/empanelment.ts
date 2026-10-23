@@ -233,6 +233,17 @@ router.post("/apply", async (req: Request, res: Response) => {
 /**
  * 3. Track Application by Tracking ID or Phone
  * GET /api/empanelment/track/:trackingId
+ *
+ * PUBLIC endpoint — no authentication required.
+ * Security (SEC-CRIT-02): The select block intentionally omits all sensitive
+ * financial identifiers and internal administrative fields:
+ *   - pan, gstin: government financial identifiers — must not be publicly enumerable.
+ *   - adminRemarks: internal procurement board notes — must not be public.
+ *   - passportPhotoUrl: biometric document — must not be publicly accessible via enumeration.
+ *   - ceoSigned, ceoSignedDate: internal approval metadata.
+ *
+ * NOTE: Full authentication, OTP verification, and rate-limiting are tracked
+ * as Phase 3 security improvements (out of scope for this hardening branch).
  */
 router.get("/track/:trackingId", async (req: Request, res: Response) => {
   try {
@@ -249,6 +260,7 @@ router.get("/track/:trackingId", async (req: Request, res: Response) => {
         ],
       },
       select: {
+        // Public tracking fields — safe to expose without authentication.
         id: true,
         trackingId: true,
         status: true,
@@ -259,17 +271,18 @@ router.get("/track/:trackingId", async (req: Request, res: Response) => {
         contactName: true,
         city: true,
         state: true,
-        gstin: true,
-        pan: true,
         isGstVerified: true,
         eligibilityScore: true,
-        adminRemarks: true,
-        ceoSigned: true,
-        ceoSignedDate: true,
-        digitalCertificateUrl: true,
-        passportPhotoUrl: true,
+        digitalCertificateUrl: true, // Vendor's own approved certificate — intentionally accessible.
         submittedAt: true,
         approvedAt: true,
+        // EXCLUDED (SEC-CRIT-02 — PII / sensitive identifiers):
+        // pan: false,               // Government financial identifier — not publicly enumerable.
+        // gstin: false,             // Government financial identifier — not publicly enumerable.
+        // adminRemarks: false,      // Internal procurement board notes — must remain private.
+        // passportPhotoUrl: false,  // Biometric document URL — must not be publicly accessible.
+        // ceoSigned: false,         // Internal approval metadata.
+        // ceoSignedDate: false,     // Internal approval metadata.
       },
     });
 

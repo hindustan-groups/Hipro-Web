@@ -1,4 +1,9 @@
 import { PrismaClient } from "@prisma/client";
+import { assertLocalDatabase } from "../src/lib/databaseSafety";
+
+// Assert that DATABASE_URL is local before opening any connection.
+// Throws a fatal error if a remote host is detected in non-production mode.
+assertLocalDatabase();
 
 const prisma = new PrismaClient();
 

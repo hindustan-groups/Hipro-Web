@@ -69,17 +69,21 @@ export default function EmpanelmentRegistrationWizard() {
     pincode: "",
 
     // Step 3: Banking & Financials
+    // NOTE: Keys deliberately match the backend Prisma VendorApplication model fields.
+    // Do not rename these keys without updating backend/src/routes/empanelment.ts
+    // and backend/prisma/schema.prisma in the same PR.
     bankName: "",
-    bankAccountNumber: "",
-    bankIfsc: "",
+    accountNumber: "",   // was: bankAccountNumber (caused silent DB data loss — DATA-CRIT-01)
+    ifscCode: "",        // was: bankIfsc (caused silent DB data loss — DATA-CRIT-01)
     yearsInBusiness: 5,
     annualTurnover: "₹50 Lakh – ₹1 Crore",
     workforceCount: 20,
 
-    // Step 4: Documents (Base64 compressed or links)
-    gstDocUrl: "",
-    panDocUrl: "",
-    chequeDocUrl: "",
+    // Step 4: KYC Documents (base64 canvas-compressed or data URL)
+    // NOTE: Keys match backend VendorApplication Prisma schema.
+    gstCertificateUrl: "",   // was: gstDocUrl (caused silent DB null — DATA-CRIT-01)
+    panCardUrl: "",          // was: panDocUrl (caused silent DB null — DATA-CRIT-01)
+    bankChequeUrl: "",       // was: chequeDocUrl (caused silent DB null — DATA-CRIT-01)
     msmeDocUrl: "",
     pastWorkDocUrl: "",
 
@@ -616,8 +620,8 @@ export default function EmpanelmentRegistrationWizard() {
                 <input
                   type="text"
                   required
-                  value={formData.bankAccountNumber}
-                  onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                  value={formData.accountNumber}
+                  onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                   placeholder="e.g. 38192004812"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 focus:outline-none"
                 />
@@ -631,8 +635,8 @@ export default function EmpanelmentRegistrationWizard() {
                   type="text"
                   required
                   maxLength={11}
-                  value={formData.bankIfsc}
-                  onChange={(e) => setFormData({ ...formData, bankIfsc: e.target.value.toUpperCase() })}
+                  value={formData.ifscCode}
+                  onChange={(e) => setFormData({ ...formData, ifscCode: e.target.value.toUpperCase() })}
                   placeholder="e.g. SBIN0001234"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 uppercase focus:outline-none"
                 />
@@ -697,9 +701,9 @@ export default function EmpanelmentRegistrationWizard() {
 
             <div className="space-y-3">
               {[
-                { label: "GST Certificate (जीएसटी प्रमाण पत्र)", key: "gstDocUrl", required: true },
-                { label: "PAN Card Document (पैन कार्ड)", key: "panDocUrl", required: true },
-                { label: "Cancelled Cheque / Passbook (कैंसिल्ड चेक)", key: "chequeDocUrl", required: true },
+                { label: "GST Certificate (जीएसटी प्रमाण पत्र)", key: "gstCertificateUrl", required: true },
+                { label: "PAN Card Document (पैन कार्ड)", key: "panCardUrl", required: true },
+                { label: "Cancelled Cheque / Passbook (कैंसिल्ड चेक)", key: "bankChequeUrl", required: true },
                 { label: "MSME / Udyam Certificate (एमएसएमई / उद्यम)", key: "msmeDocUrl", required: false },
                 { label: "Past Projects / Experience Proof (कार्य अनुभव)", key: "pastWorkDocUrl", required: false },
               ].map((doc) => {
@@ -773,7 +777,7 @@ export default function EmpanelmentRegistrationWizard() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Bank Account:</span>
-                <span className="font-mono font-bold text-slate-900">{formData.bankName} • {formData.bankAccountNumber}</span>
+                <span className="font-mono font-bold text-slate-900">{formData.bankName} • {formData.accountNumber}</span>
               </div>
             </div>
 
