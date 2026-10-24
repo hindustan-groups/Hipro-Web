@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { authGuard, adminGuard } from "../middleware/authGuard";
 import { contactLimiter } from "../middleware/rateLimiter";
 import { getSessionUser } from "../lib/auth";
 import { seedHbsServicesIfEmpty, seedHbsServicesAlways } from "../lib/hbsSeedData";
@@ -103,8 +103,15 @@ router.patch("/content", authGuard, async (req: Request, res: Response) => {
 // 2. HBS SERVICES
 // ==================================================
 
-// POST /api/hbs/seed — Manual Idempotent Seed Trigger
-router.post("/seed", async (req: Request, res: Response) => {
+// POST /api/hbs/seed — Protected Admin Seed Trigger
+router.post("/seed", adminGuard, async (req: Request, res: Response) => {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_PRODUCTION_SEED !== "true") {
+    return res.status(403).json({
+      success: false,
+      error: "HBS service seeding is disabled in production to protect existing live data.",
+    });
+  }
+
   try {
     const totalCount = await seedHbsServicesAlways(prisma);
     return res.json({

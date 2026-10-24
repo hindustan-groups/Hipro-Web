@@ -24,6 +24,7 @@ import {
 import CTASection from "@/components/CTASection";
 import GroupEcosystem from "@/components/GroupEcosystem";
 import { findAll } from "@/lib/db";
+import { getBackendUrl } from "@/lib/backendUrl";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 import type {
   TeamMember,
@@ -60,18 +61,7 @@ async function getAboutContent(previewRequested?: boolean): Promise<{
   isPreviewActive: boolean;
 }> {
   let isPreviewActive = false;
-  let rawUrl = process.env.BACKEND_API_URL || "https://hipro-backend-749v.onrender.com";
-  if (rawUrl.includes("hipro-web-1.onrender.com")) {
-    rawUrl = "https://hipro-backend-749v.onrender.com";
-  }
-  if (rawUrl.startsWith("https:") && !rawUrl.startsWith("https://")) {
-    rawUrl = rawUrl.replace(/^https:?\/*/, "https://");
-  } else if (rawUrl.startsWith("http:") && !rawUrl.startsWith("http://")) {
-    rawUrl = rawUrl.replace(/^http:?\/*/, "http://");
-  } else if (!rawUrl.startsWith("http://") && !rawUrl.startsWith("https://")) {
-    rawUrl = `https://${rawUrl}`;
-  }
-  const backendUrl = rawUrl.replace(/\/+$/, "");
+  const backendUrl = getBackendUrl();
 
   if (previewRequested) {
     try {

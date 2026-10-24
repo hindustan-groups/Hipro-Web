@@ -226,6 +226,36 @@ router.post(
         dbSettings.cloudinaryCloudName ||
         "fczoredh";
 
+      // ============================================================
+      // DEVELOPMENT SAFETY GUARD: Cloudinary Asset Isolation
+      // ============================================================
+      const isDev = process.env.NODE_ENV !== "production";
+      const allowDevUploads = process.env.ALLOW_DEV_CLOUDINARY_UPLOADS === "true";
+
+      // In development mode, strictly intercept and isolate media uploads:
+      // 1. Refuse to write to the production account ("fczoredh") under any circumstance in dev.
+      // 2. Unless an isolated dev cloud is explicitly configured and ALLOW_DEV_CLOUDINARY_UPLOADS=true,
+      //    return a deterministic mock media URL.
+      if (isDev && (!allowDevUploads || cloudName === "fczoredh")) {
+        console.log(
+          `[DEV MEDIA INTERCEPTED] Cloudinary live upload blocked in development.\n` +
+          `  ├── File: ${originalName} (${mimeType}, ${file.buffer.length} bytes)\n` +
+          `  ├── Cloud: ${cloudName} (Protected)\n` +
+          `  ├── Folder: ${folder}\n` +
+          `  └── Guard: Production media protection active. Using local mock asset.`
+        );
+
+        const mockHash = crypto.createHash("md5").update(file.buffer).digest("hex").substring(0, 10);
+        const mockUrl = `https://res.cloudinary.com/hipro-dev-isolated/image/upload/v1/dev_mock/${mockHash}_${originalName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+
+        return res.json({
+          success: true,
+          url: mockUrl,
+          isMock: true,
+          message: "Development safety guard: live Cloudinary upload blocked. Using isolated mock asset.",
+        });
+      }
+
       const apiKey = process.env.CLOUDINARY_API_KEY;
       const apiSecret = process.env.CLOUDINARY_API_SECRET;
       const uploadPreset =

@@ -1,5 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { randomBytes, scryptSync } from "crypto";
+import { assertLocalDatabase } from "../src/lib/databaseSafety";
+
+// Assert that DATABASE_URL is local before opening any connection.
+assertLocalDatabase();
 
 const prisma = new PrismaClient();
 

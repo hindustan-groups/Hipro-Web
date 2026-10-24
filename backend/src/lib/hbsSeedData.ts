@@ -1,6 +1,8 @@
 // Hind Build Real Services Seed Data
 // Auto-synced and comprehensive with verified media, rich details, process, and SEO
 
+import { assertLocalDatabase } from "./databaseSafety";
+
 export const HBS_SERVICES_SEED = [
   {
     "serviceNumber": "01",
@@ -442,6 +444,14 @@ export const HBS_SERVICES_SEED = [
 ];
 
 export async function seedHbsServicesIfEmpty(prisma: any): Promise<number> {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_PRODUCTION_SEED !== "true") {
+    console.warn("[HBS Auto-Seed] Suppressed in production to prevent unexpected writes without explicit ALLOW_PRODUCTION_SEED=true.");
+    return 0;
+  }
+
+  // Fail closed before any Prisma query or write if database is remote, missing, or malformed in non-production
+  assertLocalDatabase();
+
   const count = await prisma.hbsService.count();
   if (count === 0) {
     console.log("[HBS Auto-Seed] Initializing HBS services with rich content...");
@@ -460,6 +470,12 @@ export async function seedHbsServicesIfEmpty(prisma: any): Promise<number> {
 }
 
 export async function seedHbsServicesAlways(prisma: any): Promise<number> {
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_PRODUCTION_SEED !== "true") {
+    throw new Error("HBS service seeding is strictly disabled in production to protect existing live data.");
+  }
+  // Fail closed in non-production if database is remote, missing, or malformed
+  assertLocalDatabase();
+
   console.log("[HBS Seed] Upserting HBS services with rich content...");
   for (const s of HBS_SERVICES_SEED) {
     await prisma.hbsService.upsert({

@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { assertLocalDatabase } from "../lib/databaseSafety";
 import { hashPassword } from "../lib/auth";
 import readline from "readline";
+
+// Assert that DATABASE_URL points to a local loopback host before opening connections.
+assertLocalDatabase();
 
 const prisma = new PrismaClient();
 
