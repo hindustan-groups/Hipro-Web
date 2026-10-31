@@ -106,9 +106,10 @@ async function getRelatedProjects(currentProjectId: string, category: string): P
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const data = await getProjectData(decodeURIComponent(params.slug));
+  const { slug } = await params;
+  const data = await getProjectData(decodeURIComponent(slug));
   if (!data || !data.project) {
     return {
       title: "Project Case Study",
@@ -122,7 +123,7 @@ export async function generateMetadata({
 
   const p = data.project;
   const baseUrl = "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/projects/${p.slug || params.slug}`;
+  const canonicalUrl = `${baseUrl}/projects/${p.slug || slug}`;
 
   let rawTitle = p.metaTitle?.trim() || `${p.title} | ${p.category} Case Study`;
   if (rawTitle.includes(" | Hindustan Projects")) {
@@ -262,9 +263,10 @@ function resolveProjectServiceSlug(svc: string): string | null {
 export default async function ProjectDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const rawParam = decodeURIComponent(params.slug);
+  const { slug } = await params;
+  const rawParam = decodeURIComponent(slug);
   const data = await getProjectData(rawParam);
 
   if (!data || !data.project) {

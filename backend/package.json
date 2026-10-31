@@ -9,6 +9,7 @@
     "db:push": "prisma db push",
     "start": "node dist/index.js",
     "create-admin": "tsx src/scripts/create-admin.ts",
+    "test:excel-parser": "tsx src/scripts/test_exceljs_csv_parser.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
@@ -20,12 +21,17 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csv-parse": "^7.0.3",
-    "express": "^4.22.2",
+    "exceljs": "^4.4.0",
+    "express": "^4.22.3",
     "hostinger-mail-api-sdk": "^1.19.4",
-    "multer": "^2.4.0",
-    "nodemailer": "^10.0.16",
-    "web-push": "^3.6.7",
-    "xlsx": "^0.18.5"
+    "multer": "^2.5.0",
+    "nodemailer": "^10.2.1",
+    "web-push": "^3.6.7"
+  },
+  "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    }
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",

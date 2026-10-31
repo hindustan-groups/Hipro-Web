@@ -46,9 +46,10 @@ export const metadata: Metadata = {
 export default async function BlogsPage({
   searchParams,
 }: {
-  searchParams?: { category?: string };
+  searchParams?: Promise<{ category?: string }>;
 }) {
-  const selectedCategory = searchParams?.category;
+  const resolvedSearchParams = await searchParams;
+  const selectedCategory = resolvedSearchParams?.category;
 
   const [allBlogs, allSettings] = await Promise.all([
     findAll<BlogPost>("blogs"),

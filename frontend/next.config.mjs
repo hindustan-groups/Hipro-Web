@@ -1,4 +1,4 @@
-﻿   /** @type {import('next').NextConfig} */
+   /** @type {import('next').NextConfig} */
 
 /**
  * next.config.mjs — Backend URL Validation (Phase 2C-1O)
@@ -142,6 +142,20 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/blog',
+        destination: '/blogs',
+        permanent: true,
+      },
+      {
+        source: '/cost-calculator',
+        destination: '/cost-estimator',
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [

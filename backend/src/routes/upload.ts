@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import multer from "multer";
 import crypto from "crypto";
 import path from "path";
+import zlib from "zlib";
 import { adminGuard } from "../middleware/authGuard";
 import { findAll } from "../lib/db";
 import type { Settings, ApiResponse } from "../lib/types";
@@ -19,14 +20,11 @@ const upload = multer({
   },
 });
 
-// Allowed MIME types and extensions
+// Allowed MIME types and extensions (strictly restricted to JPEG, PNG, and WebP)
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
-  "image/gif",
-  "image/svg+xml",
-  "image/avif",
 ]);
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -34,10 +32,15 @@ const ALLOWED_EXTENSIONS = new Set([
   ".jpeg",
   ".png",
   ".webp",
-  ".gif",
-  ".svg",
-  ".avif",
 ]);
+
+// Mapping of allowed extension to valid MIME types
+const EXTENSION_MIME_MAP: Record<string, string[]> = {
+  ".jpg": ["image/jpeg"],
+  ".jpeg": ["image/jpeg"],
+  ".png": ["image/png"],
+  ".webp": ["image/webp"],
+};
 
 // Explicitly blocked dangerous extensions
 const DANGEROUS_EXTENSIONS = [
@@ -46,64 +49,206 @@ const DANGEROUS_EXTENSIONS = [
   ".vbs", ".ps1", ".apk", ".cgi"
 ];
 
-// Helper to inspect magic bytes / file signatures
-function validateMagicBytes(buffer: Buffer, mimeType: string, extension: string): boolean {
-  if (buffer.length < 4) return false;
+// Helper to detect actual image format from raw magic bytes
+function detectImageFormatFromMagicBytes(buffer: Buffer): "jpeg" | "png" | "webp" | null {
+  if (buffer.length < 3) return null;
 
   // JPEG: FF D8 FF
-  if (extension === ".jpg" || extension === ".jpeg" || mimeType === "image/jpeg") {
-    return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return "jpeg";
   }
 
   // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (extension === ".png" || mimeType === "image/png") {
-    return (
-      buffer.length >= 8 &&
-      buffer[0] === 0x89 &&
-      buffer[1] === 0x50 &&
-      buffer[2] === 0x4e &&
-      buffer[3] === 0x47 &&
-      buffer[4] === 0x0d &&
-      buffer[5] === 0x0a &&
-      buffer[6] === 0x1a &&
-      buffer[7] === 0x0a
-    );
-  }
-
-  // GIF: 47 49 46 38 ("GIF8")
-  if (extension === ".gif" || mimeType === "image/gif") {
-    return (
-      buffer[0] === 0x47 &&
-      buffer[1] === 0x49 &&
-      buffer[2] === 0x46 &&
-      buffer[3] === 0x38
-    );
+  if (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0d &&
+    buffer[5] === 0x0a &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0x0a
+  ) {
+    return "png";
   }
 
   // WebP: "RIFF" (0..3) and "WEBP" (8..11)
-  if (extension === ".webp" || mimeType === "image/webp") {
-    if (buffer.length < 12) return false;
-    const riff = buffer.toString("ascii", 0, 4);
-    const webp = buffer.toString("ascii", 8, 12);
-    return riff === "RIFF" && webp === "WEBP";
+  if (
+    buffer.length >= 12 &&
+    buffer.toString("ascii", 0, 4) === "RIFF" &&
+    buffer.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return "webp";
   }
 
-  // AVIF: check ftyp box at 4..12 contains avif or avis
-  if (extension === ".avif" || mimeType === "image/avif") {
-    if (buffer.length < 12) return false;
-    const brand = buffer.toString("ascii", 4, 12);
-    return brand.includes("avif") || brand.includes("avis");
+  return null;
+}
+
+// Structural validator for JPEG files: validates markers, segment lengths, SOF dimensions, and EOI
+function validateJpegStructure(buffer: Buffer): boolean {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) return false;
+
+  let offset = 2;
+  let hasSof = false;
+  let hasEoi = false;
+
+  while (offset < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset++;
+      continue;
+    }
+    while (offset < buffer.length && buffer[offset] === 0xff) {
+      offset++;
+    }
+    if (offset >= buffer.length) break;
+
+    const marker = buffer[offset++];
+
+    if (marker === 0xd9) {
+      hasEoi = true;
+      break;
+    }
+
+    if (marker === 0xd8 || (marker >= 0xd0 && marker <= 0xd7) || marker === 0x01 || marker === 0x00) {
+      continue;
+    }
+
+    if (offset + 2 > buffer.length) return false;
+    const markerLen = buffer.readUInt16BE(offset);
+    if (markerLen < 2 || offset + markerLen > buffer.length) return false;
+
+    const isSof =
+      (marker >= 0xc0 && marker <= 0xc3) ||
+      (marker >= 0xc5 && marker <= 0xc7) ||
+      (marker >= 0xc9 && marker <= 0xcb) ||
+      (marker >= 0xcd && marker <= 0xcf);
+
+    if (isSof && markerLen >= 7) {
+      const height = buffer.readUInt16BE(offset + 3);
+      const width = buffer.readUInt16BE(offset + 5);
+      if (width > 0 && height > 0) {
+        hasSof = true;
+      }
+    }
+
+    offset += markerLen;
   }
 
-  // SVG: text containing <svg and not containing executable script tags
-  if (extension === ".svg" || mimeType === "image/svg+xml") {
-    const text = buffer.toString("utf-8", 0, Math.min(buffer.length, 4096)).toLowerCase();
-    const hasSvgTag = text.includes("<svg");
-    const hasScriptTag = text.includes("<script") || text.includes("javascript:") || text.includes("onload=") || text.includes("onerror=");
-    return hasSvgTag && !hasScriptTag;
+  return hasSof && hasEoi;
+}
+
+// Structural validator for PNG files: validates chunk stream, IHDR dimensions, CRC32, IDAT, and IEND
+function validatePngStructure(buffer: Buffer): boolean {
+  if (buffer.length < 8) return false;
+  const pngSig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  for (let i = 0; i < 8; i++) {
+    if (buffer[i] !== pngSig[i]) return false;
+  }
+
+  let offset = 8;
+  let hasIhdr = false;
+  let hasIdat = false;
+  let hasIend = false;
+
+  while (offset + 12 <= buffer.length) {
+    const chunkDataLen = buffer.readUInt32BE(offset);
+    const chunkType = buffer.toString("ascii", offset + 4, offset + 8);
+    const totalChunkLen = 12 + chunkDataLen;
+
+    if (offset + totalChunkLen > buffer.length) return false;
+
+    const expectedCrc = buffer.readUInt32BE(offset + 8 + chunkDataLen);
+    const actualCrc = zlib.crc32(buffer.subarray(offset + 4, offset + 8 + chunkDataLen));
+    if (expectedCrc !== actualCrc) return false;
+
+    if (!hasIhdr) {
+      if (chunkType !== "IHDR" || chunkDataLen !== 13) return false;
+      const width = buffer.readUInt32BE(offset + 8);
+      const height = buffer.readUInt32BE(offset + 12);
+      if (width === 0 || height === 0) return false;
+      hasIhdr = true;
+    } else if (chunkType === "IDAT") {
+      hasIdat = true;
+    } else if (chunkType === "IEND") {
+      if (chunkDataLen !== 0) return false;
+      hasIend = true;
+      break;
+    }
+
+    offset += totalChunkLen;
+  }
+
+  return hasIhdr && hasIdat && hasIend;
+}
+
+// Structural validator for WebP files: validates RIFF envelope, format chunk, dimensions, and chunk bounds
+function validateWebpStructure(buffer: Buffer): boolean {
+  if (buffer.length < 26) return false;
+  if (buffer.toString("ascii", 0, 4) !== "RIFF" || buffer.toString("ascii", 8, 12) !== "WEBP") {
+    return false;
+  }
+
+  const riffSize = buffer.readUInt32LE(4);
+  if (buffer.length < riffSize + 8 && buffer.length < riffSize + 7) return false;
+
+  const fourcc = buffer.toString("ascii", 12, 16);
+  const chunkSize = buffer.readUInt32LE(16);
+  if (20 + chunkSize > buffer.length + 1) return false;
+
+  if (fourcc === "VP8 ") {
+    if (chunkSize < 10) return false;
+    const frameTag = buffer[20] | (buffer[21] << 8) | (buffer[22] << 16);
+    const keyFrame = (frameTag & 1) === 0;
+    if (!keyFrame) return false;
+    if (buffer[23] !== 0x9d || buffer[24] !== 0x01 || buffer[25] !== 0x2a) return false;
+    const width = buffer.readUInt16LE(26) & 0x3fff;
+    const height = buffer.readUInt16LE(28) & 0x3fff;
+    return width > 0 && height > 0;
+  } else if (fourcc === "VP8L") {
+    if (chunkSize < 5) return false;
+    if (buffer[20] !== 0x2f) return false;
+    const b1 = buffer[21], b2 = buffer[22], b3 = buffer[23], b4 = buffer[24];
+    const width = (b1 | ((b2 & 0x3f) << 8)) + 1;
+    const height = (((b2 >> 6) | (b3 << 2) | ((b4 & 0x0f) << 10))) + 1;
+    return width > 0 && height > 0;
+  } else if (fourcc === "VP8X") {
+    if (chunkSize < 10) return false;
+    const canvasWidth = 1 + (buffer[24] | (buffer[25] << 8) | (buffer[26] << 16));
+    const canvasHeight = 1 + (buffer[27] | (buffer[28] << 8) | (buffer[29] << 16));
+    return canvasWidth > 0 && canvasHeight > 0;
   }
 
   return false;
+}
+
+// Master image signature and structural validator
+function validateImageStructure(buffer: Buffer, mimeType: string, extension: string): boolean {
+  if (buffer.length < 4) return false;
+
+  const detected = detectImageFormatFromMagicBytes(buffer);
+  if (!detected) return false;
+
+  const isJpeg = (extension === ".jpg" || extension === ".jpeg") && mimeType === "image/jpeg";
+  const isPng = extension === ".png" && mimeType === "image/png";
+  const isWebp = extension === ".webp" && mimeType === "image/webp";
+
+  if (detected === "jpeg" && isJpeg) {
+    return validateJpegStructure(buffer);
+  }
+  if (detected === "png" && isPng) {
+    return validatePngStructure(buffer);
+  }
+  if (detected === "webp" && isWebp) {
+    return validateWebpStructure(buffer);
+  }
+
+  return false;
+}
+
+// Helper to inspect magic bytes / file signatures against expected MIME and extension
+function validateMagicBytes(buffer: Buffer, mimeType: string, extension: string): boolean {
+  return validateImageStructure(buffer, mimeType, extension);
 }
 
 // Multer error handling wrapper middleware
@@ -181,7 +326,7 @@ router.post(
       if (!ALLOWED_EXTENSIONS.has(ext)) {
         return res.status(400).json({
           success: false,
-          error: `Invalid file extension (${ext}). Allowed extensions: JPG, PNG, WebP, GIF, SVG, AVIF.`,
+          error: `Invalid file extension (${ext}). Allowed extensions: JPG, JPEG, PNG, WebP.`,
         } as ApiResponse);
       }
 
@@ -194,12 +339,21 @@ router.post(
         } as ApiResponse);
       }
 
-      // 5. Inspect Magic Bytes / Signature
-      const isValidSignature = validateMagicBytes(file.buffer, mimeType, ext);
+      // 5. Enforce consistent Extension <-> MIME type pairing
+      const validMimes = EXTENSION_MIME_MAP[ext];
+      if (!validMimes || !validMimes.includes(mimeType)) {
+        return res.status(400).json({
+          success: false,
+          error: `MIME type (${mimeType}) does not match the file extension (${ext}).`,
+        } as ApiResponse);
+      }
+
+      // 6. Inspect Magic Bytes / Signature
+      const isValidSignature = validateImageStructure(file.buffer, mimeType, ext);
       if (!isValidSignature) {
         return res.status(400).json({
           success: false,
-          error: "File content signature does not match a valid image format.",
+          error: "File content signature or structure does not match a valid image format.",
         } as ApiResponse);
       }
 
@@ -210,7 +364,7 @@ router.post(
         folder = "hipro_cms";
       }
 
-      // 7. Cloudinary server-side credentials
+      // 8. Cloudinary server-side credentials
       let dbSettings: Partial<Settings> = {};
       try {
         const settingsList = await findAll<Settings>("settings");
@@ -246,11 +400,12 @@ router.post(
         );
 
         const mockHash = crypto.createHash("md5").update(file.buffer).digest("hex").substring(0, 10);
-        const mockUrl = `https://res.cloudinary.com/hipro-dev-isolated/image/upload/v1/dev_mock/${mockHash}_${originalName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const mockUrl = `https://res.cloudinary.com/hipro-dev-isolated/image/upload/v1/${folder}/${mockHash}_${originalName.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
         return res.json({
           success: true,
           url: mockUrl,
+          folder,
           isMock: true,
           message: "Development safety guard: live Cloudinary upload blocked. Using isolated mock asset.",
         });
@@ -306,6 +461,7 @@ router.post(
         return res.json({
           success: true,
           url: cloudData.secure_url,
+          folder,
         });
       } else {
         const errorMsg = cloudData?.error?.message || "Cloudinary upload failed";

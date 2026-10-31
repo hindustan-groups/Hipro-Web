@@ -14,7 +14,8 @@ export async function createSession(userId: string) {
 }
 
 export async function getSessionUser() {
-  const sessionId = cookies().get("admin_session")?.value;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get("admin_session")?.value;
   if (!sessionId) return null;
 
   // 1. Check in-memory session cache for instant 0ms server component resolution
@@ -54,7 +55,8 @@ export async function getSessionUser() {
 }
 
 export async function logout() {
-  const sessionId = cookies().get("admin_session")?.value;
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get("admin_session")?.value;
   if (sessionId) {
     sessionCache.delete(sessionId);
     try {
@@ -68,5 +70,5 @@ export async function logout() {
       console.error("logout error:", error);
     }
   }
-  cookies().delete("admin_session");
+  cookieStore.delete("admin_session");
 }

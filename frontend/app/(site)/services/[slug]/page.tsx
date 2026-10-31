@@ -170,9 +170,10 @@ const defaultProjects: Project[] = [
   },
 ];
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   const allServices = await findAll<Service>("services");
-  const paramSlug = decodeURIComponent(params.slug).toLowerCase().trim();
+  const paramSlug = decodeURIComponent(slug).toLowerCase().trim();
   const servicesList = allServices && allServices.length > 0 ? allServices : defaultServices;
   
   const service = servicesList.find(s => {
@@ -214,7 +215,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ServiceDetailPage({ params }: { params: { slug: string } }) {
+export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const [allServices, settingsData, statsData, allProjects] = await Promise.all([
     findAll<Service>("services"),
     findAll<Settings>("settings"),
@@ -229,7 +231,7 @@ export default async function ServiceDetailPage({ params }: { params: { slug: st
   const ctaDetailPrimary = resolveCTA(settings, "service_detail_primary");
   const ctaDetailSecondary = resolveCTA(settings, "service_detail_secondary");
   const phone = settings.companyPhone || "+91 75970 00601";
-  const paramSlug = decodeURIComponent(params.slug).toLowerCase().trim();
+  const paramSlug = decodeURIComponent(slug).toLowerCase().trim();
   const servicesList = allServices && allServices.length > 0 ? allServices : defaultServices;
   
   const service = servicesList.find(s => {

@@ -927,12 +927,12 @@ router.post("/contacts/import", upload.single("file"), async (req: Request, res:
     const brand = req.body.brand || "all";
     const filename = req.file.originalname || "contacts.csv";
 
-    const { contacts, errors, totalParsed } = parseContactsFile(req.file.buffer, filename);
+    const { contacts, errors, totalParsed } = await parseContactsFile(req.file.buffer, filename);
 
     if (contacts.length === 0) {
       return res.status(400).json({
         success: false,
-        error: "No valid contacts found in the uploaded file.",
+        error: errors[0] || "No valid contacts found in the uploaded file.",
         errors,
         totalParsed,
       });
@@ -972,7 +972,7 @@ router.post("/contacts/import", upload.single("file"), async (req: Request, res:
       errors: errors.slice(0, 10),
     });
   } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: "An unexpected error occurred during contact import." });
   }
 });
 

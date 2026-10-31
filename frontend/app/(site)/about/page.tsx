@@ -65,7 +65,8 @@ async function getAboutContent(previewRequested?: boolean): Promise<{
 
   if (previewRequested) {
     try {
-      const adminSession = cookies().get("admin_session")?.value;
+      const cookieStore = await cookies();
+      const adminSession = cookieStore.get("admin_session")?.value;
       if (adminSession) {
         const res = await fetch(`${backendUrl}/api/about?preview=true`, {
           headers: { Cookie: `admin_session=${adminSession}` },
@@ -152,9 +153,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutPage({
   searchParams,
 }: {
-  searchParams?: { preview?: string };
+  searchParams?: Promise<{ preview?: string }>;
 }) {
-  const previewRequested = searchParams?.preview === "true";
+  const resolvedSearchParams = await searchParams;
+  const previewRequested = resolvedSearchParams?.preview === "true";
 
   const [{ content, isPreviewActive }, allTeam, settingsData] =
     await Promise.all([
