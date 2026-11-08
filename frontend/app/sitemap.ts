@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { findAll } from '@/lib/db';
 import type { BlogPost, Project, Service } from '@/lib/types';
 import { cleanServiceTitle, getServiceSlug, COMPANY_INFO } from '@/lib/companyData';
+import { buildProjectCanonicalUrl } from '@/lib/projectUrl';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.hindustanprojects.in';
@@ -74,8 +75,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         return true;
       })
       .map((project) => {
-        const cleanSlug = project.slug.trim().replace(/^\/+/, "");
-        const projectUrl = `${baseUrl}/projects/${cleanSlug}`;
+        const projectUrl = buildProjectCanonicalUrl(project.slug);
+        if (!projectUrl) return null;
 
         // Deduplication
         if (seenProjectUrls.has(projectUrl)) return null;

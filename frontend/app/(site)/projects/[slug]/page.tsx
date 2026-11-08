@@ -34,27 +34,12 @@ import {
   generateProjectBreadcrumbs,
   generateProjectJsonLd,
   generateProjectFaqSchema,
+  normalizeProjectSlug,
+  buildProjectCanonicalUrl,
 } from "@/lib/projectSchema";
+import { buildProjectHref } from "@/lib/projectUrl";
 
 export const revalidate = 60;
-
-/**
- * Normalizes a raw project slug for clean URL and canonical generation.
- * - Strips leading/trailing slashes repeatedly
- * - Strips duplicate "projects/" or "/projects/" path prefixes
- * - Preserves existing valid canonical slugs without double slashes
- */
-function normalizeProjectSlug(raw: string | null | undefined): string {
-  if (!raw || typeof raw !== "string") return "";
-  let s = raw.trim();
-  // Strip leading and trailing slashes
-  s = s.replace(/^\/+|\/+$/g, "");
-  // Repeatedly strip any leading "projects/" or "projects" prefix
-  while (/^projects(\/|$)/i.test(s)) {
-    s = s.replace(/^projects\/?/i, "").replace(/^\/+|\/+$/g, "");
-  }
-  return s;
-}
 
 interface ProjectLookupResult {
   project: Project;
@@ -140,9 +125,8 @@ export async function generateMetadata({
   }
 
   const p = data.project;
-  const baseUrl = "https://www.hindustanprojects.in";
   const cleanSlug = normalizeProjectSlug(p.slug || slug);
-  const canonicalUrl = `${baseUrl}/projects/${cleanSlug}`;
+  const canonicalUrl = buildProjectCanonicalUrl(cleanSlug) || "https://www.hindustanprojects.in/projects";
 
   let rawTitle = p.metaTitle?.trim() || `${p.title} | ${p.category} Case Study`;
   if (rawTitle.includes(" | Hindustan Projects")) {
@@ -441,10 +425,10 @@ export default async function ProjectDetailPage({
       )
     : [];
 
-  const baseUrl = "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/projects/${project.slug || rawParam}`;
+  const cleanSlug = normalizeProjectSlug(project.slug || rawParam);
+  const canonicalUrl = buildProjectCanonicalUrl(cleanSlug) || "https://www.hindustanprojects.in/projects";
 
-  const breadcrumbJsonLd = generateProjectBreadcrumbs(project.title, project.slug || rawParam);
+  const breadcrumbJsonLd = generateProjectBreadcrumbs(project.title, cleanSlug);
   const projectJsonLd = generateProjectJsonLd(project, canonicalUrl);
   const faqJsonLd = generateProjectFaqSchema(validFaqs);
 
@@ -948,13 +932,13 @@ export default async function ProjectDetailPage({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProjects.map((rel) => {
-                const relSlug = rel.slug || rel.id;
+                const relHref = buildProjectHref(rel.slug, rel.id) || "/projects";
                 const relIsOngoing = rel.status === "active" || rel.status === "ongoing";
 
                 return (
                   <Link
                     key={rel.id}
-                    href={`/projects/${relSlug}`}
+                    href={relHref}
                     className="group flex flex-col bg-white border border-slate-200 hover:border-slate-300 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md"
                   >
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">

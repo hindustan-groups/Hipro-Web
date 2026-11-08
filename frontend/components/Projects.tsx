@@ -16,6 +16,7 @@ import {
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
+import { buildProjectHref } from "@/lib/projectUrl";
 
 // Curated authoritative landmark projects fallback (ensures home page never displays an empty state)
 export const CURATED_LANDMARKS: Project[] = [
@@ -345,9 +346,7 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
           >
             {mobileProjects.map((project, idx) => {
               const diff = (idx - activeCardIndex + mobileProjects.length) % mobileProjects.length;
-              const projectLink = project.slug
-                ? `/projects/${project.slug}`
-                : `/projects/${project.id}`;
+              const projectLink = buildProjectHref(project.slug, project.id) || "/projects";
               const isOngoing =
                 project.status?.toLowerCase() === "ongoing" ||
                 project.status?.toLowerCase() === "active";
@@ -556,9 +555,7 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
         {/* ========================================================================= */}
         <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {filteredProjects.map((project, index) => {
-            const projectLink = project.slug
-              ? `/projects/${project.slug}`
-              : `/projects/${project.id}`;
+            const projectLink = buildProjectHref(project.slug, project.id) || "/projects";
 
             const isOngoing =
               project.status?.toLowerCase() === "ongoing" ||

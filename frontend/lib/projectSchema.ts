@@ -1,4 +1,7 @@
 import type { Project, ProjectFaq } from "@/lib/types";
+import { normalizeProjectSlug, buildProjectCanonicalUrl, HIPRO_BASE_URL } from "@/lib/projectUrl";
+
+export { normalizeProjectSlug, buildProjectCanonicalUrl };
 
 export interface ProjectBreadcrumbJsonLd {
   "@context": string;
@@ -15,7 +18,11 @@ export interface ProjectBreadcrumbJsonLd {
  * Generates Schema.org BreadcrumbList structured data using canonical slug route
  */
 export function generateProjectBreadcrumbs(title: string, slug: string): ProjectBreadcrumbJsonLd {
-  const baseUrl = "https://www.hindustanprojects.in";
+  const cleanSlug = normalizeProjectSlug(slug);
+  const itemUrl = cleanSlug
+    ? `${HIPRO_BASE_URL}/projects/${cleanSlug}`
+    : `${HIPRO_BASE_URL}/projects`;
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -24,19 +31,19 @@ export function generateProjectBreadcrumbs(title: string, slug: string): Project
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: baseUrl,
+        item: HIPRO_BASE_URL,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Projects",
-        item: `${baseUrl}/projects`,
+        item: `${HIPRO_BASE_URL}/projects`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: title,
-        item: `${baseUrl}/projects/${slug}`,
+        item: itemUrl,
       },
     ],
   };

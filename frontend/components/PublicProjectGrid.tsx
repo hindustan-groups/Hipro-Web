@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
+import { buildProjectHref } from "@/lib/projectUrl";
 
 interface PublicProjectGridProps {
   projects?: Project[];
@@ -272,7 +273,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
               {featuredProjects.map((p) => {
-                const canonicalSlug = p.slug || p.id;
+                const projectHref = buildProjectHref(p.slug, p.id) || "/projects";
                 const isOngoing = p.status === "ongoing" || p.status === "active";
                 const isCompleted = p.status === "completed";
                 const services = getServicesArray(p.services);
@@ -280,7 +281,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                 return (
                   <Link
                     key={p.id}
-                    href={`/projects/${canonicalSlug}`}
+                    href={projectHref}
                     className="group bg-white border border-slate-200 hover:border-construction-navy/70 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col overflow-hidden hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
                   >
                     {/* Image Box */}
@@ -585,7 +586,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
             /* Multi-Column Responsive Project Grid */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {visibleProjects.map((p) => {
-                const canonicalSlug = p.slug || p.id;
+                const projectHref = buildProjectHref(p.slug, p.id) || "/projects";
                 const isOngoing = p.status === "ongoing" || p.status === "active";
                 const isCompleted = p.status === "completed";
                 const services = getServicesArray(p.services);
@@ -593,7 +594,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
                 return (
                   <Link
                     key={p.id}
-                    href={`/projects/${canonicalSlug}`}
+                    href={projectHref}
                     className="group bg-white border border-slate-200/90 hover:border-construction-navy/60 transition-all duration-300 shadow-xs hover:shadow-md flex flex-col overflow-hidden hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
                   >
                     {/* 16:10 Ratio Image Container */}
