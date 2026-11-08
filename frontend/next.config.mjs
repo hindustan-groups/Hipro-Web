@@ -155,6 +155,16 @@ const nextConfig = {
         destination: '/cost-estimator',
         permanent: true,
       },
+      {
+        source: '/projects/projects-adani-gas-chamber-shinghpur',
+        destination: '/projects/adani-gas-chamber-shinghpur',
+        permanent: true,
+      },
+      {
+        source: '/projects/expansion-of-weav-projects-expansion-of-weaving-department-airjet-ajay-syntexing-department-airjet-ajay-syntex-pvt-ltd',
+        destination: '/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd',
+        permanent: true,
+      },
     ];
   },
   async headers() {

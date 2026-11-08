@@ -38,6 +38,24 @@ import {
 
 export const revalidate = 60;
 
+/**
+ * Normalizes a raw project slug for clean URL and canonical generation.
+ * - Strips leading/trailing slashes repeatedly
+ * - Strips duplicate "projects/" or "/projects/" path prefixes
+ * - Preserves existing valid canonical slugs without double slashes
+ */
+function normalizeProjectSlug(raw: string | null | undefined): string {
+  if (!raw || typeof raw !== "string") return "";
+  let s = raw.trim();
+  // Strip leading and trailing slashes
+  s = s.replace(/^\/+|\/+$/g, "");
+  // Repeatedly strip any leading "projects/" or "projects" prefix
+  while (/^projects(\/|$)/i.test(s)) {
+    s = s.replace(/^projects\/?/i, "").replace(/^\/+|\/+$/g, "");
+  }
+  return s;
+}
+
 interface ProjectLookupResult {
   project: Project;
   isLegacyId: boolean;
@@ -123,7 +141,8 @@ export async function generateMetadata({
 
   const p = data.project;
   const baseUrl = "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/projects/${p.slug || slug}`;
+  const cleanSlug = normalizeProjectSlug(p.slug || slug);
+  const canonicalUrl = `${baseUrl}/projects/${cleanSlug}`;
 
   let rawTitle = p.metaTitle?.trim() || `${p.title} | ${p.category} Case Study`;
   if (rawTitle.includes(" | Hindustan Projects")) {
@@ -277,8 +296,9 @@ export default async function ProjectDetailPage({
 
   // Canonical Slug Redirect:
   // If the user accessed via a legacy CUID id or an outdated identifier, permanently redirect to canonical slug
-  if (isLegacyId || (project.slug && rawParam !== project.slug)) {
-    redirect(`/projects/${project.slug}`, RedirectType.replace);
+  const targetSlug = normalizeProjectSlug(project.slug || rawParam);
+  if (isLegacyId || (targetSlug && normalizeProjectSlug(rawParam) !== targetSlug)) {
+    redirect(`/projects/${targetSlug}`, RedirectType.replace);
   }
 
   // Related projects & settings

@@ -81,8 +81,8 @@ async function runTests() {
 
   const redirects = await nextConfig.redirects();
 
-  await it("next.config.mjs defines exactly 2 redirects", async () => {
-    assert.strictEqual(redirects.length, 2, "Expected exactly 2 redirects");
+  await it("next.config.mjs defines exactly 4 redirects", async () => {
+    assert.strictEqual(redirects.length, 4, "Expected exactly 4 redirects");
   });
 
   await it("Redirect 1: /blog -> /blogs (permanent: true => HTTP 308)", async () => {
@@ -96,6 +96,20 @@ async function runTests() {
     const r = redirects.find((rule) => rule.source === "/cost-calculator");
     assert(r, "Missing redirect for /cost-calculator");
     assert.strictEqual(r.destination, "/cost-estimator");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 3: /projects/projects-adani-gas-chamber-shinghpur -> /projects/adani-gas-chamber-shinghpur (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/projects-adani-gas-chamber-shinghpur");
+    assert(r, "Missing redirect for Adani project corrupted slug");
+    assert.strictEqual(r.destination, "/projects/adani-gas-chamber-shinghpur");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 4: /projects/expansion-of-weav-... -> /projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/expansion-of-weav-projects-expansion-of-weaving-department-airjet-ajay-syntexing-department-airjet-ajay-syntex-pvt-ltd");
+    assert(r, "Missing redirect for Ajay Syntex corrupted slug");
+    assert.strictEqual(r.destination, "/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd");
     assert.strictEqual(r.permanent, true);
   });
 
@@ -212,6 +226,51 @@ async function runTests() {
         method: "GET",
       });
       assert.strictEqual(res.statusCode, 200, `Expected status 200, got ${res.statusCode}`);
+    });
+
+    await it("HTTP 308: GET /projects/projects-adani-gas-chamber-shinghpur redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-adani-gas-chamber-shinghpur",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/adani-gas-chamber-shinghpur",
+        `Expected Location /projects/adani-gas-chamber-shinghpur, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-adani-gas-chamber-shinghpur?src=google preserves query string", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-adani-gas-chamber-shinghpur?src=google&utm_medium=cpc",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/adani-gas-chamber-shinghpur?src=google&utm_medium=cpc",
+        `Expected Location with preserved query params, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/expansion-of-weav-... redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/expansion-of-weav-projects-expansion-of-weaving-department-airjet-ajay-syntexing-department-airjet-ajay-syntex-pvt-ltd",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd",
+        `Expected canonical Location, got ${res.headers.location}`
+      );
     });
   } finally {
     if (process.platform === "win32") {

@@ -110,7 +110,7 @@ const defaultServices: Service[] = [
 const defaultProjects: Project[] = [
   {
     id: "proj-1",
-    slug: "projects-adani-gas-chamber-shinghpur",
+    slug: "adani-gas-chamber-shinghpur",
     title: "Adani Gas Chamber",
     description: "Heavy industrial RCC civil structure, safety blast perimeter engineering, and precision equipment foundations.",
     shortDescription: "Specialized industrial civil structure with reinforced concrete engineering and heavy foundation execution.",
@@ -125,7 +125,7 @@ const defaultProjects: Project[] = [
   },
   {
     id: "proj-2",
-    slug: "expansion-of-weav-projects-expansion-of-weaving-department-airjet-ajay-syntexing-department-airjet-ajay-syntex-pvt-ltd",
+    slug: "expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd",
     title: "Expansion of Weaving Department (Airjet) – Ajay Syntex Pvt. Ltd.",
     description: "Comprehensive industrial plant expansion, heavy structural PEB framing, and full turnkey civil execution.",
     shortDescription: "Turnkey industrial expansion covering large-span heavy PEB shed fabrication and civil infrastructure.",
