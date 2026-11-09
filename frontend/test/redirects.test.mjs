@@ -81,8 +81,8 @@ async function runTests() {
 
   const redirects = await nextConfig.redirects();
 
-  await it("next.config.mjs defines exactly 4 redirects", async () => {
-    assert.strictEqual(redirects.length, 4, "Expected exactly 4 redirects");
+  await it("next.config.mjs defines exactly 8 redirects (2 generic + 6 legacy project)", async () => {
+    assert.strictEqual(redirects.length, 8, "Expected exactly 8 redirects");
   });
 
   await it("Redirect 1: /blog -> /blogs (permanent: true => HTTP 308)", async () => {
@@ -110,6 +110,34 @@ async function runTests() {
     const r = redirects.find((rule) => rule.source === "/projects/expansion-of-weav-projects-expansion-of-weaving-department-airjet-ajay-syntexing-department-airjet-ajay-syntex-pvt-ltd");
     assert(r, "Missing redirect for Ajay Syntex corrupted slug");
     assert.strictEqual(r.destination, "/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 5: /projects/projects-emergency-... -> /projects/emergency-evacuation-planning-saam-textiles-kishangarh (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/projects-emergency-evacuation-planning-saam-textiles-kishangarh");
+    assert(r, "Missing redirect for Saam Textiles legacy slug");
+    assert.strictEqual(r.destination, "/projects/emergency-evacuation-planning-saam-textiles-kishangarh");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 6: /projects/projects-govt-school-... -> /projects/govt-school-jadana-project-management-consultancy (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/projects-govt-school-jadana-project-management-consultancy");
+    assert(r, "Missing redirect for Govt. School Jadana legacy slug");
+    assert.strictEqual(r.destination, "/projects/govt-school-jadana-project-management-consultancy");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 7: /projects/projects-suresh-ji-... -> /projects/suresh-ji-residence-bhilwara (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/projects-suresh-ji-residence-bhilwara");
+    assert(r, "Missing redirect for Suresh Ji Residence legacy slug");
+    assert.strictEqual(r.destination, "/projects/suresh-ji-residence-bhilwara");
+    assert.strictEqual(r.permanent, true);
+  });
+
+  await it("Redirect 8: /projects/projects-vinod-bhandari-... -> /projects/vinod-bhandari-farmhouse-exterior-elevation-design-harni (permanent: true)", async () => {
+    const r = redirects.find((rule) => rule.source === "/projects/projects-vinod-bhandari-farmhouse-exterior-elevation-design-harni");
+    assert(r, "Missing redirect for Vinod Bhandari Farmhouse legacy slug");
+    assert.strictEqual(r.destination, "/projects/vinod-bhandari-farmhouse-exterior-elevation-design-harni");
     assert.strictEqual(r.permanent, true);
   });
 
@@ -269,6 +297,81 @@ async function runTests() {
       assert.strictEqual(
         res.headers.location,
         "/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd",
+        `Expected canonical Location, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-emergency-... redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-emergency-evacuation-planning-saam-textiles-kishangarh",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/emergency-evacuation-planning-saam-textiles-kishangarh",
+        `Expected canonical Location, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-emergency-...?dept=safety preserves query string", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-emergency-evacuation-planning-saam-textiles-kishangarh?dept=safety",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/emergency-evacuation-planning-saam-textiles-kishangarh?dept=safety",
+        `Expected Location with preserved query params, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-govt-school-... redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-govt-school-jadana-project-management-consultancy",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/govt-school-jadana-project-management-consultancy",
+        `Expected canonical Location, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-suresh-ji-... redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-suresh-ji-residence-bhilwara",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/suresh-ji-residence-bhilwara",
+        `Expected canonical Location, got ${res.headers.location}`
+      );
+    });
+
+    await it("HTTP 308: GET /projects/projects-vinod-bhandari-... redirects to canonical path", async () => {
+      const res = await requestHttp({
+        host: "127.0.0.1",
+        port: TEST_PORT,
+        path: "/projects/projects-vinod-bhandari-farmhouse-exterior-elevation-design-harni",
+        method: "GET",
+      });
+      assert.strictEqual(res.statusCode, 308, `Expected status 308, got ${res.statusCode}`);
+      assert.strictEqual(
+        res.headers.location,
+        "/projects/vinod-bhandari-farmhouse-exterior-elevation-design-harni",
         `Expected canonical Location, got ${res.headers.location}`
       );
     });

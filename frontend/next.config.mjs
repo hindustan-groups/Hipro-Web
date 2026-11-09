@@ -165,6 +165,26 @@ const nextConfig = {
         destination: '/projects/expansion-of-weaving-department-airjet-ajay-syntex-pvt-ltd',
         permanent: true,
       },
+      {
+        source: '/projects/projects-emergency-evacuation-planning-saam-textiles-kishangarh',
+        destination: '/projects/emergency-evacuation-planning-saam-textiles-kishangarh',
+        permanent: true,
+      },
+      {
+        source: '/projects/projects-govt-school-jadana-project-management-consultancy',
+        destination: '/projects/govt-school-jadana-project-management-consultancy',
+        permanent: true,
+      },
+      {
+        source: '/projects/projects-suresh-ji-residence-bhilwara',
+        destination: '/projects/suresh-ji-residence-bhilwara',
+        permanent: true,
+      },
+      {
+        source: '/projects/projects-vinod-bhandari-farmhouse-exterior-elevation-design-harni',
+        destination: '/projects/vinod-bhandari-farmhouse-exterior-elevation-design-harni',
+        permanent: true,
+      },
     ];
   },
   async headers() {
