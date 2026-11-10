@@ -3,6 +3,8 @@ import { findAll } from '@/lib/db';
 import type { BlogPost, Project, Service } from '@/lib/types';
 import { cleanServiceTitle, getServiceSlug, COMPANY_INFO } from '@/lib/companyData';
 import { buildProjectCanonicalUrl } from '@/lib/projectUrl';
+import { CURATED_LANDMARKS } from '@/lib/curatedProjects';
+import { DEFAULT_HBS_SERVICES } from '@/lib/hbsData';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.hindustanprojects.in';
@@ -95,6 +97,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
+    // Fall back to authoritative curated landmarks when database has no published projects
+    const effectiveProjectRoutes = projectRoutes.length > 0
+      ? projectRoutes
+      : CURATED_LANDMARKS
+          .map((landmark) => {
+            const projectUrl = buildProjectCanonicalUrl(landmark.slug);
+            if (!projectUrl) return null;
+            return {
+              url: projectUrl,
+              lastModified: new Date(),
+              changeFrequency: 'monthly' as const,
+              priority: 0.7,
+            };
+          })
+          .filter((entry): entry is { url: string; lastModified: Date; changeFrequency: "monthly"; priority: number } => entry !== null);
+
     // Use active database services or fall back to verified company services
     const activeDbServices = services.filter(s => s.active !== false && s.title);
     const serviceList = activeDbServices.length > 0 
@@ -117,7 +135,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    return [...staticRoutes, ...blogRoutes, ...projectRoutes, ...serviceRoutes];
+    // Hind Building Solutions (HBS) Ecosystem Routes
+    const hbsStaticRoutes = [
+      '/hbs',
+      '/hbs/about',
+      '/hbs/services',
+      '/hbs/projects',
+      '/hbs/contact',
+      '/hbs/why-choose-us',
+    ].map((route) => ({
+      url: `${baseUrl}${route}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    }));
+
+    const hbsServiceRoutes = DEFAULT_HBS_SERVICES
+      .filter((s) => s.active !== false && s.slug)
+      .map((service) => ({
+        url: `${baseUrl}/hbs/services/${service.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      }));
+
+    return [
+      ...staticRoutes,
+      ...blogRoutes,
+      ...effectiveProjectRoutes,
+      ...serviceRoutes,
+      ...hbsStaticRoutes,
+      ...hbsServiceRoutes,
+    ];
   } catch (error) {
     console.error("Failed to generate sitemap for dynamic routes:", error);
     return staticRoutes;

@@ -19,31 +19,32 @@ import EstimatorEngine from "@/components/estimator/EstimatorEngine";
 import type { CostEstimatorCMSConfig } from "@/components/estimator/types";
 import { DEFAULT_ESTIMATOR_CMS_CONFIG } from "@/components/estimator/configDefaults";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { generateFaqSchema, type FaqItem } from "@/lib/schema";
 
-const FAQ_ITEMS = [
+const FAQ_ITEMS: FaqItem[] = [
   {
-    q: "What is the average house construction cost per sq. ft in Bhilwara and Rajasthan?",
-    a: "In 2026, standard turnkey residential house construction in Bhilwara and across Rajasthan ranges from ₹1,680 to ₹2,450 per sq. ft of built-up area. A standard Silver package costs ~₹1,680/sqft, our most popular Gold (Classic) package costs ₹1,850/sqft (using Tata/UltraTech/Jaquar), and architectural luxury packages (Platinum/Royale) range from ₹2,150 to ₹2,450/sqft depending on imported Italian marble, UPVC double-glazing, and designer elevation treatments.",
+    question: "What is the average house construction cost per sq. ft in Bhilwara and Rajasthan?",
+    answer: "In 2026, standard turnkey residential house construction in Bhilwara and across Rajasthan ranges from ₹1,680 to ₹2,450 per sq. ft of built-up area. A standard Silver package costs ~₹1,680/sqft, our most popular Gold (Classic) package costs ₹1,850/sqft (using Tata/UltraTech/Jaquar), and architectural luxury packages (Platinum/Royale) range from ₹2,150 to ₹2,450/sqft depending on imported Italian marble, UPVC double-glazing, and designer elevation treatments.",
   },
   {
-    q: "How much does it cost to build a house on a 100 Gaj (900 sqft) plot?",
-    a: "For a 100 Gaj (20×45 ft) plot, built-up area typically averages around 1,500 sqft for a G+1 duplex home (including ground coverage, first floor living, parking, and balcony). At our Gold Package rate of ₹1,850/sqft, the estimated complete turnkey construction cost is approximately ₹27.75 Lakhs to ₹29.5 Lakhs, including foundation, RCC structure, brick masonry, premium tiles, Jaquar bath fittings, modular switches, and exterior 3D elevation.",
+    question: "How much does it cost to build a house on a 100 Gaj (900 sqft) plot?",
+    answer: "For a 100 Gaj (20×45 ft) plot, built-up area typically averages around 1,500 sqft for a G+1 duplex home (including ground coverage, first floor living, parking, and balcony). At our Gold Package rate of ₹1,850/sqft, the estimated complete turnkey construction cost is approximately ₹27.75 Lakhs to ₹29.5 Lakhs, including foundation, RCC structure, brick masonry, premium tiles, Jaquar bath fittings, modular switches, and exterior 3D elevation.",
   },
   {
-    q: "Why should I use Hindustan Projects instead of hiring a local 'Thekedar' (contractor)?",
-    a: "Local contractors often provide vague initial verbal quotes that later balloon with 30-50% cost overruns, substandard duplicate materials (unbranded steel/cement), delayed timelines, and zero post-handover warranty. Hindustan Projects provides a legally binding Guaranteed Fixed-Price Agreement, 100% genuine brand factory invoicing (Tata Tiscon, UltraTech 53, Jaquar, Asian Paints), an escrow-style 9-stage payment release schedule, and an official 10-Year Structural Integrity Warranty.",
+    question: "Why should I use Hindustan Projects instead of hiring a local 'Thekedar' (contractor)?",
+    answer: "Local contractors often provide vague initial verbal quotes that later balloon with 30-50% cost overruns, substandard duplicate materials (unbranded steel/cement), delayed timelines, and zero post-handover warranty. Hindustan Projects provides a legally binding Guaranteed Fixed-Price Agreement, 100% genuine brand factory invoicing (Tata Tiscon, UltraTech 53, Jaquar, Asian Paints), an escrow-style 9-stage payment release schedule, and an official 10-Year Structural Integrity Warranty.",
   },
   {
-    q: "What is the difference between Plot Area and Built-up Area?",
-    a: "Plot Area is the total boundary footprint of your land (e.g. 1,500 sq. ft or ~167 Gaj). Built-up Area is the actual constructed floor space across all levels. For a Ground + 1 Floor house on a 1,500 sqft plot, the built-up area is roughly 2,520 sqft (Ground floor ~1,200 sqft + First floor ~1,200 sqft + Covered parking & balconies ~120 sqft). Construction cost is always calculated on the total Built-Up Area.",
+    question: "What is the difference between Plot Area and Built-up Area?",
+    answer: "Plot Area is the total boundary footprint of your land (e.g. 1,500 sq. ft or ~167 Gaj). Built-up Area is the actual constructed floor space across all levels. For a Ground + 1 Floor house on a 1,500 sqft plot, the built-up area is roughly 2,520 sqft (Ground floor ~1,200 sqft + First floor ~1,200 sqft + Covered parking & balconies ~120 sqft). Construction cost is always calculated on the total Built-Up Area.",
   },
   {
-    q: "Are architectural drawings, 3D elevation, and structural designs included?",
-    a: "Yes! Every turnkey construction package with Hindustan Projects includes complete Vastu-compliant 2D architectural floor plans, 3D photo-realistic exterior elevation renders, structural engineering CAD blueprints, and plumbing/electrical working drawings at zero additional charge.",
+    question: "Are architectural drawings, 3D elevation, and structural designs included?",
+    answer: "Yes! Every turnkey construction package with Hindustan Projects includes complete Vastu-compliant 2D architectural floor plans, 3D photo-realistic exterior elevation renders, structural engineering CAD blueprints, and plumbing/electrical working drawings at zero additional charge.",
   },
   {
-    q: "How do milestone-based payments work?",
-    a: "You never pay large upfront sums. Payments are divided into 9 safe, certified milestone stages (e.g., Booking 5%, Foundation 10%, Plinth 10%, Ground Slab 15%, First Slab 15%, Brickwork 15%, Finishing 15%, Paint & Elevation 10%, Final Handover 5%). Each stage is only billed after physical inspection and quality sign-off by our site engineers.",
+    question: "How do milestone-based payments work?",
+    answer: "You never pay large upfront sums. Payments are divided into 9 safe, certified milestone stages (e.g., Booking 5%, Foundation 10%, Plinth 10%, Ground Slab 15%, First Slab 15%, Brickwork 15%, Finishing 15%, Paint & Elevation 10%, Final Handover 5%). Each stage is only billed after physical inspection and quality sign-off by our site engineers.",
   },
 ];
 
@@ -119,16 +120,8 @@ export default function CostEstimatorPage() {
                 ],
               },
               {
-                "@type": "FAQPage",
+                ...generateFaqSchema(FAQ_ITEMS),
                 "@id": "https://www.hindustanprojects.in/cost-estimator#faq",
-                mainEntity: FAQ_ITEMS.map((faq) => ({
-                  "@type": "Question",
-                  name: faq.q,
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: faq.a,
-                  },
-                })),
               },
             ],
           }),
@@ -291,7 +284,7 @@ export default function CostEstimatorPage() {
               const isOpen = openFaq === idx;
               return (
                 <div
-                  key={faq.q}
+                  key={faq.question}
                   className="bg-white border border-slate-200 transition-all overflow-hidden"
                 >
                   <button
@@ -300,7 +293,7 @@ export default function CostEstimatorPage() {
                     className="w-full p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/60"
                   >
                     <span className="text-sm font-bold text-slate-900 font-display">
-                      {faq.q}
+                      {faq.question}
                     </span>
                     <ChevronDown
                       className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-200 ${
@@ -311,7 +304,7 @@ export default function CostEstimatorPage() {
 
                   {isOpen && (
                     <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/30">
-                      {faq.a}
+                      {faq.answer}
                     </div>
                   )}
                 </div>
