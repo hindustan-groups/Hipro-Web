@@ -55,18 +55,19 @@ export const metadata: Metadata = {
     description: "Engineering, turnkey construction, and infrastructure firm based in Bhilwara, Rajasthan. Delivering quality-first civil execution since 2019.",
     images: [
       {
-        url: "/logo.jpg",
-        width: 800,
-        height: 600,
-        alt: "Hindustan Projects (HiPRO) Logo",
+        url: "/og-banner.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Hindustan Projects (HiPRO) — Engineering · Construction · Infrastructure",
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Hindustan Projects (HiPRO) | Engineering, Construction & Infrastructure",
     description: "Engineering, turnkey construction, and infrastructure firm based in Bhilwara, Rajasthan.",
-    images: ["/logo.jpg"],
+    images: ["/og-banner.jpg"],
   },
   icons: {
     icon: "/logo.jpg",

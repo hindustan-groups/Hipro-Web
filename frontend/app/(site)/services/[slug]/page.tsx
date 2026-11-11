@@ -11,6 +11,7 @@ import { isOptimizableImage } from "@/lib/imageUtils";
 import { generateBreadcrumbSchema, generateServiceSchema, generateFaqSchema } from "@/lib/schema";
 import { getServiceDetailContent, resolveServiceDetail } from "@/lib/serviceContentData";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
+import { buildProjectHref } from "@/lib/projectUrl";
 
 export const revalidate = 60;
 
@@ -926,14 +927,14 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
               {/* Projects Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {relatedProjects.map((rel) => {
-                  const relSlug = rel.slug || rel.id;
+                  const projectHref = buildProjectHref(rel.slug, rel.id) || "/projects";
                   const relIsOngoing = rel.status === "active" || rel.status === "ongoing";
                   const relServices = parseProjectServices(rel.services);
 
                   return (
                     <Link
                       key={rel.id}
-                      href={`/projects/${relSlug}`}
+                      href={projectHref}
                       className="group flex flex-col bg-white border border-slate-200 hover:border-slate-400 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-xl relative"
                     >
                       {/* Project Image */}

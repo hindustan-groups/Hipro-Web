@@ -37,7 +37,9 @@ export default function UsersPage() {
     { key: "cta-management", label: "CTA Management" },
     { key: "cost-estimator", label: "Cost Estimator CMS" },
     { key: "navigation", label: "Navigation Menus" },
-    { key: "settings", label: "Site Settings" }
+    { key: "hbs", label: "HBS Portal CMS" },
+    { key: "empanelment", label: "Vendor Empanelment" },
+    { key: "automail", label: "AutoMail Studio" }
   ];
 
   const fetchUsers = async () => {

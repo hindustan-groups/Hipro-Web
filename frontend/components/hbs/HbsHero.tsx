@@ -56,6 +56,20 @@ export default function HbsHero({
         : `${prefix}${heroConfig.secondaryCtaUrl.replace(/^\/hbs/, "")}`)
     : `${prefix}/services`;
 
+  // Format headline lines, highlighting "Build Better." without duplicate punctuation artifacts
+  const renderHeadlineLine = (line: string) => {
+    if (line.includes("Build Better")) {
+      const prefixText = line.replace(/\s*\.?Build Better\.?/i, "").trim();
+      return (
+        <>
+          {prefixText ? `${prefixText} ` : ""}
+          <span className="text-[#0D50B8]">Build Better.</span>
+        </>
+      );
+    }
+    return line;
+  };
+
   return (
     <section
       aria-label="HiBUILD Hero"
@@ -101,18 +115,11 @@ export default function HbsHero({
                   headline.split("\n").map((line, idx) => (
                     <React.Fragment key={idx}>
                       {idx > 0 && <br />}
-                      {line.includes("Build Better") ? (
-                        <>
-                          {line.replace("Build Better", "")}
-                          <span className="text-[#0D50B8]">Build Better.</span>
-                        </>
-                      ) : (
-                        line
-                      )}
+                      {renderHeadlineLine(line)}
                     </React.Fragment>
                   ))
                 ) : (
-                  headline
+                  renderHeadlineLine(headline)
                 )
               ) : (
                 <>

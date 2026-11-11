@@ -33,12 +33,20 @@ function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
 
 const defaultEcosystemCompanies = [
   {
+    name: "Hind Building Solutions",
+    description: "Engineering-grade building repair, waterproofing & structural protection.",
+    website: "/hbs",
+    status: "Specialized Division",
+    active: true,
+    order: 1,
+  },
+  {
     name: "Empanelment",
     description: "Vendor, contractor & institutional registration portal.",
     website: "https://empanelment.hindustanprojects.in/",
     status: "Live Portal",
     active: true,
-    order: 1,
+    order: 2,
   },
   {
     name: "HiPro Marketing",
@@ -52,6 +60,14 @@ const defaultEcosystemCompanies = [
 
 function getCompanyVisuals(name: string = "", category: string = "") {
   const text = `${name} ${category}`.toLowerCase();
+  if (text.includes("hind build") || text.includes("building solution") || text.includes("repair") || text.includes("waterproof")) {
+    return {
+      Icon: ShieldCheck,
+      iconColor: "text-red-500",
+      hoverBorder: "hover:border-red-500/70",
+      badgeColor: "text-red-400 bg-red-950/60 border-red-500/30",
+    };
+  }
   if (text.includes("empanel") || text.includes("vendor") || text.includes("contract")) {
     return {
       Icon: FileCheck,
@@ -388,12 +404,13 @@ export default async function Footer({
                   : (rawBadge || "Upcoming");
 
                 if (url) {
+                  const isExternal = url.startsWith("http://") || url.startsWith("https://");
                   return (
                     <a
                       key={c.name || i}
                       href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
                       className={`group block p-3 bg-white/5 border border-white/10 ${visuals.hoverBorder} hover:bg-white/10 transition-all rounded-none`}
                     >
                       <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">

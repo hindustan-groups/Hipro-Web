@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   Inbox,
@@ -55,21 +55,36 @@ export default function AdminDashboard() {
   const [error, setError]         = useState("");
   const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "applications">("quotes");
 
-  useEffect(() => {
-    const cached = getAdminCache<DashboardData>("admin:dashboard");
-    if (cached) {
-      setData(cached);
-      setLoading(false);
-    }
-  }, []);
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const fetchData = async (force = false) => {
-    if (force || !data) {
-      setLoading(true);
+  const fetchData = useCallback(async (force = false) => {
+    // Prevent duplicate simultaneous fetches unless explicitly forced
+    if (isFetchingRef.current && !force) return;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    isFetchingRef.current = true;
+
+    // Only display full loading state if we have no existing cached data or if forced
+    setData((currentData) => {
+      if (force || !currentData) {
+        setLoading(true);
+      }
+      return currentData;
+    });
     setError("");
+
     try {
-      const res = await fetch("/api/dashboard", { credentials: "include", cache: "no-store" });
+      const res = await fetch("/api/dashboard", {
+        credentials: "include",
+        cache: "no-store",
+        signal: controller.signal,
+      });
+
       if (!res.ok) {
         if (res.status === 401) {
           setError("Your admin session has expired. Redirecting to login...");
@@ -86,16 +101,33 @@ export default function AdminDashboard() {
       } else {
         setError(json.error || "Failed to load dashboard data.");
       }
-    } catch {
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        return; // Normal cleanup on route change / unmount
+      }
       setError("Network error — could not reach the server.");
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // 1. Immediately hydrate from in-memory / sessionStorage cache if available (0ms render)
+    const cached = getAdminCache<DashboardData>("admin:dashboard");
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    }
+    // 2. Perform background revalidation
     fetchData();
-  }, []);
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [fetchData]);
 
   const totalArticles = data?.blogs?.total ?? 0;
   const publishedArticles = data?.blogs?.published ?? 0;

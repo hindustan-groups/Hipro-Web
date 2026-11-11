@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
 import { prisma } from "../lib/db";
-import { authGuard, adminGuard } from "../middleware/authGuard";
+import { authGuard, adminGuard, requirePermission } from "../middleware/authGuard";
 import { contactLimiter } from "../middleware/rateLimiter";
 import { getSessionUser } from "../lib/auth";
 import { seedHbsServicesIfEmpty, seedHbsServicesAlways } from "../lib/hbsSeedData";
@@ -53,8 +53,8 @@ router.get("/content", async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/hbs/content — Protected: Admin
-router.patch("/content", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/hbs/content — Protected: Staff with hbs permission or Admin
+router.patch("/content", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const data = { ...req.body };
     delete data.id; // protect ID
@@ -191,8 +191,8 @@ router.get("/services/:slug", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/hbs/services — Protected: Admin
-router.post("/services", authGuard, async (req: Request, res: Response) => {
+// POST /api/hbs/services — Protected: Staff with hbs permission or Admin
+router.post("/services", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const {
       title,
@@ -258,8 +258,8 @@ router.post("/services", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/hbs/services/:id — Protected: Admin
-router.patch("/services/:id", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/hbs/services/:id — Protected: Staff with hbs permission or Admin
+router.patch("/services/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const data = { ...req.body };
@@ -285,8 +285,8 @@ router.patch("/services/:id", authGuard, async (req: Request, res: Response) => 
   }
 });
 
-// DELETE /api/hbs/services/:id — Protected: Admin
-router.delete("/services/:id", authGuard, async (req: Request, res: Response) => {
+// DELETE /api/hbs/services/:id — Protected: Staff with hbs permission or Admin
+router.delete("/services/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     await prisma.hbsService.delete({ where: { id } });
@@ -360,8 +360,8 @@ router.get("/projects/:slug", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/hbs/projects — Protected: Admin
-router.post("/projects", authGuard, async (req: Request, res: Response) => {
+// POST /api/hbs/projects — Protected: Staff with hbs permission or Admin
+router.post("/projects", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const {
       title,
@@ -424,8 +424,8 @@ router.post("/projects", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/hbs/projects/:id — Protected: Admin
-router.patch("/projects/:id", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/hbs/projects/:id — Protected: Staff with hbs permission or Admin
+router.patch("/projects/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const data = { ...req.body };
@@ -453,8 +453,8 @@ router.patch("/projects/:id", authGuard, async (req: Request, res: Response) => 
   }
 });
 
-// DELETE /api/hbs/projects/:id — Protected: Admin
-router.delete("/projects/:id", authGuard, async (req: Request, res: Response) => {
+// DELETE /api/hbs/projects/:id — Protected: Staff with hbs permission or Admin
+router.delete("/projects/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     await prisma.hbsProject.delete({ where: { id } });
@@ -495,8 +495,8 @@ router.get("/testimonials", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/hbs/testimonials — Protected: Admin
-router.post("/testimonials", authGuard, async (req: Request, res: Response) => {
+// POST /api/hbs/testimonials — Protected: Staff with hbs permission or Admin
+router.post("/testimonials", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const {
       name,
@@ -543,8 +543,8 @@ router.post("/testimonials", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/hbs/testimonials/:id — Protected: Admin
-router.patch("/testimonials/:id", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/hbs/testimonials/:id — Protected: Staff with hbs permission or Admin
+router.patch("/testimonials/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const data = { ...req.body };
@@ -562,8 +562,8 @@ router.patch("/testimonials/:id", authGuard, async (req: Request, res: Response)
   }
 });
 
-// DELETE /api/hbs/testimonials/:id — Protected: Admin
-router.delete("/testimonials/:id", authGuard, async (req: Request, res: Response) => {
+// DELETE /api/hbs/testimonials/:id — Protected: Staff with hbs permission or Admin
+router.delete("/testimonials/:id", requirePermission("hbs"), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     await prisma.hbsTestimonial.delete({ where: { id } });
@@ -658,8 +658,8 @@ router.post("/leads", contactLimiter, async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/hbs/leads — Protected: Admin (With Status/Service/Search Filters & Pagination)
-router.get("/leads", authGuard, async (req: Request, res: Response) => {
+// GET /api/hbs/leads — Protected: Staff with hbs/leads permission or Admin (With Status/Service/Search Filters & Pagination)
+router.get("/leads", requirePermission(["hbs", "leads"]), async (req: Request, res: Response) => {
   try {
     const { status, service, search, page, limit } = req.query;
 
@@ -748,8 +748,8 @@ router.get("/leads", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/hbs/leads/:id/notes — Protected: Admin (Add Private Internal Note)
-router.post("/leads/:id/notes", authGuard, async (req: Request, res: Response) => {
+// POST /api/hbs/leads/:id/notes — Protected: Staff with hbs/leads permission or Admin (Add Private Internal Note)
+router.post("/leads/:id/notes", requirePermission(["hbs", "leads"]), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const { note } = req.body;
@@ -797,8 +797,8 @@ router.post("/leads/:id/notes", authGuard, async (req: Request, res: Response) =
   }
 });
 
-// PATCH /api/hbs/leads/:id — Protected: Admin
-router.patch("/leads/:id", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/hbs/leads/:id — Protected: Staff with hbs/leads permission or Admin
+router.patch("/leads/:id", requirePermission(["hbs", "leads"]), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     const { status, message, assignedTo, quotationAmount, priority, name, phone, email, selectedService } = req.body;
@@ -850,8 +850,8 @@ router.patch("/leads/:id", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/hbs/leads/:id — Protected: Admin
-router.delete("/leads/:id", authGuard, async (req: Request, res: Response) => {
+// DELETE /api/hbs/leads/:id — Protected: Staff with hbs/leads permission or Admin
+router.delete("/leads/:id", requirePermission(["hbs", "leads"]), async (req: Request, res: Response) => {
   try {
     const id = getParam(req.params.id);
     await prisma.hbsLead.delete({ where: { id } });

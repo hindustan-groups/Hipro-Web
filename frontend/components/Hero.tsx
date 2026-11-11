@@ -386,8 +386,14 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                   )}
 
                   <div className="relative">
+                    <label htmlFor="hero-quote-name" className="sr-only">
+                      Full Name *
+                    </label>
                     <input 
                       type="text" 
+                      id="hero-quote-name"
+                      name="name"
+                      autoComplete="name"
                       placeholder="Full Name *" 
                       aria-label="Full Name"
                       value={quoteForm.name}
@@ -399,8 +405,14 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="relative">
+                      <label htmlFor="hero-quote-email" className="sr-only">
+                        Email Address *
+                      </label>
                       <input 
                         type="email" 
+                        id="hero-quote-email"
+                        name="email"
+                        autoComplete="email"
                         placeholder="Email Address *" 
                         aria-label="Email Address"
                         value={quoteForm.email}
@@ -410,8 +422,14 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                       />
                     </div>
                     <div className="relative">
+                      <label htmlFor="hero-quote-phone" className="sr-only">
+                        Phone Number
+                      </label>
                       <input 
                         type="tel" 
+                        id="hero-quote-phone"
+                        name="phone"
+                        autoComplete="tel"
                         placeholder="Phone Number" 
                         aria-label="Phone Number"
                         value={quoteForm.phone}
@@ -422,7 +440,12 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                   </div>
 
                   <div className="relative">
+                    <label htmlFor="hero-quote-service" className="sr-only">
+                      Select Construction or Planning Service *
+                    </label>
                     <select 
+                      id="hero-quote-service"
+                      name="service"
                       value={quoteForm.service}
                       aria-label="Select Construction or Planning Service"
                       onChange={(e) => setQuoteForm((prev) => ({ ...prev, service: e.target.value }))}
@@ -442,10 +465,12 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                   {/* Dynamic Custom Inquiry Text Box when "other" is selected */}
                   {quoteForm.service === "other" && (
                     <div className="relative animate-fade-in space-y-1.5">
-                      <label className="block text-[12px] font-semibold text-slate-300 uppercase tracking-wider">
+                      <label htmlFor="hero-quote-custom-inquiry" className="block text-[12px] font-semibold text-slate-300 uppercase tracking-wider">
                         Specify Your Requirement <span className="text-construction-red">*</span>
                       </label>
                       <textarea
+                        id="hero-quote-custom-inquiry"
+                        name="customInquiry"
                         rows={3}
                         placeholder="Please describe your specific requirement or project inquiry..."
                         aria-label="Specific Project Requirement"

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { JobApplication, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -41,7 +41,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // GET /api/applications — List Applications (Protected)
-router.get("/", authGuard, async (req: Request, res: Response) => {
+router.get("/", requirePermission("applications"), async (req: Request, res: Response) => {
   try {
     const items = await findAll<JobApplication>("applications");
     items.sort((a, b) =>
@@ -54,7 +54,7 @@ router.get("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/applications — Update Application Status (Protected)
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("applications"), async (req: Request, res: Response) => {
   try {
     const { id, status } = req.body;
     if (!id || !status) {
@@ -71,7 +71,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/applications — Delete Application (Protected)
-router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+router.delete("/:id", requirePermission("applications"), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) {

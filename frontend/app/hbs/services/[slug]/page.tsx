@@ -25,6 +25,7 @@ import {
 import { cleanTelNumber, getServiceWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsFaqAccordion from "@/components/hbs/HbsFaqAccordion";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
+import { HbsWarrantyCard, HbsWarrantyBadge, hasValidWarranty } from "@/components/hbs/HbsServiceDetail";
 
 interface ServicePageProps {
   params: Promise<{ slug: string }>;
@@ -324,10 +325,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
 
               {/* Trust Micro-Indicators */}
               <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-slate-600 font-medium">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Written Warranty</span>
-                </div>
+                <HbsWarrantyBadge warrantyDetails={service.warrantyDetails} />
                 <div className="flex items-center gap-1.5">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Civil Engineer Supervision</span>
@@ -500,23 +498,11 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
             )}
 
             {/* F & G. Warranty & Pricing Row */}
-            {(service.warrantyDetails || service.pricingEstimate) && (
-              <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {service.warrantyDetails && (
-                  <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-3 shadow-xs border-t-4 border-t-red-600">
-                    <div className="flex items-center gap-2 text-red-600">
-                      <ShieldCheck className="w-5 h-5" />
-                      <h3 className="text-xs font-bold uppercase tracking-wider font-mono">
-                        Warranty &amp; Quality Guarantee
-                      </h3>
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
-                      {service.warrantyDetails}
-                    </p>
-                  </div>
-                )}
+            {(hasValidWarranty(service.warrantyDetails) || (service.pricingEstimate && service.pricingEstimate.trim().length > 0)) && (
+              <section className={`grid grid-cols-1 ${hasValidWarranty(service.warrantyDetails) && service.pricingEstimate?.trim() ? "sm:grid-cols-2" : "max-w-xl"} gap-6`}>
+                <HbsWarrantyCard warrantyDetails={service.warrantyDetails} />
 
-                {service.pricingEstimate && (
+                {service.pricingEstimate && service.pricingEstimate.trim() && (
                   <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-3 shadow-xs border-t-4 border-t-[#0D2D5E]">
                     <div className="flex items-center gap-2 text-[#0D2D5E]">
                       <Clock className="w-5 h-5 text-[#0D2D5E]" />
@@ -525,7 +511,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
                       </h3>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-sans">
-                      {service.pricingEstimate}
+                      {service.pricingEstimate.trim()}
                     </p>
                   </div>
                 )}

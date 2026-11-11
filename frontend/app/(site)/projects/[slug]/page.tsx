@@ -38,6 +38,7 @@ import {
   buildProjectCanonicalUrl,
 } from "@/lib/projectSchema";
 import { buildProjectHref } from "@/lib/projectUrl";
+import { CURATED_LANDMARKS } from "@/lib/curatedProjects";
 
 export const revalidate = 60;
 
@@ -55,31 +56,46 @@ async function getProjectData(slugOrId: string): Promise<ProjectLookupResult | n
       signal: AbortSignal.timeout(12000),
     });
 
-    if (!res.ok) {
-      return null;
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        const project: Project = json.data;
+
+        // Strict public visibility check (defense-in-depth)
+        if (project.publishStatus === "published" && project.status !== "archived") {
+          return {
+            project,
+            isLegacyId: Boolean(json.isLegacyId),
+            canonicalSlug: json.canonicalSlug || project.slug || project.id || slugOrId,
+          };
+        }
+      }
     }
-
-    const json = await res.json();
-    if (!json.success || !json.data) {
-      return null;
-    }
-
-    const project: Project = json.data;
-
-    // Strict public visibility check (defense-in-depth)
-    if (project.publishStatus !== "published" || project.status === "archived") {
-      return null;
-    }
-
-    return {
-      project,
-      isLegacyId: Boolean(json.isLegacyId),
-      canonicalSlug: json.canonicalSlug || project.slug || project.id || slugOrId,
-    };
   } catch (err) {
     console.error(`[Project Detail] Error fetching project ${slugOrId}:`, err);
-    return null;
   }
+
+  // Authoritative Fallback: When project is not found in backend DB, resolve matching curated landmark by slug or id
+  const cleanParam = normalizeProjectSlug(slugOrId).toLowerCase();
+  const curated = CURATED_LANDMARKS.find((p) => {
+    const slugMatch = p.slug && normalizeProjectSlug(p.slug).toLowerCase() === cleanParam;
+    const idMatch = p.id && p.id.toLowerCase() === cleanParam;
+    return slugMatch || idMatch;
+  });
+
+  if (curated) {
+    return {
+      project: {
+        ...curated,
+        publishStatus: "published",
+        status: curated.status || "completed",
+      },
+      isLegacyId: false,
+      canonicalSlug: curated.slug || slugOrId,
+    };
+  }
+
+  return null;
 }
 
 async function getRelatedProjects(currentProjectId: string, category: string): Promise<Project[]> {
@@ -93,17 +109,22 @@ async function getRelatedProjects(currentProjectId: string, category: string): P
       }
     );
 
-    if (!res.ok) return [];
-    const json = await res.json();
-    const projects: Project[] = Array.isArray(json.data) ? json.data : [];
-
-    return projects
-      .filter((p) => p.id !== currentProjectId && p.publishStatus === "published" && p.status !== "archived")
-      .slice(0, 3);
+    if (res.ok) {
+      const json = await res.json();
+      const projects: Project[] = Array.isArray(json.data) ? json.data : [];
+      const dbFiltered = projects
+        .filter((p) => p.id !== currentProjectId && p.publishStatus === "published" && p.status !== "archived")
+        .slice(0, 3);
+      if (dbFiltered.length > 0) return dbFiltered;
+    }
   } catch (err) {
     console.error("[Project Detail] Error fetching related projects:", err);
-    return [];
   }
+
+  // Graceful Fallback: Provide other curated landmarks if backend has no related projects
+  return CURATED_LANDMARKS
+    .filter((p) => p.id !== currentProjectId && p.slug !== currentProjectId)
+    .slice(0, 3);
 }
 
 export async function generateMetadata({

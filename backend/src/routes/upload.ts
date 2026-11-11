@@ -3,7 +3,7 @@ import multer from "multer";
 import crypto from "crypto";
 import path from "path";
 import zlib from "zlib";
-import { adminGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { findAll } from "../lib/db";
 import type { Settings, ApiResponse } from "../lib/types";
 
@@ -276,10 +276,10 @@ function multerUploadMiddleware(req: Request, res: Response, next: NextFunction)
   });
 }
 
-// POST /api/upload — Admin authenticated upload
+// POST /api/upload — Admin/Staff authenticated upload with content or upload permission
 router.post(
   "/",
-  adminGuard,
+  requirePermission(["upload", "projects", "blogs", "services", "about", "team", "testimonials", "hero", "hbs"]),
   multerUploadMiddleware,
   async (req: Request, res: Response) => {
     try {

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
 import { validateRequired } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 import type { ApiResponse, Project, ProjectGalleryItem, ProjectHighlight, ProjectFaq } from "../lib/types";
 
@@ -311,7 +311,7 @@ router.get("/:slugOrId", async (req: Request, res: Response) => {
 // ─────────────────────────────────────────────────────────────
 // 3. POST /api/projects — Create project (Protected)
 // ─────────────────────────────────────────────────────────────
-router.post("/", authGuard, async (req: Request, res: Response) => {
+router.post("/", requirePermission("projects"), async (req: Request, res: Response) => {
   try {
     const body = req.body || {};
 
@@ -750,8 +750,8 @@ const handlePatch = async (req: Request, res: Response) => {
   }
 };
 
-router.patch("/:id", authGuard, handlePatch);
-router.patch("/", authGuard, handlePatch);
+router.patch("/:id", requirePermission("projects"), handlePatch);
+router.patch("/", requirePermission("projects"), handlePatch);
 
 // ─────────────────────────────────────────────────────────────
 // 5. DELETE /api/projects & DELETE /api/projects/:id — Archive or Permanent Delete (Protected)
@@ -801,7 +801,7 @@ const handleDelete = async (req: Request, res: Response) => {
   }
 };
 
-router.delete("/:id", authGuard, handleDelete);
-router.delete("/", authGuard, handleDelete);
+router.delete("/:id", requirePermission("projects"), handleDelete);
+router.delete("/", requirePermission("projects"), handleDelete);
 
 export default router;

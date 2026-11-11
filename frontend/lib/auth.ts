@@ -46,8 +46,8 @@ export async function getSessionUser() {
     return null;
   } catch (error) {
     console.error("getSessionUser error:", error);
-    // Transient network glitch fallback: use cached session if within 5 minutes
-    if (cached && Date.now() - cached.timestamp < 5 * 60 * 1000) {
+    // Transient network glitch fallback: use cached session only if still within standard TTL
+    if (cached && Date.now() - cached.timestamp < SESSION_TTL_MS) {
       return cached.user;
     }
     return null;

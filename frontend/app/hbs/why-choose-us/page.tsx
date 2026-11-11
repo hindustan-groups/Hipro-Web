@@ -400,7 +400,7 @@ export default async function HbsWhyChooseUsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>10-Year Documented Written Warranty</span>
+                <span>Documented Written Warranties</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -600,7 +600,7 @@ export default async function HbsWhyChooseUsPage() {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 max-w-md font-sans">
-                Every Hind Build project follows strict ISO/IS-compliant milestones to guarantee permanent remediation.
+                Every Hind Build project follows structured inspection, execution and post-completion quality checks to support reliable remediation.
               </p>
             </div>
 

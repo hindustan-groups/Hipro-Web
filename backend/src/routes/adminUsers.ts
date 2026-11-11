@@ -73,9 +73,31 @@ router.delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
     const currentUser = (req as any).user;
 
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
     if (currentUser.id === id) {
       return res.status(400).json({ error: "Cannot delete yourself" });
     }
+
+    // Inspect target user before deletion (SEC-B2B-04)
+    const targetUser = await prisma.adminUser.findUnique({
+      where: { id },
+    });
+
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (targetUser.role === "admin") {
+      return res.status(403).json({ error: "Cannot delete a Super Admin account through staff management" });
+    }
+
+    // Invalidate all active sessions for the deleted staff user (Implementation C)
+    await prisma.adminSession.deleteMany({
+      where: { userId: id as string },
+    }).catch(() => {});
 
     await prisma.adminUser.delete({
       where: { id: id as string }

@@ -21,6 +21,7 @@ import {
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
 import { buildProjectHref } from "@/lib/projectUrl";
+import { CURATED_LANDMARKS } from "@/lib/curatedProjects";
 
 interface PublicProjectGridProps {
   projects?: Project[];
@@ -53,12 +54,23 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
   // 1. Strict Public Visibility Rule (Defense-in-depth):
   // Only published projects that are NOT operationally archived are eligible.
   const publicProjects = useMemo(() => {
-    return (projects || []).filter((p) => {
+    const dbProjects = (projects || []).filter((p) => {
       if (!p) return false;
       const isPublished = p.publishStatus === "published";
       const notArchived = p.status !== "archived";
       return isPublished && notArchived;
     });
+
+    if (dbProjects.length > 0) {
+      return dbProjects;
+    }
+
+    // Authoritative Fallback: Seamlessly display curated landmarks if database returns no published projects
+    return CURATED_LANDMARKS.map((p) => ({
+      ...p,
+      publishStatus: "published" as const,
+      status: p.status || "completed",
+    }));
   }, [projects]);
 
   // Filter States

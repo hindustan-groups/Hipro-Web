@@ -252,7 +252,7 @@ export default function AutoMailSettingsPage() {
               </p>
             </div>
             <p style="color: #334155; font-size: 13.5px; line-height: 1.6; margin: 0 0 16px;">
-              All emails dispatched through the AutoMail Engine automatically include your verified company credentials, corporate office address in Bhilwara, direct site helplines, ISO certification badges, and statutory legal disclaimers.
+              All emails dispatched through the AutoMail Engine automatically include your verified company credentials, corporate office address in Bhilwara, direct site helplines, quality verification practices, and statutory legal disclaimers.
             </p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
               <tr style="border-bottom: 1px solid #e2e8f0;">

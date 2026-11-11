@@ -215,10 +215,14 @@ export default function PopupForm() {
               {error && <div className="p-3 bg-red-50 text-red-600 text-sm border border-red-100">{error}</div>}
             {/* Name Input */}
             <div>
+              <label htmlFor="popup-name" className="sr-only">Full Name *</label>
               <input 
+                id="popup-name"
+                name="name"
                 type="text" 
-                placeholder="Name" 
-                aria-label="Your Name"
+                placeholder="Full Name *" 
+                aria-label="Your Full Name"
+                autoComplete="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -228,10 +232,14 @@ export default function PopupForm() {
 
             {/* Email Input */}
             <div>
+              <label htmlFor="popup-email" className="sr-only">Email Address *</label>
               <input 
+                id="popup-email"
+                name="email"
                 type="email" 
-                placeholder="Email Address" 
+                placeholder="Email Address *" 
                 aria-label="Email Address"
+                autoComplete="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -241,13 +249,17 @@ export default function PopupForm() {
 
             {/* Phone Input */}
             <div className="relative flex items-center">
-              <div className="absolute left-0 inset-y-0 flex items-center pl-4 pr-3 border-r border-gray-300">
+              <label htmlFor="popup-phone" className="sr-only">Phone Number *</label>
+              <div className="absolute left-0 inset-y-0 flex items-center pl-4 pr-3 border-r border-gray-300 pointer-events-none">
                 <span className="text-sm font-medium text-gray-700">+91</span>
               </div>
               <input 
+                id="popup-phone"
+                name="phone"
                 type="tel" 
-                placeholder="Phone Number" 
+                placeholder="Phone Number *" 
                 aria-label="Phone Number"
+                autoComplete="tel"
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -257,9 +269,13 @@ export default function PopupForm() {
 
             {/* State Select */}
             <div className="relative">
+              <label htmlFor="popup-state" className="sr-only">Select State *</label>
               <select 
+                id="popup-state"
+                name="state"
                 required
                 aria-label="Select State"
+                autoComplete="address-level1"
                 value={selectedState}
                 onChange={(e) => handleStateChange(e.target.value)}
                 className="w-full px-4 py-3.5 rounded-none border border-gray-300 focus:outline-none focus:ring-2 focus:ring-construction-red/30 focus:border-construction-red transition-all text-sm text-gray-900 appearance-none bg-white"
@@ -276,9 +292,13 @@ export default function PopupForm() {
 
             {/* District Select */}
             <div className="relative">
+              <label htmlFor="popup-district" className="sr-only">Select District *</label>
               <select 
+                id="popup-district"
+                name="district"
                 required
                 aria-label="Select District"
+                autoComplete="address-level2"
                 disabled={!selectedState}
                 value={selectedDistrict}
                 onChange={(e) => setSelectedDistrict(e.target.value)}
@@ -296,8 +316,10 @@ export default function PopupForm() {
 
             {/* Explicit Permission / Consent Checkbox */}
             <div className="p-2.5 bg-gray-50 border border-gray-200">
-              <label className="flex items-start gap-2.5 cursor-pointer select-none">
+              <label htmlFor="popup-consent" className="flex items-start gap-2.5 cursor-pointer select-none">
                 <input
+                  id="popup-consent"
+                  name="consent"
                   type="checkbox"
                   required
                   checked={consentGiven}

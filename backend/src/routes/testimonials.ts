@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
 import { validateRequired } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 import type { Testimonial, ApiResponse } from "../lib/types";
 
@@ -98,7 +98,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/testimonials — approve/update (Protected)
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("testimonials"), async (req: Request, res: Response) => {
   try {
     const { id, ...updates } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
@@ -113,7 +113,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/testimonials (Protected)
-router.delete("/", authGuard, async (req: Request, res: Response) => {
+router.delete("/", requirePermission("testimonials"), async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);

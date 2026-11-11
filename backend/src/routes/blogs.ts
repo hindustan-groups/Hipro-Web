@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
-import { adminGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 import type { ApiResponse } from "../lib/types";
 
@@ -213,8 +213,8 @@ router.get("/:slug", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/blogs (Protected: Admin only)
-router.post("/", adminGuard, async (req: Request, res: Response) => {
+// POST /api/blogs (Protected: Admin or Staff with "blogs" permission)
+router.post("/", requirePermission("blogs"), async (req: Request, res: Response) => {
   try {
     const {
       title,
@@ -387,8 +387,8 @@ router.post("/", adminGuard, async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/blogs (Protected: Admin only)
-router.patch("/", adminGuard, async (req: Request, res: Response) => {
+// PATCH /api/blogs (Protected: Admin or Staff with "blogs" permission)
+router.patch("/", requirePermission("blogs"), async (req: Request, res: Response) => {
   try {
     const { id, ...rawUpdates } = req.body;
     if (!id || typeof id !== "string") {
@@ -564,8 +564,8 @@ router.patch("/", adminGuard, async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/blogs (Protected: Admin only)
-router.delete("/", adminGuard, async (req: Request, res: Response) => {
+// DELETE /api/blogs (Protected: Admin or Staff with "blogs" permission)
+router.delete("/", requirePermission("blogs"), async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id || typeof id !== "string") {

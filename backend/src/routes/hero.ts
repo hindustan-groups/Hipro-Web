@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { findAll, insertOne, updateOne, deleteOne } from "../lib/db";
 import { validateRequired } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { HeroSlide, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -24,7 +24,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/hero — Protected
-router.post("/", authGuard, async (req: Request, res: Response) => {
+router.post("/", requirePermission("hero"), async (req: Request, res: Response) => {
   try {
     const { image, tagline, title, subtitle, order, active } = req.body;
 
@@ -55,7 +55,7 @@ router.post("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/hero — Protected
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("hero"), async (req: Request, res: Response) => {
   try {
     const { id, ...updates } = req.body;
 
@@ -87,7 +87,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/hero — Protected
-router.delete("/", authGuard, async (req: Request, res: Response) => {
+router.delete("/", requirePermission("hero"), async (req: Request, res: Response) => {
   try {
     const id = (req.query.id as string) || req.body.id;
 

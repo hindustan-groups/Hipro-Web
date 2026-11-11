@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { findAll, updateOne, insertOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { adminGuard } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 import type { Settings } from "../lib/types";
 
@@ -47,8 +47,8 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/settings — Protected
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+// PATCH /api/settings — Protected (Super Admin ONLY)
+router.patch("/", adminGuard, async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const data = await findAll<Settings>("settings");
