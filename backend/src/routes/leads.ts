@@ -1,12 +1,12 @@
 import { Router, Request, Response } from "express";
 import { prisma, findAll, updateOne, deleteOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { ContactMessage, QuoteRequest, JobApplication, NewsletterSubscriber, ApiResponse } from "../lib/types";
 
 const router = Router();
 
-// Apply authGuard to all lead management endpoints
-router.use(authGuard);
+// Apply requirePermission("leads") to all lead management endpoints
+router.use(requirePermission("leads"));
 
 export interface UnifiedLead {
   id: string;

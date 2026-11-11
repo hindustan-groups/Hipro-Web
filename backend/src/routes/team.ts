@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { TeamMember, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -23,7 +23,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/team — Protected
-router.post("/", authGuard, async (req: Request, res: Response) => {
+router.post("/", requirePermission("team"), async (req: Request, res: Response) => {
     try {
         const { name, role, img, bio, isFounder, instagram, linkedin, facebook, order, active } = req.body;
 
@@ -86,8 +86,8 @@ const handlePatch = async (req: Request, res: Response) => {
     }
 };
 
-router.patch("/:id", authGuard, handlePatch);
-router.patch("/", authGuard, handlePatch);
+router.patch("/:id", requirePermission("team"), handlePatch);
+router.patch("/", requirePermission("team"), handlePatch);
 
 // DELETE /api/team/:id & /api/team — Protected
 const handleDelete = async (req: Request, res: Response) => {
@@ -104,7 +104,7 @@ const handleDelete = async (req: Request, res: Response) => {
     }
 };
 
-router.delete("/:id", authGuard, handleDelete);
-router.delete("/", authGuard, handleDelete);
+router.delete("/:id", requirePermission("team"), handleDelete);
+router.delete("/", requirePermission("team"), handleDelete);
 
 export default router;

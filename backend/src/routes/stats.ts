@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { findAll, insertOne, updateOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { Stats, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -35,7 +35,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/stats — Protected
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("stats"), async (req: Request, res: Response) => {
   try {
     const { id, ...updates } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);

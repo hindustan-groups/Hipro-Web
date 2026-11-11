@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
 import { validateEmail, validatePhone, validateRequired } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { quoteLimiter } from "../middleware/rateLimiter";
 import type { QuoteRequest, ApiResponse } from "../lib/types";
 
@@ -59,7 +59,7 @@ router.post("/", quoteLimiter, async (req: Request, res: Response) => {
 });
 
 // GET /api/quote — list quotes (Protected)
-router.get("/", authGuard, async (req: Request, res: Response) => {
+router.get("/", requirePermission("quotes"), async (req: Request, res: Response) => {
   try {
     const { status, search, page, limit } = req.query;
     let quotes = await findAll<QuoteRequest>("quotes");
@@ -115,7 +115,7 @@ router.get("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/quote — update quote status (Protected)
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("quotes"), async (req: Request, res: Response) => {
   try {
     const { id, status } = req.body;
     if (!id || !status) {
@@ -133,7 +133,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/quote/:id — delete quote (Protected)
-router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+router.delete("/:id", requirePermission("quotes"), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) {
@@ -152,7 +152,7 @@ router.delete("/:id", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/quote — delete quote by body { id } (Protected)
-router.delete("/", authGuard, async (req: Request, res: Response) => {
+router.delete("/", requirePermission("quotes"), async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id) {

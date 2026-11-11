@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne } from "../lib/db";
 import { validateEmail, validateRequired } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { contactLimiter } from "../middleware/rateLimiter";
 import type { ContactMessage, ApiResponse } from "../lib/types";
 
@@ -52,7 +52,7 @@ router.post("/", contactLimiter, async (req: Request, res: Response) => {
 });
 
 // GET /api/contact — get all messages (Protected)
-router.get("/", authGuard, async (req: Request, res: Response) => {
+router.get("/", requirePermission("contacts"), async (req: Request, res: Response) => {
   try {
     const { status, search, page, limit } = req.query;
     let messages = await findAll<ContactMessage>("contacts");
@@ -113,7 +113,7 @@ router.get("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/contact — update message status (Protected)
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission("contacts"), async (req: Request, res: Response) => {
   try {
     const { id, status } = req.body;
 
@@ -146,7 +146,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/contact/:id — delete message (Protected)
-router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+router.delete("/:id", requirePermission("contacts"), async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
     if (!id) {
@@ -179,7 +179,7 @@ router.delete("/:id", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/contact — delete message by body { id } (Protected)
-router.delete("/", authGuard, async (req: Request, res: Response) => {
+router.delete("/", requirePermission("contacts"), async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id) {

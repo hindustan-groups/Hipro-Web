@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, Search, Menu, LogOut, ExternalLink } from "lucide-react";
+import { Bell, Search, Menu, X, LogOut, ExternalLink } from "lucide-react";
 import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
 
@@ -60,6 +60,17 @@ const titles: Record<string, string> = {
 export default function AdminHeader({ user }: { user: any }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleSidebarChange = (e: any) => {
+      if (typeof e.detail?.open === "boolean") {
+        setIsDrawerOpen(e.detail.open);
+      }
+    };
+    window.addEventListener("admin-sidebar-change", handleSidebarChange);
+    return () => window.removeEventListener("admin-sidebar-change", handleSidebarChange);
+  }, []);
   
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -80,9 +91,11 @@ export default function AdminHeader({ user }: { user: any }) {
       <div className="flex items-center gap-3 min-w-0">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
+          aria-label={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
+          title={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
           className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 focus:outline-none shrink-0"
         >
-          <Menu className="w-6 h-6" />
+          {isDrawerOpen ? <X className="w-6 h-6 text-slate-800" /> : <Menu className="w-6 h-6" />}
         </button>
         <div className="flex items-center gap-2.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}

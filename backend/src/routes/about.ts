@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
-import { adminGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 
 const router = Router();
@@ -378,7 +378,7 @@ const handleMutation = async (req: Request, res: Response) => {
   }
 };
 
-router.put("/", adminGuard, handleMutation);
-router.patch("/", adminGuard, handleMutation);
+router.put("/", requirePermission("about"), handleMutation);
+router.patch("/", requirePermission("about"), handleMutation);
 
 export default router;

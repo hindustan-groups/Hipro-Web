@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import crypto from "crypto";
 import {
   sendApplicationReceivedEmail,
@@ -581,10 +581,10 @@ router.post("/tickets", async (req: Request, res: Response) => {
 });
 
 // ===================================================================
-// MASTER ADMIN ENDPOINTS (Protected with authGuard)
+// MASTER ADMIN ENDPOINTS (Protected with requirePermission("empanelment"))
 // ===================================================================
 
-router.use("/admin", authGuard);
+router.use("/admin", requirePermission("empanelment"));
 
 /**
  * Admin KPI Stats Overview

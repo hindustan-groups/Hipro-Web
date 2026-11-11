@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, findById, updateOne, deleteOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import { getSessionUser } from "../lib/auth";
 import type { Service, ApiResponse } from "../lib/types";
 
@@ -67,7 +67,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // POST /api/services — Protected: Admin only
-router.post("/", authGuard, async (req: Request, res: Response) => {
+router.post("/", requirePermission("services"), async (req: Request, res: Response) => {
   try {
     const {
       title,
@@ -199,8 +199,8 @@ const handlePatch = async (req: Request, res: Response) => {
   }
 };
 
-router.patch("/", authGuard, handlePatch);
-router.patch("/:id", authGuard, handlePatch);
+router.patch("/", requirePermission("services"), handlePatch);
+router.patch("/:id", requirePermission("services"), handlePatch);
 
 // DELETE /api/services & /api/services/:id — Protected
 const handleDelete = async (req: Request, res: Response) => {
@@ -219,8 +219,8 @@ const handleDelete = async (req: Request, res: Response) => {
   }
 };
 
-router.delete("/", authGuard, handleDelete);
-router.delete("/:id", authGuard, handleDelete);
+router.delete("/", requirePermission("services"), handleDelete);
+router.delete("/:id", requirePermission("services"), handleDelete);
 
 export default router;
 

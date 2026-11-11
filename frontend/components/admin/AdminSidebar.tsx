@@ -274,19 +274,10 @@ export default function AdminSidebar({ user }: { user: any }) {
       return true;
     }
     if (key === "leads") {
-      return (
-        userPermissions.includes("leads") ||
-        userPermissions.includes("contacts") ||
-        userPermissions.includes("quotes") ||
-        userPermissions.includes("applications")
-      );
+      return userPermissions.includes("leads");
     }
     if (key === "automail") {
-      return (
-        userPermissions.includes("automail") ||
-        userPermissions.includes("leads") ||
-        userPermissions.includes("newsletter")
-      );
+      return userPermissions.includes("automail");
     }
     return false;
   }, [isAdmin, userPermissions]);
@@ -303,6 +294,23 @@ export default function AdminSidebar({ user }: { user: any }) {
     window.addEventListener("toggle-admin-sidebar", handleToggle);
     return () => window.removeEventListener("toggle-admin-sidebar", handleToggle);
   }, []);
+
+  // Broadcast drawer open state to sibling components (e.g. AdminHeader)
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("admin-sidebar-change", { detail: { open: isOpen } }));
+  }, [isOpen]);
+
+  // Close sidebar on Escape key in mobile
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Close sidebar on route change in mobile
   useEffect(() => {
@@ -368,7 +376,7 @@ export default function AdminSidebar({ user }: { user: any }) {
               </div>
 
               {/* Compact Brand Identity */}
-              <Link href="/admin/empanelment" scroll={false} className="flex items-center gap-2 group">
+              <Link href="/admin/empanelment" prefetch={true} scroll={false} className="flex items-center gap-2 group">
                 <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs shrink-0">
                   <ShieldCheck className="w-3.5 h-3.5" />
                 </div>
@@ -401,6 +409,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                         <Link
                           key={href}
                           href={href}
+                          prefetch={true}
                           scroll={false}
                           className={`group relative flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11.5px] transition-all duration-150 ${
                             active
@@ -472,7 +481,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           <>
             {/* 1. Hind Build Admin Header (Apple Frosted Glass) */}
             <div className="h-16 px-4 border-b border-slate-200/50 flex items-center justify-between bg-white/40 backdrop-blur-md shrink-0">
-              <Link href="/admin/hbs" scroll={false} className="flex items-center gap-2.5 group">
+              <Link href="/admin/hbs" prefetch={true} scroll={false} className="flex items-center gap-2.5 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/hibuild-logo.png"
@@ -519,6 +528,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                         <div key={href} className="space-y-0.5">
                           <Link
                             href={href}
+                            prefetch={true}
                             scroll={false}
                             className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] ${
                               active && !subItems
@@ -565,6 +575,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                                   <Link
                                     key={sub.href}
                                     href={sub.href}
+                                    prefetch={true}
                                     scroll={false}
                                     className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[11px] transition-all ${
                                       isSubActive
@@ -642,7 +653,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           <>
         {/* Brand Header (Frosted Glass) with Official HiPRO Logo */}
         <div className="h-16 px-4 border-b border-white/80 flex items-center justify-between bg-white/50 backdrop-blur-md shrink-0">
-          <Link href="/admin" scroll={false} className="flex items-center gap-2.5 group">
+          <Link href="/admin" prefetch={true} scroll={false} className="flex items-center gap-2.5 group">
             <div className="h-10 w-10 shrink-0 bg-white rounded-xl p-1 border border-slate-200/80 shadow-xs flex items-center justify-center transition-transform group-hover:scale-105">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -759,6 +770,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                           <Link
                             key={href}
                             href={href}
+                            prefetch={true}
                             scroll={false}
                             className={`flex items-center justify-between px-3 py-2 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group relative ${
                               active
@@ -813,6 +825,7 @@ export default function AdminSidebar({ user }: { user: any }) {
           {isAdmin && (
             <Link
               href="/admin/users"
+              prefetch={true}
               scroll={false}
               className={`flex items-center justify-between px-3 py-1.5 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group ${
                 pathname === "/admin/users"
@@ -838,6 +851,7 @@ export default function AdminSidebar({ user }: { user: any }) {
 
           <Link
             href="/admin/settings"
+            prefetch={true}
             scroll={false}
             className={`flex items-center justify-between px-3 py-1.5 rounded-none text-xs font-semibold uppercase tracking-wider transition-all group ${
               pathname === "/admin/settings"
@@ -895,5 +909,120 @@ export default function AdminSidebar({ user }: { user: any }) {
         )}
       </aside>
     </>
+  );
+}
+
+/**
+ * High-performance, lightweight navigation progress indicator.
+ * Provides instant (0ms) visual feedback on link click matching Master Admin brand colors.
+ * Respects prefers-reduced-motion and auto-clears on completion or timeout.
+ */
+export function AdminNavigationProgress() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  // When pathname or searchParams change, route transition has completed
+  useEffect(() => {
+    if (isNavigating) {
+      setProgress(100);
+      const timer = setTimeout(() => {
+        setVisible(false);
+        setIsNavigating(false);
+        setProgress(0);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, searchParams, isNavigating]);
+
+  // Global capture listener on internal admin navigation links
+  useEffect(() => {
+    const handleLinkClick = (e: MouseEvent) => {
+      // Ignore clicks with modifier keys or default prevented
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.defaultPrevented) return;
+
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const anchor = target.closest("a");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#") || anchor.target === "_blank") return;
+
+      try {
+        const url = new URL(anchor.href, window.location.origin);
+        // Only trigger on internal admin route changes
+        if (url.origin === window.location.origin && url.pathname.startsWith("/admin")) {
+          const currentUrl = window.location.pathname + window.location.search;
+          const targetUrl = url.pathname + url.search;
+          if (currentUrl !== targetUrl) {
+            setIsNavigating(true);
+            setVisible(true);
+            setProgress(25);
+          }
+        }
+      } catch {
+        // Safe fallback
+      }
+    };
+
+    const handlePopState = () => {
+      setIsNavigating(true);
+      setVisible(true);
+      setProgress(40);
+    };
+
+    window.addEventListener("click", handleLinkClick, { capture: true });
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("click", handleLinkClick, { capture: true });
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  // Smooth trickle progress while Next.js prepares the incoming route
+  useEffect(() => {
+    if (!isNavigating || progress >= 90) return;
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev < 60) return prev + 15;
+        if (prev < 85) return prev + 5;
+        if (prev < 92) return prev + 1;
+        return prev;
+      });
+    }, 120);
+
+    // Fail-safe auto-clear after 6 seconds in case of network stall or error
+    const timeout = setTimeout(() => {
+      setVisible(false);
+      setIsNavigating(false);
+      setProgress(0);
+    }, 6000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [isNavigating, progress]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      role="progressbar"
+      aria-label="Navigation progress"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={progress}
+      className="fixed top-0 left-0 right-0 h-[2.5px] z-[99999] pointer-events-none overflow-hidden bg-transparent"
+    >
+      <div
+        className="h-full bg-gradient-to-r from-construction-navy via-[#0D50B8] to-construction-red shadow-[0_0_8px_rgba(13,80,184,0.6)] transition-all duration-200 ease-out motion-reduce:transition-none"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
   );
 }

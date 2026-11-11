@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import { prisma } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import {
   sendOneEmail,
   processCampaignQueue,
@@ -39,8 +39,8 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 // Warm up database settings on module load
 initAutomailSettings().catch((err) => console.warn("[AUTOMAIL] Init warning:", err));
 
-// Protect all automail endpoints with admin authentication
-router.use(authGuard);
+// Protect all automail endpoints with automail permission
+router.use(requirePermission("automail"));
 
 // ----------------------------------------------------
 // 1. DASHBOARD & STATS
@@ -352,7 +352,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
           </p>
         </div>
         <p style="color: #334155; font-size: 13.5px; line-height: 1.6; margin: 0 0 16px;">
-          All emails sent through the AutoMail Engine automatically include your verified company credentials, corporate office address, direct site helplines, ISO certification badges, and legal confidentiality disclaimers.
+          All emails sent through the AutoMail Engine automatically include your verified company credentials, corporate office address, direct site helplines, quality verification practices, and legal confidentiality disclaimers.
         </p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
           <tr style="border-bottom: 1px solid #e2e8f0;">

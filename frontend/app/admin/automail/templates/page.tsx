@@ -230,7 +230,7 @@ export default function AutoMailTemplatesPage() {
                 Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design
               </p>
               <div style="margin-top: 12px; font-size: 10px; color: #94a3b8; font-weight: 600;">
-                🏛️ ISO 9001:2015 Certified &bull; 🛡️ Govt Approved EPC &bull; ⚡ 150+ Landmarks Built
+                🏛️ Quality-First Civil Execution &bull; 🛡️ Turnkey EPC Contracting &bull; ⚡ 150+ Landmarks Built
               </div>
             </td>
           </tr>

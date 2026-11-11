@@ -93,20 +93,10 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
       userPermissions.includes("hero")
     )) ||
     (sectionKey === "cost-estimator" && (
-      userPermissions.includes("cost-estimator") ||
-      userPermissions.includes("settings")
+      userPermissions.includes("cost-estimator")
     )) ||
-    (sectionKey === "leads" && (
-      userPermissions.includes("leads") ||
-      userPermissions.includes("contacts") ||
-      userPermissions.includes("quotes") ||
-      userPermissions.includes("applications")
-    )) ||
-    (sectionKey === "automail" && (
-      userPermissions.includes("automail") ||
-      userPermissions.includes("leads") ||
-      userPermissions.includes("newsletter")
-    ));
+    (sectionKey === "leads" && userPermissions.includes("leads")) ||
+    (sectionKey === "automail" && userPermissions.includes("automail"));
 
   if (!hasAccess) {
     return (

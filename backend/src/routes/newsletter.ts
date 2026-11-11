@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { insertOne, findAll, readDB } from "../lib/db";
 import { prisma } from "../lib/db";
 import { validateEmail } from "../lib/validate";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { NewsletterSubscriber, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -64,7 +64,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 // GET /api/newsletter — get all subscribers (Protected)
-router.get("/", authGuard, async (req: Request, res: Response) => {
+router.get("/", requirePermission("newsletter"), async (req: Request, res: Response) => {
   try {
     const subscribers = await findAll<NewsletterSubscriber>("newsletter");
     const active = subscribers.filter((s) => s.active !== false);
@@ -78,7 +78,7 @@ router.get("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/newsletter/:id — delete subscriber by ID (Protected)
-router.delete("/:id", authGuard, async (req: Request, res: Response) => {
+router.delete("/:id", requirePermission("newsletter"), async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!id) return res.status(400).json({ success: false, error: "ID required" } as ApiResponse);
@@ -95,20 +95,22 @@ router.delete("/:id", authGuard, async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/newsletter — unsubscribe (Public or Protected with body { id } or { email })
+// DELETE /api/newsletter — unsubscribe (Public: deactivates subscription via body { email })
 router.delete("/", async (req: Request, res: Response) => {
   try {
     const { email, id } = req.body;
+
+    // Disallow unauthenticated permanent deletion via body { id }
     if (id) {
-      const { deleteOne } = await import("../lib/db");
-      const ok = await deleteOne("newsletter", id as string);
-      if (!ok) {
-        return res.status(404).json({ success: false, error: "Subscriber not found" } as ApiResponse);
-      }
-      return res.json({ success: true, message: "Subscriber deleted successfully" } as ApiResponse);
+      return res.status(400).json({
+        success: false,
+        error: "Direct deletion by ID is not supported on this endpoint. Authorized administrators must use DELETE /api/newsletter/:id",
+      } as ApiResponse);
     }
 
-    if (!email) return res.status(400).json({ success: false, error: "Email or ID required" } as ApiResponse);
+    if (!email) {
+      return res.status(400).json({ success: false, error: "Email is required" } as ApiResponse);
+    }
 
     const normalised = email.trim().toLowerCase();
     const subscriber = await prisma.newsletterSubscriber.findUnique({

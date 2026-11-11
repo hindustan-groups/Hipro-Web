@@ -5,6 +5,14 @@ import { authLoginLimiter } from "../middleware/rateLimiter";
 
 const router = Router();
 
+// Explicitly prevent caching of sensitive authentication and session endpoints
+router.use((_req: Request, res: Response, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 // POST /api/auth/login — Protected with brute-force rate limiter
 router.post("/login", authLoginLimiter, async (req: Request, res: Response) => {
   try {
@@ -78,7 +86,7 @@ router.post("/logout", async (req: Request, res: Response) => {
 // GET /api/auth/me
 router.get("/me", async (req: Request, res: Response) => {
   try {
-    const user = await getSessionUser(req);
+    const user = await getSessionUser(req, res);
     if (!user) {
       return res.status(401).json({ success: false, error: "Not authenticated" });
     }

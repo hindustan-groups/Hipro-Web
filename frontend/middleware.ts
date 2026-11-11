@@ -18,11 +18,42 @@ export function middleware(req: NextRequest) {
     nextHostname === "vender.hindustanprojects.in" ||
     hostHeader === "vender.hindustanprojects.in";
 
-  if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
+  const { pathname, search } = req.nextUrl;
+
+  // 1. Subdomain Isolation: NEVER expose /admin or /admin-login on tenant/vendor subdomains.
+  // Redirect immediately to the canonical primary domain.
+  if (isHbsSubdomain || isEmpanelmentSubdomain) {
+    if (
+      pathname === "/admin" ||
+      pathname.startsWith("/admin/") ||
+      pathname === "/admin-login" ||
+      pathname.startsWith("/admin-login/")
+    ) {
+      const primaryOrigin = process.env.NEXT_PUBLIC_SITE_URL || "https://www.hindustanprojects.in";
+      return NextResponse.redirect(new URL(`${pathname}${search}`, primaryOrigin), 307);
+    }
+  }
+
+  // 2. Edge Authentication Guard: Enforce session cookie presence for /admin and /admin/*
+  // Denies unauthenticated access at the edge before Server Components or SSR render.
+  const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
+  if (isAdminRoute) {
+    const adminSession = req.cookies.get("admin_session")?.value;
+    if (!adminSession || adminSession.trim() === "") {
+      const loginUrl = new URL("/admin-login", req.url);
+      const returnTo = `${pathname}${search}`;
+      if (returnTo !== "/admin") {
+        loginUrl.searchParams.set("returnTo", returnTo);
+      }
+      return NextResponse.redirect(loginUrl, 307);
+    }
+    // Cookie present: let request proceed to Server Component & backend validation
     return NextResponse.next();
   }
 
-  const { pathname, search } = req.nextUrl;
+  if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
+    return NextResponse.next();
+  }
 
   // Admin and API protection: NEVER route /admin, /admin-login, /api, or static assets through subdomain hostname routing
   if (

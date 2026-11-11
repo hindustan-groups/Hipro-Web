@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { insertOne, findAll, updateOne, deleteOne } from "../lib/db";
-import { authGuard } from "../middleware/authGuard";
+import { requirePermission } from "../middleware/authGuard";
 import type { Guarantee, ApiResponse } from "../lib/types";
 
 const router = Router();
@@ -20,7 +20,7 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // POST /api/guarantees — Protected
-router.post("/", authGuard, async (req: Request, res: Response) => {
+router.post("/", requirePermission(["guarantees", "about", "settings"]), async (req: Request, res: Response) => {
   try {
     const { title, description, badge, bg, accent, image, hasShield, order } = req.body;
 
@@ -47,7 +47,7 @@ router.post("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // PATCH /api/guarantees — Protected
-router.patch("/", authGuard, async (req: Request, res: Response) => {
+router.patch("/", requirePermission(["guarantees", "about", "settings"]), async (req: Request, res: Response) => {
   try {
     const { id, ...updates } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
@@ -62,7 +62,7 @@ router.patch("/", authGuard, async (req: Request, res: Response) => {
 });
 
 // DELETE /api/guarantees — Protected
-router.delete("/", authGuard, async (req: Request, res: Response) => {
+router.delete("/", requirePermission(["guarantees", "about", "settings"]), async (req: Request, res: Response) => {
   try {
     const { id } = req.body;
     if (!id) return res.status(400).json({ success: false, error: "id required" } as ApiResponse);
