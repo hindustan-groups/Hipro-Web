@@ -76,8 +76,17 @@ export default function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMobileDropdowns, setOpenMobileDropdowns] = useState<{[key: string]: boolean}>({});
   const [activeDesktopDropdown, setActiveDesktopDropdown] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pathname = usePathname();
+
+  const closeAllDropdowns = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setActiveDesktopDropdown(null);
+  };
 
   useEffect(() => {
     if (!mobileOpen) {
@@ -86,10 +95,8 @@ export default function Navbar({
   }, [mobileOpen]);
 
   useEffect(() => {
-    setActiveDesktopDropdown(null);
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-    }
+    closeAllDropdowns();
+    setMobileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -103,12 +110,22 @@ export default function Navbar({
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
-      if (!target?.closest("header")) {
-        setActiveDesktopDropdown(null);
+      if (headerRef.current && !headerRef.current.contains(target)) {
+        closeAllDropdowns();
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeAllDropdowns();
+        setMobileOpen(false);
       }
     };
     window.addEventListener("click", handleGlobalClick);
-    return () => window.removeEventListener("click", handleGlobalClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("click", handleGlobalClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const handleMouseEnterDropdown = (href: string) => {
@@ -125,7 +142,7 @@ export default function Navbar({
     }
     closeTimeoutRef.current = setTimeout(() => {
       setActiveDesktopDropdown(null);
-    }, 280);
+    }, 200);
   };
 
   const handleToggleDesktopDropdown = (href: string, e: React.MouseEvent) => {
@@ -369,6 +386,7 @@ export default function Navbar({
 
   return (
     <header 
+      ref={headerRef}
       suppressHydrationWarning
       className={
         previewMode 
@@ -383,7 +401,12 @@ export default function Navbar({
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 xl:px-8" suppressHydrationWarning>
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 transition-transform hover:scale-[1.02] group">
+          <Link 
+            href="/" 
+            onClick={closeAllDropdowns}
+            onMouseEnter={closeAllDropdowns}
+            className="flex items-center gap-2.5 sm:gap-3 shrink-0 transition-transform hover:scale-[1.02] group"
+          >
             <Image src="/logo.jpg" alt="HiPRO Logo" width={48} height={48} className="h-9 sm:h-10 md:h-11 xl:h-12 w-auto object-contain mix-blend-multiply" />
             <div className="w-[1px] h-8 sm:h-9 bg-slate-200/50"></div>
             <div className="flex flex-col justify-center">
@@ -415,7 +438,11 @@ export default function Navbar({
                 key={link.href} 
                 className={`${link.isMegaMenu ? "" : "relative"} group h-full flex items-center`}
                 onMouseEnter={() => {
-                  if (hasDropdown) handleMouseEnterDropdown(link.href);
+                  if (hasDropdown) {
+                    handleMouseEnterDropdown(link.href);
+                  } else {
+                    closeAllDropdowns();
+                  }
                 }}
                 onMouseLeave={() => {
                   if (hasDropdown) handleMouseLeaveDropdown();
@@ -430,6 +457,8 @@ export default function Navbar({
                       if (hasMega && activeDesktopDropdown !== link.href) {
                         e.preventDefault();
                         handleMouseEnterDropdown(link.href);
+                      } else {
+                        closeAllDropdowns();
                       }
                     }}
                     className={`relative flex items-center gap-1 xl:gap-1.5 text-[13px] xl:text-[14px] 2xl:text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 ${
@@ -459,10 +488,12 @@ export default function Navbar({
                     <button
                       type="button"
                       aria-label={`Toggle ${link.label} menu`}
+                      aria-expanded={isOpenDesktop}
+                      aria-haspopup="true"
                       onClick={(e) => handleToggleDesktopDropdown(link.href, e)}
                       className="p-1.5 -mr-1 focus:outline-none cursor-pointer"
                     >
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : "group-hover:rotate-180"} ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : ""} ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
                     </button>
                   )}
                 </div>
@@ -473,7 +504,7 @@ export default function Navbar({
                     className={`absolute top-full left-0 w-48 pt-2 transition-all duration-200 z-50 ${
                       isOpenDesktop 
                         ? "opacity-100 visible translate-y-0 pointer-events-auto" 
-                        : "opacity-0 invisible translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
+                        : "opacity-0 invisible translate-y-2 pointer-events-none"
                     }`}
                     onMouseEnter={() => handleMouseEnterDropdown(link.href)}
                     onMouseLeave={handleMouseLeaveDropdown}
@@ -483,6 +514,7 @@ export default function Navbar({
                         <Link 
                           key={sub.href} 
                           href={sub.href} 
+                          onClick={closeAllDropdowns}
                           className="px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-slate-600 hover:bg-slate-50 hover:text-construction-red transition-colors"
                         >
                           {sub.label}
@@ -498,7 +530,7 @@ export default function Navbar({
                     className={`absolute top-full left-0 right-0 w-full transition-all duration-200 z-[100] ${
                       isOpenDesktop 
                         ? "opacity-100 visible translate-y-0 pointer-events-auto" 
-                        : "opacity-0 invisible -translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto"
+                        : "opacity-0 invisible -translate-y-1 pointer-events-none"
                     }`}
                     onMouseEnter={() => handleMouseEnterDropdown(link.href)}
                     onMouseLeave={handleMouseLeaveDropdown}
@@ -540,6 +572,7 @@ export default function Navbar({
                                       href={sub.href}
                                       target={isExternal ? "_blank" : undefined}
                                       rel={isExternal ? "noopener noreferrer" : undefined}
+                                      onClick={closeAllDropdowns}
                                       className="group/item flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition-all duration-200 border border-transparent hover:border-slate-200/60"
                                     >
                                       <div className="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover/item:bg-construction-red group-hover/item:text-white transition-all duration-200 shadow-sm mt-0.5">
@@ -631,6 +664,7 @@ export default function Navbar({
                             <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex items-center justify-between gap-3">
                               <Link 
                                 href={link.megaMenuLink || "/services"}
+                                onClick={closeAllDropdowns}
                                 className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-construction-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
                               >
                                 <span>All Services</span>
@@ -638,6 +672,7 @@ export default function Navbar({
                               </Link>
                               <Link 
                                 href="/cost-estimator"
+                                onClick={closeAllDropdowns}
                                 className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider transition-colors border border-white/20"
                               >
                                 <Calculator className="w-3.5 h-3.5 text-construction-red" />
@@ -660,6 +695,7 @@ export default function Navbar({
                           <div className="flex items-center gap-4 shrink-0">
                             <Link 
                               href="/contact"
+                              onClick={closeAllDropdowns}
                               className="font-bold text-construction-navy hover:text-construction-red flex items-center gap-1 transition-colors uppercase tracking-wider"
                             >
                               <span>Request Engineering Consultation</span>
@@ -677,6 +713,8 @@ export default function Navbar({
           })}
             <Link 
               href={navbarCta?.enabled !== false ? (navbarCta ? resolveCTAHref(navbarCta) : "/contact") : "/contact"}
+              onClick={closeAllDropdowns}
+              onMouseEnter={closeAllDropdowns}
               className={`relative overflow-hidden group ml-1.5 xl:ml-3 px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 rounded-none font-semibold uppercase tracking-wider text-xs xl:text-sm transition-all duration-300 flex items-center gap-1.5 xl:gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
                 isDarkNavbar
                   ? "bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.15)]"
