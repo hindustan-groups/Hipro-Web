@@ -167,22 +167,22 @@ export function MarqueeRow({
   );
 }
 
-// Single Image Card — strictly identical dimensions, radius, containment and hover behavior
+// Single Image Card — strictly identical dimensions, radius, framing and hover behavior
 function ShowcaseCard({ item }: { item: ImageShowcaseItem }) {
   return (
     <div
       className="group relative shrink-0 overflow-hidden rounded-md sm:rounded-lg border border-slate-700/60 bg-slate-900 shadow-sm transition-all duration-300 hover:border-red-500/60 hover:shadow-lg hover:shadow-red-950/20
                  w-[130px] h-[85px] sm:w-[175px] sm:h-[110px] md:w-[300px] md:h-[185px] lg:w-[350px] lg:h-[215px]"
     >
-      {/* Main architectural photo: full aspect ratio preserved, zero cutting or distortion */}
-      <div className="relative w-full h-full p-1 sm:p-2 flex items-center justify-center">
+      {/* Main architectural photo */}
+      <div className="relative w-full h-full flex items-center justify-center">
         <Image
           src={item.image}
           alt={item.alt || item.title || "HiPRO Engineering Project"}
           fill
           sizes="(max-width: 640px) 140px, (max-width: 1024px) 300px, 360px"
-          quality={70}
-          className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          quality={75}
+          className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.05]"
           loading="lazy"
         />
       </div>

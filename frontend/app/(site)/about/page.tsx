@@ -487,7 +487,7 @@ export default async function AboutPage({
             {/* Leadership Visual Representation */}
             <div className="lg:col-span-5">
               {founderImage ? (
-                <div className="relative h-[460px] w-full rounded-none overflow-hidden border border-slate-200 shadow-xl bg-slate-100">
+                <div className="relative h-[360px] sm:h-[420px] lg:h-[460px] w-full rounded-none overflow-hidden border border-slate-200 shadow-xl bg-slate-100">
                   <Image
                     src={founderImage}
                     alt={founderImageAlt}
@@ -508,7 +508,7 @@ export default async function AboutPage({
                 </div>
               ) : (
                 /* Architectural Leadership Card Fallback */
-                <div className="relative h-[460px] w-full rounded-none overflow-hidden border border-slate-200/80 bg-white p-8 md:p-10 shadow-lg flex flex-col justify-between">
+                <div className="relative h-[360px] sm:h-[420px] lg:h-[460px] w-full rounded-none overflow-hidden border border-slate-200/80 bg-white p-8 md:p-10 shadow-lg flex flex-col justify-between">
                   <div
                     className="absolute inset-0 pointer-events-none opacity-[0.03]"
                     style={{
@@ -664,7 +664,7 @@ export default async function AboutPage({
                   >
                     <div>
                       {/* Photo Area with Consistent Aspect Ratio */}
-                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100 border-b border-slate-100">
+                      <div className="relative aspect-square w-full overflow-hidden bg-slate-100 border-b border-slate-100">
                         {m.img ? (
                           <Image
                             src={m.img}

@@ -663,7 +663,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
 
                       {/* Image Side */}
                       <div className="flex-1 w-full">
-                        <div className="relative h-[280px] sm:h-[340px] w-full rounded-none overflow-hidden shadow-xl border border-slate-200">
+                        <div className="relative h-[260px] sm:h-[340px] lg:h-[380px] w-full rounded-none overflow-hidden shadow-xl border border-slate-200">
                           {imgSrc && (
                             <Image 
                               src={imgSrc} 
@@ -671,7 +671,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                               fill
                               sizes="(max-width: 1024px) 100vw, 50vw"
                               unoptimized={!isOptimizableImage(imgSrc)}
-                              className="object-cover"
+                              className="object-cover object-center"
                             />
                           )}
                           <div className={`absolute top-1/2 -translate-y-1/2 ${isEven ? '-left-4' : '-right-4'} w-8 h-20 bg-construction-red hidden lg:block`} />
@@ -696,7 +696,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                         </h3>
                       </div>
                       <div className="flex-1 w-full">
-                        <div className="relative h-[280px] w-full shadow-lg border border-slate-200">
+                        <div className="relative h-[260px] sm:h-[340px] lg:h-[380px] w-full rounded-none overflow-hidden shadow-xl border border-slate-200">
                           {imgSrc && (
                             <Image 
                               src={imgSrc} 
@@ -704,7 +704,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                               fill
                               sizes="(max-width: 1024px) 100vw, 50vw"
                               unoptimized={!isOptimizableImage(imgSrc)}
-                              className="object-cover"
+                              className="object-cover object-center"
                             />
                           )}
                         </div>

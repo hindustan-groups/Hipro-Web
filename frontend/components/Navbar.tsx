@@ -618,7 +618,7 @@ export default function Navbar({
                               loading="lazy"
                               fetchPriority="low"
                               unoptimized={!isOptimizableImage(link.megaMenuImage)}
-                              className="object-cover opacity-45 group-hover/feature:scale-105 group-hover/feature:opacity-55 transition-all duration-700"
+                              className="object-cover object-center opacity-45 group-hover/feature:scale-105 group-hover/feature:opacity-55 transition-all duration-700"
                             />
                             
                             {/* Rich Gradient Overlay */}

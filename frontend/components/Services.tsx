@@ -94,7 +94,7 @@ export default function Services({ services = [], settings }: { services?: Servi
             return (
               <div 
                 key={index}
-                className="group relative h-[320px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
+                className="group relative h-[340px] sm:h-[360px] md:h-[380px] w-full rounded-[2rem] overflow-hidden shadow-lg shadow-slate-900/10 bg-slate-900"
               >
                 {/* Background Image */}
                 <Image 
@@ -104,14 +104,14 @@ export default function Services({ services = [], settings }: { services?: Servi
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   unoptimized={!isOptimizableImage(imageUrl)}
                   loading="lazy"
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 />
                 
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 transition-opacity duration-300" />
                 
                 {/* Content Box */}
-                <div className="absolute bottom-0 left-0 w-full p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6 z-10">
+                <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 z-10">
                   
                   <div className="flex-1">
                     <h3 className="text-3xl md:text-4xl font-bold text-white font-display mb-3 leading-tight">
