@@ -393,7 +393,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                             src={block.content}
                             alt={block.items?.[0] || post.title}
                             loading="lazy"
-                            className="w-full max-h-[550px] object-cover rounded-none border border-slate-200 shadow-md"
+                            className="w-full h-auto max-h-[580px] object-contain rounded-none border border-slate-200 shadow-md bg-slate-50 mx-auto block"
                           />
                           {block.items?.[0] && (
                             <figcaption className="text-xs text-slate-500 mt-2.5 text-center italic">

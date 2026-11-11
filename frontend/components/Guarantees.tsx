@@ -122,7 +122,7 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
 
                   {/* Media (Image) */}
                   <div className="w-full md:w-1/2 pl-16 md:pl-0 relative">
-                    <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden border border-slate-200 shadow-xl bg-slate-50">
+                    <div className="relative h-[260px] sm:h-[320px] md:h-[400px] w-full overflow-hidden border border-slate-200 shadow-xl bg-slate-50">
                       {item.image && (
                         <Image 
                           src={item.image} 
@@ -130,7 +130,7 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
                           fill
                           sizes="(max-width: 768px) 100vw, 50vw"
                           unoptimized={!isOptimizableImage(item.image)}
-                          className="object-cover" 
+                          className="object-cover object-center" 
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />

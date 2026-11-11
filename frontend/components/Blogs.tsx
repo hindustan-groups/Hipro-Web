@@ -107,16 +107,16 @@ export default function Blogs({ posts = [] }: { posts?: BlogPost[] }) {
                 className="group flex flex-col sm:flex-row flex-1 bg-slate-50 border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-300 overflow-hidden min-h-[220px] lg:min-h-0"
               >
                 {/* Thumbnail Image */}
-                <div className="relative w-full sm:w-44 md:w-48 lg:w-44 xl:w-52 h-48 sm:h-auto shrink-0 overflow-hidden bg-slate-900">
+                <div className="relative w-full sm:w-48 md:w-52 lg:w-48 xl:w-56 h-48 sm:h-auto sm:min-h-[190px] shrink-0 overflow-hidden bg-slate-900">
                   {post.image ? (
                     <Image
                       src={post.image}
                       alt={post.imageAlt || post.title}
                       fill
-                      sizes="(max-width: 640px) 100vw, 200px"
+                      sizes="(max-width: 640px) 100vw, 240px"
                       unoptimized={!isOptimizableImage(post.image)}
                       loading="lazy"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-400 text-xs">

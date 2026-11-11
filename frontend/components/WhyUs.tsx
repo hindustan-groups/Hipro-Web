@@ -17,7 +17,7 @@ export default function WhyUs({ isH1 = false }: { isH1?: boolean }) {
           {/* Left: Image Composition */}
           <div className="relative">
             {/* Main Image */}
-            <div className="relative h-[600px] w-full rounded-none overflow-hidden shadow-2xl border border-slate-200/80 z-10">
+            <div className="relative h-[340px] sm:h-[440px] md:h-[500px] lg:h-[600px] w-full rounded-none overflow-hidden shadow-2xl border border-slate-200/80 z-10">
               <Image 
                 src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=75" 
                 alt="Construction Management" 
@@ -26,17 +26,17 @@ export default function WhyUs({ isH1 = false }: { isH1?: boolean }) {
                 className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-8 left-8 right-8">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-none">
-                  <h4 className="text-white font-bold font-display uppercase tracking-wider text-xl mb-1">Building The Future</h4>
-                  <p className="text-slate-300 text-sm font-light">Engineering landmark infrastructure across Rajasthan &amp; beyond.</p>
+              <div className="absolute bottom-6 sm:bottom-8 left-6 sm:left-8 right-6 sm:right-8">
+                <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 sm:p-5 rounded-none">
+                  <h4 className="text-white font-bold font-display uppercase tracking-wider text-lg sm:text-xl mb-1">Building The Future</h4>
+                  <p className="text-slate-300 text-xs sm:text-sm font-light">Engineering landmark infrastructure across Rajasthan &amp; beyond.</p>
                 </div>
               </div>
             </div>
 
             {/* Decorative Elements */}
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-construction-red z-0" />
-            <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-slate-200 z-0 border border-slate-300" />
+            <div className="absolute -top-4 sm:-top-6 -left-4 sm:-left-6 w-24 sm:w-32 h-24 sm:h-32 bg-construction-red z-0" />
+            <div className="absolute -bottom-4 sm:-bottom-6 -right-4 sm:-right-6 w-36 sm:w-48 h-36 sm:h-48 bg-slate-200 z-0 border border-slate-300" />
             
             {/* Floating Stats */}
             <div className="absolute top-12 -right-8 z-20 bg-white shadow-xl border border-slate-200/80 p-5 hidden md:block">

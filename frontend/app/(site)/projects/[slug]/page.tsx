@@ -579,7 +579,7 @@ export default async function ProjectDetailPage({
         {/* Primary Cover Image Hero Showcase */}
         {project.image && (
           <div className="mt-10 sm:mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <figure className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[560px] overflow-hidden bg-slate-100 border border-slate-200 shadow-md">
+            <figure className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/9] max-h-[560px] overflow-hidden bg-slate-100 border border-slate-200 shadow-md">
               <Image
                 src={project.image}
                 alt={project.imageAlt || `${project.title} - Architectural Engineering Execution Perspective`}
@@ -587,7 +587,7 @@ export default async function ProjectDetailPage({
                 priority
                 sizes="100vw"
                 unoptimized={!isOptimizableImage(project.image)}
-                className="object-cover"
+                className="object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-60" />
               {project.imageCaption && (
