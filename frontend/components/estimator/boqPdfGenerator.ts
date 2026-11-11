@@ -261,7 +261,7 @@ export function generateAndPrintBOQ(
       <h1 class="brand-title">Hindustan Projects</h1>
       <div class="brand-sub">HiPRO Engineering & Turnkey Construction</div>
       <div style="font-size: 9.5px; color: #475569; margin-top: 4px;">
-        ISO 9001:2015 Certified Civil Engineering & Turnkey Contracting
+        Professional Civil Engineering & Turnkey Contracting
       </div>
     </div>
     <div class="company-meta">
@@ -302,7 +302,7 @@ export function generateAndPrintBOQ(
     <div class="price-sub">
       <div>Effective Unit Rate: <strong>₹${result.effectiveRatePerSqft} / sq.ft</strong></div>
       <div>Construction Timeline: <strong>${result.timelineMonths}</strong></div>
-      <div>Structural Warranty: <strong>${tierConfig.specs.warranty}</strong></div>
+      ${tierConfig?.specs?.warranty ? `<div>Structural Warranty: <strong>${tierConfig.specs.warranty}</strong></div>` : ""}
     </div>
   </div>
 

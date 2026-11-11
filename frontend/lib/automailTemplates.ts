@@ -59,9 +59,9 @@ export function getCorporateEmailHeader(
   const badgeBg = isHbs ? "rgba(239, 68, 68, 0.25)" : isEmp ? "rgba(245, 158, 11, 0.25)" : "rgba(220, 38, 38, 0.25)";
   const badgeColor = isHbs ? "#fecaca" : isEmp ? "#fef3c7" : "#fca5a5";
 
-  const trust1 = isHbs ? "10-Yr Waterproofing Warranty" : isEmp ? "Central Vendor Registry" : "ISO 9001:2015 Certified";
-  const trust2 = isHbs ? "Thermal Moisture Audit" : isEmp ? "14-Day RA Bill Clearance" : "Govt Approved EPC";
-  const trust3 = isHbs ? "German Polymer PU Tech" : isEmp ? "Active Commercial Tenders" : "150+ Landmarks Built";
+  const trust1 = isHbs ? "Documented Workmanship Warranties" : isEmp ? "Central Vendor Registry" : "Quality-First Execution";
+  const trust2 = isHbs ? "Thermal Moisture Audit" : isEmp ? "14-Day RA Bill Clearance" : "Turnkey EPC Contracting";
+  const trust3 = isHbs ? "German Polymer PU Tech" : isEmp ? "Active Commercial Tenders" : "Pan-Rajasthan Footprint";
 
   return `<!-- Top Metadata Strip -->
 <tr>
@@ -306,16 +306,16 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
                 <tr>
                   <td align="center" style="width: 33.3%; padding: 12px; background-color: #0f172a; border-radius: 8px 0 0 8px; color: #ffffff;">
-                    <span style="font-size: 20px; font-weight: 800; color: #38bdf8;">150+</span><br/>
-                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Projects Built</span>
+                    <span style="font-size: 16px; font-weight: 800; color: #38bdf8;">Turnkey</span><br/>
+                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Civil &amp; EPC</span>
                   </td>
                   <td align="center" style="width: 33.3%; padding: 12px; background-color: #1e293b; color: #ffffff;">
-                    <span style="font-size: 20px; font-weight: 800; color: #4ade80;">100%</span><br/>
-                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">On-Time Delivery</span>
+                    <span style="font-size: 16px; font-weight: 800; color: #4ade80;">Verified</span><br/>
+                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Execution</span>
                   </td>
                   <td align="center" style="width: 33.3%; padding: 12px; background-color: #0f172a; border-radius: 0 8px 8px 0; color: #ffffff;">
-                    <span style="font-size: 20px; font-weight: 800; color: #f87171;">5★</span><br/>
-                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Client Rating</span>
+                    <span style="font-size: 16px; font-weight: 800; color: #f87171;">Engineered</span><br/>
+                    <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">Standards</span>
                   </td>
                 </tr>
               </table>
@@ -582,16 +582,16 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
   },
 
   // ─────────────────────────────────────────────────────────────
-  // 5. Hind Build 10-Year Terrace Waterproofing Proposal
+  // 5. Hind Build Terrace Waterproofing Proposal
   // ─────────────────────────────────────────────────────────────
   {
     id: "hbs_roof_waterproofing_quote",
-    title: "Terrace Waterproofing Proposal & 10-Year Warranty",
+    title: "Terrace Waterproofing Proposal & Documented Warranty",
     category: "Building Repair & Maintenance",
     brand: "hbs",
-    badge: "10-Yr Warranty",
+    badge: "Written Warranty",
     description: "Detailed proposal for terrace waterproofing with multi-coat acrylic & polyurethane elastomeric systems.",
-    subject: "Terrace Waterproofing Proposal & 10-Year Warranty for {{name}}",
+    subject: "Terrace Waterproofing Proposal & Warranty for {{name}}",
     senderName: "Hind Building Waterproofing Desk",
     senderEmail: "hbs@hindustanprojects.in",
     html: `<!DOCTYPE html>
@@ -607,7 +607,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15,23,42,0.08);">
           
-          ${getCorporateEmailHeader("hbs", { badge: "Certified 10-Year Waterproofing Warranty" })}
+          ${getCorporateEmailHeader("hbs", { badge: "Certified Waterproofing Warranty" })}
 
           <tr>
             <td style="padding: 28px 24px; color: #1e293b;">
@@ -617,7 +617,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
               </p>
 
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
-                <p style="margin: 0; font-size: 13px; font-weight: 800; color: #065f46;">🛡️ Official 10-Year Stamp Certificate Included</p>
+                <p style="margin: 0; font-size: 13px; font-weight: 800; color: #065f46;">🛡️ Official Workmanship Warranty Certificate Included</p>
                 <p style="margin: 4px 0 0; font-size: 12px; color: #047857; line-height: 1.5;">
                   Covers crack-bridging capability, thermal insulation reduction (lowers terrace temperature by 5-7°C), and zero seepage guarantee.
                 </p>

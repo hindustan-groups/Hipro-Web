@@ -52,9 +52,9 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     helplinePhone: "+91 75970 00601",
     divisionLabel: "Civil Engineering, EPC & Turnkey Infrastructure Directorate",
     trustPoints: [
-      "ISO 9001:2015 Quality Certified",
-      "Govt Approved EPC Contractor",
-      "150+ Verified Completed Landmarks",
+      "Quality-First Civil Execution",
+      "Turnkey EPC & PMC Execution",
+      "Pan-Rajasthan Project Footprint",
     ],
   },
   hbs: {
@@ -73,7 +73,7 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     helplinePhone: "+91 75970 00601",
     divisionLabel: "HiBUILD Property Protection & Waterproofing Division • Hindustan Projects",
     trustPoints: [
-      "10-Year Waterproofing Warranty",
+      "Documented Workmanship Warranties",
       "Non-Destructive Thermal Leakage Audit",
       "German Polymer & PU Chemical Tech",
     ],
@@ -115,8 +115,8 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     helplinePhone: "+91 75970 00601",
     divisionLabel: "Hindustan Projects Group • Engineering, Infrastructure & Building Care",
     trustPoints: [
-      "ISO 9001:2015 Quality Certified",
-      "Govt Approved EPC Contractor",
+      "Quality-First Civil Execution",
+      "Turnkey EPC & PMC Execution",
       "Pan-Rajasthan Project Footprint",
     ],
   },
