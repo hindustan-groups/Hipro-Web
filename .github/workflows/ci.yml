@@ -1,0 +1,229 @@
+name: CI Quality Gates
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz" | tar -xz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run Gitleaks detect
+        run: |
+          gitleaks detect --verbose --redact --config=.gitleaks.toml
+
+  backend-unit-tests:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Generate Prisma Client
+        run: npx --prefix backend prisma generate --schema=backend/prisma/schema.prisma
+
+      - name: Run backend unit tests (9 suites, 385 tests)
+        run: npm run test:unit --prefix backend
+
+  frontend-unit-tests:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Run frontend unit tests (7 suites, 121 tests)
+        run: npm run test:unit --prefix frontend
+
+  backend-build:
+    name: Backend TypeScript Build
+    needs: backend-unit-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Generate Prisma Client
+        run: npx --prefix backend prisma generate --schema=backend/prisma/schema.prisma
+
+      - name: Compile backend TypeScript (tsc)
+        run: npm run build --prefix backend
+
+  frontend-build:
+    name: Frontend Production Build & Smoke Tests
+    needs: frontend-unit-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Build Next.js application (next build)
+        env:
+          BACKEND_API_URL: "http://localhost:5000"
+          NODE_ENV: "production"
+        run: npm run build --prefix frontend
+
+      - name: Run Next.js redirect smoke tests (28 checks covering 8 redirect rules)
+        env:
+          BACKEND_API_URL: "http://localhost:5000"
+        run: npm run test:smoke --prefix frontend
+
+  backend-integration-tests:
+    name: Backend Integration Tests (Isolated PostgreSQL Container)
+    needs: backend-unit-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: hipro_ci_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_test_password_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://postgres:ci_test_password_local_only@localhost:5432/hipro_ci_test?schema=public"
+      ADMIN_SESSION_SECRET: "ci_test_session_secret_32_characters_long_min!"
+      NODE_ENV: "test"
+      PORT: "5000"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Generate Prisma Client
+        run: npx --prefix backend prisma generate --schema=backend/prisma/schema.prisma
+
+      - name: Push Prisma Schema to Ephemeral Test Database
+        run: npx --prefix backend prisma db push --schema=backend/prisma/schema.prisma --skip-generate
+
+      - name: Run backend integration tests (8 suites, 127 tests)
+        run: npm run test:integration --prefix backend
+
+  ci-quality-gate:
+    name: CI Quality Gate / All Checks Passed
+    needs:
+      - secret-scan
+      - backend-unit-tests
+      - frontend-unit-tests
+      - backend-build
+      - frontend-build
+      - backend-integration-tests
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Verify all required jobs passed
+        run: |
+          echo "=================================================="
+          echo "  HINDUSTAN PROJECTS — CI QUALITY GATE SUMMARY   "
+          echo "=================================================="
+          echo "Secret Scanning (Gitleaks):      ${{ needs.secret-scan.result }}"
+          echo "Backend Unit Tests:              ${{ needs.backend-unit-tests.result }}"
+          echo "Frontend Unit Tests:             ${{ needs.frontend-unit-tests.result }}"
+          echo "Backend TypeScript Build:        ${{ needs.backend-build.result }}"
+          echo "Frontend Build & Smoke Tests:    ${{ needs.frontend-build.result }}"
+          echo "Backend Integration Tests:       ${{ needs.backend-integration-tests.result }}"
+          echo "=================================================="
+
+          if [ "${{ needs.secret-scan.result }}" != "success" ] || \
+             [ "${{ needs.backend-unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.frontend-unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.backend-build.result }}" != "success" ] || \
+             [ "${{ needs.frontend-build.result }}" != "success" ] || \
+             [ "${{ needs.backend-integration-tests.result }}" != "success" ]; then
+            echo "FAILED: One or more CI Quality Gates did not pass!"
+            exit 1
+          fi
+
+          echo "SUCCESS: All CI Quality Gates passed cleanly!"

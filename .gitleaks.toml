@@ -1,0 +1,18 @@
+# Gitleaks Configuration for Hindustan Projects Ecosystem
+# Extends default gitleaks rules with strictly justified file-level allowlists.
+# Zero directory-wide exclusions; real credentials across all directories are strictly detected.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Strict file-level allowlist for environment templates and isolated CI test fixtures"
+paths = [
+  '''^\.env\.example$''',
+  '''^frontend/\.env\.example$''',
+  '''^backend/\.env\.example$'''
+]
+regexes = [
+  '''(?i)ci_test_password_local_only''',
+  '''(?i)hipro_ci_test'''
+]

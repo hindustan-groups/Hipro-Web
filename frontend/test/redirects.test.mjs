@@ -183,7 +183,7 @@ async function runTests() {
       BACKEND_API_URL: "http://localhost:5000",
       PORT: String(TEST_PORT),
     },
-    stdio: "pipe",
+    stdio: "ignore",
   });
 
   try {
@@ -376,14 +376,14 @@ async function runTests() {
       );
     });
   } finally {
-    if (process.platform === "win32") {
-      try {
+    try {
+      if (process.platform === "win32") {
         spawn("taskkill", ["/pid", String(serverProc.pid), "/f", "/t"]);
-      } catch {
+      } else {
         serverProc.kill("SIGKILL");
       }
-    } else {
-      serverProc.kill("SIGTERM");
+    } catch {
+      // ignore cleanup errors
     }
   }
 
@@ -391,9 +391,7 @@ async function runTests() {
   console.log(`TOTAL REDIRECT TESTS: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);
   console.log("----------------------------------------------------------\n");
 
-  if (failed > 0) {
-    process.exit(1);
-  }
+  process.exit(failed > 0 ? 1 : 0);
 }
 
 runTests().catch((err) => {

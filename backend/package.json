@@ -9,8 +9,11 @@
     "db:push": "prisma db push",
     "start": "node dist/index.js",
     "create-admin": "tsx src/scripts/create-admin.ts",
+    "postinstall": "prisma generate",
     "test:excel-parser": "tsx src/scripts/test_exceljs_csv_parser.ts",
-    "postinstall": "prisma generate"
+    "test:unit": "tsx src/scripts/test-local-safety.ts && tsx src/scripts/test_admin_url_security.ts && tsx src/scripts/test_automail_auth.ts && tsx src/scripts/test_cloudinary_security.ts && tsx src/scripts/test_exceljs_csv_parser.ts && tsx src/scripts/test_security_headers.ts && tsx src/scripts/test_sliding_session.ts && tsx src/scripts/test_upload_hardening.ts && tsx src/scripts/test_rbac_authorization.ts",
+    "test:integration": "tsx src/scripts/run_integration_tests.ts",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
