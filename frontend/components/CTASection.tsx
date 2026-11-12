@@ -4,6 +4,7 @@ import { findAll } from "@/lib/db";
 import type { Settings } from "@/lib/types";
 import { COMPANY_INFO } from "@/lib/companyData";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
+import { getGeneralWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 export default async function CTASection() {
   const settingsData = await findAll<Settings>("settings");
@@ -20,7 +21,7 @@ export default async function CTASection() {
   const telLink = ctaPhone?.destination
     ? resolveCTAHref(ctaPhone)
     : `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, "")}`;
-  const whatsappHref = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : COMPANY_INFO.whatsappLink;
+  const whatsappHref = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : getGeneralWhatsAppUrl(COMPANY_INFO.whatsappNumber);
 
   return (
     <section id="section-cta" className="py-20 px-4 bg-white relative">

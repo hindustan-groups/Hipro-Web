@@ -5,6 +5,7 @@ import { findAll } from "@/lib/db";
 import type { Settings, Service, ContactPageContent } from "@/lib/types";
 import { COMPANY_INFO } from "@/lib/companyData";
 import { generateBreadcrumbSchema, generateContactPageSchema } from "@/lib/schema";
+import { getContactWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 export const revalidate = 60;
 
@@ -233,7 +234,7 @@ export default async function ContactPage() {
             </a>
 
             <a
-              href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+              href={getContactWhatsAppUrl(whatsappNumber)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3.5 rounded-none text-xs uppercase tracking-wider font-display shadow-md shadow-emerald-900/30 transition-all hover:translate-y-[-1px]"
@@ -385,7 +386,7 @@ export default async function ContactPage() {
                 </div>
               </div>
               <a
-                href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+                href={getContactWhatsAppUrl(whatsappNumber, { isDrawingReview: true })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="shrink-0 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider transition-colors font-display shadow-xs inline-flex items-center gap-1.5"
