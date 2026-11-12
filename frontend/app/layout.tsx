@@ -14,7 +14,6 @@ const montserrat = Montserrat({
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-playfair",
   display: "swap",
@@ -24,10 +23,10 @@ const playfair = Playfair_Display({
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
   variable: "--font-mono",
   display: "swap",
   fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
