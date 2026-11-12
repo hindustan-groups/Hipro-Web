@@ -1,11 +1,14 @@
+import dynamic from "next/dynamic";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import PopupForm from "@/components/PopupForm";
 import MobileStickyBar from "@/components/MobileStickyBar";
-import CookieConsent from "@/components/CookieConsent";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 import { HIPRO_JSON_LD } from "@/lib/hiproJsonLd";
+
+// Code-split non-critical delayed overlays so they do not block critical path hydration
+const PopupForm = dynamic(() => import("@/components/PopupForm"), { ssr: false });
+const CookieConsent = dynamic(() => import("@/components/CookieConsent"), { ssr: false });
 
 export const revalidate = 60;
 

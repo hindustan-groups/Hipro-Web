@@ -3,15 +3,14 @@ import Hero from "@/components/Hero";
 import HomeAbout from "@/components/HomeAbout";
 import Guarantees from "@/components/Guarantees";
 import Services from "@/components/Services";
-import Projects from "@/components/Projects";
+import HomeImageShowcase from "@/components/HomeImageShowcase";
+import GroupEcosystem from "@/components/GroupEcosystem";
 import Blogs from "@/components/Blogs";
 import CTASection from "@/components/CTASection";
-import AnimateIn from "@/components/AnimateIn";
 
-// Code-split heavy below-the-fold client components while preserving full SSR for SEO
+// Code-split heavy interactive client components while preserving full SSR for SEO
 const CostEstimator = dynamic(() => import("@/components/CostEstimator"), { ssr: true });
-const HomeImageShowcase = dynamic(() => import("@/components/HomeImageShowcase"), { ssr: true });
-const GroupEcosystem = dynamic(() => import("@/components/GroupEcosystem"), { ssr: true });
+const Projects = dynamic(() => import("@/components/Projects"), { ssr: true });
 const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: true });
 const FaqSection = dynamic(() => import("@/components/FaqSection"), { ssr: true });
 import { findAll, findLimited } from "@/lib/db";
@@ -121,17 +120,17 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
       <Hero initialSlides={slidedata} initialStats={statsdata} settings={settings} />
-      <AnimateIn><HomeAbout pageContent={pageContent} projectCount={projectCount} settings={settings} /></AnimateIn>
-      <AnimateIn><Services services={servicesData} settings={settings} /></AnimateIn>
-      <AnimateIn delay={100}><Guarantees guarantees={guaranteesData} /></AnimateIn>
-      <AnimateIn delay={200}><CostEstimator /></AnimateIn>
-      <Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} />
-      <HomeImageShowcase content={pageContent.imageShowcase} />
-      <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
-      <AnimateIn><Blogs posts={blogsData} /></AnimateIn>
-      <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
-      <AnimateIn><FaqSection /></AnimateIn>
-      <AnimateIn><CTASection /></AnimateIn>
+      <HomeAbout pageContent={pageContent} projectCount={projectCount} settings={settings} />
+      <Services services={servicesData} settings={settings} />
+      <Guarantees guarantees={guaranteesData} />
+      <div className="content-visibility-auto"><CostEstimator /></div>
+      <div className="content-visibility-auto"><Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} /></div>
+      <div className="content-visibility-auto"><HomeImageShowcase content={pageContent.imageShowcase} /></div>
+      <div className="content-visibility-auto"><GroupEcosystem pageContent={pageContent} /></div>
+      <div className="content-visibility-auto"><Blogs posts={blogsData} /></div>
+      <div className="content-visibility-auto"><Testimonials testimonials={testimonialsData} /></div>
+      <div className="content-visibility-auto"><FaqSection /></div>
+      <div className="content-visibility-auto"><CTASection /></div>
     </>
   );
 }

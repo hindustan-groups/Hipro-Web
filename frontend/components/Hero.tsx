@@ -243,7 +243,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
       
       {/* Background Images Slider */}
       <div className="absolute inset-0 z-0 bg-slate-950">
-        {(mounted ? activeSlideList : activeSlideList.slice(0, 1)).map((slide, idx) => {
+        {(currentSlide === 0 ? activeSlideList.slice(0, 1) : activeSlideList).map((slide, idx) => {
           const validImg = slide.image && slide.image.trim() !== "" 
             ? slide.image 
             : fallbackHeroImages[idx % fallbackHeroImages.length];
@@ -260,7 +260,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                 alt={slide.title || "Construction Project"}
                 priority={idx === 0}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                sizes="100vw"
                 quality={75}
                 unoptimized={!isOptimizableImage(validImg)}
                 className={`object-cover object-center transition-transform duration-[10000ms] ${
@@ -286,7 +286,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
       <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center h-full pt-32 pb-24">
         <div className="w-full grid lg:grid-cols-12 gap-12 items-center">
           
-          <div className="lg:col-span-7 xl:col-span-8 animate-fade-in relative">
+          <div className={`lg:col-span-7 xl:col-span-8 ${currentSlide > 0 ? "animate-fade-in" : ""} relative`}>
             {/* Decorative line */}
             <div className="absolute -left-8 top-12 bottom-12 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent hidden lg:block" />
             
@@ -305,22 +305,22 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
             <div className="min-h-[160px] md:min-h-[200px]">
               <h1 
                 key={`title-${currentSlide}`} 
-                className="text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-bold text-white leading-[1.05] mb-6 font-display tracking-tighter animate-fade-up drop-shadow-2xl"
+                className={`text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-bold text-white leading-[1.05] mb-6 font-display tracking-tighter ${currentSlide > 0 ? "animate-fade-up" : ""} drop-shadow-2xl`}
               >
                 {formatHeroTitle(cleanHeroText(activeSlide.title))}
               </h1>
               
               <p 
                 key={`desc-${currentSlide}`}
-                className="text-lg md:text-xl text-slate-200 max-w-2xl font-light leading-relaxed animate-fade-up border-l-2 border-construction-red pl-6"
-                style={{ animationDelay: "0.2s" }}
+                className={`text-lg md:text-xl text-slate-200 max-w-2xl font-light leading-relaxed ${currentSlide > 0 ? "animate-fade-up" : ""} border-l-2 border-construction-red pl-6`}
+                style={currentSlide > 0 ? { animationDelay: "0.2s" } : undefined}
               >
                 {cleanHeroText(activeSlide.subtitle)}
               </p>
             </div>
 
             {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-5 mt-10 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+            <div className={`flex flex-col sm:flex-row gap-5 mt-10 ${currentSlide > 0 ? "animate-fade-up" : ""}`} style={currentSlide > 0 ? { animationDelay: "0.4s" } : undefined}>
               {ctaPrimary?.enabled !== false && (
                 <Link
                   href={ctaPrimary ? resolveCTAHref(ctaPrimary) : "/contact"}

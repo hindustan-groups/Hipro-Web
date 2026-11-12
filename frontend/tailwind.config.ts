@@ -14,7 +14,7 @@ const config: Config = {
         serif:   ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
         accent:  ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
         // HBS: Technical/data mono for metrics, service numbers, and spec values
-        mono:    ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
+        mono:    ["var(--font-mono)", "JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       colors: {
         surface: {

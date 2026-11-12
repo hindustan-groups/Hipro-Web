@@ -29,7 +29,7 @@ export default function AnimateIn({
           observer.disconnect();
         }
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.05, rootMargin: "50px" }
     );
     
     if (ref.current) {
@@ -41,19 +41,19 @@ export default function AnimateIn({
 
   const getHiddenTransform = () => {
     switch (direction) {
-      case "down": return "-translate-y-8";
-      case "left": return "translate-x-8";
-      case "right": return "-translate-x-8";
+      case "down": return "-translate-y-4";
+      case "left": return "translate-x-4";
+      case "right": return "-translate-x-4";
       case "fade": return "";
       case "up":
-      default: return "translate-y-10";
+      default: return "translate-y-4";
     }
   };
 
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
+      className={`transition-[opacity,transform] duration-500 ease-out will-change-[opacity,transform] ${
         isVisible 
           ? "opacity-100 translate-x-0 translate-y-0" 
           : `opacity-0 ${getHiddenTransform()}`
