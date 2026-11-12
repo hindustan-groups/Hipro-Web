@@ -6,7 +6,10 @@
     "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:unit": "node test/admin-projects-cms.test.mjs && node test/admin-site-stats.test.mjs && node test/analytics.test.mjs && node --test test/batch1-code-fixes.test.mjs && node test/canonical-schema-alignment.test.mjs && node test/canonical-slug-normalization.test.mjs && node test/local-safety.test.mjs",
+    "test:smoke": "node test/redirects.test.mjs",
+    "test": "npm run test:unit"
   },
   "dependencies": {
     "lucide-react": "^0.263.1",

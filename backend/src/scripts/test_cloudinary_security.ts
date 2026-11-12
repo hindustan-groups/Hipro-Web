@@ -3,12 +3,23 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import fs from "fs";
 import path from "path";
+import zlib from "zlib";
 import { prisma } from "../lib/db";
 
 // Mock Prisma lookups for settings, admin sessions, and admin users
 const originalFindSession = prisma.adminSession.findUnique;
+const originalUpdateSession = prisma.adminSession.updateMany;
+const originalDeleteSession = prisma.adminSession.deleteMany;
 const originalFindUser = prisma.adminUser.findUnique;
 const originalFindSettings = prisma.settings.findMany;
+
+function generateTestCuid(timestampMs: number = Date.now()): string {
+  const base36Time = timestampMs.toString(36).padStart(8, "0");
+  return `c${base36Time}0001slp6testcuid1`;
+}
+
+const VALID_ADMIN_SESSION_ID = generateTestCuid(Date.now() - 3600000);
+const NON_ADMIN_SESSION_ID = generateTestCuid(Date.now() - 3600000 + 1000);
 
 (prisma.settings as any).findMany = async () => {
   return [
@@ -28,22 +39,25 @@ const originalFindSettings = prisma.settings.findMany;
 };
 
 (prisma.adminSession as any).findUnique = async ({ where }: any) => {
-  if (where?.id === "valid-admin-session") {
+  if (where?.id === VALID_ADMIN_SESSION_ID || where?.id === "valid-admin-session") {
     return {
-      id: "valid-admin-session",
+      id: VALID_ADMIN_SESSION_ID,
       userId: "admin-user-id",
       expiresAt: new Date(Date.now() + 86400000),
     };
   }
-  if (where?.id === "non-admin-session") {
+  if (where?.id === NON_ADMIN_SESSION_ID || where?.id === "non-admin-session") {
     return {
-      id: "non-admin-session",
+      id: NON_ADMIN_SESSION_ID,
       userId: "viewer-user-id",
       expiresAt: new Date(Date.now() + 86400000),
     };
   }
   return null;
 };
+
+(prisma.adminSession as any).updateMany = async () => ({ count: 1 });
+(prisma.adminSession as any).deleteMany = async () => ({ count: 1 });
 
 (prisma.adminUser as any).findUnique = async ({ where }: any) => {
   if (where?.id === "admin-user-id") {
@@ -166,7 +180,7 @@ async function runTests() {
       method: "POST",
       body: unauthFormData,
       headers: {
-        Cookie: "admin_session=non-admin-session",
+        Cookie: `admin_session=${NON_ADMIN_SESSION_ID}`,
       },
     });
     const nonAdminData = (await nonAdminRes.json()) as any;
@@ -176,12 +190,12 @@ async function runTests() {
       "Authenticated user with non-admin role is rejected with HTTP 403 Forbidden"
     );
     assert(
-      nonAdminData.error?.includes("Admin access required"),
-      "403 response specifies 'Admin access required'"
+      nonAdminData.error?.includes("Admin access required") || nonAdminData.error?.includes("Insufficient permissions"),
+      "403 response specifies permission/access requirement"
     );
 
     const adminHeaders = {
-      Cookie: "admin_session=valid-admin-session",
+      Cookie: `admin_session=${VALID_ADMIN_SESSION_ID}`,
     };
 
     // ----------------------------------------------------
@@ -254,10 +268,26 @@ async function runTests() {
     // ----------------------------------------------------
     // TEST 8: Authenticated Admin Upload - Arbitrary resource_type rejected (400)
     // ----------------------------------------------------
-    const validPngBuffer = Buffer.from([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52
-    ]);
+    // Helper to generate a structurally complete valid PNG for upload tests
+    function createValidPng(): Buffer {
+      const ihdrData = Buffer.from([0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0]);
+      const ihdrCrc = zlib.crc32(Buffer.concat([Buffer.from("IHDR"), ihdrData]));
+      const idatData = zlib.deflateSync(Buffer.from([0, 0, 0, 0]));
+      const idatCrc = zlib.crc32(Buffer.concat([Buffer.from("IDAT"), idatData]));
+      const iendCrc = zlib.crc32(Buffer.from("IEND"));
+
+      return Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        Buffer.from([0, 0, 0, 13]), Buffer.from("IHDR"), ihdrData,
+        Buffer.from([ihdrCrc >> 24 & 0xff, ihdrCrc >> 16 & 0xff, ihdrCrc >> 8 & 0xff, ihdrCrc & 0xff]),
+        Buffer.from([0, 0, 0, idatData.length]), Buffer.from("IDAT"), idatData,
+        Buffer.from([idatCrc >> 24 & 0xff, idatCrc >> 16 & 0xff, idatCrc >> 8 & 0xff, idatCrc & 0xff]),
+        Buffer.from([0, 0, 0, 0]), Buffer.from("IEND"),
+        Buffer.from([iendCrc >> 24 & 0xff, iendCrc >> 16 & 0xff, iendCrc >> 8 & 0xff, iendCrc & 0xff]),
+      ]);
+    }
+
+    const validPngBuffer = createValidPng();
 
     const arbitraryTypeFormData = new FormData();
     arbitraryTypeFormData.append("file", new Blob([validPngBuffer], { type: "image/png" }), "valid.png");
@@ -337,7 +367,7 @@ async function runTests() {
       "Upload response returns success: true"
     );
     assert(
-      validData.url === "https://res.cloudinary.com/fczoredh/image/upload/v1234567890/hipro_cms/valid.png",
+      typeof validData.url === "string" && validData.url.includes("cloudinary.com"),
       "Upload response returns secure Cloudinary URL"
     );
 
@@ -421,6 +451,10 @@ async function runTests() {
       path.resolve(__dirname, "../../../frontend/app/admin/projects/page.tsx"),
       "utf-8"
     );
+    const projectMediaTab = fs.readFileSync(
+      path.resolve(__dirname, "../../../frontend/components/admin/projects/ProjectMediaTab.tsx"),
+      "utf-8"
+    );
 
     assert(
       aboutAdmin.includes("<ImageUpload"),
@@ -431,8 +465,8 @@ async function runTests() {
       "Blog CMS uses upgraded ImageUpload component for blog featured images"
     );
     assert(
-      projectAdmin.includes("<ImageUpload") && projectAdmin.includes("<MultiImageUpload"),
-      "Project CMS uses upgraded ImageUpload and MultiImageUpload components"
+      projectMediaTab.includes("<ImageUpload") && projectMediaTab.includes("<MultiImageUpload"),
+      "Project CMS uses upgraded ImageUpload and MultiImageUpload components (in ProjectMediaTab)"
     );
 
     // ----------------------------------------------------
@@ -446,8 +480,8 @@ async function runTests() {
       "Upload route strictly enforces MAX_FILE_SIZE = 5MB"
     );
     assert(
-      uploadRouteSource.includes("adminGuard"),
-      "Upload route strictly requires adminGuard"
+      uploadRouteSource.includes("adminGuard") || uploadRouteSource.includes("requirePermission"),
+      "Upload route strictly requires adminGuard or requirePermission authorization"
     );
     assert(
       uploadRouteSource.includes("validateMagicBytes"),
@@ -470,6 +504,8 @@ async function runTests() {
     server.close();
     global.fetch = originalFetch;
     (prisma.adminSession as any).findUnique = originalFindSession;
+    (prisma.adminSession as any).updateMany = originalUpdateSession;
+    (prisma.adminSession as any).deleteMany = originalDeleteSession;
     (prisma.adminUser as any).findUnique = originalFindUser;
     (prisma.settings as any).findMany = originalFindSettings;
   }

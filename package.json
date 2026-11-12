@@ -1,0 +1,19 @@
+{
+  "name": "hipro-ecosystem",
+  "private": true,
+  "description": "Root test and build orchestration for Hindustan Projects ecosystem",
+  "scripts": {
+    "test:unit": "npm run test:unit --prefix backend && npm run test:unit --prefix frontend",
+    "test:integration": "npm run test:integration --prefix backend",
+    "test:smoke": "npm run test:smoke --prefix frontend",
+    "test:backend": "npm run test:unit --prefix backend",
+    "test:frontend": "npm run test:unit --prefix frontend",
+    "test:about-cms": "npx --prefix backend tsx scratch/test_about_cms.ts",
+    "test": "npm run test:unit",
+    "lint": "npm run lint --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend"
+  }
+}
+

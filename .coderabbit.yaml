@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+  path_filters:
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!frontend/.next/**"
+    - "!backend/dist/**"
+    - "!scratch/**"
+    - "!docs/**"
+    - "!frontend/public/images/**"
+  path_instructions:
+    - path: "frontend/**"
+      instructions: |
+        - Zero-Cropping Rule: Public-facing architectural photos, blueprints, and diagrams must strictly preserve full composition. Verify that image containers use `object-contain object-center` and do not arbitrarily crop critical details with unconstrained `object-cover`.
+        - Fail-Closed Safety: Verify that `BACKEND_API_URL` uses the centralized `getBackendUrl` helper and never points to live production in dev/test/staging environments.
+        - SEO & Canonical URLs: Ensure slugs are normalized and canonical metadata is properly populated without path duplications.
+    - path: "backend/**"
+      instructions: |
+        - RBAC & Authorization: Verify that all mutation endpoints enforce strict authorization using `requirePermission(resource)` or `adminGuard`. Never leave sensitive admin endpoints unprotected.
+        - Session Security: Verify that session tokens are validated against CUID v1 structures and sliding session expiration rules.
+        - File Upload Hardening: Verify that uploaded media is validated using magic bytes, maximum 5MB size limits, and whitelisted MIME types.
+        - Database Safety: Ensure all database operations respect the fail-closed loopback guards in `databaseSafety.ts`. Integration tests must only target `hipro_ci_test` on loopback.
+    - path: ".github/**"
+      instructions: |
+        - CI Quality Gates: Ensure all GitHub Actions are pinned to immutable commit SHAs with comments indicating the version tag.
+        - Least Privilege: Ensure workflow permissions remain strictly read-only (`permissions: contents: read`) with zero deployment or release write permissions.
+

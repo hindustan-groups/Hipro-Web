@@ -7,8 +7,18 @@ import uploadRouter from "../routes/upload";
 
 // Mock Prisma for admin sessions, admin users, and settings
 const originalFindSession = prisma.adminSession.findUnique;
+const originalUpdateSession = prisma.adminSession.updateMany;
+const originalDeleteSession = prisma.adminSession.deleteMany;
 const originalFindUser = prisma.adminUser.findUnique;
 const originalFindSettings = prisma.settings.findMany;
+
+function generateTestCuid(timestampMs: number = Date.now()): string {
+  const base36Time = timestampMs.toString(36).padStart(8, "0");
+  return `c${base36Time}0001slp6testcuid1`;
+}
+
+const VALID_ADMIN_SESSION_ID = generateTestCuid(Date.now() - 3600000);
+const NON_ADMIN_SESSION_ID = generateTestCuid(Date.now() - 3600000 + 1000);
 
 (prisma.settings as any).findMany = async () => {
   return [
@@ -28,22 +38,25 @@ const originalFindSettings = prisma.settings.findMany;
 };
 
 (prisma.adminSession as any).findUnique = async ({ where }: any) => {
-  if (where?.id === "valid-admin-session") {
+  if (where?.id === VALID_ADMIN_SESSION_ID || where?.id === "valid-admin-session") {
     return {
-      id: "valid-admin-session",
+      id: VALID_ADMIN_SESSION_ID,
       userId: "admin-user-id",
       expiresAt: new Date(Date.now() + 86400000),
     };
   }
-  if (where?.id === "non-admin-session") {
+  if (where?.id === NON_ADMIN_SESSION_ID || where?.id === "non-admin-session") {
     return {
-      id: "non-admin-session",
+      id: NON_ADMIN_SESSION_ID,
       userId: "viewer-user-id",
       expiresAt: new Date(Date.now() + 86400000),
     };
   }
   return null;
 };
+
+(prisma.adminSession as any).updateMany = async () => ({ count: 1 });
+(prisma.adminSession as any).deleteMany = async () => ({ count: 1 });
 
 (prisma.adminUser as any).findUnique = async ({ where }: any) => {
   if (where?.id === "admin-user-id") {
@@ -154,7 +167,7 @@ function createValidWebpLossless(): Buffer {
 }
 
 const adminHeaders = {
-  Cookie: "admin_session=valid-admin-session",
+  Cookie: `admin_session=${VALID_ADMIN_SESSION_ID}`,
 };
 
 async function runUploadHardeningSuite() {
@@ -806,10 +819,13 @@ async function runUploadHardeningSuite() {
         buffer: createValidPng(),
         filename: "test.png",
         mimeType: "image/png",
-        headers: { Cookie: "admin_session=non-admin-session" },
+        headers: { Cookie: `admin_session=${NON_ADMIN_SESSION_ID}` },
       });
       assert(res.status === 403, "Returns HTTP 403 Forbidden");
-      assert(res.data.error?.includes("Admin access required"), "Error specifies admin access required");
+      assert(
+        res.data.error?.includes("Admin access required") || res.data.error?.includes("Insufficient permissions"),
+        "Error specifies admin access or permission required"
+      );
     }
     endCase();
 
@@ -880,6 +896,8 @@ async function runUploadHardeningSuite() {
   } finally {
     server.close();
     (prisma.adminSession as any).findUnique = originalFindSession;
+    (prisma.adminSession as any).updateMany = originalUpdateSession;
+    (prisma.adminSession as any).deleteMany = originalDeleteSession;
     (prisma.adminUser as any).findUnique = originalFindUser;
     (prisma.settings as any).findMany = originalFindSettings;
   }
