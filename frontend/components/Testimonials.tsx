@@ -30,8 +30,20 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
   // Live client-side testimonials state initialized with SSR props
   const [liveTestimonials, setLiveTestimonials] = useState<Testimonial[]>(testimonials || []);
 
-  // Real-time synchronization: Fetch fresh approved testimonials from DB on client mount & window focus
+  // Synchronize state if SSR props update
   useEffect(() => {
+    if (testimonials && testimonials.length > 0) {
+      setLiveTestimonials(testimonials);
+    }
+  }, [testimonials]);
+
+  // Real-time synchronization: Fetch fresh approved testimonials from DB on client mount only if SSR had none
+  useEffect(() => {
+    // If SSR already supplied testimonials, avoid redundant uncached network calls and reflows
+    if (testimonials && testimonials.length > 0) {
+      return;
+    }
+
     let isMounted = true;
     const fetchLatestApproved = async () => {
       try {
@@ -50,13 +62,10 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
 
     fetchLatestApproved();
 
-    const onFocus = () => fetchLatestApproved();
-    window.addEventListener("focus", onFocus);
     return () => {
       isMounted = false;
-      window.removeEventListener("focus", onFocus);
     };
-  }, []);
+  }, [testimonials]);
 
   // Only use real approved DB testimonials — no hardcoded demo reviews!
   const validTestimonials = useMemo(() => {

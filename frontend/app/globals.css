@@ -30,7 +30,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-* {
+body, button, input, select, textarea {
   letter-spacing: -0.015em;
 }
 

@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useMemo } from "react";
+import React from "react";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import type { ImageShowcaseContent, ImageShowcaseItem } from "@/lib/types";
@@ -122,14 +120,11 @@ export function MarqueeRow({
   className = "",
 }: MarqueeRowProps) {
   // Ensure we have enough items for an uninterrupted continuous loop on ultra-wide screens
-  const baseItems = useMemo(() => {
-    if (!images || images.length === 0) return [];
-    const list = [...images];
-    while (list.length < 6) {
-      list.push(...images);
-    }
-    return list;
-  }, [images]);
+  if (!images || images.length === 0) return null;
+  const baseItems = [...images];
+  while (baseItems.length < 6) {
+    baseItems.push(...images);
+  }
 
   if (baseItems.length === 0) return null;
 
@@ -218,26 +213,21 @@ export default function HomeImageShowcase({
   className = "",
 }: HomeImageShowcaseProps) {
   // Active items from CMS or fallback to default engineering items
-  const activeItems = useMemo(() => {
-    const rawItems = content?.items && content.items.length > 0
-      ? content.items
-      : DEFAULT_SHOWCASE_ITEMS;
+  const rawItems = content?.items && content.items.length > 0
+    ? content.items
+    : DEFAULT_SHOWCASE_ITEMS;
 
-    return rawItems
-      .filter((item) => item.active !== false && item.image && item.image.trim().length > 0)
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-  }, [content]);
+  const activeItems = rawItems
+    .filter((item) => item.active !== false && item.image && item.image.trim().length > 0)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // Split or offset images so Row 1 and Row 2 show diverse complementary perspectives
-  const { row1Items, row2Items } = useMemo(() => {
-    if (activeItems.length <= 3) {
-      return { row1Items: activeItems, row2Items: activeItems };
-    }
-    // Offset row 2 by half array length so vertically adjacent cards are not identical
+  let row1Items = activeItems;
+  let row2Items = activeItems;
+  if (activeItems.length > 3) {
     const mid = Math.floor(activeItems.length / 2);
-    const row2 = [...activeItems.slice(mid), ...activeItems.slice(0, mid)];
-    return { row1Items: activeItems, row2Items: row2 };
-  }, [activeItems]);
+    row2Items = [...activeItems.slice(mid), ...activeItems.slice(0, mid)];
+  }
 
   // If explicitly disabled in CMS or no active items, render nothing
   if ((content && content.enabled === false) || activeItems.length === 0) {

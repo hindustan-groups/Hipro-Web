@@ -31,29 +31,41 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
   const timelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!timelineRef.current) return;
+    let ticking = false;
+    const updateProgress = () => {
+      if (!timelineRef.current) {
+        ticking = false;
+        return;
+      }
       
       const rect = timelineRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      
-      // We want the progress to start filling when the top of the timeline is in the middle of the screen
       const startTrigger = windowHeight / 2;
-      
       const scrollAmount = startTrigger - rect.top;
       const totalDistance = rect.height;
       
       let percentage = (scrollAmount / totalDistance) * 100;
-      
       if (percentage < 0) percentage = 0;
       if (percentage > 100) percentage = 100;
       
       setProgress(percentage);
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateProgress);
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // initialize
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Run initial measure via requestAnimationFrame to avoid synchronous mount blocking
+    const rAF = window.requestAnimationFrame(updateProgress);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.cancelAnimationFrame(rAF);
+    };
   }, []);
 
   return (
@@ -97,7 +109,7 @@ export default function Guarantees({ guarantees = [] }: { guarantees?: any[] }) 
               return (
                 <div 
                   key={item.id} 
-                  className={`relative flex flex-col md:flex-row items-center gap-8 md:gap-16 transition-all duration-1000 ease-out ${isEven ? 'md:flex-row-reverse' : ''} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}
+                  className={`relative flex flex-col md:flex-row items-center gap-8 md:gap-16 transition-[opacity,transform] duration-700 ease-out will-change-[opacity,transform] ${isEven ? 'md:flex-row-reverse' : ''} ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}
                 >
                   
                   {/* Timeline Node - turns red when progress reaches it */}
