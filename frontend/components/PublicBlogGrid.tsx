@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +13,8 @@ import {
   Sparkles,
   BookOpen,
   Filter,
+  ChevronDown,
+  RotateCcw,
 } from "lucide-react";
 import type { BlogPost } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -53,6 +55,13 @@ export default function PublicBlogGrid({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [visibleCount, setVisibleCount] = useState<number>(initialPageSize);
 
+  // Synchronize state if initialCategory prop changes
+  useEffect(() => {
+    if (initialCategory !== undefined) {
+      setSelectedCategory(initialCategory);
+    }
+  }, [initialCategory]);
+
   // Extract distinct categories with counts from published blogs
   const categoriesWithCounts = useMemo(() => {
     const map = new Map<string, number>();
@@ -66,6 +75,17 @@ export default function PublicBlogGrid({
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [blogs]);
+
+  // Resolve canonical category casing for select element
+  const canonicalSelectedCategory = useMemo(() => {
+    if (!selectedCategory) return "";
+    const found = categoriesWithCounts.find(
+      (c) => c.name.toLowerCase() === selectedCategory.toLowerCase()
+    );
+    return found ? found.name : selectedCategory;
+  }, [selectedCategory, categoriesWithCounts]);
+
+  const hasActiveFilters = Boolean(selectedCategory || searchQuery.trim());
 
   // Filter blogs by active category and search query
   const filteredBlogs = useMemo(() => {
@@ -129,136 +149,149 @@ export default function PublicBlogGrid({
   return (
     <div id="articles-feed" className="scroll-mt-28">
       {/* ─────────────────────────────────────────────────────────────
-          1. Editorial Controls Bar: Search & Category Filter Tabs
+          1. Editorial Controls Bar: Search & Category Dropdown
           ───────────────────────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-200/90 p-4 sm:p-6 mb-12 shadow-xs">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-          {/* Category Tabs (Scrollable on Mobile) */}
-          <div
-            className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 -mx-1 px-1"
-            role="tablist"
-            aria-label="Filter articles by category"
-          >
-            <button
-              onClick={() => handleSelectCategory("")}
-              role="tab"
-              aria-selected={!selectedCategory}
-              className={`text-xs font-bold uppercase tracking-wider px-4 py-2.5 border transition-all cursor-pointer rounded-none shrink-0 flex items-center gap-2 ${
-                !selectedCategory
-                  ? "bg-construction-navy text-white border-construction-navy shadow-xs"
-                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
-              }`}
-            >
-              <span>All Articles</span>
-              <span
-                className={`text-[10px] font-mono px-1.5 py-0.5 rounded-none ${
-                  !selectedCategory
-                    ? "bg-white/20 text-white"
-                    : "bg-slate-200/80 text-slate-600"
-                }`}
-              >
-                {blogs.length}
-              </span>
-            </button>
-
-            {categoriesWithCounts.map((cat) => {
-              const isSelected =
-                selectedCategory.toLowerCase() === cat.name.toLowerCase();
-              return (
+      <div className="bg-white border border-slate-200/90 p-4 sm:p-5 mb-10 shadow-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
+          
+          {/* Search Input (Flexible width) */}
+          <div className="relative flex-1 min-w-[200px]">
+            <label htmlFor="blog-search-input" className="sr-only">
+              Search articles
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <Search className="w-4 h-4" aria-hidden="true" />
+              </div>
+              <input
+                type="text"
+                id="blog-search-input"
+                name="search"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setVisibleCount(initialPageSize);
+                }}
+                placeholder="Search guides, costs, norms, or topics..."
+                aria-label="Search articles"
+                className="w-full h-11 pl-10 pr-9 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-construction-navy focus:bg-white focus:ring-1 focus:ring-construction-navy rounded-none transition-colors"
+              />
+              {searchQuery && (
                 <button
-                  key={cat.name}
-                  onClick={() => handleSelectCategory(cat.name)}
-                  role="tab"
-                  aria-selected={isSelected}
-                  className={`text-xs font-bold uppercase tracking-wider px-4 py-2.5 border transition-all cursor-pointer rounded-none shrink-0 flex items-center gap-2 ${
-                    isSelected
-                      ? "bg-construction-navy text-white border-construction-navy shadow-xs"
-                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300"
-                  }`}
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setVisibleCount(initialPageSize);
+                  }}
+                  aria-label="Clear search query"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
                 >
-                  <span>{cat.name}</span>
-                  <span
-                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded-none ${
-                      isSelected
-                        ? "bg-white/20 text-white"
-                        : "bg-slate-200/80 text-slate-600"
-                    }`}
-                  >
-                    {cat.count}
-                  </span>
+                  <X className="w-4 h-4" />
                 </button>
-              );
-            })}
+              )}
+            </div>
           </div>
 
-          {/* Instant Search Input */}
-          <div className="relative w-full lg:w-80 shrink-0">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <Search className="w-4 h-4" />
-            </div>
-            <input
-              type="text"
-              id="blog-search-input"
-              name="search"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setVisibleCount(initialPageSize);
-              }}
-              placeholder="Search guides, costs, norms..."
-              aria-label="Search articles"
-              className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-construction-navy focus:bg-white rounded-none transition-colors"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                aria-label="Clear search query"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+          {/* Category Dropdown (Compact, Responsive, No Horizontal Overflow) */}
+          <div className="relative w-full md:w-72 lg:w-80 shrink-0">
+            <label htmlFor="blog-category-select" className="sr-only">
+              Filter articles by category
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                <Filter className="w-4 h-4 text-slate-500" aria-hidden="true" />
+              </div>
+              <select
+                id="blog-category-select"
+                value={canonicalSelectedCategory}
+                onChange={(e) => handleSelectCategory(e.target.value)}
+                aria-label="Filter articles by category"
+                className="w-full h-11 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-10 pr-9 focus:bg-white focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy rounded-none cursor-pointer truncate transition-colors"
               >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+                <option value="">All Categories ({blogs.length})</option>
+                {categoriesWithCounts.map((cat) => (
+                  <option key={cat.name} value={cat.name}>
+                    {cat.name} ({cat.count})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
+                <ChevronDown className="w-4 h-4 text-slate-500" aria-hidden="true" />
+              </div>
+            </div>
           </div>
+
+          {/* Quick Reset Button (Desktop / Tablet) */}
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              title="Reset all filters"
+              aria-label="Reset all filters"
+              className="hidden md:inline-flex h-11 px-3.5 bg-white border border-slate-200 hover:border-red-300 hover:bg-red-50 text-slate-700 hover:text-construction-red text-xs font-bold uppercase tracking-wider transition-colors items-center justify-center gap-1.5 shrink-0 rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-construction-red" />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
 
-        {/* Active Filter Pill Status */}
-        {(selectedCategory || searchQuery) && (
-          <div className="flex flex-wrap items-center gap-2 pt-3 mt-3 border-t border-slate-100 text-xs text-slate-600">
-            <span className="font-medium text-slate-500">Active filters:</span>
-            {selectedCategory && (
-              <span className="inline-flex items-center gap-1.5 bg-slate-100 text-construction-navy font-bold uppercase tracking-wider px-2.5 py-1 text-[11px] border border-slate-200">
-                Category: {selectedCategory}
-                <button
-                  onClick={() => handleSelectCategory("")}
-                  className="hover:text-construction-red cursor-pointer"
-                  title="Remove category filter"
-                  aria-label="Remove category filter"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            {searchQuery && (
-              <span className="inline-flex items-center gap-1.5 bg-slate-100 text-construction-navy font-bold px-2.5 py-1 text-[11px] border border-slate-200">
-                Search: &ldquo;{searchQuery}&rdquo;
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="hover:text-construction-red cursor-pointer"
-                  title="Remove search query"
-                  aria-label="Remove search query"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            )}
-            <button
-              onClick={handleClearFilters}
-              className="text-[11px] text-construction-red hover:underline uppercase font-bold tracking-wider ml-auto cursor-pointer"
-            >
-              Reset All
-            </button>
+        {/* Filter Result Status & Active Filters Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 mt-3 border-t border-slate-100 text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-500 uppercase tracking-wider">
+              Result:{" "}
+              <strong className="text-slate-950 font-bold">
+                {filteredBlogs.length} {filteredBlogs.length === 1 ? "ARTICLE" : "ARTICLES"}
+              </strong>
+              {hasActiveFilters && (
+                <span className="text-slate-400 font-normal"> (of {blogs.length} published)</span>
+              )}
+            </span>
           </div>
-        )}
+
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {selectedCategory && (
+                <span className="inline-flex items-center gap-1.5 bg-slate-100 text-construction-navy font-bold uppercase tracking-wider px-2 py-0.5 text-[10px] sm:text-[11px] border border-slate-200">
+                  <span className="max-w-[180px] sm:max-w-[260px] truncate">
+                    Category: {canonicalSelectedCategory || selectedCategory}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectCategory("")}
+                    className="hover:text-construction-red cursor-pointer p-0.5"
+                    title="Remove category filter"
+                    aria-label="Remove category filter"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {searchQuery && (
+                <span className="inline-flex items-center gap-1.5 bg-slate-100 text-construction-navy font-bold px-2 py-0.5 text-[10px] sm:text-[11px] border border-slate-200">
+                  <span className="max-w-[150px] truncate">&ldquo;{searchQuery}&rdquo;</span>
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="hover:text-construction-red cursor-pointer p-0.5"
+                    title="Remove search query"
+                    aria-label="Remove search query"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="text-[10px] sm:text-[11px] text-construction-red hover:underline uppercase font-bold tracking-wider ml-1 cursor-pointer"
+              >
+                Reset All
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
