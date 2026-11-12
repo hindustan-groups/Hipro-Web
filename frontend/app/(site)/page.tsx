@@ -1,7 +1,6 @@
 import dynamic from "next/dynamic";
 import Hero from "@/components/Hero";
 import HomeAbout from "@/components/HomeAbout";
-import Guarantees from "@/components/Guarantees";
 import Services from "@/components/Services";
 import HomeImageShowcase from "@/components/HomeImageShowcase";
 import GroupEcosystem from "@/components/GroupEcosystem";
@@ -9,6 +8,7 @@ import Blogs from "@/components/Blogs";
 import CTASection from "@/components/CTASection";
 
 // Code-split heavy interactive client components while preserving full SSR for SEO
+const Guarantees = dynamic(() => import("@/components/Guarantees"), { ssr: true });
 const CostEstimator = dynamic(() => import("@/components/CostEstimator"), { ssr: true });
 const Projects = dynamic(() => import("@/components/Projects"), { ssr: true });
 const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: true });
@@ -123,14 +123,14 @@ export default async function Home() {
       <HomeAbout pageContent={pageContent} projectCount={projectCount} settings={settings} />
       <Services services={servicesData} settings={settings} />
       <Guarantees guarantees={guaranteesData} />
-      <div className="content-visibility-auto"><CostEstimator /></div>
-      <div className="content-visibility-auto"><Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} /></div>
-      <div className="content-visibility-auto"><HomeImageShowcase content={pageContent.imageShowcase} /></div>
-      <div className="content-visibility-auto"><GroupEcosystem pageContent={pageContent} /></div>
-      <div className="content-visibility-auto"><Blogs posts={blogsData} /></div>
-      <div className="content-visibility-auto"><Testimonials testimonials={testimonialsData} /></div>
-      <div className="content-visibility-auto"><FaqSection /></div>
-      <div className="content-visibility-auto"><CTASection /></div>
+      <CostEstimator />
+      <Projects projects={projectsData} title={pageContent.projectsHeader} settings={settings} />
+      <HomeImageShowcase content={pageContent.imageShowcase} />
+      <GroupEcosystem pageContent={pageContent} />
+      <Blogs posts={blogsData} />
+      <Testimonials testimonials={testimonialsData} />
+      <FaqSection />
+      <CTASection />
     </>
   );
 }

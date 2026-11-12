@@ -34,12 +34,6 @@ body, button, input, select, textarea {
   letter-spacing: -0.015em;
 }
 
-/* Offscreen content optimization for below-the-fold sections */
-.content-visibility-auto {
-  content-visibility: auto;
-  contain-intrinsic-size: 1px 700px;
-}
-
 h1, h2, h3, h4, h5 {
   font-family: var(--font-montserrat), "Montserrat", system-ui, sans-serif;
   letter-spacing: -0.02em;

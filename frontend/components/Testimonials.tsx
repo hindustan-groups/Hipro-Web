@@ -30,6 +30,13 @@ export default function Testimonials({ testimonials = [] }: TestimonialsProps) {
   // Live client-side testimonials state initialized with SSR props
   const [liveTestimonials, setLiveTestimonials] = useState<Testimonial[]>(testimonials || []);
 
+  // Synchronize state if SSR props update
+  useEffect(() => {
+    if (testimonials && testimonials.length > 0) {
+      setLiveTestimonials(testimonials);
+    }
+  }, [testimonials]);
+
   // Real-time synchronization: Fetch fresh approved testimonials from DB on client mount only if SSR had none
   useEffect(() => {
     // If SSR already supplied testimonials, avoid redundant uncached network calls and reflows

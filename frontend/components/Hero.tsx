@@ -243,7 +243,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
       
       {/* Background Images Slider */}
       <div className="absolute inset-0 z-0 bg-slate-950">
-        {(currentSlide === 0 ? activeSlideList.slice(0, 1) : activeSlideList).map((slide, idx) => {
+        {activeSlideList.map((slide, idx) => {
           const validImg = slide.image && slide.image.trim() !== "" 
             ? slide.image 
             : fallbackHeroImages[idx % fallbackHeroImages.length];
@@ -259,6 +259,7 @@ export default function Hero({ initialSlides = [], initialStats = [], settings }
                 src={validImg}
                 alt={slide.title || "Construction Project"}
                 priority={idx === 0}
+                loading={idx === 0 ? "eager" : "lazy"}
                 fill
                 sizes="100vw"
                 quality={75}
