@@ -7,22 +7,25 @@ import {
   Mail, 
   Phone, 
   MapPin, 
-  MessageSquare, 
   ArrowUpRight, 
+  ArrowRight,
   Calculator, 
   Clock, 
   ShieldCheck, 
   Building2, 
-  Compass,
+  Layers,
   Laptop,
-  FileCheck,
-  Megaphone
+  Wrench,
+  ChevronRight,
+  Youtube,
+  Calendar,
 } from "lucide-react";
 import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 import { COMPANY_INFO, cleanServiceTitle } from "@/lib/companyData";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 
+// ── Official Pinterest SVG Icon ─────────────────────────────────────────────
 function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -31,73 +34,158 @@ function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
   );
 }
 
-const defaultEcosystemCompanies = [
-  {
-    name: "Hind Building Solutions",
-    description: "Engineering-grade building repair, waterproofing & structural protection.",
-    website: "/hbs",
-    status: "Specialized Division",
-    active: true,
-    order: 1,
-  },
-  {
-    name: "Empanelment",
-    description: "Vendor, contractor & institutional registration portal.",
-    website: "https://empanelment.hindustanprojects.in/",
-    status: "Live Portal",
-    active: true,
-    order: 2,
-  },
-  {
-    name: "HiPro Marketing",
-    description: "Brand strategy & commercial solutions.",
-    website: "",
-    status: "Upcoming",
-    active: true,
-    order: 3,
-  },
-];
+// ── Official WhatsApp SVG Icon ──────────────────────────────────────────────
+function WhatsAppIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  );
+}
 
-function getCompanyVisuals(name: string = "", category: string = "") {
-  const text = `${name} ${category}`.toLowerCase();
-  if (text.includes("hind build") || text.includes("building solution") || text.includes("repair") || text.includes("waterproof")) {
-    return {
-      Icon: ShieldCheck,
-      iconColor: "text-red-500",
-      hoverBorder: "hover:border-red-500/70",
-      badgeColor: "text-red-400 bg-red-950/60 border-red-500/30",
-    };
-  }
-  if (text.includes("empanel") || text.includes("vendor") || text.includes("contract")) {
-    return {
-      Icon: FileCheck,
-      iconColor: "text-construction-red",
-      hoverBorder: "hover:border-construction-red/70",
-      badgeColor: "text-emerald-400 bg-emerald-950/60 border-emerald-500/30",
-    };
-  }
-  if (text.includes("market") || text.includes("brand") || text.includes("media")) {
-    return {
-      Icon: Megaphone,
-      iconColor: "text-yellow-500",
-      hoverBorder: "hover:border-yellow-500/70",
-      badgeColor: "text-yellow-400 bg-yellow-950/60 border-yellow-500/30",
-    };
-  }
-  if (/\bit\b/i.test(text) || text.includes("tech") || text.includes("digital") || text.includes("software")) {
-    return {
-      Icon: Laptop,
-      iconColor: "text-blue-400",
-      hoverBorder: "hover:border-blue-500/70",
-      badgeColor: "text-blue-400 bg-blue-950/60 border-blue-500/30",
-    };
-  }
-  return {
-    Icon: Building2,
-    iconColor: "text-construction-red",
-    hoverBorder: "hover:border-construction-red/70",
-    badgeColor: "text-emerald-400 bg-emerald-950/60 border-emerald-500/30",
-  };
+// ── Decorative Architectural Skyline & Construction Crane SVG ────────────────
+function SkylineIllustration({ className = "w-full h-16 text-slate-500" }: { className?: string }) {
+  return (
+    <svg 
+      viewBox="0 0 1200 90" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg" 
+      className={className}
+      preserveAspectRatio="xMidYMax meet"
+      aria-hidden="true"
+    >
+      {/* Horizontal Baseline rule */}
+      <line x1="0" y1="88" x2="1200" y2="88" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" opacity="0.3" />
+      <line x1="120" y1="88" x2="1080" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
+      
+      {/* LEFT BUILDINGS CLUSTER (x=300 to 520) */}
+      {/* Building L1: Low-rise office */}
+      <rect x="310" y="60" width="35" height="28" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="318" y1="67" x2="318" y2="73" stroke="currentColor" strokeWidth="1" />
+      <line x1="326" y1="67" x2="326" y2="73" stroke="currentColor" strokeWidth="1" />
+      <line x1="334" y1="67" x2="334" y2="73" stroke="currentColor" strokeWidth="1" />
+      <line x1="318" y1="78" x2="318" y2="84" stroke="currentColor" strokeWidth="1" />
+      <line x1="326" y1="78" x2="326" y2="84" stroke="currentColor" strokeWidth="1" />
+      <line x1="334" y1="78" x2="334" y2="84" stroke="currentColor" strokeWidth="1" />
+
+      {/* Building L2: Stepped corporate tower */}
+      <rect x="350" y="40" width="42" height="48" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="356" y="32" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="371" y1="20" x2="371" y2="32" stroke="currentColor" strokeWidth="1" />
+      {/* Windows */}
+      <line x1="358" y1="46" x2="384" y2="46" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="358" y1="54" x2="384" y2="54" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="358" y1="62" x2="384" y2="62" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="358" y1="70" x2="384" y2="70" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="358" y1="78" x2="384" y2="78" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+
+      {/* Building L3: Medium tower with pitched crown */}
+      <rect x="398" y="48" width="36" height="40" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <polygon points="398,48 416,36 434,48" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="406" y1="56" x2="426" y2="56" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+      <line x1="406" y1="66" x2="426" y2="66" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+      <line x1="406" y1="76" x2="426" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+
+      {/* Building L4: Skyscraper next to crane */}
+      <rect x="440" y="24" width="46" height="64" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="448" y="16" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="463" y1="6" x2="463" y2="16" stroke="currentColor" strokeWidth="1" />
+      {/* Grid windows */}
+      <line x1="448" y1="32" x2="478" y2="32" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="448" y1="42" x2="478" y2="42" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="448" y1="52" x2="478" y2="52" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="448" y1="62" x2="478" y2="62" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="448" y1="72" x2="478" y2="72" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+      <line x1="448" y1="80" x2="478" y2="80" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
+
+      {/* Building L5: Transitional lower building */}
+      <rect x="492" y="52" width="28" height="36" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="498" y1="60" x2="514" y2="60" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+      <line x1="498" y1="68" x2="514" y2="68" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+      <line x1="498" y1="76" x2="514" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+
+      {/* CENTER CONSTRUCTION TOWER CRANE (x=530 to 628) */}
+      {/* Crane Mast */}
+      <line x1="560" y1="18" x2="560" y2="88" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="568" y1="18" x2="568" y2="88" stroke="currentColor" strokeWidth="1.6" />
+      {/* Lattice diagonal bracing */}
+      <line x1="560" y1="88" x2="568" y2="78" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="568" y1="78" x2="560" y2="68" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="560" y1="68" x2="568" y2="58" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="568" y1="58" x2="560" y2="48" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="560" y1="48" x2="568" y2="38" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="568" y1="38" x2="560" y2="28" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="560" y1="28" x2="568" y2="18" stroke="currentColor" strokeWidth="0.9" />
+      {/* Horizontal bracing rungs */}
+      <line x1="560" y1="78" x2="568" y2="78" stroke="currentColor" strokeWidth="1" />
+      <line x1="560" y1="58" x2="568" y2="58" stroke="currentColor" strokeWidth="1" />
+      <line x1="560" y1="38" x2="568" y2="38" stroke="currentColor" strokeWidth="1" />
+      <line x1="560" y1="18" x2="568" y2="18" stroke="currentColor" strokeWidth="1" />
+
+      {/* Crane Peak / Apex A-frame */}
+      <polygon points="560,18 564,6 568,18" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.15" />
+      
+      {/* Crane Horizontal Jib (Boom) */}
+      <line x1="518" y1="18" x2="628" y2="18" stroke="currentColor" strokeWidth="1.6" />
+      <line x1="518" y1="21" x2="624" y2="21" stroke="currentColor" strokeWidth="1" />
+      {/* Jib diagonals */}
+      <line x1="568" y1="18" x2="578" y2="21" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="578" y1="21" x2="588" y2="18" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="588" y1="18" x2="598" y2="21" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="598" y1="21" x2="608" y2="18" stroke="currentColor" strokeWidth="0.8" />
+      <line x1="608" y1="18" x2="618" y2="21" stroke="currentColor" strokeWidth="0.8" />
+
+      {/* Pendants (Stay cables from apex to jib) */}
+      <line x1="564" y1="6" x2="605" y2="18" stroke="currentColor" strokeWidth="0.9" />
+      <line x1="564" y1="6" x2="530" y2="18" stroke="currentColor" strokeWidth="0.9" />
+      
+      {/* Counter-weight on rear jib */}
+      <rect x="522" y="19" width="12" height="9" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.2" />
+      
+      {/* Operator Cabin */}
+      <rect x="568" y="21" width="8" height="9" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.15" />
+      
+      {/* Hoist Trolley, Cable and Suspended I-Beam */}
+      <rect x="600" y="17" width="6" height="5" stroke="currentColor" strokeWidth="1" fill="currentColor" />
+      <line x1="603" y1="22" x2="603" y2="44" stroke="currentColor" strokeWidth="1" />
+      {/* Hook */}
+      <path d="M603,44 Q601,48 603,50 Q605,48 605,46" stroke="currentColor" strokeWidth="1" fill="none" />
+      {/* Suspended Steel Beam — orange accent highlight */}
+      <line x1="590" y1="51" x2="616" y2="51" stroke="#f97316" strokeWidth="2.8" strokeLinecap="round" />
+
+      {/* RIGHT BUILDINGS CLUSTER (x=635 to 890) */}
+      {/* Building R1: Modern office next to crane */}
+      <rect x="635" y="44" width="34" height="44" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <polygon points="635,44 652,34 669,44" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="643" y1="52" x2="661" y2="52" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
+      <line x1="643" y1="62" x2="661" y2="62" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
+      <line x1="643" y1="72" x2="661" y2="72" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
+
+      {/* Building R2: High-rise geometric tower */}
+      <rect x="675" y="26" width="44" height="62" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="683" y="18" width="28" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="697" y1="10" x2="697" y2="18" stroke="currentColor" strokeWidth="1" />
+      {/* Windows columns */}
+      <line x1="685" y1="34" x2="709" y2="34" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="685" y1="44" x2="709" y2="44" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="685" y1="54" x2="709" y2="54" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="685" y1="64" x2="709" y2="64" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+      <line x1="685" y1="74" x2="709" y2="74" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+
+      {/* Building R3: Medium commercial building */}
+      <rect x="725" y="38" width="38" height="50" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="733" y1="46" x2="755" y2="46" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+      <line x1="733" y1="56" x2="755" y2="56" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+      <line x1="733" y1="66" x2="755" y2="66" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+      <line x1="733" y1="76" x2="755" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
+
+      {/* Building R4: Low-rise residential/commercial */}
+      <rect x="769" y="56" width="32" height="32" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <line x1="775" y1="64" x2="795" y2="64" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+      <line x1="775" y1="72" x2="795" y2="72" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+      <line x1="775" y1="80" x2="795" y2="80" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+    </svg>
+  );
 }
 
 export default async function Footer({
@@ -121,32 +209,7 @@ export default async function Footer({
     }
   }
 
-  const isCurrentSite = (c: any) => {
-    const name = (c.name || "").toLowerCase().trim();
-    const url = (c.website || c.url || "").trim();
-    const status = (c.status || c.statusText || "").toLowerCase().trim();
-    return (
-      status === "flagship" ||
-      name === "hindustan projects" ||
-      url === "https://www.hindustanprojects.in" ||
-      url === "https://www.hindustanprojects.in/" ||
-      url === "/"
-    );
-  };
-
-  const rawGroupCompanies = resolvedPageContent?.groupCompanies;
-  let dynamicEcosystemCompanies: any[] = [];
-
-  if (Array.isArray(rawGroupCompanies) && rawGroupCompanies.length > 0) {
-    dynamicEcosystemCompanies = rawGroupCompanies
-      .filter((c: any) => c && c.active !== false && !isCurrentSite(c))
-      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
-  }
-
-  const ecosystemCompanies = dynamicEcosystemCompanies.length > 0
-    ? dynamicEcosystemCompanies
-    : defaultEcosystemCompanies;
-  
+  // ── Contact & Verified Data Resolution ──────────────────────────────────
   const address = settings.companyAddress || COMPANY_INFO.address;
   const phone = settings.companyPhone || COMPANY_INFO.formattedPhone;
   const email = settings.companyEmail || COMPANY_INFO.email;
@@ -161,7 +224,7 @@ export default async function Footer({
   } catch { /* silent */ }
 
   const instagramUrl = socials.instagram || COMPANY_INFO.socials.instagram;
-  const facebookUrl = socials.facebook || COMPANY_INFO.socials.facebook;
+  const facebookUrl = socials.facebook || COMPANY_INFO.socials.facebook || "https://www.facebook.com/people/Hindustan-Projects";
   const linkedinUrl = socials.linkedin || COMPANY_INFO.socials.linkedin;
   const pinterestUrl = socials.pinterest || COMPANY_INFO.socials.pinterest;
 
@@ -171,6 +234,7 @@ export default async function Footer({
   const estimatorHref = ctaEstimator ? resolveCTAHref(ctaEstimator) : "/cost-estimator";
   const whatsappHref  = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : COMPANY_INFO.whatsappLink;
 
+  // ── Capabilities Resolution ─────────────────────────────────────────────
   const activeServices = servicesData
     .filter(s => s.active !== false)
     .sort((a, b) => (a.order || 99) - (b.order || 99))
@@ -187,68 +251,95 @@ export default async function Footer({
       })
     : [
         { label: "Architecture & Planning", href: "/services/architecture-planning" },
-        { label: "Professional Construction", href: "/services/professional-construction-services" },
+        { label: "Professional Construction Services", href: "/services/professional-construction-services" },
         { label: "Surveying & Site Measurements", href: "/services/surveying-site-measurements" },
         { label: "Interior & Exterior Design", href: "/services/interior-exterior-design" },
-        { label: "Water Treatment Plant Execution", href: "/services/water-treatment-plant-construction" },
-        { label: "Project Management & PMC", href: "/services/project-management-consultancy" }
+        { label: "Water Treatment Plant Construction", href: "/services/water-treatment-plant-construction" },
+        { label: "Project Management & Consultancy", href: "/services/project-management-consultancy" }
       ];
 
+  // ── Social Media Channels ───────────────────────────────────────────────
   const socialLinks = [
     { icon: Instagram, url: instagramUrl, name: "Instagram" },
     { icon: Facebook, url: facebookUrl, name: "Facebook" },
     { icon: Linkedin, url: linkedinUrl, name: "LinkedIn" },
-    { icon: PinterestIcon, url: pinterestUrl, name: "Pinterest" }
+    { icon: Youtube, url: "https://www.youtube.com/@hindustanprojects", name: "YouTube" },
+    { icon: PinterestIcon, url: pinterestUrl, name: "Pinterest" },
   ];
 
   return (
-    <footer className="bg-slate-950 text-slate-400 relative overflow-hidden border-t border-slate-800">
+    <footer id="main-footer" className="w-full relative overflow-hidden bg-white text-slate-700">
       
-      {/* Background Subtle Engineering Grid Accent */}
-      <div 
-        className="absolute inset-0 opacity-[0.025] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
-          backgroundSize: '40px 40px'
-        }}
-      />
+      {/* ─────────────────────────────────────────────────────────────
+          1. TOP CONSULTATION BANNER (DARK NAVY WITH ARCHITECTURAL SHOWCASE)
+          ───────────────────────────────────────────────────────────── */}
+      <div className="relative bg-[#071326] text-white border-b border-slate-200 overflow-hidden">
+        {/* Background Subtle Grid Accent */}
+        <div 
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+            backgroundSize: '32px 32px'
+          }}
+        />
 
-      {/* 1. PRE-FOOTER QUICK ACTION STRIP */}
-      <div className="relative z-10 border-b border-slate-800/80 bg-black/40 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 text-construction-red text-[11px] font-bold uppercase tracking-widest mb-2">
-                <span className="w-2 h-2 rounded-full bg-construction-red animate-pulse" />
-                Engineering Consultation &amp; Estimation
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white font-display uppercase tracking-tight">
-                Ready to Build Your Project or Estimate Construction Costs?
-              </h3>
-              <p className="text-slate-400 text-xs sm:text-sm font-light mt-1">
-                Consult with our civil engineers in Bhilwara for transparent BOQ calculations and architectural blueprints.
-              </p>
+        {/* Right Architectural Image Showcase with Multi-stop Gradient Fade */}
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-3/5 lg:w-1/2 hidden md:block pointer-events-none select-none overflow-hidden">
+          <Image
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85"
+            alt="HiPRO Architectural Engineering Showcase"
+            fill
+            sizes="(max-width: 1024px) 60vw, 50vw"
+            priority={false}
+            className="object-cover object-center brightness-100"
+          />
+          {/* Subtle gradient overlay on left edge only — leaves the villa bright, warm and visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071326] via-[#071326]/40 via-20% to-transparent" />
+        </div>
+
+        {/* Banner Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-14">
+          <div className="max-w-2xl">
+            {/* Eyebrow */}
+            <div className="inline-flex items-center gap-2 text-orange-400 text-[11px] font-bold uppercase tracking-widest font-mono mb-3">
+              <span className="w-5 h-0.5 bg-orange-500 rounded-full" aria-hidden="true" />
+              <span>Engineering Consultation &amp; Estimation</span>
             </div>
-            
-            <div className="flex flex-wrap items-center gap-3.5 shrink-0 w-full sm:w-auto">
+
+            {/* Main Heading */}
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white font-display tracking-tight leading-tight mb-3">
+              Ready to Build Your Project or Estimate Construction Costs?
+            </h2>
+
+            {/* Description */}
+            <p className="text-slate-300 text-xs sm:text-sm font-light leading-relaxed mb-8 max-w-xl">
+              Consult with our civil engineers in Bhilwara for transparent BOQ calculations, planning and architectural blueprints.
+            </p>
+
+            {/* Dual CTA Actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+              {/* Primary: Get Free Estimate */}
               {ctaEstimator?.enabled !== false && (
                 <Link
                   href={estimatorHref}
-                  className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-construction-red hover:bg-red-700 text-white font-bold text-xs uppercase tracking-widest px-5 py-3.5 shadow-md shadow-red-950/30 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-orange-500 hover:bg-orange-600 active:scale-[0.99] text-white font-bold text-xs sm:text-sm rounded-lg shadow-lg shadow-orange-950/40 transition-all cursor-pointer group"
                 >
                   <Calculator className="w-4 h-4 text-white" />
-                  <span>{ctaEstimator?.label ?? "Instant Cost Estimator"}</span>
+                  <span>Get Free Estimate</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
+
+              {/* Secondary: WhatsApp Quote */}
               {ctaWhatsapp?.enabled !== false && (
                 <a
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 font-bold text-xs uppercase tracking-widest px-5 py-3.5 transition-all duration-200"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-900 font-bold text-xs sm:text-sm rounded-lg border border-slate-200 shadow-md transition-all cursor-pointer group"
                 >
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  <span>{ctaWhatsapp?.label ?? "WhatsApp Quote"}</span>
+                  <WhatsAppIcon className="w-4 h-4 text-emerald-600" />
+                  <span>WhatsApp Quote</span>
                 </a>
               )}
             </div>
@@ -256,60 +347,337 @@ export default async function Footer({
         </div>
       </div>
 
-      {/* 2. MAIN FOOTER CONTENT COLUMNS (5 COLUMNS) */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8 mb-16">
+      {/* ─────────────────────────────────────────────────────────────
+          2. MAIN FOOTER CONTENT — 5 COLUMNS ON CLEAN WHITE BACKGROUND
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-white text-slate-700 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 pb-8 sm:pb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 lg:gap-8">
+            
+            {/* COLUMN 1: COMPANY IDENTITY (lg:col-span-3) */}
+            <div className="lg:col-span-3 flex flex-col justify-between">
+              <div>
+                <Link 
+                  href="/" 
+                  className="inline-flex items-center gap-3 mb-5 hover:opacity-90 transition-opacity"
+                  aria-label="Hindustan Projects Home"
+                >
+                  <Image 
+                    src="/logo.jpg" 
+                    alt="HiPRO Logo" 
+                    width={48} 
+                    height={48} 
+                    className="h-10 sm:h-11 w-auto object-contain" 
+                  />
+                  <div className="w-[1px] h-8 bg-slate-200" />
+                  <div className="flex flex-col justify-center">
+                    <span className="font-extrabold text-[15px] sm:text-[16px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
+                      Hindustan
+                    </span>
+                    <span className="font-black text-[12px] sm:text-[13px] leading-tight tracking-[0.1em] text-construction-navy font-display uppercase">
+                      Projects
+                    </span>
+                  </div>
+                </Link>
 
-          {/* COLUMN 1: BRAND IDENTITY & CREDENTIALS (3 cols on lg) */}
-          <div className="lg:col-span-3 flex flex-col justify-between">
-            <div>
-              {/* Brand Logo Container */}
-              <Link href="/" className="inline-flex items-center gap-3 bg-white px-5 py-2.5 rounded-xl mb-6 shadow-md shadow-black/40 hover:opacity-95 transition-opacity">
-                <Image 
-                  src="/logo.jpg" 
-                  alt="HiPRO Logo" 
-                  width={48} 
-                  height={48} 
-                  className="h-10 md:h-11 w-auto object-contain mix-blend-multiply" 
-                />
-                <div className="w-[1px] h-9 bg-slate-200" />
-                <div className="flex flex-col justify-center">
-                  <span className="font-bold text-[16px] leading-tight tracking-[0.08em] text-construction-red font-display uppercase">
-                    Hindustan
-                  </span>
-                  <span className="font-bold text-[12px] leading-tight tracking-[0.1em] text-construction-navy font-display uppercase">
-                    Projects
-                  </span>
+                <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed mb-6 max-w-sm">
+                  Engineering landmarks and turnkey civil solutions across residential, commercial, and industrial developments in Rajasthan since 2019.
+                </p>
+
+                {/* 3 Trust Badges */}
+                <div className="space-y-2.5 max-w-xs">
+                  <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg">
+                    <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">
+                      Est. 2019 · Bhilwara
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg">
+                    <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                      <Layers className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">
+                      Turnkey Execution
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-lg">
+                    <div className="w-8 h-8 rounded-md bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">
+                      Licensed Planning
+                    </span>
+                  </div>
                 </div>
-              </Link>
-
-              <p className="text-xs text-slate-300 font-light leading-relaxed mb-6 max-w-sm">
-                Engineering landmarks and turnkey civil solutions across residential, commercial, and industrial developments in Rajasthan since 2019.
-              </p>
-
-              {/* Verified Trust Badges */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">
-                  <Building2 className="w-3 h-3 text-construction-red" />
-                  Est. 2019 · Bhilwara
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  Turnkey Execution
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 text-[10px] font-semibold text-slate-300 uppercase tracking-wider">
-                  <Compass className="w-3 h-3 text-yellow-500" />
-                  Licensed Planning
-                </span>
               </div>
             </div>
 
-            {/* Social Icons Strip */}
-            <div>
-              <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+            {/* COLUMN 2: COMPANY (lg:col-span-2) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-slate-900 font-bold text-sm sm:text-base mb-4 font-display">
+                Company
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
+                {[
+                  ["About HiPRO", "/about"],
+                  ["Why Choose Us", "/why-us"],
+                  ["Projects Portfolio", "/projects"],
+                  ["Blogs & Insights", "/blogs"],
+                  ["Career Openings", "/careers"],
+                  ["Cost Estimator", "/cost-estimator"],
+                  ["Contact Office", "/contact"],
+                ].map(([label, href]) => (
+                  <li key={label}>
+                    <Link 
+                      href={href} 
+                      className="group flex items-center justify-between py-1 text-slate-600 hover:text-construction-navy font-medium transition-colors"
+                    >
+                      <span>{label}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* COLUMN 3: CAPABILITIES (lg:col-span-2) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-slate-900 font-bold text-sm sm:text-base mb-4 font-display">
+                Capabilities
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
+                {capabilities.map((item) => (
+                  <li key={item.label}>
+                    <Link 
+                      href={item.href} 
+                      className="group flex items-center justify-between py-1 text-slate-600 hover:text-construction-navy font-medium transition-colors"
+                    >
+                      <span className="line-clamp-1">{item.label}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 transition-transform shrink-0" />
+                    </Link>
+                  </li>
+                ))}
+                <li className="pt-2">
+                  <Link
+                    href="/services"
+                    className="text-orange-600 hover:text-orange-700 font-bold text-xs sm:text-sm inline-flex items-center gap-1.5 group transition-colors"
+                  >
+                    <span>All Capabilities</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* COLUMN 4: ECOSYSTEM (lg:col-span-2) */}
+            <div className="lg:col-span-2">
+              <h3 className="text-slate-900 font-bold text-sm sm:text-base mb-4 font-display">
+                Ecosystem
+              </h3>
+              <div className="space-y-3">
+                {/* 1. Hindustan Empanelment */}
+                <a
+                  href="https://empanelment.hindustanprojects.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block p-3 bg-white border border-slate-200/90 rounded-xl shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                        <Building2 className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-construction-red transition-colors">
+                        Hindustan Empanelment
+                      </span>
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-normal leading-tight mb-2">
+                    Contractor, Vendor &amp; Institutional Empanelment Services
+                  </p>
+                  <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full">
+                    Live Portal ↗
+                  </span>
+                </a>
+
+                {/* 2. Snaptech Digital */}
+                <a
+                  href="https://www.snaptech.digital/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block p-3 bg-white border border-slate-200/90 rounded-xl shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <Laptop className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                        Snaptech Digital
+                      </span>
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-normal leading-tight mb-2">
+                    Technology solutions and IT services for businesses
+                  </p>
+                  <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-0.5 rounded-full">
+                    Live Portal ↗
+                  </span>
+                </a>
+
+                {/* 3. Hind Build Solutions */}
+                <Link
+                  href="/hbs"
+                  className="group block p-3 bg-white border border-slate-200/90 rounded-xl shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                        <Wrench className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-construction-red transition-colors">
+                        Hind Build Solutions
+                      </span>
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-normal leading-tight mb-2">
+                    Building Repair, Maintenance &amp; Protection Services
+                  </p>
+                  <span className="inline-block text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/70 px-2 py-0.5 rounded-full">
+                    Live Portal ↗
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            {/* COLUMN 5: HEADQUARTERS (lg:col-span-3) */}
+            <div className="lg:col-span-3">
+              <div>
+                <h3 className="text-slate-900 font-bold text-sm sm:text-base font-display">
+                  Headquarters
+                </h3>
+                <div className="w-8 h-1 bg-orange-500 mt-1 mb-4 rounded-full" />
+              </div>
+
+              <ul className="space-y-3.5 text-xs">
+                {/* Address */}
+                <li className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="leading-relaxed block text-slate-700 text-xs">
+                      {address}
+                    </span>
+                    <a 
+                      href={mapsUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-orange-600 hover:text-orange-700 font-bold mt-0.5 transition-colors"
+                    >
+                      Get Directions <ArrowUpRight className="w-3 h-3" />
+                    </a>
+                  </div>
+                </li>
+
+                {/* Direct Hotline */}
+                <li className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                    <Phone className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Direct Hotline
+                    </span>
+                    <a href={telLink} className="hover:text-construction-navy font-bold text-slate-900 text-xs transition-colors">
+                      {phone}
+                    </a>
+                  </div>
+                </li>
+
+                {/* Email Correspondence */}
+                <li className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                    <Mail className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Email Correspondence
+                    </span>
+                    <a href={mailtoLink} className="hover:text-construction-navy font-bold text-slate-900 text-xs transition-colors">
+                      {email}
+                    </a>
+                  </div>
+                </li>
+
+                {/* Direct WhatsApp */}
+                <li className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <WhatsAppIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Direct WhatsApp
+                    </span>
+                    <a 
+                      href={whatsappLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="hover:text-emerald-700 font-bold text-slate-900 text-xs transition-colors"
+                    >
+                      +91 {COMPANY_INFO.whatsappNumber}
+                    </a>
+                  </div>
+                </li>
+
+                {/* Working Hours */}
+                <li className="flex items-start gap-3 pt-0.5">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">
+                    <Clock className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-xs leading-relaxed text-slate-700">
+                    <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                      Working Hours
+                    </span>
+                    <span className="font-semibold text-slate-800 block">Mon – Sat: 9:00 AM – 7:00 PM</span>
+                    <span className="text-slate-500 text-[11px] block">Sunday: By Prior Appointment</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          3 & 4. BOTTOM DARK NAVY SECTION WITH ARCHITECTURAL SKYLINE & 2-ROW FOOTER
+          ───────────────────────────────────────────────────────────── */}
+      <div className="bg-[#0B1528] text-slate-400 border-t border-slate-800">
+        
+        {/* Architectural Skyline & Crane Illustration with Dark Background Highlight */}
+        <div className="relative w-full overflow-hidden pt-4 pb-0 flex items-end justify-center border-b border-slate-800/60" style={{ minHeight: '76px' }}>
+          <SkylineIllustration className="w-full max-w-5xl h-16 sm:h-20 text-slate-400" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* ── ROW 1: Social Icons LEFT + Legal Links RIGHT ─────────── */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 border-b border-slate-800/60 text-xs">
+
+            {/* Social Icons */}
+            <div className="flex items-center gap-3">
+              <span className="text-white font-bold text-[11px] uppercase tracking-widest whitespace-nowrap">
                 Connect With Us
               </span>
-              <div className="flex gap-2.5">
+              <div className="flex items-center gap-1.5">
                 {socialLinks.map(({ icon: Icon, url, name }, i) => (
                   <a
                     key={i}
@@ -317,270 +685,52 @@ export default async function Footer({
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Visit Hindustan Projects on ${name}`}
-                    className="w-9 h-9 bg-white/5 border border-white/10 flex items-center justify-center hover:bg-construction-red hover:border-construction-red transition-all duration-200 group shadow-sm"
+                    className="w-7 h-7 rounded-md bg-white/10 hover:bg-orange-500 hover:text-white text-slate-300 flex items-center justify-center transition-all"
                   >
-                    <Icon className="w-4 h-4 text-slate-300 group-hover:text-white transition-colors" />
+                    <Icon className="w-3.5 h-3.5" />
                   </a>
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* COLUMN 2: COMPANY (2 cols on lg) */}
-          <div className="lg:col-span-2">
-            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
-              <span className="w-2 h-0.5 bg-construction-red" />
-              Company
-            </h3>
-            <ul className="space-y-2.5 text-xs">
-              {[
-                ["About HiPRO", "/about"],
-                ["Why Choose Us", "/why-us"],
-                ["Projects Portfolio", "/projects"],
-                ["Blogs & Insights", "/blogs"],
-                ["Career Openings", "/careers"],
-                ["Cost Estimator", "/cost-estimator"],
-                ["Contact Office", "/contact"],
-              ].map(([label, href]) => (
-                <li key={label}>
-                  <Link 
-                    href={href} 
-                    className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium py-0.5"
-                  >
-                    <span>{label}</span>
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-construction-red" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* COLUMN 3: CAPABILITIES (2 cols on lg) */}
-          <div className="lg:col-span-2">
-            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
-              <span className="w-2 h-0.5 bg-construction-red" />
-              Capabilities
-            </h3>
-            <ul className="space-y-2.5 text-xs">
-              {capabilities.map((item) => (
-                <li key={item.label}>
-                  <Link 
-                    href={item.href} 
-                    className="hover:text-white transition-colors inline-flex items-center gap-1 group font-medium py-0.5"
-                  >
-                    <span>{item.label}</span>
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-construction-red" />
-                  </Link>
-                </li>
-              ))}
-              <li className="pt-2">
-                <Link
-                  href="/services"
-                  className="text-construction-red hover:text-red-400 font-bold uppercase tracking-wider text-[11px] inline-flex items-center gap-1 group"
-                >
-                  All Capabilities
-                  <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* COLUMN 4: GROUP ECOSYSTEM (IT, EMPANELMENT & MARKETING) (2 cols on lg) */}
-          <div className="lg:col-span-2">
-            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
-              <span className="w-2 h-0.5 bg-construction-red" />
-              Ecosystem
-            </h3>
-            <div className="space-y-3 text-xs">
-              {ecosystemCompanies.map((c: any, i: number) => {
-                const url = (c.website || c.url || "").trim();
-                const name = c.name || "Ecosystem Portal";
-                const category = c.category || "";
-                const description = c.description || (category ? `${category} solutions.` : "");
-                const visuals = getCompanyVisuals(name, category);
-                const rawBadge = c.status || c.statusText;
-                const badgeText = url
-                  ? (rawBadge ? (rawBadge.includes("↗") ? rawBadge : `${rawBadge} ↗`) : "Live Portal ↗")
-                  : (rawBadge || "Upcoming");
-
-                if (url) {
-                  const isExternal = url.startsWith("http://") || url.startsWith("https://");
-                  return (
-                    <a
-                      key={c.name || i}
-                      href={url}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      className={`group block p-3 bg-white/5 border border-white/10 ${visuals.hoverBorder} hover:bg-white/10 transition-all rounded-none`}
-                    >
-                      <div className="flex items-center justify-between text-slate-200 font-bold text-[11px] uppercase tracking-wider group-hover:text-white mb-1">
-                        <span className="flex items-center gap-1.5 text-white">
-                          <visuals.Icon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
-                          {name}
-                        </span>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                      </div>
-                      {description && (
-                        <p className="text-[10px] text-slate-400 font-normal leading-relaxed">
-                          {description}
-                        </p>
-                      )}
-                      <span className={`inline-block mt-2 text-[9px] font-bold ${visuals.badgeColor} px-2 py-0.5 uppercase tracking-wider`}>
-                        {badgeText}
-                      </span>
-                    </a>
-                  );
-                }
-
-                return (
-                  <div
-                    key={c.name || i}
-                    className="p-3 bg-white/5 border border-white/10 rounded-none opacity-85"
-                  >
-                    <div className="flex items-center justify-between text-slate-300 font-bold text-[11px] uppercase tracking-wider mb-1">
-                      <span className="flex items-center gap-1.5">
-                        <visuals.Icon className={`w-3.5 h-3.5 ${visuals.iconColor}`} />
-                        {name}
-                      </span>
-                      <span className="text-[9px] bg-white/10 text-slate-400 px-1.5 py-0.5 font-bold uppercase tracking-wider">
-                        {badgeText}
-                      </span>
-                    </div>
-                    {description && (
-                      <p className="text-[10px] text-slate-400 font-light leading-relaxed">
-                        {description}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
+            {/* Legal Links */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px]">
+              <Link href="/privacy-policy" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/cookie-policy" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Cookie Policy</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/terms" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Terms of Service</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/sitemap.xml" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Sitemap</Link>
             </div>
           </div>
 
-          {/* COLUMN 5: HEADQUARTERS & CONTACT (3 cols on lg) */}
-          <div className="lg:col-span-3">
-            <h3 className="text-white font-bold text-xs mb-5 uppercase tracking-widest font-display flex items-center gap-2">
-              <span className="w-2 h-0.5 bg-construction-red" />
-              Headquarters
-            </h3>
-            
-            <ul className="space-y-3 text-xs">
-              {/* Address with Google Maps link */}
-              <li className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4 text-construction-red" />
-                </div>
-                <div>
-                  <span className="leading-relaxed block text-slate-300">{address}</span>
-                  <a 
-                    href={mapsUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] text-construction-red hover:underline font-bold mt-1 uppercase tracking-wider"
-                  >
-                    Get Directions <ArrowUpRight className="w-3 h-3" />
-                  </a>
-                </div>
-              </li>
-
-              {/* Phone */}
-              <li className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                  <Phone className="w-4 h-4 text-construction-red" />
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Direct Hotline</span>
-                  <a href={telLink} className="hover:text-white font-medium text-slate-200 transition-colors">{phone}</a>
-                </div>
-              </li>
-
-              {/* Email */}
-              <li className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                  <Mail className="w-4 h-4 text-construction-red" />
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Email Correspondence</span>
-                  <a href={mailtoLink} className="hover:text-white font-medium text-slate-200 transition-colors">{email}</a>
-                </div>
-              </li>
-
-              {/* WhatsApp Quick Chat */}
-              <li className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div>
-                  <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Direct WhatsApp</span>
-                  <a 
-                    href={whatsappLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="hover:text-emerald-300 transition-colors text-emerald-400 font-semibold"
-                  >
-                    +91 {COMPANY_INFO.whatsappNumber}
-                  </a>
-                </div>
-              </li>
-
-              {/* Office Hours */}
-              <li className="flex items-start gap-3 pt-1">
-                <div className="w-8 h-8 bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <Clock className="w-4 h-4 text-slate-400" />
-                </div>
-                <div className="text-[11px] leading-relaxed text-slate-400">
-                  <span className="font-semibold text-slate-300 block">Working Hours:</span>
-                  <span>Mon – Sat: 9:00 AM – 7:00 PM</span>
-                  <span className="block text-slate-500 text-[10px]">Sunday: By Prior Appointment</span>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-        </div>
-
-        {/* 3. BOTTOM SUB-FOOTER LEGAL BAR */}
-        <div className="border-t border-slate-800/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-light">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
+          {/* ── ROW 2: Copyright + precision note + SnapTech (single centered line) */}
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-3 pb-8 sm:py-3 text-[11px] text-slate-500 text-center">
             <span suppressHydrationWarning>
               © {new Date().getFullYear()} Hindustan Projects (HiPRO). All rights reserved.
             </span>
-            <span className="hidden sm:inline text-slate-700">|</span>
-            <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <span>Engineered with precision in Bhilwara, Rajasthan</span>
-              <span>🇮🇳</span>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span className="flex items-center gap-1">
+              Engineered with precision in Bhilwara, Rajasthan. <span>🇮🇳</span>
+            </span>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span>
+              Designed &amp; Developed by{" "}
+              <a
+                href="https://www.snaptech.digital/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-white font-semibold hover:underline underline-offset-4 transition-colors"
+              >
+                SnapTech Digital
+              </a>
             </span>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px]">
-            <Link 
-              href="/privacy-policy" 
-              className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-            >
-              Privacy Policy
-            </Link>
-            <Link 
-              href="/cookie-policy" 
-              className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-            >
-              Cookie Policy
-            </Link>
-            <Link 
-              href="/terms" 
-              className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-            >
-              Terms of Service
-            </Link>
-            <Link 
-              href="/sitemap.xml" 
-              className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-            >
-              Sitemap
-            </Link>
-          </div>
         </div>
-
       </div>
+
     </footer>
   );
 }
