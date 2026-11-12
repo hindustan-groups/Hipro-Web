@@ -11,6 +11,8 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Filter,
   Layers,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
@@ -200,29 +202,40 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
           </div>
         </div>
 
-        {/* ROW 2: Subtitle on Left, Clean Category Filter Tabs on Right */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 sm:mb-12 pb-6 border-b border-slate-200">
+        {/* ROW 2: Subtitle on Left, Accessible Category Dropdown on Right */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 sm:mb-12 pb-6 border-b border-slate-200">
           <p className="max-w-xl text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
             Transforming skylines, industrial corridors, and commercial hubs across Rajasthan
             and Western India with precision civil engineering and turnkey execution.
           </p>
 
-          {/* Category Filter Tabs: Smooth Horizontal Scroll on Mobile, Invisible Native Scrollbar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto py-1 shrink-0 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => handleCategoryChange(cat)}
-                className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 ${
-                  selectedCategory === cat
-                    ? "bg-construction-navy text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200"
-                }`}
+          {/* Category Dropdown Selector: Clean, accessible, works across all breakpoints without clipping */}
+          <div className="w-full sm:w-auto shrink-0">
+            <div className="relative inline-flex items-center w-full sm:w-64">
+              <label htmlFor="homepage-project-category-filter" className="sr-only">
+                Filter by Project Category
+              </label>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 flex items-center gap-1.5 z-10">
+                <Filter className="w-3.5 h-3.5 text-construction-red" aria-hidden="true" />
+              </div>
+              <select
+                id="homepage-project-category-filter"
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                aria-label="Filter projects by category"
+                className="w-full appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 text-construction-navy text-xs font-bold uppercase tracking-wider pl-9 pr-9 py-2.5 rounded-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all shadow-xs"
               >
-                {cat}
-              </button>
-            ))}
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === "All" ? "All Categories" : cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                className="w-4 h-4 text-construction-navy absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
+            </div>
           </div>
         </div>
 
@@ -259,9 +272,9 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
             </div>
           </div>
 
-          {/* Card Stack Stage (Cards stacked in 3D space) */}
+          {/* Card Stack Stage (Cards stacked in 3D space) - Proportional height with zero cut-off */}
           <div
-            className="relative w-full h-[470px] touch-pan-y select-none"
+            className="relative w-full h-[450px] xs:h-[460px] sm:h-[475px] touch-pan-y select-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -297,19 +310,19 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
               } else if (diff === 1) {
                 // CARD 2 (Right behind top card)
                 zIndex = 20;
-                transform = "translateY(14px) scale(0.94)";
-                opacity = 0.88;
-                overlayOpacity = 0.15;
+                transform = "translateY(12px) scale(0.94)";
+                opacity = 0.9;
+                overlayOpacity = 0.45;
               } else if (diff === 2) {
                 // CARD 3 (Back of stack)
                 zIndex = 10;
-                transform = "translateY(28px) scale(0.88)";
-                opacity = 0.6;
-                overlayOpacity = 0.3;
+                transform = "translateY(24px) scale(0.88)";
+                opacity = 0.65;
+                overlayOpacity = 0.65;
               } else {
                 // Hidden beyond 3 cards
                 zIndex = 0;
-                transform = "translateY(36px) scale(0.82)";
+                transform = "translateY(32px) scale(0.82)";
                 opacity = 0;
               }
 
@@ -330,7 +343,7 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
                   className="absolute inset-0 bg-white border border-slate-200 shadow-xl flex flex-col justify-between overflow-hidden origin-bottom will-change-transform"
                 >
                   {/* Image Container */}
-                  <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-900 shrink-0">
+                  <div className="relative w-full aspect-[16/10] max-h-[220px] overflow-hidden bg-slate-900 shrink-0">
                     <Image
                       src={project.image}
                       alt={project.imageAlt || project.title}
@@ -379,17 +392,17 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
                     />
                   )}
 
-                  {/* Card Body */}
-                  <div className="p-5 flex-1 flex flex-col justify-between">
+                  {/* Card Body - Proportionate spacing without dead space */}
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
                     <div>
                       {/* Location */}
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-2">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-1.5">
                         <MapPin className="w-3.5 h-3.5 text-construction-red shrink-0" />
                         <span className="truncate">{project.location || "Rajasthan, India"}</span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-base font-bold text-slate-900 font-display line-clamp-2 mb-2 leading-snug">
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 font-display line-clamp-2 mb-1.5 leading-snug">
                         <Link
                           href={projectLink}
                           onClick={(e) => {
@@ -401,13 +414,13 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
                       </h3>
 
                       {/* Description */}
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
                         {project.shortDescription || project.description}
                       </p>
                     </div>
 
                     {/* Bottom Meta & Action */}
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-3">
+                    <div className="pt-2.5 mt-auto border-t border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
                         <Calendar className="w-3 h-3 text-slate-400" />
                         <span>{project.date || "Turnkey Project"}</span>
@@ -550,13 +563,13 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
                     </h3>
 
                     {/* Description Snippet */}
-                    <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed line-clamp-2 mb-5">
+                    <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed line-clamp-2 mb-4">
                       {project.shortDescription || project.description}
                     </p>
                   </div>
 
                   {/* Card Bottom Meta & CTA Action */}
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="pt-3.5 mt-auto border-t border-slate-100 flex items-center justify-between">
                     {/* Completion / Date */}
                     <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-semibold uppercase tracking-wider">
                       <Calendar className="w-3 h-3 text-slate-400" />
