@@ -44,7 +44,7 @@ function WhatsAppIcon({ className = "w-4 h-4" }: { className?: string }) {
 }
 
 // ── Decorative Architectural Skyline & Construction Crane SVG ────────────────
-function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { className?: string }) {
+function SkylineIllustration({ className = "w-full h-16 text-slate-500" }: { className?: string }) {
   return (
     <svg 
       viewBox="0 0 1200 90" 
@@ -55,12 +55,12 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       aria-hidden="true"
     >
       {/* Horizontal Baseline rule */}
-      <line x1="0" y1="88" x2="1200" y2="88" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" opacity="0.35" />
-      <line x1="120" y1="88" x2="1080" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+      <line x1="0" y1="88" x2="1200" y2="88" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" opacity="0.3" />
+      <line x1="120" y1="88" x2="1080" y2="88" stroke="currentColor" strokeWidth="1.2" opacity="0.6" />
       
       {/* LEFT BUILDINGS CLUSTER (x=300 to 520) */}
       {/* Building L1: Low-rise office */}
-      <rect x="310" y="60" width="35" height="28" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="310" y="60" width="35" height="28" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="318" y1="67" x2="318" y2="73" stroke="currentColor" strokeWidth="1" />
       <line x1="326" y1="67" x2="326" y2="73" stroke="currentColor" strokeWidth="1" />
       <line x1="334" y1="67" x2="334" y2="73" stroke="currentColor" strokeWidth="1" />
@@ -69,8 +69,8 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="334" y1="78" x2="334" y2="84" stroke="currentColor" strokeWidth="1" />
 
       {/* Building L2: Stepped corporate tower */}
-      <rect x="350" y="40" width="42" height="48" stroke="currentColor" strokeWidth="1.2" fill="white" />
-      <rect x="356" y="32" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="350" y="40" width="42" height="48" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="356" y="32" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="371" y1="20" x2="371" y2="32" stroke="currentColor" strokeWidth="1" />
       {/* Windows */}
       <line x1="358" y1="46" x2="384" y2="46" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
@@ -80,15 +80,15 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="358" y1="78" x2="384" y2="78" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
 
       {/* Building L3: Medium tower with pitched crown */}
-      <rect x="398" y="48" width="36" height="40" stroke="currentColor" strokeWidth="1.2" fill="white" />
-      <polygon points="398,48 416,36 434,48" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="398" y="48" width="36" height="40" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <polygon points="398,48 416,36 434,48" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="406" y1="56" x2="426" y2="56" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
       <line x1="406" y1="66" x2="426" y2="66" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
       <line x1="406" y1="76" x2="426" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
 
       {/* Building L4: Skyscraper next to crane */}
-      <rect x="440" y="24" width="46" height="64" stroke="currentColor" strokeWidth="1.2" fill="white" />
-      <rect x="448" y="16" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="440" y="24" width="46" height="64" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="448" y="16" width="30" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="463" y1="6" x2="463" y2="16" stroke="currentColor" strokeWidth="1" />
       {/* Grid windows */}
       <line x1="448" y1="32" x2="478" y2="32" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
@@ -99,7 +99,7 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="448" y1="80" x2="478" y2="80" stroke="currentColor" strokeWidth="1" strokeDasharray="4 3" />
 
       {/* Building L5: Transitional lower building */}
-      <rect x="492" y="52" width="28" height="36" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="492" y="52" width="28" height="36" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="498" y1="60" x2="514" y2="60" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
       <line x1="498" y1="68" x2="514" y2="68" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
       <line x1="498" y1="76" x2="514" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
@@ -123,7 +123,7 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="560" y1="18" x2="568" y2="18" stroke="currentColor" strokeWidth="1" />
 
       {/* Crane Peak / Apex A-frame */}
-      <polygon points="560,18 564,6 568,18" stroke="currentColor" strokeWidth="1.4" fill="white" />
+      <polygon points="560,18 564,6 568,18" stroke="currentColor" strokeWidth="1.4" fill="currentColor" fillOpacity="0.15" />
       
       {/* Crane Horizontal Jib (Boom) */}
       <line x1="518" y1="18" x2="628" y2="18" stroke="currentColor" strokeWidth="1.6" />
@@ -140,30 +140,30 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="564" y1="6" x2="530" y2="18" stroke="currentColor" strokeWidth="0.9" />
       
       {/* Counter-weight on rear jib */}
-      <rect x="522" y="19" width="12" height="9" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.15" />
+      <rect x="522" y="19" width="12" height="9" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.2" />
       
       {/* Operator Cabin */}
-      <rect x="568" y="21" width="8" height="9" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="568" y="21" width="8" height="9" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.15" />
       
       {/* Hoist Trolley, Cable and Suspended I-Beam */}
       <rect x="600" y="17" width="6" height="5" stroke="currentColor" strokeWidth="1" fill="currentColor" />
       <line x1="603" y1="22" x2="603" y2="44" stroke="currentColor" strokeWidth="1" />
       {/* Hook */}
       <path d="M603,44 Q601,48 603,50 Q605,48 605,46" stroke="currentColor" strokeWidth="1" fill="none" />
-      {/* Suspended Steel Beam */}
-      <line x1="590" y1="51" x2="616" y2="51" stroke="#f97316" strokeWidth="2.2" strokeLinecap="round" />
+      {/* Suspended Steel Beam — orange accent highlight */}
+      <line x1="590" y1="51" x2="616" y2="51" stroke="#f97316" strokeWidth="2.8" strokeLinecap="round" />
 
       {/* RIGHT BUILDINGS CLUSTER (x=635 to 890) */}
       {/* Building R1: Modern office next to crane */}
-      <rect x="635" y="44" width="34" height="44" stroke="currentColor" strokeWidth="1.2" fill="white" />
-      <polygon points="635,44 652,34 669,44" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="635" y="44" width="34" height="44" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <polygon points="635,44 652,34 669,44" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="643" y1="52" x2="661" y2="52" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
       <line x1="643" y1="62" x2="661" y2="62" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
       <line x1="643" y1="72" x2="661" y2="72" stroke="currentColor" strokeWidth="1" strokeDasharray="3 2" />
 
       {/* Building R2: High-rise geometric tower */}
-      <rect x="675" y="26" width="44" height="62" stroke="currentColor" strokeWidth="1.2" fill="white" />
-      <rect x="683" y="18" width="28" height="8" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="675" y="26" width="44" height="62" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
+      <rect x="683" y="18" width="28" height="8" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="697" y1="10" x2="697" y2="18" stroke="currentColor" strokeWidth="1" />
       {/* Windows columns */}
       <line x1="685" y1="34" x2="709" y2="34" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
@@ -173,14 +173,14 @@ function SkylineIllustration({ className = "w-full h-16 text-slate-300" }: { cla
       <line x1="685" y1="74" x2="709" y2="74" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
 
       {/* Building R3: Medium commercial building */}
-      <rect x="725" y="38" width="38" height="50" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="725" y="38" width="38" height="50" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="733" y1="46" x2="755" y2="46" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
       <line x1="733" y1="56" x2="755" y2="56" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
       <line x1="733" y1="66" x2="755" y2="66" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
       <line x1="733" y1="76" x2="755" y2="76" stroke="currentColor" strokeWidth="1" strokeDasharray="2 3" />
 
       {/* Building R4: Low-rise residential/commercial */}
-      <rect x="769" y="56" width="32" height="32" stroke="currentColor" strokeWidth="1.2" fill="white" />
+      <rect x="769" y="56" width="32" height="32" stroke="currentColor" strokeWidth="1.2" fill="currentColor" fillOpacity="0.07" />
       <line x1="775" y1="64" x2="795" y2="64" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
       <line x1="775" y1="72" x2="795" y2="72" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
       <line x1="775" y1="80" x2="795" y2="80" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
@@ -284,18 +284,17 @@ export default async function Footer({
         />
 
         {/* Right Architectural Image Showcase with Multi-stop Gradient Fade */}
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 lg:w-5/12 hidden md:block pointer-events-none select-none overflow-hidden">
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-3/5 lg:w-1/2 hidden md:block pointer-events-none select-none overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=85"
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85"
             alt="HiPRO Architectural Engineering Showcase"
             fill
-            sizes="(max-width: 1024px) 50vw, 40vw"
+            sizes="(max-width: 1024px) 60vw, 50vw"
             priority={false}
-            className="object-cover object-center brightness-90"
+            className="object-cover object-center brightness-100"
           />
-          {/* Multi-stop gradient overlay — lighter so the image stays visible */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#071326] via-[#071326]/70 to-[#071326]/10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#071326]/30 via-transparent to-transparent" />
+          {/* Subtle gradient overlay on left edge only — leaves the villa bright, warm and visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071326] via-[#071326]/40 via-20% to-transparent" />
         </div>
 
         {/* Banner Content Container */}
@@ -656,28 +655,29 @@ export default async function Footer({
 
           </div>
         </div>
-
-        {/* ─────────────────────────────────────────────────────────────
-            3. DECORATIVE ARCHITECTURAL SKYLINE & CRANE ILLUSTRATION
-            ───────────────────────────────────────────────────────────── */}
-        <div className="relative w-full overflow-hidden border-t border-slate-100 pt-1 pb-0 flex items-end justify-center" style={{ height: '56px' }}>
-          <SkylineIllustration className="w-full max-w-5xl h-14 text-slate-300" />
-        </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. BOTTOM DARK NAVY BAR
+          3 & 4. BOTTOM DARK NAVY SECTION WITH ARCHITECTURAL SKYLINE & 2-ROW FOOTER
           ───────────────────────────────────────────────────────────── */}
       <div className="bg-[#0B1528] text-slate-400 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 text-xs font-light">
-            
-            {/* Left: Connect With Us & Social Icons */}
+        
+        {/* Architectural Skyline & Crane Illustration with Dark Background Highlight */}
+        <div className="relative w-full overflow-hidden pt-4 pb-0 flex items-end justify-center border-b border-slate-800/60" style={{ minHeight: '76px' }}>
+          <SkylineIllustration className="w-full max-w-5xl h-16 sm:h-20 text-slate-400" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* ── ROW 1: Social Icons LEFT + Legal Links RIGHT ─────────── */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 border-b border-slate-800/60 text-xs">
+
+            {/* Social Icons */}
             <div className="flex items-center gap-3">
-              <span className="text-white font-bold text-xs uppercase tracking-wider">
+              <span className="text-white font-bold text-[11px] uppercase tracking-widest whitespace-nowrap">
                 Connect With Us
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {socialLinks.map(({ icon: Icon, url, name }, i) => (
                   <a
                     key={i}
@@ -685,70 +685,49 @@ export default async function Footer({
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Visit Hindustan Projects on ${name}`}
-                    className="w-8 h-8 rounded-md bg-white/10 hover:bg-orange-500 hover:text-white text-slate-300 flex items-center justify-center transition-all shadow-xs"
+                    className="w-7 h-7 rounded-md bg-white/10 hover:bg-orange-500 hover:text-white text-slate-300 flex items-center justify-center transition-all"
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Center: Copyright & Engineered with precision */}
-            <div className="flex flex-wrap items-center justify-center gap-2 text-center text-[11px] text-slate-400">
-              <span suppressHydrationWarning>
-                © {new Date().getFullYear()} Hindustan Projects (HiPRO). All rights reserved.
-              </span>
-              <span className="hidden md:inline text-slate-600">|</span>
-              <span className="flex items-center gap-1.5">
-                <span>Engineered with precision in Bhilwara, Rajasthan.</span>
-                <span>🇮🇳</span>
-              </span>
-              <span className="hidden md:inline text-slate-600">|</span>
-              <span>
-                Designed &amp; Developed by{" "}
-                <a
-                  href="https://www.snaptech.digital/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-300 hover:text-white font-semibold underline-offset-4 hover:underline transition-colors"
-                >
-                  SnapTech Digital
-                </a>
-              </span>
+            {/* Legal Links */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px]">
+              <Link href="/privacy-policy" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/cookie-policy" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Cookie Policy</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/terms" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Terms of Service</Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/sitemap.xml" className="text-slate-400 hover:text-white transition-colors hover:underline underline-offset-4">Sitemap</Link>
             </div>
-
-            {/* Right: Legal & Sitemap */}
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px]">
-              <Link 
-                href="/privacy-policy" 
-                className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-              >
-                Privacy Policy
-              </Link>
-              <span className="text-slate-700">|</span>
-              <Link 
-                href="/cookie-policy" 
-                className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-              >
-                Cookie Policy
-              </Link>
-              <span className="text-slate-700">|</span>
-              <Link 
-                href="/terms" 
-                className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-              >
-                Terms of Service
-              </Link>
-              <span className="text-slate-700">|</span>
-              <Link 
-                href="/sitemap.xml" 
-                className="text-slate-400 hover:text-white transition-colors underline-offset-4 hover:underline"
-              >
-                Sitemap
-              </Link>
-            </div>
-
           </div>
+
+          {/* ── ROW 2: Copyright + precision note + SnapTech (single centered line) */}
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-3 text-[11px] text-slate-500 text-center">
+            <span suppressHydrationWarning>
+              © {new Date().getFullYear()} Hindustan Projects (HiPRO). All rights reserved.
+            </span>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span className="flex items-center gap-1">
+              Engineered with precision in Bhilwara, Rajasthan. <span>🇮🇳</span>
+            </span>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <span>
+              Designed &amp; Developed by{" "}
+              <a
+                href="https://www.snaptech.digital/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-white font-semibold hover:underline underline-offset-4 transition-colors"
+              >
+                SnapTech Digital
+              </a>
+            </span>
+          </div>
+
         </div>
       </div>
 
