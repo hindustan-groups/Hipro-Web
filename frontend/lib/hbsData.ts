@@ -11,7 +11,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
   logoMark: "/hbs-icon.jpg",
   logoMobile: "/hbs-logo.jpg",
   favicon: "/hbs-favicon.jpg",
-  ogDefaultImage: "/hbs-og-default.svg",
+  ogDefaultImage: "/hbs-og-banner.jpg",
   privacyPolicyUrl: "/privacy-policy",
   termsUrl: "/terms",
   tagline: "Complete Building Repair, Maintenance, Protection & Services",
@@ -106,7 +106,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
   metaTitle: "Hind Build | Building Repair, Maintenance & Protection",
   metaDescription: "Professional building repair, waterproofing, painting, termite control, electrical, and facility maintenance services by Hind Build, a Hindustan Projects company.",
   canonicalUrl: "https://hindbuilding.hindustanprojects.in",
-  ogImage: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1200&auto=format&fit=crop"
+  ogImage: "/hbs-og-banner.jpg"
 };
 
 let backendOfflineUntil = 0;

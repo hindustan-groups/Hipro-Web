@@ -31,6 +31,11 @@ import {
 } from "@/lib/hbsData";
 import { cleanTelNumber, getProjectWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
+import {
+  getHbsCanonicalUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+} from "@/lib/hbsSeo";
 
 interface ProjectPageProps {
   params: Promise<{ slug: string }>;
@@ -60,11 +65,7 @@ export async function generateMetadata({
     };
   }
 
-  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const baseUrl = isSubdomainActive
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/projects/${project.slug}`;
+  const canonicalUrl = getHbsCanonicalUrl(`projects/${project.slug}`);
 
   const title = project.metaTitle || `${project.title} | Case Study | Hind Build`;
   const description =
@@ -72,19 +73,20 @@ export async function generateMetadata({
     project.description ||
     `Verified engineering case study: ${project.title}. Executed in ${project.location || "Rajasthan"} by Hind Build, specialized building maintenance and repair division under Hindustan Projects.`;
 
-  // Determine OG image safely - NEVER fall back to parent HiPRO /logo.jpg
   const imagesList = parseImages(project.images);
   const heroImage = imagesList[0] || null;
-  const ogImage =
+  const customOg =
     (project as any).ogImage ||
     heroImage ||
-    content.ogDefaultImage ||
-    content.logoPrimary ||
-    "/hbs-og-default.svg";
+    content.ogImage ||
+    content.ogDefaultImage;
+
+  const ogImages = resolveHbsOgImage(customOg, `${project.title} - Hind Build Case Study`);
 
   return {
     title: { absolute: title },
     description,
+    keywords: [project.title, ...(project.location ? [project.location] : []), ...HBS_SEO_KEYWORDS],
     alternates: {
       canonical: canonicalUrl,
     },
@@ -93,21 +95,14 @@ export async function generateMetadata({
       description,
       url: canonicalUrl,
       type: "article",
-      siteName: "Hind Build",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${project.title} - Hind Build Case Study`,
-        },
-      ],
+      siteName: "Hind Build | Hindustan Projects",
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      images: [ogImages[0].url],
     },
   };
 }
@@ -238,7 +233,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
         : "https://www.hindustanprojects.in/hbs",
       logo: {
         "@type": "ImageObject",
-        url: content.logoPrimary || "https://hindbuilding.hindustanprojects.in/hbs-og-default.svg",
+        url: content.logoPrimary || `${isSubdomain ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in"}/hbs-logo.jpg`,
       },
     },
     mainEntityOfPage: {

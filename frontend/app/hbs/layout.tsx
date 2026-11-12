@@ -4,71 +4,86 @@ import HbsNavbar from "@/components/hbs/HbsNavbar";
 import HbsFooter from "@/components/hbs/HbsFooter";
 import HbsMobileBar from "@/components/hbs/HbsMobileBar";
 import { fetchHbsContent, fetchHbsServices, DEFAULT_HBS_CONTENT } from "@/lib/hbsData";
+import {
+  getHbsBaseUrl,
+  getHbsCanonicalUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+  HBS_DEFAULT_TITLE,
+  HBS_DEFAULT_DESCRIPTION,
+} from "@/lib/hbsSeo";
 
 export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await fetchHbsContent();
-  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const baseUrl = isSubdomainActive
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in";
-  const canonicalPath = isSubdomainActive ? "/" : "/hbs";
+  const baseUrl = getHbsBaseUrl();
+  const canonicalUrl = getHbsCanonicalUrl();
 
-  const hbsOgImage =
-    content.ogImage ||
-    content.ogDefaultImage ||
-    content.logoPrimary ||
-    "/hbs-og-default.svg";
+  const title = content.metaTitle || HBS_DEFAULT_TITLE;
+  const description = content.metaDescription || HBS_DEFAULT_DESCRIPTION;
 
-  const hbsTwitterImage =
-    content.twitterImage ||
-    hbsOgImage;
+  const hbsFavicon = content.favicon || "/hbs-favicon.jpg";
+  const hbsAppleIcon = content.logoMark || "/hbs-icon.jpg";
 
-  const hbsFavicon =
-    content.favicon ||
-    "/hbs-favicon.jpg";
+  const customOg = content.ogImage || content.ogDefaultImage;
+  const ogImages = resolveHbsOgImage(customOg, "Hind Build — Complete Building Repair, Maintenance & Protection");
 
   return {
     metadataBase: new URL(baseUrl),
     title: {
-      default: content.metaTitle || "Hind Build | Building Repair, Maintenance & Protection",
+      default: title,
       template: "%s | Hind Build",
     },
-    description: content.metaDescription || "Professional building repair, waterproofing, painting, termite control, electrical, and facility maintenance services by Hind Build, a Hindustan Projects company.",
+    description,
+    keywords: HBS_SEO_KEYWORDS,
+    applicationName: "Hind Build",
+    authors: [{ name: "Hind Build (Hindustan Projects)", url: baseUrl }],
+    creator: "Hind Build",
+    publisher: "Hindustan Projects (HiPRO)",
     icons: {
-      icon: hbsFavicon,
+      icon: [
+        { url: hbsFavicon, sizes: "32x32", type: "image/jpeg" },
+      ],
       shortcut: hbsFavicon,
-      apple: content.logoMark || hbsFavicon,
+      apple: [
+        { url: hbsAppleIcon, sizes: "180x180", type: "image/jpeg" },
+      ],
     },
     alternates: {
-      canonical: canonicalPath,
+      canonical: canonicalUrl,
     },
     openGraph: {
       type: "website",
       locale: "en_IN",
-      url: isSubdomainActive ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in/hbs",
-      siteName: "Hind Build",
-      title: content.metaTitle || "Hind Build | Building Repair, Maintenance & Protection",
-      description: content.metaDescription || "Specialized building repair, waterproofing, termite control and maintenance division under Hindustan Projects.",
-      images: [
-        {
-          url: hbsOgImage,
-          width: 1200,
-          height: 630,
-          alt: "Hind Build",
-        },
-      ],
+      url: canonicalUrl,
+      siteName: "Hind Build | Hindustan Projects",
+      title,
+      description,
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
-      title: content.metaTitle || "Hind Build",
-      description: content.metaDescription || "Specialized building repair and maintenance division.",
-      images: [hbsTwitterImage],
+      title,
+      description,
+      images: [ogImages[0].url],
     },
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    other: {
+      "geo.region": "IN-RJ",
+      "geo.placename": "Bhilwara",
+      "geo.position": "25.3510922;74.6330429",
+      "ICBM": "25.3510922, 74.6330429",
     },
   };
 }
@@ -83,25 +98,26 @@ export default async function HbsLayout({
     fetchHbsServices(),
   ]);
 
-  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const hbsBaseUrl = isSubdomainActive
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in/hbs";
+  const baseUrl = getHbsBaseUrl();
+  const canonicalHome = getHbsCanonicalUrl();
 
   const hbsJsonLd = {
     "@context": "https://schema.org",
-    "@type": ["LocalBusiness", "HomeAndConstructionBusiness", "RoofingContractor"],
-    "@id": `${hbsBaseUrl}#organization`,
+    "@type": ["LocalBusiness", "HomeAndConstructionBusiness", "RoofingContractor", "GeneralContractor"],
+    "@id": `${canonicalHome}#organization`,
     name: "Hind Build",
-    alternateName: "Hind Build",
+    alternateName: ["Hind Build", "Hind Building Solutions", "HiBUILD"],
+    description: content.metaDescription || HBS_DEFAULT_DESCRIPTION,
+    image: `${baseUrl}/hbs-og-banner.jpg`,
+    logo: `${baseUrl}/hbs-logo.jpg`,
     parentOrganization: {
       "@type": "Organization",
       name: "Hindustan Projects (HiPRO)",
       url: "https://www.hindustanprojects.in/",
     },
-    url: isSubdomainActive ? "https://hindbuilding.hindustanprojects.in/" : "https://www.hindustanprojects.in/hbs",
-    telephone: content.phone,
-    email: content.email,
+    url: canonicalHome,
+    telephone: content.phone || "+91 75970 00601",
+    email: content.email || "hbs@hindustanprojects.in",
     address: {
       "@type": "PostalAddress",
       streetAddress: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
@@ -115,7 +131,21 @@ export default async function HbsLayout({
       latitude: 25.3510922,
       longitude: 74.6330429,
     },
+    areaServed: [
+      { "@type": "City", name: "Bhilwara" },
+      { "@type": "AdministrativeArea", name: "Rajasthan" },
+      { "@type": "City", name: "Jaipur" },
+      { "@type": "City", name: "Udaipur" },
+      { "@type": "City", name: "Ajmer" },
+      { "@type": "City", name: "Kota" },
+    ],
+    currenciesAccepted: "INR",
     priceRange: "₹₹",
+    sameAs: [
+      "https://www.instagram.com/hindustan_projects/",
+      "https://linkedin.com/company/hindustanprojects",
+      "https://pin.it/5OlMWwi2w",
+    ],
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
@@ -133,7 +163,7 @@ export default async function HbsLayout({
           "@type": "Service",
           name: s.title,
           description: s.shortDescription || undefined,
-          url: `https://hindbuilding.hindustanprojects.in/services/${s.slug}`,
+          url: getHbsCanonicalUrl(`services/${s.slug}`),
         },
       })),
     },

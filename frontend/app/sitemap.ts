@@ -4,7 +4,7 @@ import type { BlogPost, Project, Service } from '@/lib/types';
 import { cleanServiceTitle, getServiceSlug, COMPANY_INFO } from '@/lib/companyData';
 import { buildProjectCanonicalUrl } from '@/lib/projectUrl';
 import { CURATED_LANDMARKS } from '@/lib/curatedProjects';
-import { DEFAULT_HBS_SERVICES } from '@/lib/hbsData';
+import { DEFAULT_HBS_SERVICES, fetchHbsProjects } from '@/lib/hbsData';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.hindustanprojects.in';
@@ -159,6 +159,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       }));
 
+    let hbsProjectRoutes: { url: string; lastModified: Date; changeFrequency: "monthly"; priority: number }[] = [];
+    try {
+      const hbsProjects = await fetchHbsProjects();
+      hbsProjectRoutes = hbsProjects
+        .filter((p) => Boolean(p.slug))
+        .map((p) => ({
+          url: `${baseUrl}/hbs/projects/${p.slug}`,
+          lastModified: new Date(),
+          changeFrequency: 'monthly' as const,
+          priority: 0.7,
+        }));
+    } catch {
+      // Fallback gracefully if backend unavailable during sitemap generation
+    }
+
     return [
       ...staticRoutes,
       ...blogRoutes,
@@ -166,6 +181,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...serviceRoutes,
       ...hbsStaticRoutes,
       ...hbsServiceRoutes,
+      ...hbsProjectRoutes,
     ];
   } catch (error) {
     console.error("Failed to generate sitemap for dynamic routes:", error);

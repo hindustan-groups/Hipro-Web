@@ -26,6 +26,11 @@ import { cleanTelNumber, getServiceWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsFaqAccordion from "@/components/hbs/HbsFaqAccordion";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
 import { HbsWarrantyCard, HbsWarrantyBadge, hasValidWarranty } from "@/components/hbs/HbsServiceDetail";
+import {
+  getHbsCanonicalUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+} from "@/lib/hbsSeo";
 
 interface ServicePageProps {
   params: Promise<{ slug: string }>;
@@ -53,11 +58,7 @@ export async function generateMetadata({
     };
   }
 
-  const isSubdomainActive = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const baseUrl = isSubdomainActive
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/services/${service.slug}`;
+  const canonicalUrl = getHbsCanonicalUrl(`services/${service.slug}`);
 
   const title = service.metaTitle || `${service.title} | Hind Build`;
   const description =
@@ -66,16 +67,13 @@ export async function generateMetadata({
     service.fullDescription ||
     `Professional ${service.title} by Hind Build, specialized building maintenance and repair division under Hindustan Projects.`;
 
-  const ogImage =
-    service.ogImage ||
-    service.image ||
-    content.ogDefaultImage ||
-    content.logoPrimary ||
-    "/hbs-og-default.svg";
+  const customOg = service.ogImage || service.image || content.ogImage || content.ogDefaultImage;
+  const ogImages = resolveHbsOgImage(customOg, `${service.title} - Hind Build`);
 
   return {
     title,
     description,
+    keywords: [service.title, ...(service.hindiTitle ? [service.hindiTitle] : []), ...HBS_SEO_KEYWORDS],
     alternates: {
       canonical: canonicalUrl,
     },
@@ -84,21 +82,14 @@ export async function generateMetadata({
       description,
       url: canonicalUrl,
       type: "website",
-      siteName: "Hind Build",
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${service.title} - Hind Build`,
-        },
-      ],
+      siteName: "Hind Build | Hindustan Projects",
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      images: [ogImages[0].url],
     },
   };
 }
