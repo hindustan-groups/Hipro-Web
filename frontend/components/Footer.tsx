@@ -268,7 +268,7 @@ export default async function Footer({
   ];
 
   return (
-    <footer className="w-full relative overflow-hidden bg-white text-slate-700">
+    <footer id="main-footer" className="w-full relative overflow-hidden bg-white text-slate-700">
       
       {/* ─────────────────────────────────────────────────────────────
           1. TOP CONSULTATION BANNER (DARK NAVY WITH ARCHITECTURAL SHOWCASE)
@@ -706,7 +706,7 @@ export default async function Footer({
           </div>
 
           {/* ── ROW 2: Copyright + precision note + SnapTech (single centered line) */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 py-3 text-[11px] text-slate-500 text-center">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-3 pb-8 sm:py-3 text-[11px] text-slate-500 text-center">
             <span suppressHydrationWarning>
               © {new Date().getFullYear()} Hindustan Projects (HiPRO). All rights reserved.
             </span>
