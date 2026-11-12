@@ -21,6 +21,13 @@ import {
 import { fetchHbsContent } from "@/lib/hbsData";
 import { cleanTelNumber, getContactWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
+import type { Metadata } from "next";
+import {
+  getHbsCanonicalUrl,
+  getHbsBaseUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+} from "@/lib/hbsSeo";
 
 export const revalidate = 60;
 
@@ -114,44 +121,39 @@ function parseAboutImagesData(raw: any): AboutCmsData {
   return DEFAULT_ABOUT_DATA;
 }
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const content = await fetchHbsContent();
-  const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const canonicalUrl = isSubdomain
-    ? "https://hindbuilding.hindustanprojects.in/about"
-    : "https://www.hindustanprojects.in/hbs/about";
-  const baseUrl = isSubdomain
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in/hbs";
+  const canonicalUrl = getHbsCanonicalUrl("about");
+  const baseUrl = getHbsBaseUrl();
+
+  const title = "About Hind Build | Specialized Building Repair & Civil Protection";
+  const description =
+    content.metaDescription ||
+    "Learn about Hind Build, an engineering-driven civil and building maintenance division of Hindustan Projects (HiPRO) delivering turnkey repairs, diagnostics, and written warranties across Rajasthan.";
+
+  const customOg = content.ogImage || content.ogDefaultImage;
+  const ogImages = resolveHbsOgImage(customOg, "About Hind Build — Engineering-Grade Building Solutions");
 
   return {
-    title: "About Hind Build | Specialized Building Repair & Civil Protection",
-    description:
-      content.metaDescription ||
-      "Learn about Hind Build, an engineering-driven civil and building maintenance division of Hindustan Projects (HiPRO) delivering turnkey repairs, diagnostics, and written warranties across Rajasthan.",
+    title: { absolute: title },
+    description,
+    keywords: HBS_SEO_KEYWORDS,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: "About Hind Build | Engineering-Grade Building Solutions",
-      description:
-        "Learn about Hind Build, an engineering-driven civil division under Hindustan Projects (HiPRO).",
+      title,
+      description,
       url: canonicalUrl,
       type: "website",
-      images: [
-        {
-          url: content.ogDefaultImage || `${baseUrl}/hbs-og-default.svg`,
-          width: 1200,
-          height: 630,
-          alt: "About Hind Build",
-        },
-      ],
+      siteName: "Hind Build | Hindustan Projects",
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
-      title: "About Hind Build | Civil & Building Maintenance Division",
-      description:
-        "Learn about Hind Build, an engineering-driven civil division under Hindustan Projects (HiPRO).",
+      title,
+      description,
+      images: [ogImages[0].url],
     },
   };
 }

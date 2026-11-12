@@ -20,6 +20,12 @@ import {
 import { cleanTelNumber, cleanWhatsAppNumber, buildHbsWhatsAppUrl } from "@/lib/hbsWhatsApp";
 import HbsProjectsDirectory from "@/components/hbs/HbsProjectsDirectory";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
+import {
+  getHbsCanonicalUrl,
+  getHbsBaseUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+} from "@/lib/hbsSeo";
 
 export const revalidate = 60;
 
@@ -29,22 +35,20 @@ export async function generateMetadata(): Promise<Metadata> {
     fetchHbsProjects(),
   ]);
 
-  const isSubdomainActive =
-    process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
-  const baseUrl = isSubdomainActive
-    ? "https://hindbuilding.hindustanprojects.in"
-    : "https://www.hindustanprojects.in";
-  const canonicalUrl = `${baseUrl}/projects`;
-
+  const canonicalUrl = getHbsCanonicalUrl("projects");
   const totalCount = projects.length;
   const title = "Projects & Field Work | Hind Build";
   const description =
     content.metaDescription ||
     "Documented civil engineering, structural rehabilitation, and waterproofing field records by Hind Build. Turnkey execution with written warranties.";
 
+  const customOg = content.ogImage || content.ogDefaultImage;
+  const ogImages = resolveHbsOgImage(customOg, "Hind Build Project Records & Case Studies");
+
   return {
     title: { absolute: title },
     description,
+    keywords: HBS_SEO_KEYWORDS,
     alternates: {
       canonical: canonicalUrl,
     },
@@ -53,19 +57,14 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: canonicalUrl,
       type: "website",
-      images: [
-        {
-          url: content.ogDefaultImage || `${baseUrl}/hbs-og-default.svg`,
-          width: 1200,
-          height: 630,
-          alt: "Hind Build Project Records",
-        },
-      ],
+      siteName: "Hind Build | Hindustan Projects",
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [ogImages[0].url],
     },
   };
 }
