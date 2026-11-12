@@ -208,25 +208,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <article className="min-h-screen bg-[#FDFDFD]">
         
         {/* Dynamic Hero Section - Content-driven responsive layout with safe navbar clearance */}
-        <header className="relative w-full min-h-[520px] sm:min-h-[560px] md:min-h-[620px] lg:min-h-[660px] flex flex-col justify-end pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-12 sm:pb-16 md:pb-20 overflow-hidden">
-          {/* Background Image with optimized framing */}
-          <div className="absolute inset-0 w-full h-full">
-            {post.image && (
-              <Image 
-                src={post.image} 
-                alt={post.imageAlt || post.title}
-                title={post.imageTitle || post.imageCaption || post.imageAlt || post.title}
+        <header className="relative w-full pt-28 sm:pt-32 md:pt-36 lg:pt-40 pb-12 sm:pb-16 bg-slate-950 text-white border-b border-slate-800 overflow-hidden">
+          {/* Subtle Architectural Blueprint Grid Background */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.035]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)",
+              backgroundSize: "36px 36px",
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Ambient Lighting Accents */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+
+          {/* Ambient Subtle Cover Reflection (Atmospheric) */}
+          {post.image && (
+            <div className="absolute inset-0 opacity-15 filter blur-3xl scale-110 pointer-events-none overflow-hidden" aria-hidden="true">
+              <Image
+                src={post.image}
+                alt=""
                 fill
-                priority
                 sizes="100vw"
                 unoptimized={!isOptimizableImage(post.image)}
-                className="object-cover object-[center_35%] md:object-[center_30%]"
+                className="object-cover object-center"
               />
-            )}
-            {/* Base dark tint + directional gradient for reliable text contrast across all viewports */}
-            <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/35" />
-          </div>
+            </div>
+          )}
 
           <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
             <Link 
@@ -282,13 +292,33 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 <span>{readTime} min read</span>
               </div>
             </div>
-
-            {post.imageCaption && (
-              <p className="text-xs text-white/75 italic mt-3 sm:mt-4 max-w-2xl leading-relaxed drop-shadow">
-                Cover: {post.imageCaption}
-              </p>
-            )}
           </div>
+
+          {/* Primary Featured Cover Image Showcase - Zero-Cropping with object-contain */}
+          {post.image && (
+            <div className="relative z-10 mt-8 sm:mt-10 md:mt-12 w-full max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
+              <figure className="relative w-full bg-slate-950 border border-slate-700/80 shadow-2xl overflow-hidden">
+                <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[600px] flex items-center justify-center bg-slate-950">
+                  <Image 
+                    src={post.image} 
+                    alt={post.imageAlt || post.title}
+                    title={post.imageTitle || post.imageCaption || post.imageAlt || post.title}
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 1024px"
+                    unoptimized={!isOptimizableImage(post.image)}
+                    className="object-contain object-center"
+                  />
+                </div>
+                {post.imageCaption && (
+                  <figcaption className="px-4 py-3 bg-slate-900 border-t border-slate-800 text-xs text-slate-300 font-mono tracking-wide text-left">
+                    <span className="text-construction-red font-bold mr-2 uppercase">Figure:</span>
+                    {post.imageCaption}
+                  </figcaption>
+                )}
+              </figure>
+            </div>
+          )}
         </header>
 
         {/* Content Layout */}
@@ -649,15 +679,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   <div className="space-y-6">
                     {relatedBlogs.map(related => (
                       <Link href={`/blogs/${related.slug}`} key={related.id} className="group flex gap-4 items-center">
-                        <div className="w-20 h-20 overflow-hidden bg-slate-100 shrink-0 relative">
+                        <div className="w-24 sm:w-28 h-16 sm:h-[72px] overflow-hidden bg-slate-950 border border-slate-200 shrink-0 relative flex items-center justify-center">
                           {related.image && (
                             <Image 
                               src={related.image} 
                               alt={related.title} 
                               fill
-                              sizes="80px"
+                              sizes="(max-width: 640px) 96px, 112px"
                               unoptimized={!isOptimizableImage(related.image)}
-                              className="object-cover group-hover:scale-110 transition-transform duration-500" 
+                              className="object-contain object-center" 
                             />
                           )}
                         </div>

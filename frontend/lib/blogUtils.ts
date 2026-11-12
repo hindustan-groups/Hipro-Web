@@ -393,14 +393,14 @@ export function renderFormattedText(text: string): React.ReactNode[] {
 
       return React.createElement(
         "figure",
-        { key: i, className: "my-6 inline-block max-w-full" },
+        { key: i, className: "my-8 block w-full max-w-full overflow-hidden" },
         React.createElement("img", {
           src: cleanSrc,
           alt: altText || "Article image",
           loading: "lazy",
-          className: "w-full max-h-[500px] object-cover rounded-none border border-slate-200 shadow-sm"
+          className: "w-full h-auto max-h-[640px] object-contain rounded-none border border-slate-200 shadow-md bg-slate-50 mx-auto block"
         }),
-        altText ? React.createElement("figcaption", { className: "text-xs text-slate-500 mt-2 text-center italic" }, altText) : null
+        altText ? React.createElement("figcaption", { className: "text-xs text-slate-500 mt-2.5 text-center italic font-mono" }, altText) : null
       );
     }
 

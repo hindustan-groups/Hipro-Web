@@ -248,8 +248,8 @@ export default function BlogsHero({
                   aria-hidden="true"
                 />
 
-                {/* Inner Image Container */}
-                <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] w-full overflow-hidden bg-slate-950 border border-slate-200 select-none group">
+                {/* Inner Image Container - Zero-Cropping with object-contain */}
+                <div className="relative aspect-[16/10] sm:aspect-[16/9] w-full overflow-hidden bg-slate-950 border border-slate-200 select-none flex items-center justify-center">
                   <Image
                     src={effectiveImage}
                     alt={effectiveImageAlt}
@@ -257,43 +257,33 @@ export default function BlogsHero({
                     priority
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 42vw"
                     unoptimized={!isOptimizableImage(effectiveImage)}
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="object-contain object-center"
                   />
+                </div>
 
-                  {/* Sophisticated Editorial Vignette & Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent pointer-events-none" />
-
-                  {/* Floating Knowledge Badge (Top Left) */}
-                  <div className="absolute top-3.5 left-3.5 z-10">
-                    <span className="inline-flex items-center gap-1.5 bg-construction-navy/90 backdrop-blur-xs text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 shadow-sm border border-white/10">
-                      <Sparkles className="w-3 h-3 text-construction-red" />
-                      Field Intelligence
+                {/* Bottom Editorial Caption Strip - Positioned OUTSIDE image so zero content is obscured */}
+                <div className="mt-2.5 p-3.5 bg-slate-900 border border-slate-800 text-left">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-construction-red font-bold flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" />
+                      {featuredBlog?.category || "Field Intelligence"}
+                    </span>
+                    <span className="text-[9px] font-mono tracking-widest text-white/60 uppercase hidden sm:inline-block">
+                      HiPRO · 25.34°N, 74.63°E
                     </span>
                   </div>
-
-                  {/* Drafting Watermark (Top Right) */}
-                  <div className="absolute top-3.5 right-3.5 z-10 hidden sm:block text-[9px] font-mono tracking-widest text-white/70 uppercase">
-                    HiPRO · 25.34°N, 74.63°E
+                  <div className="text-white font-display uppercase tracking-tight text-xs sm:text-sm font-bold line-clamp-2 leading-snug">
+                    {featuredBlog ? featuredBlog.title : "Disciplined Engineering For High-Performance Structures"}
                   </div>
-
-                  {/* Bottom Editorial Caption Strip */}
-                  <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 z-10 flex flex-col justify-end text-left">
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-construction-red font-bold mb-1">
-                      {featuredBlog ? "Featured Research Topic" : "Architecture & Civil Execution"}
-                    </div>
-                    <div className="text-white font-display uppercase tracking-tight text-sm sm:text-base font-bold line-clamp-2 leading-snug">
-                      {featuredBlog ? featuredBlog.title : "Disciplined Engineering For High-Performance Structures"}
-                    </div>
-                    {featuredBlog && (
-                      <Link
-                        href={`/blogs/${featuredBlog.slug || featuredBlog.id}`}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-200 hover:text-white uppercase tracking-wider mt-2 group-hover:text-construction-red transition-colors"
-                      >
-                        <span>Read Featured Guide</span>
-                        <ArrowUpRight className="w-3 h-3" />
-                      </Link>
-                    )}
-                  </div>
+                  {featuredBlog && (
+                    <Link
+                      href={`/blogs/${featuredBlog.slug || featuredBlog.id}`}
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-300 hover:text-white uppercase tracking-wider mt-2 hover:text-construction-red transition-colors"
+                    >
+                      <span>Read Featured Guide</span>
+                      <ArrowUpRight className="w-3 h-3 text-construction-red" />
+                    </Link>
+                  )}
                 </div>
 
                 {/* Subtle Frame Footer Meta */}
