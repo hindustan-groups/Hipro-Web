@@ -433,13 +433,31 @@ export const DEFAULT_CTAS: CTAConfig[] = [
   },
 ];
 
-export function resolveCTAHref(cta: CTAConfig): string {
+import { buildHiproWhatsAppUrl } from "./hiproWhatsApp";
+
+export function resolveCTAHref(
+  cta: CTAConfig,
+  context?: { title?: string; type?: "service" | "project" }
+): string {
   switch (cta.actionType) {
     case "phone":
       return `tel:${cta.destination.replace(/\s+/g, "")}`;
     case "whatsapp": {
-      const clean = cta.destination.replace(/[^0-9]/g, "");
-      return `https://wa.me/${clean}`;
+      // If destination already contains query params, respect it
+      if (cta.destination.includes("?text=")) {
+        return cta.destination;
+      }
+      let prefilledText = "Hello Hindustan Projects, I would like to discuss a construction/engineering project.";
+      if (context?.title) {
+        if (context.type === "project") {
+          prefilledText = `Hello Hindustan Projects, I would like to enquire about your project: ${context.title}.`;
+        } else {
+          prefilledText = `Hello Hindustan Projects, I am interested in your ${context.title} services. Please share more details and the consultation process.`;
+        }
+      } else if (cta.key?.includes("quote") || cta.key?.includes("estimator") || cta.key?.includes("footer")) {
+        prefilledText = "Hello Hindustan Projects, I would like to request a project quotation and engineering consultation.";
+      }
+      return buildHiproWhatsAppUrl(cta.destination, prefilledText);
     }
     case "email":
       return `mailto:${cta.destination.trim()}`;

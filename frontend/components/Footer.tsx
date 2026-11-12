@@ -24,6 +24,7 @@ import { findAll } from "@/lib/db";
 import type { Settings, Service } from "@/lib/types";
 import { COMPANY_INFO, cleanServiceTitle } from "@/lib/companyData";
 import { resolveCTA, resolveCTAHref } from "@/lib/cta";
+import { getConsultationWhatsAppUrl, buildHiproWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 // ── Official Pinterest SVG Icon ─────────────────────────────────────────────
 function PinterestIcon({ className = "w-4 h-4" }: { className?: string }) {
@@ -215,7 +216,10 @@ export default async function Footer({
   const email = settings.companyEmail || COMPANY_INFO.email;
   const telLink = `tel:${(settings.companyPhone || COMPANY_INFO.phone).replace(/\s+/g, '')}`;
   const mailtoLink = `mailto:${email}`;
-  const whatsappLink = COMPANY_INFO.whatsappLink;
+  const whatsappLink = buildHiproWhatsAppUrl(
+    COMPANY_INFO.whatsappNumber,
+    "Hello Hindustan Projects, I would like to enquire about your construction services."
+  );
   const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(address)}`;
   
   let socials: any = {};
@@ -232,7 +236,7 @@ export default async function Footer({
   const ctaEstimator = resolveCTA(settings, "footer_estimator");
   const ctaWhatsapp  = resolveCTA(settings, "footer_whatsapp");
   const estimatorHref = ctaEstimator ? resolveCTAHref(ctaEstimator) : "/cost-estimator";
-  const whatsappHref  = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : COMPANY_INFO.whatsappLink;
+  const whatsappHref  = ctaWhatsapp ? resolveCTAHref(ctaWhatsapp) : getConsultationWhatsAppUrl(COMPANY_INFO.whatsappNumber);
 
   // ── Capabilities Resolution ─────────────────────────────────────────────
   const activeServices = servicesData

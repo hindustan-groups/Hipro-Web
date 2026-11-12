@@ -17,7 +17,7 @@ export const COMPANY_INFO = {
   formattedPhone: "+91 75970 00601",
   phoneTel: "tel:+917597000601",
   whatsappNumber: "7597000601",
-  whatsappLink: "https://wa.me/917597000601",
+  whatsappLink: "https://wa.me/917597000601?text=Hello%20Hindustan%20Projects%2C%20I%20would%20like%20to%20discuss%20a%20construction%2Fengineering%20project.",
   email: "info@hindustanprojects.in",
   emailMailto: "mailto:info@hindustanprojects.in",
   

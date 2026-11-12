@@ -7,6 +7,7 @@ import { formatIndianCurrency, formatIndianNumber } from "./calculateEstimate";
 import { generateAndPrintBOQ } from "./boqPdfGenerator";
 import { trackEvent } from "@/lib/analytics";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { buildHiproWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 interface EstimatorLeadModalProps {
   isOpen: boolean;
@@ -106,7 +107,7 @@ Materials BOM: Cement ${result.materials.cementBags} bags, Steel ${result.materi
           onClose();
         }, 600);
       } else if (actionType === "whatsapp") {
-        const text = encodeURIComponent(
+        const rawMessage =
           `Hello Hindustan Projects team, I just calculated my house construction estimate on your website:\n\n` +
           `• Plot Area: ${formatIndianNumber(state.plotArea)} sqft (${Math.round(state.plotArea / 9)} Gaj)\n` +
           `• Floors: ${state.floors.toUpperCase()}\n` +
@@ -116,10 +117,9 @@ Materials BOM: Cement ${result.materials.cementBags} bags, Steel ${result.materi
           `• Estimated Budget: ${formatIndianCurrency(result.totalCost)}\n\n` +
           `My Name: ${name || "Client"}\n` +
           `Phone: ${cleanPhone}\n\n` +
-          `Could you please share the detailed brand-wise BOQ and schedule a free site consultation?`
-        );
+          `Could you please share the detailed brand-wise BOQ and schedule a free site consultation?`;
         const targetWhatsapp = whatsappNumber || COMPANY_INFO.whatsappNumber || "7597000601";
-        window.open(`https://wa.me/91${targetWhatsapp}?text=${text}`, "_blank");
+        window.open(buildHiproWhatsAppUrl(targetWhatsapp, rawMessage), "_blank");
         setTimeout(() => {
           onClose();
         }, 1200);

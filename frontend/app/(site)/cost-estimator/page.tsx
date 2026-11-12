@@ -20,6 +20,7 @@ import type { CostEstimatorCMSConfig } from "@/components/estimator/types";
 import { DEFAULT_ESTIMATOR_CMS_CONFIG } from "@/components/estimator/configDefaults";
 import { COMPANY_INFO } from "@/lib/companyData";
 import { generateFaqSchema, type FaqItem } from "@/lib/schema";
+import { getCostEstimatorWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 const FAQ_ITEMS: FaqItem[] = [
   {
@@ -331,7 +332,7 @@ export default function CostEstimatorPage() {
 
           <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
             <a
-              href={`https://wa.me/91${COMPANY_INFO.whatsappNumber || "7597000601"}?text=Hello%20Hindustan%20Projects%2C%20I%20have%20an%20architectural%20plan%20and%20would%20like%20a%20detailed%20BOQ%20quote.`}
+              href={getCostEstimatorWhatsAppUrl(COMPANY_INFO.whatsappNumber)}
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider text-center transition-all shadow-md"

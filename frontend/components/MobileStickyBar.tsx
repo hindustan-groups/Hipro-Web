@@ -3,14 +3,12 @@
 import { useState, useEffect } from "react";
 import { Phone, MessageSquare } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/companyData";
+import { getGeneralWhatsAppUrl } from "@/lib/hiproWhatsApp";
 
 export default function MobileStickyBar() {
   const [isFooterVisible, setIsFooterVisible] = useState(false);
   const phone = COMPANY_INFO.phone;
-  const whatsappText = encodeURIComponent(
-    "Hello HiPRO, I would like to discuss a construction/engineering project."
-  );
-  const whatsappUrl = `https://wa.me/917597000601?text=${whatsappText}`;
+  const whatsappUrl = getGeneralWhatsAppUrl(COMPANY_INFO.whatsappNumber);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("IntersectionObserver" in window)) {

@@ -502,7 +502,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 {/* Action CTA Row */}
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <Link
-                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : `/contact?service=${encodeURIComponent(displayTitle)}`}
+                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary, { title: displayTitle, type: "service" }) : `/contact?service=${encodeURIComponent(displayTitle)}`}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-construction-navy hover:bg-slate-900 text-white font-bold text-xs uppercase tracking-widest transition-all duration-200 shadow-md group border border-slate-900"
                   >
                     <span>{ctaDetailPrimary?.label || "Request Service Quote"}</span>
@@ -1067,7 +1067,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   <Link
                     href={
                       ctaDetailPrimary
-                        ? resolveCTAHref(ctaDetailPrimary)
+                        ? resolveCTAHref(ctaDetailPrimary, { title: displayTitle, type: "service" })
                         : `/contact?service=${encodeURIComponent(service.title)}`
                     }
                     className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-construction-red hover:bg-red-700 px-5 py-3 shadow-md shadow-red-600/20 transition-colors"
@@ -1124,7 +1124,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               {ctaDetailPrimary?.enabled !== false && (
                 <Link
-                  href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : `/contact?service=${encodeURIComponent(service.title)}`}
+                  href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary, { title: displayTitle, type: "service" }) : `/contact?service=${encodeURIComponent(service.title)}`}
                   target={ctaDetailPrimary?.openNewTab ? "_blank" : undefined}
                   rel={ctaDetailPrimary?.openNewTab ? "noopener noreferrer" : undefined}
                   className="bg-construction-red hover:bg-red-700 text-white font-bold px-8 py-4 text-sm transition-all uppercase tracking-wider shadow-lg shadow-red-600/20"

@@ -911,7 +911,7 @@ export default async function ProjectDetailPage({
                 </p>
                 {ctaDetailPrimary?.enabled !== false && (
                   <Link
-                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary) : "/contact"}
+                    href={ctaDetailPrimary ? resolveCTAHref(ctaDetailPrimary, { title: project.title, type: "project" }) : "/contact"}
                     target={ctaDetailPrimary?.openNewTab ? "_blank" : undefined}
                     rel={ctaDetailPrimary?.openNewTab ? "noopener noreferrer" : undefined}
                     className="flex items-center justify-center gap-2 w-full px-5 py-3.5 bg-construction-navy hover:bg-slate-800 text-white font-mono font-bold text-xs uppercase tracking-wider transition-colors shadow-md"
@@ -1055,7 +1055,7 @@ export default async function ProjectDetailPage({
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {ctaBottomPrimary?.enabled !== false && (
               <Link
-                href={ctaBottomPrimary ? resolveCTAHref(ctaBottomPrimary) : "/contact"}
+                href={ctaBottomPrimary ? resolveCTAHref(ctaBottomPrimary, { title: project.title, type: "project" }) : "/contact"}
                 target={ctaBottomPrimary?.openNewTab ? "_blank" : undefined}
                 rel={ctaBottomPrimary?.openNewTab ? "noopener noreferrer" : undefined}
                 className="w-full sm:w-auto px-8 py-4 bg-construction-red hover:bg-red-700 text-white font-mono font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-600/20"
