@@ -134,6 +134,7 @@ jobs:
         env:
           BACKEND_API_URL: "http://localhost:5000"
           NODE_ENV: "production"
+          NEXT_IGNORE_INCORRECT_LOCKFILE: "1"
         run: npm run build --prefix frontend
 
       - name: Run Next.js redirect smoke tests (28 checks covering 8 redirect rules)
