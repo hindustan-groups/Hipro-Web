@@ -286,16 +286,16 @@ export default async function Footer({
         {/* Right Architectural Image Showcase with Multi-stop Gradient Fade */}
         <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 lg:w-5/12 hidden md:block pointer-events-none select-none overflow-hidden">
           <Image
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80"
+            src="https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1200&q=85"
             alt="HiPRO Architectural Engineering Showcase"
             fill
             sizes="(max-width: 1024px) 50vw, 40vw"
             priority={false}
-            className="object-cover object-center"
+            className="object-cover object-center brightness-90"
           />
-          {/* Multi-stop gradient overlay to ensure text contrast and flawless fade */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#071326] via-[#071326]/85 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#071326]/60 via-transparent to-transparent" />
+          {/* Multi-stop gradient overlay — lighter so the image stays visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071326] via-[#071326]/70 to-[#071326]/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#071326]/30 via-transparent to-transparent" />
         </div>
 
         {/* Banner Content Container */}
@@ -352,7 +352,7 @@ export default async function Footer({
           2. MAIN FOOTER CONTENT — 5 COLUMNS ON CLEAN WHITE BACKGROUND
           ───────────────────────────────────────────────────────────── */}
       <div className="bg-white text-slate-700 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 pb-12 sm:pb-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 pb-8 sm:pb-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 lg:gap-8">
             
             {/* COLUMN 1: COMPANY IDENTITY (lg:col-span-3) */}
@@ -660,8 +660,8 @@ export default async function Footer({
         {/* ─────────────────────────────────────────────────────────────
             3. DECORATIVE ARCHITECTURAL SKYLINE & CRANE ILLUSTRATION
             ───────────────────────────────────────────────────────────── */}
-        <div className="relative w-full overflow-hidden border-t border-slate-100 pt-2 pb-0 flex items-end justify-center">
-          <SkylineIllustration className="w-full max-w-5xl h-14 sm:h-18 md:h-20 text-slate-300" />
+        <div className="relative w-full overflow-hidden border-t border-slate-100 pt-1 pb-0 flex items-end justify-center" style={{ height: '56px' }}>
+          <SkylineIllustration className="w-full max-w-5xl h-14 text-slate-300" />
         </div>
       </div>
 
