@@ -19,6 +19,7 @@ import {
   Briefcase,
   ChevronDown,
   Filter,
+  SlidersHorizontal,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
 import { isOptimizableImage } from "@/lib/imageUtils";
@@ -81,6 +82,7 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
   const [selectedStatus, setSelectedStatus] = useState<"all" | "ongoing" | "completed">("all");
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [sortBy, setSortBy] = useState<"featured" | "latest" | "oldest" | "name-asc" | "order">("featured");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Pagination: render INITIAL_PAGE_SIZE projects, View More reveals next batch
   const INITIAL_PAGE_SIZE = 6;
@@ -217,13 +219,23 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
     searchQuery.trim() !== "" ||
     selectedCategory !== "All" ||
     selectedStatus !== "all" ||
-    selectedLocation !== "all";
+    selectedLocation !== "all" ||
+    sortBy !== "featured";
+
+  const secondaryActiveCount = useMemo(() => {
+    let count = 0;
+    if (selectedStatus !== "all") count++;
+    if (selectedLocation !== "all") count++;
+    if (sortBy !== "featured") count++;
+    return count;
+  }, [selectedStatus, selectedLocation, sortBy]);
 
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedCategory("All");
     setSelectedStatus("all");
     setSelectedLocation("all");
+    setSortBy("featured");
     setVisibleCount(INITIAL_PAGE_SIZE);
   };
 
@@ -446,156 +458,319 @@ export default function PublicProjectGrid({ projects = [] }: PublicProjectGridPr
       {/* ─────────────────────────────────────────────────────────────
           2. PROJECT DISCOVERY / FILTER TOOLBAR (Unified, Accessible & Responsive)
           ───────────────────────────────────────────────────────────── */}
-      <section className="sticky top-16 z-20 bg-white/95 backdrop-blur-md border-y border-slate-200/90 shadow-xs py-3.5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto space-y-3">
-          {/* Responsive Controls Wrapper */}
-          <div className="flex flex-col gap-2.5">
-            {/* Controls Bar: Responsive 2-Col Grid on Mobile, Cohesive Row on Desktop */}
-            <div className="grid grid-cols-2 lg:flex lg:flex-wrap xl:flex-nowrap items-center gap-2 sm:gap-2.5">
-              
-              {/* 1. Search Box (Full width on mobile/tablet, flexible on desktop) */}
-              <div className="relative col-span-2 lg:flex-1 min-w-[200px]">
-                <label htmlFor="projects-search-input" className="sr-only">
+      <section className="relative lg:sticky lg:top-16 z-20 bg-white/95 backdrop-blur-md border-y border-slate-200/90 shadow-xs py-2.5 sm:py-3 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-2">
+          
+          {/* =========================================================
+              MOBILE COMPACT FILTER BAR (< lg): Sleek ~44px single row
+              ========================================================= */}
+          <div className="lg:hidden space-y-2">
+            <div className="flex items-center gap-2">
+              {/* Search Box */}
+              <div className="relative flex-1 min-w-0">
+                <label htmlFor="projects-search-input-mobile" className="sr-only">
                   Search Projects
                 </label>
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
                 <input
-                  id="projects-search-input"
+                  id="projects-search-input-mobile"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search projects..."
                   aria-label="Search projects"
-                  className="w-full h-10 lg:h-9 bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-7 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy placeholder:text-slate-400"
+                  className="w-full h-9 bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-7 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy placeholder:text-slate-400"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
                     aria-label="Clear search query"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
 
-              {/* 2. Category Dropdown Selector */}
-              <div className="relative w-full lg:w-auto lg:min-w-[170px]">
-                <label htmlFor="projects-category-selector" className="sr-only">
+              {/* Category Dropdown (Primary Quick Filter) */}
+              <div className="relative w-36 xs:w-44 shrink-0">
+                <label htmlFor="projects-category-selector-mobile" className="sr-only">
                   Filter by Category
                 </label>
                 <select
-                  id="projects-category-selector"
+                  id="projects-category-selector-mobile"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   aria-label="Filter by project category"
-                  className="w-full h-10 lg:h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer truncate"
+                  className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-2.5 pr-7 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer truncate"
                 >
                   {availableCategories.map((cat) => (
                     <option key={cat} value={cat}>
-                      {cat === "All" ? "Category: All" : `Category: ${cat}`}
+                      {cat === "All" ? "All Categories" : cat}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+              </div>
+
+              {/* Secondary Filter Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters((prev) => !prev)}
+                aria-expanded={showMobileFilters}
+                aria-controls="mobile-secondary-filters"
+                className={`h-9 px-2.5 flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider border transition-colors shrink-0 rounded-none cursor-pointer ${
+                  showMobileFilters || secondaryActiveCount > 0
+                    ? "bg-construction-navy text-white border-construction-navy"
+                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                }`}
+                title="Toggle more filters (Status, Location, Sort)"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Filters</span>
+                {secondaryActiveCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-construction-red text-white text-[10px] font-bold flex items-center justify-center">
+                    {secondaryActiveCount}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Expandable Secondary Filters (Status, Location, Sort, Clear) */}
+            {showMobileFilters && (
+              <div
+                id="mobile-secondary-filters"
+                className="pt-2 pb-1 border-t border-slate-200/80 grid grid-cols-2 gap-2"
+              >
+                {/* Status */}
+                <div className="relative">
+                  <label htmlFor="projects-status-selector-mobile" className="sr-only">
+                    Filter by Status
+                  </label>
+                  <select
+                    id="projects-status-selector-mobile"
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value as any)}
+                    aria-label="Filter by project status"
+                    className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-2.5 pr-7 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                  >
+                    <option value="all">Status: All</option>
+                    <option value="ongoing">Status: Ongoing</option>
+                    <option value="completed">Status: Completed</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                </div>
+
+                {/* Location */}
+                {availableLocations.length > 0 && (
+                  <div className="relative">
+                    <label htmlFor="projects-location-selector-mobile" className="sr-only">
+                      Filter by Location
+                    </label>
+                    <select
+                      id="projects-location-selector-mobile"
+                      value={selectedLocation}
+                      onChange={(e) => setSelectedLocation(e.target.value)}
+                      aria-label="Filter by project location"
+                      className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-2.5 pr-7 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer truncate"
+                    >
+                      <option value="all">Location: All</option>
+                      {availableLocations.map((loc) => (
+                        <option key={loc} value={loc}>
+                          Location: {loc}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                  </div>
+                )}
+
+                {/* Sort Order */}
+                <div className={`relative ${availableLocations.length > 0 ? "col-span-2 xs:col-span-1" : "col-span-1"}`}>
+                  <label htmlFor="projects-sort-selector-mobile" className="sr-only">
+                    Sort projects by
+                  </label>
+                  <div className="flex items-center w-full h-9 bg-slate-50 border border-slate-200 rounded-none relative">
+                    <ArrowUpDown className="w-3 h-3 text-slate-400 absolute left-2.5 pointer-events-none" aria-hidden="true" />
+                    <select
+                      id="projects-sort-selector-mobile"
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      aria-label="Sort projects by"
+                      className="w-full h-full appearance-none bg-transparent text-xs font-semibold text-slate-800 pl-7 pr-7 focus:outline-none cursor-pointer truncate"
+                    >
+                      <option value="featured">Sort: Featured First</option>
+                      <option value="latest">Sort: Latest</option>
+                      <option value="oldest">Sort: Oldest</option>
+                      <option value="name-asc">Sort: Name (A–Z)</option>
+                      <option value="order">Sort: Display Order</option>
+                    </select>
+                    <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" aria-hidden="true" />
+                  </div>
+                </div>
+
+                {/* Clear Filters on Mobile */}
+                {hasActiveFilters && (
+                  <div className="col-span-2">
+                    <button
+                      onClick={handleClearFilters}
+                      className="w-full h-9 bg-white border border-slate-300 hover:bg-red-50 hover:text-construction-red hover:border-red-300 text-slate-700 px-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 rounded-none cursor-pointer"
+                    >
+                      <RotateCcw className="w-3 h-3 text-construction-red" />
+                      <span>Clear All Filters</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* =========================================================
+              DESKTOP COHESIVE TOOLBAR (≥ lg): Full single horizontal bar
+              ========================================================= */}
+          <div className="hidden lg:flex items-center gap-2.5">
+            {/* 1. Search Box */}
+            <div className="relative flex-1 min-w-[200px]">
+              <label htmlFor="projects-search-input" className="sr-only">
+                Search Projects
+              </label>
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+              <input
+                id="projects-search-input"
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search projects..."
+                aria-label="Search projects"
+                className="w-full h-9 bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-7 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy placeholder:text-slate-400"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search query"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* 2. Category Dropdown Selector */}
+            <div className="relative min-w-[170px]">
+              <label htmlFor="projects-category-selector" className="sr-only">
+                Filter by Category
+              </label>
+              <select
+                id="projects-category-selector"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                aria-label="Filter by project category"
+                className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer truncate"
+              >
+                {availableCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === "All" ? "Category: All" : `Category: ${cat}`}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+            </div>
+
+            {/* 3. Status Filter */}
+            <div className="relative min-w-[135px]">
+              <label htmlFor="projects-status-selector" className="sr-only">
+                Filter by Status
+              </label>
+              <select
+                id="projects-status-selector"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as any)}
+                aria-label="Filter by project status"
+                className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer"
+              >
+                <option value="all">Status: All</option>
+                <option value="ongoing">Status: Ongoing</option>
+                <option value="completed">Status: Completed</option>
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+            </div>
+
+            {/* 4. Location Filter */}
+            {availableLocations.length > 0 && (
+              <div className="relative min-w-[140px] max-w-[190px]">
+                <label htmlFor="projects-location-selector" className="sr-only">
+                  Filter by Location
+                </label>
+                <select
+                  id="projects-location-selector"
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  aria-label="Filter by project location"
+                  className="w-full h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer truncate"
+                >
+                  <option value="all">Location: All</option>
+                  {availableLocations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      Location: {loc}
                     </option>
                   ))}
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
               </div>
+            )}
 
-              {/* 3. Status Filter */}
-              <div className="relative w-full lg:w-auto lg:min-w-[135px]">
-                <label htmlFor="projects-status-selector" className="sr-only">
-                  Filter by Status
-                </label>
+            {/* 5. Sort Order */}
+            <div className="relative min-w-[160px]">
+              <label htmlFor="projects-sort-selector" className="sr-only">
+                Sort projects by
+              </label>
+              <div className="flex items-center w-full h-9 bg-slate-50 border border-slate-200 rounded-none relative">
+                <ArrowUpDown className="w-3 h-3 text-slate-400 absolute left-2.5 pointer-events-none" aria-hidden="true" />
                 <select
-                  id="projects-status-selector"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value as any)}
-                  aria-label="Filter by project status"
-                  className="w-full h-10 lg:h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer"
+                  id="projects-sort-selector"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  aria-label="Sort projects by"
+                  className="w-full h-full appearance-none bg-transparent text-xs font-semibold text-slate-800 pl-7 pr-7 focus:outline-none cursor-pointer truncate"
                 >
-                  <option value="all">Status: All</option>
-                  <option value="ongoing">Status: Ongoing</option>
-                  <option value="completed">Status: Completed</option>
+                  <option value="featured">Sort: Featured First</option>
+                  <option value="latest">Sort: Latest</option>
+                  <option value="oldest">Sort: Oldest</option>
+                  <option value="name-asc">Sort: Name (A–Z)</option>
+                  <option value="order">Sort: Display Order</option>
                 </select>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" aria-hidden="true" />
               </div>
-
-              {/* 4. Location Filter */}
-              {availableLocations.length > 0 && (
-                <div className="relative w-full lg:w-auto lg:min-w-[140px] lg:max-w-[190px]">
-                  <label htmlFor="projects-location-selector" className="sr-only">
-                    Filter by Location
-                  </label>
-                  <select
-                    id="projects-location-selector"
-                    value={selectedLocation}
-                    onChange={(e) => setSelectedLocation(e.target.value)}
-                    aria-label="Filter by project location"
-                    className="w-full h-10 lg:h-9 appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-xs font-semibold pl-3 pr-8 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy focus:border-construction-navy cursor-pointer truncate"
-                  >
-                    <option value="all">Location: All</option>
-                    {availableLocations.map((loc) => (
-                      <option key={loc} value={loc}>
-                        Location: {loc}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
-                </div>
-              )}
-
-              {/* 5. Sort Order */}
-              <div className="relative w-full lg:w-auto lg:min-w-[160px]">
-                <label htmlFor="projects-sort-selector" className="sr-only">
-                  Sort projects by
-                </label>
-                <div className="flex items-center w-full h-10 lg:h-9 bg-slate-50 border border-slate-200 rounded-none relative">
-                  <ArrowUpDown className="w-3 h-3 text-slate-400 absolute left-2.5 pointer-events-none" aria-hidden="true" />
-                  <select
-                    id="projects-sort-selector"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    aria-label="Sort projects by"
-                    className="w-full h-full appearance-none bg-transparent text-xs font-semibold text-slate-800 pl-7 pr-7 focus:outline-none cursor-pointer truncate"
-                  >
-                    <option value="featured">Sort: Featured First</option>
-                    <option value="latest">Sort: Latest</option>
-                    <option value="oldest">Sort: Oldest</option>
-                    <option value="name-asc">Sort: Name (A–Z)</option>
-                    <option value="order">Sort: Display Order</option>
-                  </select>
-                  <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" aria-hidden="true" />
-                </div>
-              </div>
-
-              {/* 6. Clear Filters Button (When filters active) */}
-              {hasActiveFilters && (
-                <div className="col-span-2 lg:w-auto shrink-0">
-                  <button
-                    onClick={handleClearFilters}
-                    title="Clear all active filters"
-                    className="w-full lg:w-auto h-10 lg:h-9 bg-white border border-slate-300 hover:bg-red-50 hover:text-construction-red hover:border-red-300 text-slate-700 px-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
-                  >
-                    <RotateCcw className="w-3 h-3 text-construction-red" />
-                    <span>Clear Filters</span>
-                  </button>
-                </div>
-              )}
-
             </div>
+
+            {/* 6. Clear Filters Button (When filters active) */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                title="Clear all active filters"
+                className="h-9 bg-white border border-slate-300 hover:bg-red-50 hover:text-construction-red hover:border-red-300 text-slate-700 px-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shrink-0 rounded-none cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-navy focus-visible:outline-none"
+              >
+                <RotateCcw className="w-3 h-3 text-construction-red" />
+                <span>Clear Filters</span>
+              </button>
+            )}
           </div>
 
           {/* Active Filter Result Counter */}
           <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100 font-mono">
-            <span className="text-slate-500">
+            <span className="text-slate-500 text-[11px]">
               RESULT:{" "}
               <strong className="text-slate-950 font-bold">
                 {filteredProjects.length} {filteredProjects.length === 1 ? "PROJECT" : "PROJECTS"}
               </strong>
             </span>
             {hasActiveFilters && (
-              <span className="text-amber-700 font-semibold text-[11px] uppercase tracking-wider">
-                Active Filter Applied
-              </span>
+              <button
+                onClick={handleClearFilters}
+                className="text-construction-red hover:underline text-[11px] font-semibold cursor-pointer"
+              >
+                Reset all filters
+              </button>
             )}
           </div>
         </div>

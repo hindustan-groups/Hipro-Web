@@ -272,9 +272,9 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
             </div>
           </div>
 
-          {/* Card Stack Stage (Cards stacked in 3D space) - Calibrated proportionate height */}
+          {/* Card Stack Stage (Cards stacked in 3D space) - Proportional height with zero cut-off */}
           <div
-            className="relative w-full h-[385px] xs:h-[395px] sm:h-[415px] touch-pan-y select-none"
+            className="relative w-full h-[450px] xs:h-[460px] sm:h-[475px] touch-pan-y select-none"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -310,19 +310,19 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
               } else if (diff === 1) {
                 // CARD 2 (Right behind top card)
                 zIndex = 20;
-                transform = "translateY(14px) scale(0.94)";
-                opacity = 0.88;
-                overlayOpacity = 0.15;
+                transform = "translateY(12px) scale(0.94)";
+                opacity = 0.9;
+                overlayOpacity = 0.45;
               } else if (diff === 2) {
                 // CARD 3 (Back of stack)
                 zIndex = 10;
-                transform = "translateY(28px) scale(0.88)";
-                opacity = 0.6;
-                overlayOpacity = 0.3;
+                transform = "translateY(24px) scale(0.88)";
+                opacity = 0.65;
+                overlayOpacity = 0.65;
               } else {
                 // Hidden beyond 3 cards
                 zIndex = 0;
-                transform = "translateY(36px) scale(0.82)";
+                transform = "translateY(32px) scale(0.82)";
                 opacity = 0;
               }
 
@@ -343,7 +343,7 @@ export default function Projects({ projects = [], title, settings }: ProjectsPro
                   className="absolute inset-0 bg-white border border-slate-200 shadow-xl flex flex-col justify-between overflow-hidden origin-bottom will-change-transform"
                 >
                   {/* Image Container */}
-                  <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-900 shrink-0">
+                  <div className="relative w-full aspect-[16/10] max-h-[220px] overflow-hidden bg-slate-900 shrink-0">
                     <Image
                       src={project.image}
                       alt={project.imageAlt || project.title}
