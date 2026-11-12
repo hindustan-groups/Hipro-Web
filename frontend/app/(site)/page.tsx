@@ -13,6 +13,7 @@ const CostEstimator = dynamic(() => import("@/components/CostEstimator"), { ssr:
 const HomeImageShowcase = dynamic(() => import("@/components/HomeImageShowcase"), { ssr: true });
 const GroupEcosystem = dynamic(() => import("@/components/GroupEcosystem"), { ssr: true });
 const Testimonials = dynamic(() => import("@/components/Testimonials"), { ssr: true });
+const FaqSection = dynamic(() => import("@/components/FaqSection"), { ssr: true });
 import { findAll, findLimited } from "@/lib/db";
 import type { Service, Project, Stats as StatType, Testimonial, Settings, BlogPost, Guarantee, HeroSlide } from "@/lib/types";
 
@@ -129,6 +130,7 @@ export default async function Home() {
       <AnimateIn><GroupEcosystem pageContent={pageContent} /></AnimateIn>
       <AnimateIn><Blogs posts={blogsData} /></AnimateIn>
       <AnimateIn><Testimonials testimonials={testimonialsData} /></AnimateIn>
+      <AnimateIn><FaqSection /></AnimateIn>
       <AnimateIn><CTASection /></AnimateIn>
     </>
   );
