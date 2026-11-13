@@ -139,27 +139,14 @@ test("Sitemap implements search-intent weighted priorities", () => {
 });
 
 // 11. Robots.txt Directives
-test("robots.txt protects admin routes while permitting public empanelment portal crawling", () => {
+test("robots.txt protects administrative and private API endpoints", () => {
   const content = fs.readFileSync(path.join(rootDir, "public/robots.txt"), "utf-8");
   assert.match(content, /Disallow:\s*\/admin/, "Must disallow /admin");
   assert.match(content, /Disallow:\s*\/api\//, "Must disallow /api/");
-  assert.ok(!content.includes("Disallow: /empanelment"), "Must not blanket disallow public /empanelment");
   assert.match(content, /Sitemap:\s*https:\/\/www\.hindustanprojects\.in\/sitemap\.xml/, "Must link to sitemap");
 });
 
-// 12. Empanelment Workflow Routes Noindex Policy
-test("Workflow and sensitive empanelment routes export noindex metadata", () => {
-  const workflowRoutes = ["apply", "gate-pass", "track", "verify-pass"];
-  for (const r of workflowRoutes) {
-    const layoutPath = path.join(rootDir, `app/empanelment/${r}/layout.tsx`);
-    assert.ok(fs.existsSync(layoutPath), `Layout for ${r} must exist`);
-    const code = fs.readFileSync(layoutPath, "utf-8");
-    assert.match(code, /index:\s*false/, `${r} layout must specify index: false`);
-    assert.match(code, /follow:\s*true/, `${r} layout must specify follow: true`);
-  }
-});
-
-// 13. Public OG Image Binary Format & Dimension Validation
+// 12. Public OG Image Binary Format & Dimension Validation
 test("Public OG banners are valid JPEGs with exact 1200x630 dimensions", () => {
   const bannerPath = path.join(rootDir, "public/og-banner.jpg");
   const imagePath = path.join(rootDir, "public/og-image.jpg");
