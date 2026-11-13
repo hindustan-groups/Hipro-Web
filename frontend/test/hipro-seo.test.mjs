@@ -234,11 +234,11 @@ test("Dynamic CMS-driven metadata generators remain fully functional and uncompr
 });
 
 // 17. Local SEO Master Plan Documentation & Framework Version
-test("HIPRO_LOCAL_SEO_MASTER_PLAN.md documents Next.js 14.2 App Router runtime accurately", () => {
+test("HIPRO_LOCAL_SEO_MASTER_PLAN.md documents Next.js 15 App Router runtime accurately", () => {
   const docPath = path.join(repoDir, "docs/seo/HIPRO_LOCAL_SEO_MASTER_PLAN.md");
   assert.ok(fs.existsSync(docPath), "Master plan file must exist in docs/seo/");
   const doc = fs.readFileSync(docPath, "utf-8");
-  assert.ok(doc.includes("Next.js 14.2"), "Master plan must document Next.js 14.2");
+  assert.ok(doc.includes("Next.js 15"), "Master plan must document Next.js 15");
   assert.ok(doc.includes("Business & Geographic SEO Objectives"), "Must cover Business & Geographic SEO Objectives");
   assert.ok(doc.includes("Keyword Clusters"), "Must cover Keyword Clusters");
   assert.ok(doc.includes("Keyword-to-Page Mapping"), "Must cover Keyword-to-Page Mapping");
@@ -247,11 +247,11 @@ test("HIPRO_LOCAL_SEO_MASTER_PLAN.md documents Next.js 14.2 App Router runtime a
 });
 
 // 18. SEO Audit Document & Framework Version
-test("HIPRO_SEO_AUDIT_2026.md documents Next.js 14.2 App Router accurately", () => {
+test("HIPRO_SEO_AUDIT_2026.md documents Next.js 15 App Router accurately", () => {
   const docPath = path.join(repoDir, "docs/seo/HIPRO_SEO_AUDIT_2026.md");
   assert.ok(fs.existsSync(docPath), "SEO audit file must exist in docs/seo/");
   const doc = fs.readFileSync(docPath, "utf-8");
-  assert.ok(doc.includes("Next.js 14.2"), "Audit doc must reference Next.js 14.2");
+  assert.ok(doc.includes("Next.js 15"), "Audit doc must reference Next.js 15");
   assert.ok(doc.includes("Executive Summary"), "Must contain Executive Summary");
   assert.ok(doc.includes("Per-Page SEO Findings"), "Must contain Per-Page SEO Findings");
 });

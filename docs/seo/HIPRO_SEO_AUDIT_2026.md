@@ -1,6 +1,6 @@
 # HiPRO Website — Full SEO Audit Report 2026
 **Site:** https://www.hindustanprojects.in  
-**Framework:** Next.js 14.2.35 (App Router — package manifest targets Next.js 15 forward compatibility)  
+**Framework:** Next.js 15 (v15.5.28 App Router — verified via `package.json`, `package-lock.json`, and GitHub Actions CI `npm ci` build logs)  
 **Audit Date:** November 2026  
 **Auditor:** SEO Audit Agent (seo-audit)  
 **Branch under audit:** feat/hind-build-seo-social-share  
