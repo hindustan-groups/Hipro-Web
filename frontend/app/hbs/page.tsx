@@ -35,8 +35,53 @@ import HbsHomeQuoteForm from "@/components/hbs/HbsHomeQuoteForm";
 import HbsHomeTestimonialsShowcase from "@/components/hbs/HbsHomeTestimonialsShowcase";
 import HbsHomePreFooterCta from "@/components/hbs/HbsHomePreFooterCta";
 import type { HbsHeroConfig } from "@/lib/types";
+import type { Metadata } from "next";
+import {
+  getHbsCanonicalUrl,
+  getHbsBaseUrl,
+  resolveHbsOgImage,
+  HBS_SEO_KEYWORDS,
+  HBS_DEFAULT_TITLE,
+  HBS_DEFAULT_DESCRIPTION,
+} from "@/lib/hbsSeo";
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await fetchHbsContent();
+  const canonicalUrl = getHbsCanonicalUrl();
+  const baseUrl = getHbsBaseUrl();
+
+  const title = content.metaTitle || HBS_DEFAULT_TITLE;
+  const description = content.metaDescription || HBS_DEFAULT_DESCRIPTION;
+
+  const customOg = content.ogImage || content.ogDefaultImage;
+  const ogImages = resolveHbsOgImage(customOg, "Hind Build — Complete Building Repair, Maintenance & Protection");
+
+  return {
+    title: { absolute: title },
+    description,
+    keywords: HBS_SEO_KEYWORDS,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: "website",
+      locale: "en_IN",
+      siteName: "Hind Build | Hindustan Projects",
+      url: canonicalUrl,
+      title,
+      description,
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImages[0].url],
+    },
+  };
+}
 
 export default async function HbsHomePage() {
   const [content, services, projects, testimonials] = await Promise.all([
