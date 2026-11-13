@@ -211,7 +211,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title,
       description,
       url: `https://www.hindustanprojects.in/services/${canonicalSlug}`,
+      siteName: "Hindustan Projects (HiPRO)",
+      locale: "en_IN",
+      type: "website",
       images: service.image ? [{ url: service.image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: service.image ? [service.image] : undefined,
     },
   };
 }

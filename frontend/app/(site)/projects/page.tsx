@@ -13,21 +13,22 @@ export const metadata: Metadata = {
   description:
     "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
   alternates: {
-    canonical: "https://www.hindustanprojects.in/projects",
+    canonical: "/projects",
   },
   openGraph: {
     title: "Project Portfolio — Turnkey Engineering | Hindustan Projects (HiPRO)",
     description:
       "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
     url: "https://www.hindustanprojects.in/projects",
-    siteName: "Hindustan Projects",
+    siteName: "Hindustan Projects (HiPRO)",
     locale: "en_IN",
     type: "website",
     images: [
       {
-        url: "https://www.hindustanprojects.in/og-image.jpg",
+        url: "/og-banner.jpg",
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: "Hindustan Projects - Civil Engineering & Industrial Infrastructure Portfolio",
       },
     ],
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     title: "Project Portfolio — Turnkey Engineering | Hindustan Projects (HiPRO)",
     description:
       "Explore verified industrial, commercial, institutional, and turnkey construction projects delivered by Hindustan Projects (HiPRO) across Rajasthan and India.",
-    images: ["https://www.hindustanprojects.in/og-image.jpg"],
+    images: ["/og-banner.jpg"],
   },
 };
 

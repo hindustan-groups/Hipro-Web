@@ -15,21 +15,22 @@ export const metadata: Metadata = {
   description:
     "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
   alternates: {
-    canonical: "https://www.hindustanprojects.in/blogs",
+    canonical: "/blogs",
   },
   openGraph: {
     title: "Construction Blog & Industry Insights | Hindustan Projects",
     description:
       "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
     url: "https://www.hindustanprojects.in/blogs",
-    siteName: "Hindustan Projects",
+    siteName: "Hindustan Projects (HiPRO)",
     locale: "en_IN",
     type: "website",
     images: [
       {
-        url: "https://www.hindustanprojects.in/og-image.jpg",
+        url: "/og-banner.jpg",
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: "Hindustan Projects - Engineering & Construction Intelligence",
       },
     ],
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     title: "Construction Blog & Industry Insights | Hindustan Projects",
     description:
       "Read the latest news, tips, and insights on construction, architecture, and infrastructure development in India from Hindustan Projects.",
-    images: ["https://www.hindustanprojects.in/og-image.jpg"],
+    images: ["/og-banner.jpg"],
   },
 };
 
