@@ -68,21 +68,23 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: "https://www.hindustanprojects.in/contact",
       siteName: "Hindustan Projects (HiPRO)",
+      locale: "en_IN",
+      type: "website",
       images: [
         {
-          url: "https://www.hindustanprojects.in/logo.jpg",
-          width: 800,
-          height: 600,
+          url: "/og-banner.jpg",
+          width: 1200,
+          height: 630,
+          type: "image/jpeg",
           alt: "Hindustan Projects Contact Office Bhilwara",
         },
       ],
-      type: "website",
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ["https://www.hindustanprojects.in/logo.jpg"],
+      images: ["/og-banner.jpg"],
     },
   };
 }

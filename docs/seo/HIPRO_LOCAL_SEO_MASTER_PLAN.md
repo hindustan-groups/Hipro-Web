@@ -2,7 +2,8 @@
 **Hindustan Projects (HiPRO) — `https://www.hindustanprojects.in`**
 
 > **Document type:** Internal SEO reference — not a public page.  
-> **Audience:** Developer/SEO team maintaining the HiPRO Next.js 15 website.  
+> **Audience:** Developer/SEO team maintaining the HiPRO Next.js website (Runtime: Next.js 14.2.35 App Router).  
+> **Runtime / Framework:** Next.js 14.2.35 (App Router). The active build and runtime in `node_modules` executes Next.js 14.2.35 LTS, while `package.json` specifies forward compatibility targets.  
 > **Last updated:** 2026-11  
 > **Status:** Active — update this document whenever site structure, metadata, or schema changes.
 
