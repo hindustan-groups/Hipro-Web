@@ -52,14 +52,19 @@ assert.equal(dims.width, 1200, "OG Banner width must be 1200");
 assert.equal(dims.height, 630, "OG Banner height must be 630");
 console.log("[PASS] hbs-og-banner.jpg is exactly 1200x630 (Standard 1.91:1 OpenGraph ratio)");
 
-// Favicon binary validation
-const faviconPath = path.join(rootDir, "public", "favicon.ico");
-assert.ok(fs.existsSync(faviconPath), "public/favicon.ico must exist");
+// Favicon binary validation (HBS-isolated)
+const faviconPath = path.join(rootDir, "public", "hbs-favicon.ico");
+assert.ok(fs.existsSync(faviconPath), "public/hbs-favicon.ico must exist");
 const icoBuf = fs.readFileSync(faviconPath);
-assert.ok(icoBuf.length >= 4, "favicon.ico must not be empty");
+assert.ok(icoBuf.length >= 4, "hbs-favicon.ico must not be empty");
 assert.equal(icoBuf.readUInt16LE(0), 0, "ICO reserved bytes must be 0");
 assert.equal(icoBuf.readUInt16LE(2), 1, "ICO type must be 1 (image/x-icon)");
-console.log(`[PASS] favicon.ico is a valid binary ICO file (${icoBuf.length} bytes)`);
+console.log(`[PASS] hbs-favicon.ico is an isolated valid binary ICO file (${icoBuf.length} bytes)`);
+
+// Assert HiPRO root favicon is NOT polluted with HBS icon
+const rootFaviconPath = path.join(rootDir, "public", "favicon.ico");
+assert.ok(!fs.existsSync(rootFaviconPath), "public/favicon.ico must not exist to prevent HiPRO brand pollution");
+console.log("[PASS] Root public/favicon.ico is absent (zero brand leakage to HiPRO)");
 
 // --- 2. SEO Helper Logic Verification ---
 console.log("\n--- 2. Hind Build SEO Helpers Verification ---");
@@ -126,6 +131,24 @@ for (const p of pagesToAudit) {
     !content.includes("/hbs-og-default.svg"),
     `${p.name} must NOT have /hbs-og-default.svg fallback`
   );
+
+  if (p.path === "app/hbs/layout.tsx") {
+    assert.ok(
+      content.includes("/hbs-favicon.ico"),
+      "HBS layout metadata must reference /hbs-favicon.ico"
+    );
+  }
+
+  if (p.path === "app/hbs/terms/page.tsx") {
+    assert.ok(
+      !content.includes("5 to 7") && !content.includes("5-7"),
+      "HBS Terms of Service must NOT contain unverified 5-7 year warranty claims"
+    );
+    assert.ok(
+      content.includes("Any warranty applicable to a specific service or project shall be expressly documented"),
+      "HBS Terms of Service must include approved neutral warranty wording"
+    );
+  }
 
   console.log(`[PASS] ${p.name}: Valid metadata, OG tags, Twitter Card & canonical mapping`);
 }

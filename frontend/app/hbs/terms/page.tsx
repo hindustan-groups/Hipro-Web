@@ -182,17 +182,10 @@ export default async function HbsTermsPage() {
                 <span className="text-red-600 text-base font-bold">04.</span>
                 Written Warranty Protocols
               </h2>
-              <p>
-                Hind Building Solutions stands behind the quality of its workmanship. Depending on the service trade and material system specified in the final contract, eligible services receive a written warranty certificate:
-              </p>
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
                 <div className="flex items-start gap-2 text-slate-800">
                   <ShieldCheck className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span><strong>Waterproofing Warranties (Up to 5 to 7 Years):</strong> Covers membrane debonding or water ingress across the treated area, subject to mandatory 48-hour water ponding verification and adherence to maintenance guidelines.</span>
-                </div>
-                <div className="flex items-start gap-2 text-slate-800">
-                  <ShieldCheck className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span><strong>Structural Repair Warranties:</strong> Covers polymer-modified mortar and micro-concrete bonding integrity in repaired sections. Does not cover subsequent foundation settlement or structural alterations outside the treated zone.</span>
+                  <span>Any warranty applicable to a specific service or project shall be expressly documented in the written quotation, service agreement, or separate warranty document issued for that work. The applicable duration, coverage, conditions and limitations shall be governed by that specific written documentation. Customers are advised to review the applicable terms before approving the work.</span>
                 </div>
               </div>
             </div>

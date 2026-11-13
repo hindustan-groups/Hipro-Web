@@ -10,7 +10,7 @@ export const DEFAULT_HBS_CONTENT: HbsContent = {
   logoDark: "/hbs-logo.jpg",
   logoMark: "/hbs-icon.jpg",
   logoMobile: "/hbs-logo.jpg",
-  favicon: "/hbs-favicon.jpg",
+  favicon: "/hbs-favicon.ico",
   ogDefaultImage: "/hbs-og-banner.jpg",
   privacyPolicyUrl: "/privacy-policy",
   termsUrl: "/terms",

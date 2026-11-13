@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = content.metaTitle || HBS_DEFAULT_TITLE;
   const description = content.metaDescription || HBS_DEFAULT_DESCRIPTION;
 
-  const hbsFavicon = content.favicon || "/hbs-favicon.jpg";
+  const hbsFavicon = content.favicon || "/hbs-favicon.ico";
   const hbsAppleIcon = content.logoMark || "/hbs-icon.jpg";
 
   const customOg = content.ogImage || content.ogDefaultImage;
@@ -43,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: "Hindustan Projects (HiPRO)",
     icons: {
       icon: [
-        { url: hbsFavicon, sizes: "32x32", type: "image/jpeg" },
+        { url: hbsFavicon, sizes: "32x32", type: hbsFavicon.endsWith(".ico") ? "image/x-icon" : "image/jpeg" },
       ],
       shortcut: hbsFavicon,
       apple: [
