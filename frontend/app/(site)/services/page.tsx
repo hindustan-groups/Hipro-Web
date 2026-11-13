@@ -21,10 +21,33 @@ import { resolveCTA, resolveCTAHref } from "@/lib/cta";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Construction & Engineering Services in Bhilwara & Rajasthan",
+  title: "Construction & Engineering Services in Bhilwara, Rajasthan",
   description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects (HiPRO).",
   alternates: {
     canonical: "/services",
+  },
+  openGraph: {
+    title: "Construction & Engineering Services in Bhilwara, Rajasthan | HiPRO",
+    description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects (HiPRO).",
+    url: "https://www.hindustanprojects.in/services",
+    siteName: "Hindustan Projects (HiPRO)",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/og-banner.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "HiPRO Construction & Engineering Services in Bhilwara",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Construction & Engineering Services in Bhilwara, Rajasthan | HiPRO",
+    description: "Comprehensive civil construction, architectural planning, digital surveying, interior design, and project management services by Hindustan Projects (HiPRO).",
+    images: ["/og-banner.jpg"],
   },
 };
 

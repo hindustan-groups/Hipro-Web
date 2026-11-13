@@ -9,8 +9,23 @@ import { DEFAULT_HBS_SERVICES } from '@/lib/hbsData';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.hindustanprojects.in';
 
-  // Core static routes
+  // Core static routes with search-intent weighted priorities
   const legalRoutes = new Set(['/privacy-policy', '/terms', '/cookie-policy']);
+  const priorityMap: Record<string, number> = {
+    '': 1.0,
+    '/contact': 0.9,
+    '/cost-estimator': 0.9,
+    '/services': 0.8,
+    '/projects': 0.8,
+    '/about': 0.8,
+    '/blogs': 0.8,
+    '/why-us': 0.7,
+    '/careers': 0.6,
+    '/privacy-policy': 0.3,
+    '/terms': 0.3,
+    '/cookie-policy': 0.3,
+  };
+
   const staticRoutes = [
     '',
     '/about',
@@ -28,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: legalRoutes.has(route) ? ('monthly' as const) : ('weekly' as const),
-    priority: route === '' ? 1 : (legalRoutes.has(route) ? 0.3 : 0.8),
+    priority: priorityMap[route] ?? 0.7,
   }));
 
   try {

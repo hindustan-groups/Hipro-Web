@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node test/admin-projects-cms.test.mjs && node test/admin-site-stats.test.mjs && node --experimental-strip-types test/analytics.test.mjs && node --test test/batch1-code-fixes.test.mjs && node test/canonical-schema-alignment.test.mjs && node test/canonical-slug-normalization.test.mjs && node test/local-safety.test.mjs",
+    "test:unit": "node test/admin-projects-cms.test.mjs && node test/admin-site-stats.test.mjs && node --experimental-strip-types test/analytics.test.mjs && node --test test/batch1-code-fixes.test.mjs && node test/canonical-schema-alignment.test.mjs && node test/canonical-slug-normalization.test.mjs && node test/local-safety.test.mjs && node test/hipro-seo.test.mjs",
     "test:smoke": "node test/redirects.test.mjs",
     "test": "npm run test:unit"
   },

@@ -13,6 +13,29 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/careers",
   },
+  openGraph: {
+    title: "Careers & Opportunities | Hindustan Projects (HiPRO)",
+    description: "Explore career opportunities at Hindustan Projects (HiPRO). Join our technical engineering, project management, and construction supervision team in Bhilwara, Rajasthan.",
+    url: "https://www.hindustanprojects.in/careers",
+    siteName: "Hindustan Projects (HiPRO)",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/og-banner.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Careers at Hindustan Projects (HiPRO)",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Careers & Opportunities | Hindustan Projects (HiPRO)",
+    description: "Explore career opportunities at Hindustan Projects (HiPRO). Join our technical engineering, project management, and construction supervision team in Bhilwara, Rajasthan.",
+    images: ["/og-banner.jpg"],
+  },
 };
 
 export default async function CareersPage() {
