@@ -132,9 +132,7 @@ export default async function HbsContactPage() {
     name: "Contact & Book Site Inspection | Hind Build",
     description:
       "Schedule an engineering diagnosis or get an itemized quote for building repair, waterproofing, and specialized maintenance.",
-    url: isSubdomain
-      ? "https://hindbuilding.hindustanprojects.in/contact"
-      : "https://www.hindustanprojects.in/hbs/contact",
+    url: getHbsCanonicalUrl("contact"),
     mainEntity: {
       "@type": "LocalBusiness",
       name: "Hind Building Solutions (HiBUILD)",
@@ -178,17 +176,13 @@ export default async function HbsContactPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in"
-          : "https://www.hindustanprojects.in/hbs",
+        item: getHbsCanonicalUrl(""),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Contact & Book Inspection",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in/contact"
-          : "https://www.hindustanprojects.in/hbs/contact",
+        item: getHbsCanonicalUrl("contact"),
       },
     ],
   };

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Phone, MessageSquare, Sparkles, ArrowRight } from "lucide-react";
 import { cleanTelNumber, getHomeWhatsAppUrl } from "@/lib/hbsWhatsApp";
+import { trackHbsEvent } from "@/lib/hbsAnalytics";
 
 interface HbsMobileBarProps {
   phone?: string;
@@ -10,8 +11,8 @@ interface HbsMobileBarProps {
 }
 
 export default function HbsMobileBar({
-  phone = "+91 75970 00601",
-  whatsapp = "+91 75970 00601",
+  phone = "+91 94628 77757",
+  whatsapp = "+91 94628 77757",
 }: HbsMobileBarProps) {
   const phoneRaw = cleanTelNumber(phone);
   const mobileWaUrl = getHomeWhatsAppUrl(whatsapp);
@@ -28,6 +29,13 @@ export default function HbsMobileBar({
         {/* 1. Quick Phone Call */}
         <a
           href={`tel:${phoneRaw}`}
+          onClick={() =>
+            trackHbsEvent("click_to_call", {
+              phone_type: "primary",
+              link_location: "mobile_bottom_bar",
+              source_page: "mobile_bar",
+            })
+          }
           data-hbs-cta="call"
           aria-label={`Call HiBUILD at ${phone}`}
           className="w-11 h-11 shrink-0 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/15 flex items-center justify-center transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
@@ -39,6 +47,13 @@ export default function HbsMobileBar({
         {/* 2. Direct WhatsApp with Live Status Ping */}
         <a
           href={mobileWaUrl}
+          onClick={() =>
+            trackHbsEvent("click_whatsapp", {
+              whatsapp_type: "direct",
+              link_location: "mobile_bottom_bar",
+              source_page: "mobile_bar",
+            })
+          }
           target="_blank"
           rel="noopener noreferrer"
           data-hbs-cta="whatsapp"
@@ -56,6 +71,13 @@ export default function HbsMobileBar({
         {/* 3. Primary CTA: Free Site Visit / Consultation */}
         <Link
           href={`${prefix}/contact`}
+          onClick={() =>
+            trackHbsEvent("quote_request", {
+              service_name: "free_site_visit",
+              source_page: "mobile_bar",
+              form_id: "mobile_cta_button",
+            })
+          }
           data-hbs-cta="quote"
           aria-label="Book Free Site Visit"
           className="flex-1 h-11 px-3.5 rounded-xl bg-red-600 hover:bg-red-500 active:scale-[0.98] text-white font-black text-xs uppercase tracking-wider flex items-center justify-between shadow-[0_2px_14px_rgba(220,38,38,0.4)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"

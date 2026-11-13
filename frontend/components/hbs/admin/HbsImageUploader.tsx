@@ -28,7 +28,7 @@ interface HbsImageUploaderProps {
   onAltTextChange?: (alt: string) => void;
 }
 
-const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const FOLDER_LABELS: Record<string, string> = {

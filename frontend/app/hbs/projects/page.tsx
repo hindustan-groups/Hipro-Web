@@ -130,8 +130,31 @@ export default async function HbsProjectsPage() {
           url: "https://hindbuilding.hindustanprojects.in/projects",
         };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://hindbuilding.hindustanprojects.in",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Projects",
+        item: "https://hindbuilding.hindustanprojects.in/projects",
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -196,7 +219,7 @@ export default async function HbsProjectsPage() {
                     className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl bg-[#0D2D5E] hover:bg-[#0A2349] text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-white shrink-0" />
-                    <span>Call: {content.phone || "+91 94625 77757"}</span>
+                    <span>Call: {content.phone || "+91 94628 77757"}</span>
                   </a>
 
                   <a

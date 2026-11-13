@@ -91,8 +91,8 @@ export default async function HbsHomePage() {
     fetchHbsTestimonials(),
   ]);
 
-  const phoneRaw = cleanTelNumber(content.phone || "+919462577757");
-  const homeWaUrl = getHomeWhatsAppUrl(content.whatsapp || "919462577757");
+  const phoneRaw = cleanTelNumber(content.phone || "+919462877757");
+  const homeWaUrl = getHomeWhatsAppUrl(content.whatsapp || "919462877757");
 
   const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
   const prefix = isSubdomain ? "" : "/hbs";
@@ -551,8 +551,8 @@ export default async function HbsHomePage() {
       ───────────────────────────────────────────────────────────────── */}
       <HbsHomePreFooterCta
         phoneRaw={phoneRaw}
-        phoneDisplay={content.phone || "+91 94625 77757"}
-        whatsappNumber={content.whatsapp || "919462577757"}
+        phoneDisplay={content.phone || "+91 94628 77757"}
+        whatsappNumber={content.whatsapp || "919462877757"}
         prefix={prefix}
         content={content}
       />

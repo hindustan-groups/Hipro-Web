@@ -250,9 +250,7 @@ export default async function HbsWhyChooseUsPage() {
     name: "Why Choose Hind Build",
     description:
       "Engineering-grade building maintenance, repair, and waterproofing with written warranties and itemized BOQ across Rajasthan.",
-    url: isSubdomain
-      ? "https://hindbuilding.hindustanprojects.in/why-choose-us"
-      : "https://www.hindustanprojects.in/hbs/why-choose-us",
+    url: getHbsCanonicalUrl("why-choose-us"),
     mainEntity: {
       "@type": "ItemList",
       itemListElement: pillars.map((p, idx) => ({
@@ -272,17 +270,13 @@ export default async function HbsWhyChooseUsPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in"
-          : "https://www.hindustanprojects.in/hbs",
+        item: getHbsCanonicalUrl(""),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Why Choose Us",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in/why-choose-us"
-          : "https://www.hindustanprojects.in/hbs/why-choose-us",
+        item: getHbsCanonicalUrl("why-choose-us"),
       },
     ],
   };
@@ -377,7 +371,7 @@ export default async function HbsWhyChooseUsPage() {
                 className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl bg-[#0D2D5E] hover:bg-[#0A2349] text-white text-xs sm:text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
               >
                 <Phone className="w-4 h-4 text-white shrink-0" />
-                <span>Call: {content.phone || "+91 94625 77757"}</span>
+                <span>Call: {content.phone || "+91 94628 77757"}</span>
               </a>
 
               <a

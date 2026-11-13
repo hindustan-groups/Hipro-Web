@@ -35,7 +35,7 @@ const FOLDERS = [
   { key: "hbs/media", label: "General Media", desc: "Miscellaneous assets" },
 ];
 
-const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export default function HbsAdminMedia() {
