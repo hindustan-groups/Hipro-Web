@@ -9,8 +9,8 @@
  * 4. Context-aware messaging tailored to Homepage, Services, Projects, and Lead Confirmation
  */
 
-const DEFAULT_HBS_PHONE = "+91 75970 00601";
-const DEFAULT_HBS_WHATSAPP_CLEAN = "917597000601";
+const DEFAULT_HBS_PHONE = "+91 94628 77757";
+const DEFAULT_HBS_WHATSAPP_CLEAN = "919462877757";
 
 /**
  * Normalizes a raw phone/WhatsApp string into clean digits suitable for wa.me URLs.
@@ -31,9 +31,9 @@ export function cleanWhatsAppNumber(raw?: string | null): string {
  * Normalizes a raw phone number for tel: links (e.g. +917597000601).
  */
 export function cleanTelNumber(raw?: string | null): string {
-  if (!raw) return "+917597000601";
+  if (!raw) return "+919462877757";
   const cleaned = raw.replace(/[^\d+]/g, "");
-  return cleaned || "+917597000601";
+  return cleaned || "+919462877757";
 }
 
 /**

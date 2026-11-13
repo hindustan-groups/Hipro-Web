@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { HbsContent, HbsService } from "@/lib/types";
 import { cleanTelNumber, getHomeWhatsAppUrl } from "@/lib/hbsWhatsApp";
+import { trackHbsEvent } from "@/lib/hbsAnalytics";
 
 interface HbsFooterProps {
   content: HbsContent;
@@ -28,8 +29,8 @@ interface HbsFooterProps {
 }
 
 export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
-  const phoneRaw = cleanTelNumber(content.phone || "+919462577757");
-  const footerWaUrl = getHomeWhatsAppUrl(content.whatsapp || "919462577757");
+  const phoneRaw = cleanTelNumber(content.phone || "+919462877757");
+  const footerWaUrl = getHomeWhatsAppUrl(content.whatsapp || "919462877757");
 
   const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
   const prefix = isSubdomain ? "" : "/hbs";
@@ -358,10 +359,17 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                   <Phone className="w-3.5 h-3.5 text-red-600 shrink-0" />
                   <a
                     href={`tel:${phoneRaw}`}
+                    onClick={() =>
+                      trackHbsEvent("click_to_call", {
+                        phone_type: "primary",
+                        link_location: "footer",
+                        source_page: "footer",
+                      })
+                    }
                     data-hbs-cta="call"
                     className="text-slate-900 hover:text-red-600 font-black text-sm tracking-wide transition-colors"
                   >
-                    {content.phone || "+91 94625 77757"}
+                    {content.phone || "+91 94628 77757"}
                   </a>
                 </div>
               </div>
@@ -371,6 +379,13 @@ export default function HbsFooter({ content, services = [] }: HbsFooterProps) {
                 <MessageSquare className="w-4 h-4 text-emerald-600 shrink-0" />
                 <a
                   href={footerWaUrl}
+                  onClick={() =>
+                    trackHbsEvent("click_whatsapp", {
+                      whatsapp_type: "direct",
+                      link_location: "footer",
+                      source_page: "footer",
+                    })
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   data-hbs-cta="whatsapp"

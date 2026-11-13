@@ -38,6 +38,7 @@ import {
   getContactWhatsAppUrl,
   buildHbsWhatsAppUrl,
 } from "@/lib/hbsWhatsApp";
+import { trackHbsEvent } from "@/lib/hbsAnalytics";
 
 // Indian phone validator: accepts 10-digit numbers starting with 6-9, optional +91/0 prefix.
 function validateIndianPhone(raw: string): boolean {
@@ -148,6 +149,18 @@ export default function HbsContactForm({ services, content }: HbsContactFormProp
   const [success, setSuccess] = useState(false);
   const [submittedLeadId, setSubmittedLeadId] = useState<string>("");
   const [error, setError] = useState("");
+  const [hasStartedForm, setHasStartedForm] = useState(false);
+
+  const handleFormStart = () => {
+    if (!hasStartedForm) {
+      setHasStartedForm(true);
+      trackHbsEvent("form_start", {
+        form_id: "hbs_contact_form",
+        source_page: "contact",
+        service_category: selectedServices[0] || "general",
+      });
+    }
+  };
   const [phoneError, setPhoneError] = useState("");
 
   // Honeypot field for bot rejection
@@ -244,6 +257,12 @@ export default function HbsContactForm({ services, content }: HbsContactFormProp
       if (json.success) {
         setSubmittedLeadId(json.data?.id || String(Date.now()));
         setSuccess(true);
+        trackHbsEvent("generate_lead", {
+          form_id: "hbs_contact_form",
+          service_category: selectedServices[0] || "general",
+          source_page: "contact",
+          lead_type: propertyType || "general",
+        });
       } else {
         setError(json.error || "Unable to submit request. Please call directly.");
       }
@@ -380,7 +399,7 @@ export default function HbsContactForm({ services, content }: HbsContactFormProp
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-7" noValidate>
+        <form onSubmit={handleSubmit} onFocusCapture={handleFormStart} className="space-y-6 sm:space-y-7" noValidate>
           {paramProject && (
             <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-red-900 flex items-center justify-between gap-2.5 text-xs font-mono">
               <div className="flex items-center gap-2">

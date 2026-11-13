@@ -208,11 +208,12 @@ export default async function HbsLayout({
           font-family: 'Playfair Display', Georgia, serif !important;
         }
       `}</style>
-      {content.gaMeasurementId && (
+      {/* GA4 Analytics Integration (via CMS or NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID) */}
+      {(content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID) && (
         <>
           <Script
             strategy="lazyOnload"
-            src={`https://www.googletagmanager.com/gtag/js?id=${content.gaMeasurementId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID}`}
           />
           <Script
             id="hbs-google-analytics"
@@ -222,7 +223,7 @@ export default async function HbsLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${content.gaMeasurementId}', {
+                gtag('config', '${content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID}', {
                   page_path: window.location.pathname,
                 });
               `,
