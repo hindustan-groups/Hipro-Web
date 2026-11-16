@@ -111,11 +111,35 @@ router.post("/apply", async (req: Request, res: Response) => {
   try {
     const data = req.body;
 
-    if (!data.companyName || !data.contactName || !data.phone || !data.email || !data.pan) {
+    // Validate mandatory registration fields
+    const companyName = typeof data.companyName === "string" ? data.companyName.trim() : "";
+    const contactName = typeof data.contactName === "string" ? data.contactName.trim() : "";
+    const phone = typeof data.phone === "string" ? data.phone.trim() : "";
+    const email = typeof data.email === "string" ? data.email.trim() : "";
+    const pan = typeof data.pan === "string" ? data.pan.trim().toUpperCase() : "";
+
+    if (!companyName || !contactName || !phone || !email || !pan) {
       return res.status(400).json({
         success: false,
         error: "Mandatory fields missing (Company Name, Contact Person, Phone, Email, PAN)",
       });
+    }
+
+    // Require explicit terms and code of conduct agreement
+    if (data.termsAgreed !== true) {
+      return res.status(400).json({
+        success: false,
+        error: "You must agree to the code of conduct declaration before submitting.",
+      });
+    }
+
+    // Resolve work experience / past work document with canonical precedence over legacy alias.
+    // Ensure an empty legacy alias cannot overwrite a valid canonical value.
+    let resolvedWorkExperienceDocUrl: string | null = null;
+    if (typeof data.workExperienceDocUrl === "string" && data.workExperienceDocUrl.trim().length > 0) {
+      resolvedWorkExperienceDocUrl = data.workExperienceDocUrl.trim();
+    } else if (typeof data.pastWorkDocUrl === "string" && data.pastWorkDocUrl.trim().length > 0) {
+      resolvedWorkExperienceDocUrl = data.pastWorkDocUrl.trim();
     }
 
     // Generate unique Tracking ID e.g. HP-EMP-849201
@@ -141,7 +165,7 @@ router.post("/apply", async (req: Request, res: Response) => {
     else if (t1 >= 2500000) score += 10; // 25 Lakh+
 
     if (data.gstin && data.isGstVerified) score += 15;
-    if (data.workExperienceDocUrl) score += 10;
+    if (resolvedWorkExperienceDocUrl) score += 10;
     if (data.signatureUrl) score += 5;
 
     score = Math.min(100, Math.max(10, score));
@@ -193,7 +217,7 @@ router.post("/apply", async (req: Request, res: Response) => {
         gstCertificateUrl: data.gstCertificateUrl || null,
         panCardUrl: data.panCardUrl || null,
         bankChequeUrl: data.bankChequeUrl || null,
-        workExperienceDocUrl: data.workExperienceDocUrl || null,
+        workExperienceDocUrl: resolvedWorkExperienceDocUrl,
         passportPhotoUrl: data.passportPhotoUrl || null,
         signatureUrl: data.signatureUrl || null,
         signatoryName: data.signatoryName || data.contactName,
