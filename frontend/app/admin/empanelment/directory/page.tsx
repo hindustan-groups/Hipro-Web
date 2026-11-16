@@ -210,11 +210,10 @@ export default function VerifiedPartnersDirectoryPage() {
           onChange={(e) => setTierFilter(e.target.value)}
           className="w-full sm:w-auto bg-white rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none"
         >
-          <option value="ALL">All Tiers (A, B, C, D)</option>
-          <option value="TIER_A">Tier A (&gt; ₹2 Crore)</option>
-          <option value="TIER_B">Tier B (₹50 Lakh – ₹2 Cr)</option>
-          <option value="TIER_C">Tier C (₹10 Lakh – ₹50L)</option>
-          <option value="TIER_D">Tier D (&lt; ₹10 Lakh)</option>
+          <option value="ALL">All Tiers (A, B, C)</option>
+          <option value="CLASS_A">Tier A (&gt; ₹2 Crore)</option>
+          <option value="CLASS_B">Tier B (₹50 Lakh – ₹2 Cr)</option>
+          <option value="CLASS_C">Tier C (₹10 Lakh – ₹50L)</option>
         </select>
 
         <span className="text-slate-400 text-xs ml-auto">
