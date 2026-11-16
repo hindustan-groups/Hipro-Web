@@ -188,10 +188,15 @@ export default function EmpanelmentRegistrationWizard() {
     setError("");
 
     try {
+      const payload = {
+        ...formData,
+        workExperienceDocUrl: formData.pastWorkDocUrl,
+      };
+
       const res = await fetch("/api/empanelment/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
