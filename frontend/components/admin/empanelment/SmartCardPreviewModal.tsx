@@ -37,8 +37,9 @@ export default function SmartCardPreviewModal({ vendor, isOpen, onClose }: Smart
     : "CURRENT";
   const validThru = "OCT 2027";
 
+  const CANONICAL_HOST = "https://www.hindustanprojects.in";
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-    `https://empanelment.hindustanprojects.in/verify-partner?trackingId=${vendor.trackingId}`
+    `${CANONICAL_HOST}/empanelment/verify-partner?id=${encodeURIComponent(vendor.trackingId)}`
   )}`;
 
   const handlePrint = () => {

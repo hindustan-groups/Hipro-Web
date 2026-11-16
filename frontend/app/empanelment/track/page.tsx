@@ -25,7 +25,7 @@ import {
 
 function TrackingContent() {
   const searchParams = useSearchParams();
-  const initialId = searchParams?.get("id") || "";
+  const initialId = searchParams?.get("id") || searchParams?.get("trackingId") || "";
 
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [trackingQuery, setTrackingQuery] = useState(initialId);
