@@ -27,6 +27,7 @@ export default function EmpanelmentLayout({
       <EmpanelmentNavbar />
       <main className="flex-1">{children}</main>
       <EmpanelmentFooter />
+      <EmpanelmentSupportWidget />
     </div>
   );
 }

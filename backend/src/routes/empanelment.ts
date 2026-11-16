@@ -327,6 +327,94 @@ router.get("/track/:trackingId", async (req: Request, res: Response) => {
 });
 
 /**
+ * Validate that a certificate URL uses a safe protocol (https, http, or data:application/pdf).
+ * Blocks javascript:, vbscript:, data:text/html, and arbitrary unsafe schemes.
+ */
+function sanitizePublicCertificateUrl(url?: string | null): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.startsWith("javascript:") ||
+    lower.startsWith("vbscript:") ||
+    lower.startsWith("data:text/html")
+  ) {
+    return null;
+  }
+  if (lower.startsWith("https://") || lower.startsWith("http://")) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return trimmed;
+      }
+    } catch {
+      return null;
+    }
+  }
+  if (lower.startsWith("data:application/pdf") || lower.startsWith("data:image/")) {
+    return trimmed;
+  }
+  return null;
+}
+
+/**
+ * 3b. Dedicated Public Smart Partner Verification
+ * GET /api/empanelment/verify/:trackingId
+ *
+ * Exposes strictly minimal public contractor authenticity credentials for Smart Card verification.
+ * Zero PII, financial details, contact persons, scores, or internal notes exposed.
+ */
+router.get("/verify/:trackingId", async (req: Request, res: Response) => {
+  try {
+    const raw = String(req.params.trackingId || "").trim();
+    if (!raw) {
+      return res.status(400).json({ success: false, error: "Empanelment Tracking ID is required" });
+    }
+
+    const application = await prisma.vendorApplication.findUnique({
+      where: { trackingId: raw.toUpperCase() },
+      select: {
+        trackingId: true,
+        status: true,
+        companyName: true,
+        category: true,
+        tier: true,
+        city: true,
+        state: true,
+        approvedAt: true,
+        digitalCertificateUrl: true,
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        error: `No partner credential found for '${raw}'. Please check your Reference Code.`,
+      });
+    }
+
+    const safeCertificateUrl = sanitizePublicCertificateUrl(application.digitalCertificateUrl);
+
+    return res.json({
+      success: true,
+      application: {
+        trackingId: application.trackingId,
+        status: application.status,
+        companyName: application.companyName,
+        category: application.category,
+        tier: application.tier,
+        city: application.city,
+        state: application.state,
+        approvedAt: application.approvedAt,
+        digitalCertificateUrl: safeCertificateUrl,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * 4. Active Public Tenders
  * GET /api/empanelment/tenders
  */
@@ -568,28 +656,46 @@ router.get("/gate-pass/verify/:passCode", async (req: Request, res: Response) =>
  */
 router.post("/tickets", async (req: Request, res: Response) => {
   try {
-    const { trackingId, subject, category, message } = req.body;
+    const { trackingId, subject, category, priority, message } = req.body;
 
-    if (!trackingId || !subject || !message) {
-      return res.status(400).json({ success: false, error: "Tracking ID, Subject, and Message are required" });
+    const trimmedTrackingId = typeof trackingId === "string" ? trackingId.trim().toUpperCase() : "";
+    const trimmedSubject = typeof subject === "string" ? subject.trim() : "";
+    const trimmedMessage = typeof message === "string" ? message.trim() : "";
+    const validCategory = typeof category === "string" && category.trim().length > 0 ? category.trim() : "General Support";
+    const validPriority =
+      typeof priority === "string" && ["LOW", "NORMAL", "HIGH", "URGENT"].includes(priority.trim().toUpperCase())
+        ? priority.trim().toUpperCase()
+        : "NORMAL";
+
+    if (!trimmedTrackingId || !trimmedSubject || !trimmedMessage) {
+      return res.status(400).json({
+        success: false,
+        error: "Tracking ID, Subject, and Message are required",
+      });
     }
 
     const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: trackingId.trim().toUpperCase() },
+      where: { trackingId: trimmedTrackingId },
     });
 
     if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor record not found" });
+      return res.status(404).json({
+        success: false,
+        error: "Vendor profile with this Tracking ID was not found",
+      });
     }
 
-    const ticketNo = `HP-TCK-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const ticketNo = `HP-TCK-${randomSuffix}`;
+
     const ticket = await prisma.empanelmentTicket.create({
       data: {
         ticketNo,
         vendorId: vendor.id,
-        subject,
-        category: category || "General Support",
-        message,
+        subject: trimmedSubject,
+        category: validCategory,
+        priority: validPriority,
+        message: trimmedMessage,
         status: "OPEN",
       },
     });
@@ -597,7 +703,8 @@ router.post("/tickets", async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       ticketNo: ticket.ticketNo,
-      message: "Ticket registered. Procurement helpdesk will revert shortly.",
+      ticket,
+      message: "Ticket submitted successfully. Procurement support team will review within 24 business hours.",
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
@@ -930,58 +1037,6 @@ router.get("/admin/gate-passes", async (req: Request, res: Response) => {
 // ===================================================================
 // VENDOR HELPDESK TICKETS ENDPOINTS
 // ===================================================================
-
-/**
- * Public/Vendor: Submit Support Ticket
- * POST /api/empanelment/tickets
- */
-router.post("/tickets", async (req: Request, res: Response) => {
-  try {
-    const { trackingId, subject, category, priority, message } = req.body;
-
-    if (!trackingId || !subject || !message) {
-      return res.status(400).json({
-        success: false,
-        error: "Tracking ID, Subject, and Message are required",
-      });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: String(trackingId).trim().toUpperCase() },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({
-        success: false,
-        error: "Vendor profile with this Tracking ID was not found",
-      });
-    }
-
-    const count = await prisma.empanelmentTicket.count();
-    const ticketNo = `HP-TCK-${String(count + 1).padStart(3, "0")}`;
-
-    const ticket = await prisma.empanelmentTicket.create({
-      data: {
-        ticketNo,
-        vendorId: vendor.id,
-        subject,
-        category: category || "General Query",
-        priority: priority || "NORMAL",
-        message,
-        status: "OPEN",
-      },
-    });
-
-    return res.status(201).json({
-      success: true,
-      ticketNo: ticket.ticketNo,
-      ticket,
-      message: "Ticket submitted successfully. Procurement support team will review within 24 business hours.",
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-});
 
 /**
  * Admin: List All Vendor Helpdesk Tickets
