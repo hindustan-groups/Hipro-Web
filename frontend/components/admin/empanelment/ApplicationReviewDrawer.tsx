@@ -314,9 +314,7 @@ export default function ApplicationReviewDrawer({
               </div>
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">Year of Establishment</p>
-                <p className="font-semibold text-slate-900 mt-0.5">
-                  {application.establishmentYear || (application.yearsInBusiness ? `${application.yearsInBusiness} Years` : "—")}
-                </p>
+                <p className="font-semibold text-slate-900 mt-0.5">{application.establishmentYear || "—"}</p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">Workforce Capacity</p>

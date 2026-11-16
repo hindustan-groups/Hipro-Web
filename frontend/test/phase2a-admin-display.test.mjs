@@ -30,11 +30,18 @@ test('Phase 2A — ApplicationReviewDrawer field mappings and interface', () => 
     'IFSC Code must read from application.ifscCode with fallback'
   );
 
-  // 4. Verify Year of Establishment reads from canonical establishmentYear with fallback
+  // 4. Verify Year of Establishment reads strictly from canonical establishmentYear with fallback "—"
   assert.match(
     content,
-    /application\.establishmentYear \|\| \(application\.yearsInBusiness \? `\$\{application\.yearsInBusiness\} Years` : ["']—["']\)/,
-    'Year of Establishment must read from application.establishmentYear with fallback'
+    /application\.establishmentYear \|\| ["']—["']/,
+    'Year of Establishment must read from application.establishmentYear with "—" fallback'
+  );
+
+  // 4b. Explicitly assert yearsInBusiness is NOT used as fallback for Year of Establishment
+  assert.doesNotMatch(
+    content,
+    /application\.establishmentYear\s*\|\|\s*\(?application\.yearsInBusiness/,
+    'yearsInBusiness duration must never be used as a fallback for Year of Establishment'
   );
 
   // 5. Verify Workforce Capacity reads from canonical teamSize with fallback
