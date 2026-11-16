@@ -233,9 +233,6 @@ export default function EmpanelmentFooter() {
             <Link href="/terms" className="hover:text-slate-400 transition-colors">
               Terms & Conditions
             </Link>
-            <Link href="/admin/empanelment" className="hover:text-slate-300 font-semibold transition-colors">
-              Staff Workspace ↗
-            </Link>
           </div>
         </div>
       </div>
