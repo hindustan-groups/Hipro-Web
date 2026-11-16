@@ -114,13 +114,14 @@ function renderIcon(iconName: string, className = "w-6 h-6") {
 // Category floating icon selector matching each category
 function getCategoryIcon(title: string) {
   const t = title.toLowerCase();
-  if (t.includes("material")) return <Boxes className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("civil") || t.includes("structural")) return <Building2 className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("machin") || t.includes("equipment")) return <Wrench className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("electr") || t.includes("plumb")) return <Zap className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("interior") || t.includes("finish")) return <Paintbrush className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("logistic") || t.includes("transport")) return <Truck className="w-5 h-5 text-[#dc2626]" />;
-  return <Layers className="w-5 h-5 text-[#dc2626]" />;
+  const iconClass = "w-5 h-5 text-[#dc2626] group-hover:text-white transition-colors";
+  if (t.includes("material")) return <Boxes className={iconClass} />;
+  if (t.includes("civil") || t.includes("structural")) return <Building2 className={iconClass} />;
+  if (t.includes("machin") || t.includes("equipment")) return <Wrench className={iconClass} />;
+  if (t.includes("electr") || t.includes("plumb")) return <Zap className={iconClass} />;
+  if (t.includes("interior") || t.includes("finish")) return <Paintbrush className={iconClass} />;
+  if (t.includes("logistic") || t.includes("transport")) return <Truck className={iconClass} />;
+  return <Layers className={iconClass} />;
 }
 
 // Category tags providing genuine construction context and filling empty dead space
