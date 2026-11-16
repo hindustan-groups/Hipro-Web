@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   Phone,
-  User,
   FileText,
   Briefcase,
   Search,
@@ -16,7 +15,6 @@ import {
   HelpCircle,
   ArrowRight,
   MessageSquare,
-  Building2,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -48,8 +46,7 @@ export default function EmpanelmentNavbar() {
     { href: "/empanelment", label: "Home" },
     { href: "/empanelment/guidelines", label: "Guidelines" },
     { href: "/empanelment/tenders", label: "Tenders" },
-    { href: "/empanelment/apply", label: "Registration" },
-    { href: "/empanelment/track", label: "Track Status" },
+    { href: "/empanelment/track", label: "Track Application" },
     { href: "/empanelment/gate-pass", label: "Gate Pass" },
     { href: "/empanelment#faqs", label: "FAQs" },
   ];
@@ -79,7 +76,7 @@ export default function EmpanelmentNavbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-[13px] xl:text-[14px] font-medium text-slate-700">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 text-[13px] xl:text-[14px] font-medium">
           {navLinks.map((link) => {
             const isHome = link.href === "/empanelment";
             const active = isHome
@@ -89,10 +86,10 @@ export default function EmpanelmentNavbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`relative transition-colors pb-1 ${
+                className={`relative transition-colors pb-1 whitespace-nowrap ${
                   active
                     ? "text-[#dc2626] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-[#dc2626] after:rounded-full"
-                    : "text-slate-600 hover:text-slate-950"
+                    : "text-slate-700 hover:text-slate-950 font-medium"
                 }`}
               >
                 {link.label}
@@ -102,23 +99,14 @@ export default function EmpanelmentNavbar() {
         </nav>
 
         {/* Right CTA Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Desktop Vendor Login / Track */}
-          <Link
-            href="/empanelment/track"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3.5 py-2 rounded-lg transition-all border border-slate-200/80"
-          >
-            <User className="w-3.5 h-3.5 text-slate-600" />
-            <span>Track & Login</span>
-          </Link>
-
-          {/* Desktop Register CTA */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Desktop Register as Vendor Primary CTA */}
           <Link
             href="/empanelment/apply"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-xs"
+            className="hidden sm:inline-flex items-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs sm:text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-xs hover:shadow-sm whitespace-nowrap shrink-0 group"
           >
-            <span>Register Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Register as Vendor</span>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform shrink-0" />
           </Link>
 
           {/* Mobile Tap-to-Call Quick Button */}
