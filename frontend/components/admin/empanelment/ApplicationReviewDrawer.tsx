@@ -38,9 +38,13 @@ export interface VendorApplicationDetail {
   gstin?: string | null;
   pan: string;
   bankName?: string | null;
+  accountNumber?: string | null;
   bankAccountNumber?: string | null;
+  ifscCode?: string | null;
   bankIfsc?: string | null;
+  establishmentYear?: string | null;
   yearsInBusiness?: number | null;
+  teamSize?: string | null;
   annualTurnover?: string | null;
   workforceCount?: number | null;
   pastClients?: string | null;
@@ -299,7 +303,7 @@ export default function ApplicationReviewDrawer({
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Tax & Banking Registry</span>
             </h3>
-            <div className="grid grid-cols-3 gap-3 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60">
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">GSTIN</p>
                 <p className="font-mono font-bold text-slate-900 mt-0.5">{application.gstin || "NOT PROVIDED"}</p>
@@ -309,8 +313,14 @@ export default function ApplicationReviewDrawer({
                 <p className="font-mono font-bold text-slate-900 mt-0.5">{application.pan}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-[10px] uppercase font-semibold">Years in Business</p>
-                <p className="font-semibold text-slate-900 mt-0.5">{application.yearsInBusiness ? `${application.yearsInBusiness} Years` : "—"}</p>
+                <p className="text-slate-400 text-[10px] uppercase font-semibold">Year of Establishment</p>
+                <p className="font-semibold text-slate-900 mt-0.5">{application.establishmentYear || "—"}</p>
+              </div>
+              <div>
+                <p className="text-slate-400 text-[10px] uppercase font-semibold">Workforce Capacity</p>
+                <p className="font-semibold text-slate-900 mt-0.5">
+                  {application.teamSize || (application.workforceCount ? `${application.workforceCount} Personnel` : "—")}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">Bank Name</p>
@@ -318,11 +328,15 @@ export default function ApplicationReviewDrawer({
               </div>
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">Account Number</p>
-                <p className="font-mono text-slate-900 mt-0.5">{application.bankAccountNumber || "—"}</p>
+                <p className="font-mono text-slate-900 mt-0.5">
+                  {application.accountNumber || application.bankAccountNumber || "—"}
+                </p>
               </div>
               <div>
                 <p className="text-slate-400 text-[10px] uppercase font-semibold">IFSC Code</p>
-                <p className="font-mono font-bold text-slate-900 mt-0.5">{application.bankIfsc || "—"}</p>
+                <p className="font-mono font-bold text-slate-900 mt-0.5">
+                  {application.ifscCode || application.bankIfsc || "—"}
+                </p>
               </div>
             </div>
           </div>
