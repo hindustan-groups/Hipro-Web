@@ -90,6 +90,7 @@ function getValidPayload(overrides: Record<string, any> = {}) {
     entityType: "PRIVATE_LIMITED",
     pan: "ABCDE1234F",
     gstin: "08ABCDE1234F1Z5",
+    gstCertificateUrl: "https://storage.example.com/gst-certificate.pdf",
     contactName: "Rajendra Sharma",
     designation: "Managing Director",
     phone: "9876543210",

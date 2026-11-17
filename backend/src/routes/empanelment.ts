@@ -86,44 +86,25 @@ export const ALLOWED_TURNOVER_BRACKETS = [
 export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-export function resolveTeamSizeBracket(rawTeamSize: any, rawWorkforceCount: any): string | null {
-  if (typeof rawTeamSize === "string" && ALLOWED_TEAM_SIZE_BRACKETS.includes(rawTeamSize.trim() as any)) {
-    return rawTeamSize.trim();
-  }
-  // Safely map legacy numeric workforceCount without data invention
-  if (rawWorkforceCount !== undefined && rawWorkforceCount !== null && rawWorkforceCount !== "") {
-    const count = parseInt(String(rawWorkforceCount), 10);
-    if (!isNaN(count) && count > 0) {
-      if (count <= 10) return "1-10";
-      if (count <= 50) return "11-50";
-      if (count <= 200) return "51-200";
-      return "200+";
+export function resolveTeamSizeBracket(rawTeamSize: any, _legacyWorkforceCount?: any): string | null {
+  if (typeof rawTeamSize === "string") {
+    const trimmed = rawTeamSize.trim();
+    if (ALLOWED_TEAM_SIZE_BRACKETS.includes(trimmed as any)) {
+      return trimmed;
     }
   }
   return null;
 }
 
-export function resolveTurnoverBracket(rawBracket: any, rawAnnualTurnover: any): string | null {
-  const candidate =
-    (typeof rawBracket === "string" && rawBracket.trim()) ||
-    (typeof rawAnnualTurnover === "string" && rawAnnualTurnover.trim()) ||
-    null;
-  if (!candidate) return null;
-  const match = ALLOWED_TURNOVER_BRACKETS.find((b) => b.toLowerCase() === candidate.toLowerCase());
-  if (match) return match;
-  if (candidate.includes("2 Cr") || candidate.includes("2 Crore") || candidate.includes("Above")) {
-    return "Above ₹2 Crore";
-  }
-  if (candidate.includes("50 Lakh") || candidate.includes("1 Cr") || candidate.includes("1 Crore")) {
-    return "₹50 Lakh – ₹2 Crore";
-  }
-  if (candidate.includes("10 Lakh") || candidate.includes("50L")) {
-    return "₹10 Lakh – ₹50 Lakh";
-  }
-  if (candidate.includes("Under") || candidate.includes("<")) {
-    return "Under ₹10 Lakh";
-  }
-  return null;
+export function resolveTurnoverBracket(rawBracket: any, _legacyAnnualTurnover?: any): string | null {
+  if (typeof rawBracket !== "string") return null;
+  const trimmed = rawBracket.trim();
+  if (!trimmed) return null;
+  const normalized = trimmed.replace(/\s*[\u2013\u2014-]\s*/g, " – ").replace(/\s+/g, " ");
+  const match = ALLOWED_TURNOVER_BRACKETS.find(
+    (b) => b === trimmed || b === normalized || b.toLowerCase() === normalized.toLowerCase()
+  );
+  return match || null;
 }
 
 // ===================================================================
@@ -266,6 +247,22 @@ router.post("/apply", async (req: Request, res: Response) => {
     const rawGstin = typeof data.gstin === "string" && data.gstin.trim() ? data.gstin.trim().toUpperCase() : null;
     const isGstVerified = false; // Always starts unverified on public registration
 
+    // Resolve GST Certificate URL & Server-Side Conditional Validation
+    let resolvedGstCertificateUrl: string | null = null;
+    if (typeof data.gstCertificateUrl === "string" && data.gstCertificateUrl.trim().length > 0) {
+      resolvedGstCertificateUrl = data.gstCertificateUrl.trim();
+    }
+
+    // Server-Side Conditional GST Certificate Validation:
+    // When GSTIN is supplied, non-empty GST certificate document upload is strictly mandatory.
+    // When GSTIN is absent/omitted, GST certificate remains optional.
+    if (rawGstin && !resolvedGstCertificateUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "GST certificate document upload is required when GSTIN is provided.",
+      });
+    }
+
     // Generate unique Tracking ID e.g. HP-EMP-849201
     const randomSuffix = Math.floor(100000 + Math.random() * 900000).toString();
     const trackingId = `HP-EMP-${randomSuffix}`;
@@ -360,9 +357,9 @@ router.post("/apply", async (req: Request, res: Response) => {
         turnoverYear3: data.turnoverYear3 || "",
         largestOrderValue: data.largestOrderValue || "",
         existingEmpanelments: data.existingEmpanelments || "",
-        gstCertificateUrl: data.gstCertificateUrl || null,
-        panCardUrl: data.panCardUrl || null,
-        bankChequeUrl: data.bankChequeUrl || null,
+        gstCertificateUrl: resolvedGstCertificateUrl,
+        panCardUrl: typeof data.panCardUrl === "string" && data.panCardUrl.trim().length > 0 ? data.panCardUrl.trim() : null,
+        bankChequeUrl: typeof data.bankChequeUrl === "string" && data.bankChequeUrl.trim().length > 0 ? data.bankChequeUrl.trim() : null,
         msmeDocUrl: resolvedMsmeDocUrl,
         workExperienceDocUrl: resolvedWorkExperienceDocUrl,
         passportPhotoUrl: data.passportPhotoUrl || null,
