@@ -62,6 +62,71 @@ const ENTITY_TYPE_MAP: Record<string, string> = {
 };
 
 // ===================================================================
+// PHASE 2B: CANONICAL CATEGORIES & CAPACITY BRACKETS
+// ===================================================================
+
+export const APPROVED_VENDOR_CATEGORIES = [
+  "Civil Construction",
+  "Electrical & MEP",
+  "Plumbing & Sanitation",
+  "Fabrication & PEB",
+  "Flooring & Finishing",
+  "Material Supply",
+] as const;
+
+export const ALLOWED_TEAM_SIZE_BRACKETS = ["1-10", "11-50", "51-200", "200+"] as const;
+
+export const ALLOWED_TURNOVER_BRACKETS = [
+  "Under ₹10 Lakh",
+  "₹10 Lakh – ₹50 Lakh",
+  "₹50 Lakh – ₹2 Crore",
+  "Above ₹2 Crore",
+] as const;
+
+export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+export function resolveTeamSizeBracket(rawTeamSize: any, rawWorkforceCount: any): string | null {
+  if (typeof rawTeamSize === "string" && ALLOWED_TEAM_SIZE_BRACKETS.includes(rawTeamSize.trim() as any)) {
+    return rawTeamSize.trim();
+  }
+  // Safely map legacy numeric workforceCount without data invention
+  if (rawWorkforceCount !== undefined && rawWorkforceCount !== null && rawWorkforceCount !== "") {
+    const count = parseInt(String(rawWorkforceCount), 10);
+    if (!isNaN(count) && count > 0) {
+      if (count <= 10) return "1-10";
+      if (count <= 50) return "11-50";
+      if (count <= 200) return "51-200";
+      return "200+";
+    }
+  }
+  return null;
+}
+
+export function resolveTurnoverBracket(rawBracket: any, rawAnnualTurnover: any): string | null {
+  const candidate =
+    (typeof rawBracket === "string" && rawBracket.trim()) ||
+    (typeof rawAnnualTurnover === "string" && rawAnnualTurnover.trim()) ||
+    null;
+  if (!candidate) return null;
+  const match = ALLOWED_TURNOVER_BRACKETS.find((b) => b.toLowerCase() === candidate.toLowerCase());
+  if (match) return match;
+  if (candidate.includes("2 Cr") || candidate.includes("2 Crore") || candidate.includes("Above")) {
+    return "Above ₹2 Crore";
+  }
+  if (candidate.includes("50 Lakh") || candidate.includes("1 Cr") || candidate.includes("1 Crore")) {
+    return "₹50 Lakh – ₹2 Crore";
+  }
+  if (candidate.includes("10 Lakh") || candidate.includes("50L")) {
+    return "₹10 Lakh – ₹50 Lakh";
+  }
+  if (candidate.includes("Under") || candidate.includes("<")) {
+    return "Under ₹10 Lakh";
+  }
+  return null;
+}
+
+// ===================================================================
 // PUBLIC VENDOR ENDPOINTS
 // ===================================================================
 
@@ -72,9 +137,8 @@ const ENTITY_TYPE_MAP: Record<string, string> = {
 router.post("/gst-verify", (req: Request, res: Response) => {
   try {
     const raw = (req.body?.gstin || "").trim().toUpperCase();
-    const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-    if (!raw || raw.length !== 15 || !gstinRegex.test(raw)) {
+    if (!raw || raw.length !== 15 || !GSTIN_REGEX.test(raw)) {
       return res.status(400).json({
         success: false,
         valid: false,
@@ -125,6 +189,14 @@ router.post("/apply", async (req: Request, res: Response) => {
       });
     }
 
+    // Structural PAN format validation (Standard 10-char Indian PAN: 5 uppercase letters, 4 digits, 1 uppercase letter)
+    if (!PAN_REGEX.test(pan)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid PAN number format. Permanent Account Number must be 10 characters (e.g. ABCDE1234F).",
+      });
+    }
+
     // Require explicit terms and code of conduct agreement
     if (data.termsAgreed !== true) {
       return res.status(400).json({
@@ -142,6 +214,58 @@ router.post("/apply", async (req: Request, res: Response) => {
       resolvedWorkExperienceDocUrl = data.pastWorkDocUrl.trim();
     }
 
+    // Resolve MSME / Udyam document URL
+    let resolvedMsmeDocUrl: string | null = null;
+    if (typeof data.msmeDocUrl === "string" && data.msmeDocUrl.trim().length > 0) {
+      resolvedMsmeDocUrl = data.msmeDocUrl.trim();
+    }
+
+    // Resolve Establishment Year (Store actual calendar year, NEVER calculate from yearsInBusiness)
+    let resolvedEstablishmentYear: string | null = null;
+    if (typeof data.establishmentYear === "string" && data.establishmentYear.trim().length > 0) {
+      resolvedEstablishmentYear = data.establishmentYear.trim();
+    } else if (typeof data.establishmentYear === "number" && !isNaN(data.establishmentYear)) {
+      resolvedEstablishmentYear = String(data.establishmentYear);
+    }
+
+    // Resolve Turnover Bracket (Dedicated field, never write into audited multi-year turnover fields)
+    const rawTurnoverCandidate =
+      (typeof data.turnoverBracket === "string" && data.turnoverBracket.trim().length > 0 ? data.turnoverBracket.trim() : null) ||
+      (typeof data.annualTurnover === "string" && data.annualTurnover.trim().length > 0 ? data.annualTurnover.trim() : null);
+
+    const resolvedTurnoverBracket = resolveTurnoverBracket(data.turnoverBracket, data.annualTurnover);
+
+    if (rawTurnoverCandidate && !resolvedTurnoverBracket) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid annual turnover bracket '${rawTurnoverCandidate}'. Allowed brackets: ${ALLOWED_TURNOVER_BRACKETS.join(", ")}`,
+      });
+    }
+
+    // Resolve Workforce Capacity (teamSize bracket)
+    const resolvedTeamSize = resolveTeamSizeBracket(data.teamSize, data.workforceCount);
+
+    // Resolve Category & Unclassified State
+    let resolvedCategory: string | null = null;
+    let currentStage = "Pending Trade Classification";
+    if (data.category !== undefined && data.category !== null) {
+      const trimmedCategory = typeof data.category === "string" ? data.category.trim() : "";
+      if (trimmedCategory.length > 0) {
+        if (!APPROVED_VENDOR_CATEGORIES.includes(trimmedCategory as any)) {
+          return res.status(400).json({
+            success: false,
+            error: `Invalid trade category '${trimmedCategory}'. Approved categories: ${APPROVED_VENDOR_CATEGORIES.join(", ")}`,
+          });
+        }
+        resolvedCategory = trimmedCategory;
+        currentStage = "Document Audit & Compliance Verification";
+      }
+    }
+
+    // Resolve GSTIN & Safety: Never trust client-submitted isGstVerified
+    const rawGstin = typeof data.gstin === "string" && data.gstin.trim() ? data.gstin.trim().toUpperCase() : null;
+    const isGstVerified = false; // Always starts unverified on public registration
+
     // Generate unique Tracking ID e.g. HP-EMP-849201
     const randomSuffix = Math.floor(100000 + Math.random() * 900000).toString();
     const trackingId = `HP-EMP-${randomSuffix}`;
@@ -152,20 +276,41 @@ router.post("/apply", async (req: Request, res: Response) => {
 
     // Calculate initial eligibility score (0-100)
     let score = 20; // baseline for complete statutory profile
-    const estYear = parseInt(data.establishmentYear || "2024", 10);
-    const yearsInBusiness = Math.max(0, new Date().getFullYear() - estYear);
 
-    if (yearsInBusiness >= 10) score += 20;
-    else if (yearsInBusiness >= 5) score += 15;
-    else if (yearsInBusiness >= 2) score += 10;
+    // Score: Tenure (based on calendar year if validly supplied)
+    if (resolvedEstablishmentYear) {
+      const estYear = parseInt(resolvedEstablishmentYear, 10);
+      const currentYear = new Date().getFullYear();
+      if (!isNaN(estYear) && estYear >= 1900 && estYear <= currentYear) {
+        const years = currentYear - estYear;
+        if (years >= 10) score += 20;
+        else if (years >= 5) score += 15;
+        else if (years >= 2) score += 10;
+      }
+    }
 
+    // Score: Financial Capacity
     const t1 = parseFloat((data.turnoverYear3 || data.turnoverYear1 || "0").replace(/[^0-9.]/g, ""));
-    if (t1 >= 50000000) score += 30; // 5 Cr+
-    else if (t1 >= 10000000) score += 20; // 1 Cr+
-    else if (t1 >= 2500000) score += 10; // 25 Lakh+
+    if (resolvedTurnoverBracket === "Above ₹2 Crore" || t1 >= 50000000) {
+      score += 30;
+    } else if (resolvedTurnoverBracket === "₹50 Lakh – ₹2 Crore" || t1 >= 10000000) {
+      score += 20;
+    } else if (resolvedTurnoverBracket === "₹10 Lakh – ₹50 Lakh" || t1 >= 2500000) {
+      score += 10;
+    }
 
-    if (data.gstin && data.isGstVerified) score += 15;
+    // Score: Workforce Capacity
+    if (resolvedTeamSize === "200+") score += 15;
+    else if (resolvedTeamSize === "51-200") score += 10;
+    else if (resolvedTeamSize === "11-50") score += 5;
+
+    // Score: Valid GSTIN format (format syntax only, NOT verified registry flag)
+    if (rawGstin && GSTIN_REGEX.test(rawGstin)) {
+      score += 10;
+    }
+
     if (resolvedWorkExperienceDocUrl) score += 10;
+    if (resolvedMsmeDocUrl) score += 5;
     if (data.signatureUrl) score += 5;
 
     score = Math.min(100, Math.max(10, score));
@@ -180,35 +325,36 @@ router.post("/apply", async (req: Request, res: Response) => {
         trackingId,
         hashSignature,
         status: "SUBMITTED",
-        currentStage: "Document Audit & Compliance Verification",
+        currentStage,
         tier,
-        category: data.category || "Civil Construction",
+        category: resolvedCategory,
         primaryRole: data.primaryRole || "",
         specialization: data.specialization || "",
         skillsDetails: data.skillsDetails || "",
-        teamSize: data.teamSize || "1-10",
-        companyName: data.companyName,
+        teamSize: resolvedTeamSize,
+        companyName: companyName,
         entityType: data.entityType || "PROPRIETORSHIP",
-        establishmentYear: data.establishmentYear || "",
-        ownerName: data.ownerName || data.contactName,
-        ownerContact: data.ownerContact || data.phone,
-        contactName: data.contactName,
+        establishmentYear: resolvedEstablishmentYear,
+        ownerName: data.ownerName || contactName,
+        ownerContact: data.ownerContact || phone,
+        contactName: contactName,
         designation: data.designation || "Director / Proprietor",
-        email: data.email.toLowerCase().trim(),
-        phone: data.phone.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
         address: data.address || "",
         city: data.city || "Bhilwara",
         district: data.district || "",
         state: data.state || "Rajasthan",
         pincode: data.pincode || "311001",
-        gstin: data.gstin ? data.gstin.toUpperCase().trim() : null,
-        isGstVerified: Boolean(data.isGstVerified),
-        pan: data.pan.toUpperCase().trim(),
+        gstin: rawGstin,
+        isGstVerified: false,
+        pan: pan,
         aadharNo: data.aadharNo || null,
         msmeUdyamNo: data.msmeUdyamNo || null,
         bankName: data.bankName || "",
         accountNumber: data.accountNumber || "",
         ifscCode: data.ifscCode || "",
+        turnoverBracket: resolvedTurnoverBracket,
         turnoverYear1: data.turnoverYear1 || "",
         turnoverYear2: data.turnoverYear2 || "",
         turnoverYear3: data.turnoverYear3 || "",
@@ -217,10 +363,11 @@ router.post("/apply", async (req: Request, res: Response) => {
         gstCertificateUrl: data.gstCertificateUrl || null,
         panCardUrl: data.panCardUrl || null,
         bankChequeUrl: data.bankChequeUrl || null,
+        msmeDocUrl: resolvedMsmeDocUrl,
         workExperienceDocUrl: resolvedWorkExperienceDocUrl,
         passportPhotoUrl: data.passportPhotoUrl || null,
         signatureUrl: data.signatureUrl || null,
-        signatoryName: data.signatoryName || data.contactName,
+        signatoryName: data.signatoryName || contactName,
         eligibilityScore: score,
         ipAddress: req.ip || req.socket.remoteAddress || "",
       },
@@ -232,7 +379,7 @@ router.post("/apply", async (req: Request, res: Response) => {
       companyName: application.companyName,
       contactName: application.contactName,
       trackingId: application.trackingId,
-      category: application.category,
+      category: application.category || "Unassigned (Pending Classification)",
       tier: application.tier,
       pan: application.pan,
       gstin: application.gstin,
@@ -433,155 +580,37 @@ router.get("/tenders", async (req: Request, res: Response) => {
 });
 
 /**
- * 5. Submit Bid for a Tender
+ * 5. Submit Bid for a Tender (SUSPENDED - FAIL CLOSED FOR SECURITY)
  * POST /api/empanelment/tenders/:tenderId/bid
+ *
+ * SECURITY CONTAINMENT (Phase 2B.3):
+ * Public unauthenticated electronic bidding is temporarily suspended while vendor
+ * authentication and ownership verification are being implemented.
+ * Unconditionally fails closed with HTTP 503 Service Unavailable.
+ * Never creates VendorBid records, never increments bidsCount, and does not trust trackingId.
  */
-router.post("/tenders/:tenderId/bid", async (req: Request, res: Response) => {
-  try {
-    const tenderId = String(req.params.tenderId);
-    const { trackingId, bidAmount, proposedDays, remarks } = req.body;
-
-    if (!trackingId || !bidAmount) {
-      return res.status(400).json({ success: false, error: "Tracking ID and Bid Amount are required" });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: trackingId.trim().toUpperCase() },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor registration not found" });
-    }
-
-    if (vendor.status !== "APPROVED") {
-      return res.status(403).json({
-        success: false,
-        error: "Only APPROVED empanelled partners can bid on active tenders. Your application status is: " + vendor.status,
-      });
-    }
-
-    const bid = await prisma.vendorBid.create({
-      data: {
-        tenderId,
-        vendorId: vendor.id,
-        bidAmount: parseFloat(bidAmount),
-        proposedDays: proposedDays ? parseInt(proposedDays, 10) : null,
-        remarks: remarks || "",
-        status: "UNDER_REVIEW",
-      },
-    });
-
-    await prisma.empanelmentTender.update({
-      where: { id: tenderId },
-      data: { bidsCount: { increment: 1 } },
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Commercial bid submitted successfully for tender review.",
-      bidId: bid.id,
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
+router.post("/tenders/:tenderId/bid", async (_req: Request, res: Response) => {
+  return res.status(503).json({
+    success: false,
+    error: "Electronic tender bidding is temporarily unavailable while portal authentication security is being upgraded. Please contact the Central Procurement Desk for procurement clarification guidance.",
+  });
 });
 
 /**
- * 6. Generate Daily 24-Hour Site Gate Pass (Approved Vendors Only)
+ * 6. Generate Daily 24-Hour Site Gate Pass (SUSPENDED - FAIL CLOSED FOR SECURITY)
  * POST /api/empanelment/gate-pass/generate
+ *
+ * SECURITY CONTAINMENT (Phase 2B.3):
+ * Public unauthenticated gate pass generation is temporarily suspended while vendor
+ * identity verification is being upgraded.
+ * Unconditionally fails closed with HTTP 503 Service Unavailable.
+ * Never creates SiteGatePass records, never generates QR pass codes, and does not trust trackingId.
  */
-router.post("/gate-pass/generate", async (req: Request, res: Response) => {
-  try {
-    const { trackingId, siteLocation } = req.body;
-    const rawTracking = (trackingId || "").trim().toUpperCase();
-
-    if (!rawTracking) {
-      return res.status(400).json({
-        success: false,
-        error: "Empanelment Tracking ID is required",
-      });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: rawTracking },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor tracking record not found" });
-    }
-
-    if (vendor.status !== "APPROVED") {
-      return res.status(403).json({
-        success: false,
-        error: "Only Approved Empanelled Partners can generate daily site gate passes.",
-      });
-    }
-
-    const visitorName = (req.body.visitorName || req.body.supervisor || req.body.contactName || vendor.contactName || "Site Incharge").trim();
-    const workerCount = parseInt((req.body.workerCount || req.body.personsCount || 1).toString(), 10) || 1;
-    const vehicleNo = (req.body.vehicleNo || req.body.vehicleNumber || "").trim() || null;
-    const chosenLocation = (siteLocation || "Mansarovar Commercial Site, Jaipur").trim();
-    const purpose = (req.body.purpose || "Authorized Site Work & Execution").trim();
-
-    const passSuffix = Math.floor(10000 + Math.random() * 90000).toString();
-    const passCode = `HP-GP-${passSuffix}`;
-    const validTill = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 Hours valid
-
-    const pass = await prisma.siteGatePass.create({
-      data: {
-        passCode,
-        vendorId: vendor.id,
-        visitorName,
-        workerCount,
-        vehicleNo,
-        siteLocation: chosenLocation,
-        validTill,
-        status: "ACTIVE",
-      },
-    });
-
-    // Asynchronously dispatch Gate Pass confirmation email
-    sendSiteGatePassEmail({
-      email: vendor.email,
-      visitorName: pass.visitorName,
-      companyName: vendor.companyName,
-      passCode: pass.passCode,
-      siteLocation: pass.siteLocation,
-      purpose,
-      validUntil: pass.validTill.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-      phone: vendor.phone,
-    }).catch((mailErr) => {
-      console.warn("[EMPANELMENT] Asynchronous gate pass email failed:", mailErr?.message || mailErr);
-    });
-
-    return res.status(201).json({
-      success: true,
-      pass: {
-        passCode: pass.passCode,
-        companyName: vendor.companyName,
-        visitorName: pass.visitorName,
-        supervisor: pass.visitorName,
-        workerCount: pass.workerCount,
-        personsCount: pass.workerCount,
-        vehicleNo: pass.vehicleNo,
-        vehicleNumber: pass.vehicleNo,
-        siteLocation: pass.siteLocation,
-        purpose,
-        validFrom: pass.validFrom,
-        validTill: pass.validTill,
-        validDate: pass.validTill,
-        status: pass.status,
-        vendor: {
-          companyName: vendor.companyName,
-          contactName: vendor.contactName,
-          phone: vendor.phone,
-          tier: vendor.tier,
-        },
-      },
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
+router.post("/gate-pass/generate", async (_req: Request, res: Response) => {
+  return res.status(503).json({
+    success: false,
+    error: "Daily site gate pass self-service generation is temporarily unavailable while access security is being upgraded. Please contact project site administration for approved access clearance.",
+  });
 });
 
 /**
@@ -843,14 +872,44 @@ router.get("/admin/applications/:id", async (req: Request, res: Response) => {
  */
 router.patch("/admin/applications/:id/status", async (req: Request, res: Response) => {
   try {
-    const { status, tier, currentStage, adminRemarks, ceoSigned, eligibilityScore } = req.body;
+    const { status, tier, category, currentStage, adminRemarks, ceoSigned, eligibilityScore } = req.body;
+
+    const id = String(req.params.id);
+    const existing = await prisma.vendorApplication.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
 
     const updateData: any = {};
     if (status) updateData.status = status;
     if (tier) updateData.tier = tier;
+    if (category !== undefined) {
+      if (category === null || (typeof category === "string" && category.trim() === "")) {
+        updateData.category = null;
+      } else if (typeof category === "string") {
+        const trimmedCategory = category.trim();
+        if (APPROVED_VENDOR_CATEGORIES.includes(trimmedCategory as any)) {
+          updateData.category = trimmedCategory;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: `Invalid trade category specified '${trimmedCategory}'. Approved categories: ${APPROVED_VENDOR_CATEGORIES.join(", ")}`,
+          });
+        }
+      }
+    }
     if (currentStage) updateData.currentStage = currentStage;
     if (adminRemarks !== undefined) updateData.adminRemarks = adminRemarks;
     if (eligibilityScore !== undefined) updateData.eligibilityScore = parseInt(eligibilityScore, 10);
+
+    // Safety: Cannot approve partner without assigning an approved trade category
+    const targetCategory = updateData.category !== undefined ? updateData.category : existing.category;
+    if ((updateData.status === "APPROVED" || ceoSigned === true) && (!targetCategory || targetCategory.trim() === "")) {
+      return res.status(400).json({
+        success: false,
+        error: "Cannot approve partner without assigning an approved trade category.",
+      });
+    }
 
     if (ceoSigned === true) {
       updateData.ceoSigned = true;
@@ -860,7 +919,6 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
       updateData.currentStage = "Empanelled Partner — Active";
     }
 
-    const id = String(req.params.id);
     const updated = await prisma.vendorApplication.update({
       where: { id },
       data: updateData,

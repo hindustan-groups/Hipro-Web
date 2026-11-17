@@ -1,19 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   Briefcase,
   Search,
-  MapPin,
-  Calendar,
-  IndianRupee,
-  CheckCircle2,
   AlertCircle,
-  Clock,
   ArrowRight,
-  ShieldCheck,
-  Send,
   X,
   Bell,
   Phone,
@@ -31,15 +23,8 @@ export default function PublicTendersRadarPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  // Bidding Modal State
+  // Package Details Modal State
   const [selectedTender, setSelectedTender] = useState<any | null>(null);
-  const [trackingId, setTrackingId] = useState("");
-  const [bidAmount, setBidAmount] = useState("");
-  const [proposedDays, setProposedDays] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [biddingSubmitting, setBiddingSubmitting] = useState(false);
-  const [bidSuccess, setBidSuccess] = useState("");
-  const [bidError, setBidError] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
@@ -75,47 +60,6 @@ export default function PublicTendersRadarPage() {
 
   const handleOpenBid = (tender: any) => {
     setSelectedTender(tender);
-    setBidSuccess("");
-    setBidError("");
-  };
-
-  const handleSubmitBid = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTender) return;
-
-    setBiddingSubmitting(true);
-    setBidError("");
-    setBidSuccess("");
-
-    try {
-      const res = await fetch(`/api/empanelment/tenders/${selectedTender.id}/bid`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trackingId: trackingId.trim(),
-          bidAmount: parseFloat(bidAmount),
-          proposedDays: proposedDays ? parseInt(proposedDays, 10) : undefined,
-          remarks,
-        }),
-      });
-
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to submit commercial bid");
-      }
-
-      setBidSuccess("Your quotation has been submitted successfully for procurement review.");
-      setTimeout(() => {
-        setSelectedTender(null);
-        setBidAmount("");
-        setProposedDays("");
-        setRemarks("");
-      }, 2000);
-    } catch (err: any) {
-      setBidError(err.message || "Failed to submit bid");
-    } finally {
-      setBiddingSubmitting(false);
-    }
   };
 
   const filteredTenders = tenders.filter((t) => {
@@ -140,7 +84,7 @@ export default function PublicTendersRadarPage() {
           Active Construction Tenders Radar (चालू टेंडर)
         </h1>
         <p className="text-xs md:text-sm text-slate-500">
-          Only verified empanelled partners can submit commercial quotations & timelines.
+          Published tender packages and technical specifications available for contractor review.
         </p>
       </div>
 
@@ -174,6 +118,17 @@ export default function PublicTendersRadarPage() {
         />
       </div>
 
+      {/* Security Containment Banner */}
+      <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 flex items-start sm:items-center gap-3 shadow-2xs max-w-4xl mx-auto">
+        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+        <div className="flex-1 text-xs text-amber-900 leading-relaxed">
+          <span className="font-bold">Portal Security Upgrade Notice: </span>
+          <span>
+            Self-service electronic tender bidding is temporarily suspended while contractor authentication and verification systems are being upgraded. Tender packages and BOQ specifications remain published for informational review.
+          </span>
+        </div>
+      </div>
+
       {error && (
         <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2 max-w-xl mx-auto">
           <AlertCircle className="w-4 h-4 shrink-0" />
@@ -202,8 +157,8 @@ export default function PublicTendersRadarPage() {
                   <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
                     {tender.tenderNo || tender.tenderNumber}
                   </span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    OPEN FOR BIDS
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    ACTIVE PACKAGE
                   </span>
                 </div>
 
@@ -247,9 +202,9 @@ export default function PublicTendersRadarPage() {
               {/* Action Button */}
               <button
                 onClick={() => handleOpenBid(tender)}
-                className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs"
               >
-                <span>Submit Quotation / कोटेशन दें</span>
+                <span>View Package & Bidding Notice</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -257,16 +212,16 @@ export default function PublicTendersRadarPage() {
         </div>
       )}
 
-      {/* Bidding Modal */}
+      {/* Package Details & Containment Notice Modal */}
       {selectedTender && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={() => setSelectedTender(null)} />
 
-          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4">
+          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <span className="font-mono text-[10px] font-bold text-violet-700">
-                  {selectedTender.tenderNumber}
+                  {selectedTender.tenderNumber || selectedTender.tenderNo}
                 </span>
                 <h3 className="font-bold text-slate-900 text-sm mt-0.5 line-clamp-1">
                   {selectedTender.title}
@@ -274,115 +229,81 @@ export default function PublicTendersRadarPage() {
               </div>
               <button
                 onClick={() => setSelectedTender(null)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {bidError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{bidError}</span>
+            {/* Package Details */}
+            <div className="space-y-3 text-left">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Trade Category:</span>
+                  <span className="font-bold text-slate-800">{selectedTender.category || "General"}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Location:</span>
+                  <span className="font-semibold text-slate-800">{selectedTender.location || "Jaipur, Rajasthan"}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Estimated Value:</span>
+                  <span className="font-mono font-bold text-slate-900">{selectedTender.estimatedBudget || "Competitive"}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Due Date:</span>
+                  <span className="font-mono font-bold text-amber-700">
+                    {selectedTender.dueDate || selectedTender.deadline
+                      ? new Date(selectedTender.dueDate || selectedTender.deadline).toLocaleDateString("en-IN", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "Open Package"}
+                  </span>
+                </div>
               </div>
-            )}
 
-            {bidSuccess && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>{bidSuccess}</span>
-              </div>
-            )}
+              {selectedTender.scopeOfWork && (
+                <div className="text-[11px] text-slate-600 leading-relaxed bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
+                  <p className="font-bold text-slate-700 mb-0.5">Scope of Work:</p>
+                  <p>{selectedTender.scopeOfWork}</p>
+                </div>
+              )}
 
-            <form onSubmit={handleSubmitBid} className="space-y-3">
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Your Empanelment Tracking ID *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={trackingId}
-                  onChange={(e) => setTrackingId(e.target.value.toUpperCase())}
-                  placeholder="e.g. HP-EMP-849201"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 uppercase focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                />
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  Only approved empanelled partners can bid. Need ID? <Link href="/empanelment/apply" className="text-violet-600 underline">Register here</Link>
+              {/* Professional Suspension Notice */}
+              <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-amber-900 font-bold">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Online Bidding Temporarily Suspended</span>
+                </div>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  Electronic tender bidding is temporarily suspended while portal authentication and security upgrades are being implemented. Published tender packages and technical specifications remain available for informational review.
+                </p>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  For technical queries or procurement clarifications regarding published tender requirements, please contact the Central Procurement Desk.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                    Quoted Amount (₹ INR) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={bidAmount}
-                    onChange={(e) => setBidAmount(e.target.value)}
-                    placeholder="e.g. 4200000"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-mono font-bold text-slate-900 focus:outline-none text-sm sm:text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                    Timeline (in Days)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={proposedDays}
-                    onChange={(e) => setProposedDays(e.target.value)}
-                    placeholder="e.g. 60"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-none text-sm sm:text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Technical Remarks / BOQ Inclusions
-                </label>
-                <textarea
-                  rows={2}
-                  value={remarks}
-                  onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Mention equipment deployed, warranty, GST rate included..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 focus:outline-none text-sm sm:text-xs"
-                />
-              </div>
-
-              <div className="pt-2 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2">
+              <div className="pt-2 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setSelectedTender(null)}
-                  className="px-4 py-2.5 rounded-xl text-slate-600 font-semibold text-center hover:bg-slate-50"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold transition-colors text-xs text-center"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={biddingSubmitting}
-                  className="px-5 py-2.5 min-h-[44px] rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold shadow-md shadow-violet-600/20 transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{biddingSubmitting ? "Submitting..." : "Submit Bid"}</span>
+                  Close Notice
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Procurement Helpline Support Box */}
       <div className="max-w-3xl mx-auto p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-3">
-        <h3 className="font-bold text-sm text-slate-900">Need Assistance with Bidding or Tender Submissions?</h3>
+        <h3 className="font-bold text-sm text-slate-900">Procurement Information & Clarifications</h3>
         <p className="text-xs text-slate-500">
-          Reach out directly to the Hindustan Projects Central Procurement Desk for BOQ clarifications and EMD deposit references.
+          Reach out directly to the Hindustan Projects Central Procurement Desk for technical queries and clarifications regarding published tender packages.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-slate-700 pt-1">
           {content.tendersHelplinePhone && (

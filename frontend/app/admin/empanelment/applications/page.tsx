@@ -190,11 +190,10 @@ export default function ApplicationsPipelinePage() {
             onChange={(e) => setTierFilter(e.target.value)}
             className="bg-white rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none"
           >
-            <option value="ALL">All Tiers</option>
-            <option value="TIER_A">Tier A (&gt; ₹2 Cr)</option>
-            <option value="TIER_B">Tier B (₹50L – ₹2 Cr)</option>
-            <option value="TIER_C">Tier C (₹10L – ₹50L)</option>
-            <option value="TIER_D">Tier D (&lt; ₹10L)</option>
+            <option value="ALL">All Tiers (A, B, C)</option>
+            <option value="CLASS_A">Tier A (&gt; ₹2 Cr)</option>
+            <option value="CLASS_B">Tier B (₹50L – ₹2 Cr)</option>
+            <option value="CLASS_C">Tier C (₹10L – ₹50L)</option>
           </select>
 
           {/* Category Filter */}
@@ -259,7 +258,9 @@ export default function ApplicationsPipelinePage() {
 
                     <td className="px-4 py-3">
                       <span className="font-medium text-slate-600 line-clamp-1">
-                        {app.category}
+                        {app.category || (
+                          <span className="italic text-amber-700 font-semibold text-[11px]">Unassigned</span>
+                        )}
                       </span>
                     </td>
 
