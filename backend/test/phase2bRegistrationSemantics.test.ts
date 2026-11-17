@@ -109,6 +109,7 @@ function getBaselinePayload(overrides: Record<string, any> = {}) {
     entityType: "PROPRIETORSHIP",
     pan: "ABCDE1234F",
     gstin: "08ABCDE1234F1Z5",
+    gstCertificateUrl: "https://storage.example.com/gst-cert.pdf",
     contactName: "Ramesh Sharma",
     phone: "9876543210",
     email: "ramesh@sharmaworks.in",
@@ -479,9 +480,39 @@ async function runTests() {
     });
 
     // -------------------------------------------------------------------------
-    // TEST 10: Invalid Turnover String Cannot Be Persisted
+    // TEST 9.1: Strict Workforce: Numeric workforceCount cannot populate teamSize
     // -------------------------------------------------------------------------
-    await runCheck("10. Financial Validation: Invalid turnover string cannot be persisted (HTTP 400 / null)", async () => {
+    await runCheck("9.1. Strict Workforce: Numeric workforceCount cannot populate teamSize without approved teamSize bracket", async () => {
+      // 1. Sending only numeric workforceCount (e.g. 20) with omitted teamSize must result in teamSize: null
+      capturedCreateData = null;
+      const res1 = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        teamSize: undefined,
+        workforceCount: 20,
+      }));
+      assert.strictEqual(res1.status, 201);
+      assert.strictEqual(capturedCreateData.teamSize, null, "Numeric workforceCount=20 must not populate teamSize");
+
+      // 2. Sending invalid teamSize string with numeric workforceCount must also result in teamSize: null
+      capturedCreateData = null;
+      const res2 = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        teamSize: "invalid-bracket",
+        workforceCount: 150,
+      }));
+      assert.strictEqual(res2.status, 201);
+      assert.strictEqual(capturedCreateData.teamSize, null, "Invalid teamSize bracket must resolve to null");
+
+      // 3. Unit helper checks
+      assert.strictEqual(resolveTeamSizeBracket(null, 50), null);
+      assert.strictEqual(resolveTeamSizeBracket(undefined, 10), null);
+      assert.strictEqual(resolveTeamSizeBracket("invalid", 200), null);
+      assert.strictEqual(resolveTeamSizeBracket("11-50", 10), "11-50");
+      assert.strictEqual(resolveTeamSizeBracket("200+"), "200+");
+    });
+
+    // -------------------------------------------------------------------------
+    // TEST 10: Strict Turnover Validation: Misleading & Unapproved Values Rejected
+    // -------------------------------------------------------------------------
+    await runCheck("10. Financial Validation: Strict turnover validation rejects fuzzy/misleading values (HTTP 400)", async () => {
       capturedCreateData = null;
       const res = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
         turnoverBracket: "INVALID_UNAPPROVED_BRACKET",
@@ -490,7 +521,20 @@ async function runTests() {
       assert.match(res.body.error, /Invalid annual turnover bracket/i);
       assert.strictEqual(capturedCreateData, null);
 
-      // Also verify helper unit resolution returns null directly
+      // Regression test cases for misleading inputs
+      const misleadingInputs = ["Above ₹10 Lakh", "₹1 Crore", "₹50 Lakh – ₹1 Crore"];
+      for (const input of misleadingInputs) {
+        const resMisleading = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+          turnoverBracket: input,
+        }));
+        assert.strictEqual(resMisleading.status, 400, `Expected HTTP 400 for misleading input '${input}'`);
+        assert.match(resMisleading.body.error, /Invalid annual turnover bracket/i);
+
+        // Verify unit helper also rejects
+        assert.strictEqual(resolveTurnoverBracket(input), null, `Expected null for '${input}'`);
+      }
+
+      // Also verify helper unit resolution returns null directly for random invalid value
       assert.strictEqual(resolveTurnoverBracket("INVALID_VALUE", null), null);
     });
 
@@ -621,10 +665,39 @@ async function runTests() {
       capturedCreateData = null;
       const res = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
         gstin: undefined,
+        gstCertificateUrl: undefined,
       }));
       assert.strictEqual(res.status, 201);
       assert.strictEqual(capturedCreateData.gstin, null);
+      assert.strictEqual(capturedCreateData.gstCertificateUrl, null);
       assert.strictEqual(capturedCreateData.pan, "ABCDE1234F");
+    });
+
+    // -------------------------------------------------------------------------
+    // TEST 18.0: Whitespace GSTIN Treated as Absent (Local Vendor Support)
+    // -------------------------------------------------------------------------
+    await runCheck("18.0. Statutory Validation: Whitespace-only GSTIN treated as absent, certificate optional (HTTP 201)", async () => {
+      capturedCreateData = null;
+      let createCallCount = 0;
+      const originalCreate = (prisma.vendorApplication as any).create;
+      (prisma.vendorApplication as any).create = async (args: any) => {
+        createCallCount++;
+        return originalCreate(args);
+      };
+
+      try {
+        const res = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+          gstin: "   ",
+          gstCertificateUrl: undefined,
+        }));
+        assert.strictEqual(res.status, 201);
+        assert.strictEqual(capturedCreateData.gstin, null);
+        assert.strictEqual(capturedCreateData.gstCertificateUrl, null);
+        assert.strictEqual(createCallCount, 1, "Database create was called exactly once");
+        assert.strictEqual(capturedCreateData.isGstVerified, false);
+      } finally {
+        (prisma.vendorApplication as any).create = originalCreate;
+      }
     });
 
     // -------------------------------------------------------------------------
@@ -655,6 +728,60 @@ async function runTests() {
       assert.strictEqual(capturedCreateData.panCardUrl, "https://storage.example.com/pan-card.pdf");
       assert.strictEqual(capturedCreateData.bankChequeUrl, "https://storage.example.com/cheque.pdf");
       assert.strictEqual(capturedCreateData.pan, "ABCDE1234F");
+    });
+
+    // -------------------------------------------------------------------------
+    // TEST 18.3: Server-Side GST Certificate: Missing Certificate Rejected When GSTIN Provided
+    // -------------------------------------------------------------------------
+    await runCheck("18.3. Server-Side GST: Missing GST certificate returns HTTP 400 when GSTIN is provided", async () => {
+      capturedCreateData = null;
+      const res = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        gstin: "08ABCDE1234F1Z5",
+        gstCertificateUrl: undefined,
+      }));
+      assert.strictEqual(res.status, 400);
+      assert.match(res.body.error, /GST certificate document upload is required/i);
+      assert.strictEqual(capturedCreateData, null);
+    });
+
+    // -------------------------------------------------------------------------
+    // TEST 18.4: Server-Side GST Certificate: Blank Certificate String Rejected When GSTIN Provided
+    // -------------------------------------------------------------------------
+    await runCheck("18.4. Server-Side GST: Blank GST certificate string returns HTTP 400 when GSTIN is provided", async () => {
+      capturedCreateData = null;
+      const res = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        gstin: "08ABCDE1234F1Z5",
+        gstCertificateUrl: "   ",
+      }));
+      assert.strictEqual(res.status, 400);
+      assert.match(res.body.error, /GST certificate document upload is required/i);
+      assert.strictEqual(capturedCreateData, null);
+    });
+
+    // -------------------------------------------------------------------------
+    // TEST 18.5: Server-Side GST Certificate: Optional When GSTIN Omitted, isGstVerified Always False
+    // -------------------------------------------------------------------------
+    await runCheck("18.5. Server-Side GST: Certificate optional when GSTIN omitted, isGstVerified always false", async () => {
+      // Case A: No GSTIN, valid certificate provided
+      capturedCreateData = null;
+      const res1 = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        gstin: undefined,
+        gstCertificateUrl: "https://storage.example.com/unregistered-artisan-doc.pdf",
+      }));
+      assert.strictEqual(res1.status, 201);
+      assert.strictEqual(capturedCreateData.gstin, null);
+      assert.strictEqual(capturedCreateData.gstCertificateUrl, "https://storage.example.com/unregistered-artisan-doc.pdf");
+      assert.strictEqual(capturedCreateData.isGstVerified, false);
+
+      // Case B: Client attempts to send isGstVerified: true with valid certificate
+      capturedCreateData = null;
+      const res2 = await makeRequest("POST", "/api/empanelment/apply", getBaselinePayload({
+        gstin: "08ABCDE1234F1Z5",
+        gstCertificateUrl: "https://storage.example.com/gst-cert.pdf",
+        isGstVerified: true,
+      }));
+      assert.strictEqual(res2.status, 201);
+      assert.strictEqual(capturedCreateData.isGstVerified, false, "Client cannot force isGstVerified: true");
     });
 
     // -------------------------------------------------------------------------
