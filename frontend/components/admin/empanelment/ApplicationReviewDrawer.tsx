@@ -24,7 +24,7 @@ export interface VendorApplicationDetail {
   trackingId: string;
   companyName: string;
   tradeName?: string | null;
-  category: string;
+  category?: string | null;
   tier: string;
   status: string;
   currentStage: string;
@@ -45,6 +45,7 @@ export interface VendorApplicationDetail {
   establishmentYear?: string | null;
   yearsInBusiness?: number | null;
   teamSize?: string | null;
+  turnoverBracket?: string | null;
   annualTurnover?: string | null;
   workforceCount?: number | null;
   pastClients?: string | null;
@@ -76,6 +77,7 @@ export default function ApplicationReviewDrawer({
 }: ApplicationReviewDrawerProps) {
   const [saving, setSaving] = useState(false);
   const [tier, setTier] = useState("CLASS_C");
+  const [category, setCategory] = useState<string>("");
   const [score, setScore] = useState(85);
   const [remarks, setRemarks] = useState("");
   const [ceoSigned, setCeoSigned] = useState(false);
@@ -86,6 +88,7 @@ export default function ApplicationReviewDrawer({
     if (application) {
       const normalizedTier = (application.tier || "CLASS_C").replace(/^TIER_/, "CLASS_");
       setTier(normalizedTier);
+      setCategory(application.category || "");
       setScore(application.eligibilityScore || 85);
       setRemarks(application.adminRemarks || "");
       setCeoSigned(application.ceoSigned || false);
@@ -97,6 +100,11 @@ export default function ApplicationReviewDrawer({
   if (!isOpen || !application) return null;
 
   const handleUpdate = async (newStatus: string) => {
+    if ((newStatus === "APPROVED" || ceoSigned) && (!category || category.trim() === "")) {
+      setError("Cannot approve application without assigning an approved trade category.");
+      return;
+    }
+
     setSaving(true);
     setError("");
     setActionSuccess("");
@@ -109,6 +117,7 @@ export default function ApplicationReviewDrawer({
         body: JSON.stringify({
           status: newStatus,
           tier,
+          category: category.trim() ? category.trim() : null,
           eligibilityScore: score,
           adminRemarks: remarks,
           ceoSigned: newStatus === "APPROVED" ? ceoSigned : undefined,
@@ -129,7 +138,15 @@ export default function ApplicationReviewDrawer({
       }
 
       setActionSuccess(`Application marked as ${newStatus}`);
-      onStatusUpdated(json.application);
+      onStatusUpdated(json.application || {
+        ...application,
+        status: newStatus,
+        tier,
+        category: category.trim() ? category.trim() : null,
+        adminRemarks: remarks,
+        eligibilityScore: score,
+        ceoSigned,
+      });
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -200,7 +217,7 @@ export default function ApplicationReviewDrawer({
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                {application.category} • Submitted{" "}
+                {category || application.category || "Pending Classification"} • Submitted{" "}
                 {application.createdAt && !isNaN(new Date(application.createdAt).getTime())
                   ? new Date(application.createdAt).toLocaleDateString("en-IN", {
                       day: "numeric",
@@ -338,6 +355,12 @@ export default function ApplicationReviewDrawer({
                   {application.ifscCode || application.bankIfsc || "—"}
                 </p>
               </div>
+              <div>
+                <p className="text-slate-400 text-[10px] uppercase font-semibold">Annual Turnover</p>
+                <p className="font-semibold text-slate-900 mt-0.5">
+                  {application.turnoverBracket || application.annualTurnover || "—"}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -390,7 +413,26 @@ export default function ApplicationReviewDrawer({
               <span>KYC Assessment & Capacity Tier</span>
             </h3>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
+                  Trade Category (व्यापार श्रेणी) *
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                >
+                  <option value="">— Select Category (Required to Approve) —</option>
+                  <option value="Civil Construction">Civil Construction</option>
+                  <option value="Electrical & MEP">Electrical & MEP</option>
+                  <option value="Plumbing & Sanitation">Plumbing & Sanitation</option>
+                  <option value="Fabrication & PEB">Fabrication & PEB</option>
+                  <option value="Flooring & Finishing">Flooring & Finishing</option>
+                  <option value="Material Supply">Material Supply</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
                   Assign Vendor Tier
@@ -406,22 +448,22 @@ export default function ApplicationReviewDrawer({
                   <option value="CLASS_D">Class D — Local &amp; Site Supply (&lt; ₹50 Lakh)</option>
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Eligibility Score (0 – 100)
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={score}
-                    onChange={(e) => setScore(parseInt(e.target.value, 10))}
-                    className="w-full accent-amber-600"
-                  />
-                  <span className="w-10 text-right font-mono font-bold text-slate-800">{score}%</span>
-                </div>
+            <div>
+              <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
+                Eligibility Score (0 – 100)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={score}
+                  onChange={(e) => setScore(parseInt(e.target.value, 10))}
+                  className="w-full accent-amber-600"
+                />
+                <span className="w-10 text-right font-mono font-bold text-slate-800">{score}%</span>
               </div>
             </div>
 

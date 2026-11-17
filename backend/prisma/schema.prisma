@@ -647,7 +647,7 @@ model VendorApplication {
   tier                  String            @default("PROVISIONAL") // CLASS_A, CLASS_B, CLASS_C, PROVISIONAL
   
   // Category & Core Competence
-  category              String            // Civil, MEP, Suppliers, Architects, Equipment, Logistics
+  category              String?           // Civil Construction, Electrical & MEP, Plumbing & Sanitation, Fabrication & PEB, Flooring & Finishing, Material Supply (Null = Pending Trade Classification)
   primaryRole           String?
   specialization        String?
   skillsDetails         String?           @db.Text
@@ -682,9 +682,10 @@ model VendorApplication {
   bankName              String?
   accountNumber         String?
   ifscCode              String?
-  turnoverYear1         String?           // FY 2023-24
-  turnoverYear2         String?           // FY 2024-25
-  turnoverYear3         String?           // FY 2025-26
+  turnoverBracket       String?           // Canonical Turnover Bracket (e.g. Above ₹2 Crore, ₹50 Lakh – ₹2 Crore)
+  turnoverYear1         String?           // FY 2023-24 (Audited Balance Sheet)
+  turnoverYear2         String?           // FY 2024-25 (Audited Balance Sheet)
+  turnoverYear3         String?           // FY 2025-26 (Audited Balance Sheet)
   largestOrderValue     String?
   existingEmpanelments  String?           @db.Text
   
@@ -692,6 +693,7 @@ model VendorApplication {
   gstCertificateUrl     String?
   panCardUrl            String?
   bankChequeUrl         String?
+  msmeDocUrl            String?
   workExperienceDocUrl  String?
   passportPhotoUrl      String?
   signatureUrl          String?           @db.Text
