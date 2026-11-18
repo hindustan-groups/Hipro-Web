@@ -276,7 +276,7 @@ function TrackingContent() {
                 </button>
 
                 <Link
-                  href={`/empanelment/gate-pass?trackingId=${result.trackingId}`}
+                  href="/empanelment/portal/gate-pass"
                   className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <QrCode className="w-3.5 h-3.5 text-amber-300" />
