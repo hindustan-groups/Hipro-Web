@@ -323,7 +323,7 @@ function TendersPortalContent() {
                             <span>Bid Submitted</span>
                           </span>
                           <span className="font-mono">
-                            ₹{existingBid.amount?.toLocaleString("en-IN")}
+                            ₹{(existingBid.bidAmount ?? existingBid.amount)?.toLocaleString("en-IN")}
                           </span>
                         </div>
                       ) : (
@@ -380,10 +380,12 @@ function TendersPortalContent() {
                         </p>
                       </td>
                       <td className="py-3.5 px-5 font-mono font-bold text-slate-900">
-                        ₹{bid.amount?.toLocaleString("en-IN")}
+                        ₹{(bid.bidAmount ?? bid.amount)?.toLocaleString("en-IN")}
                       </td>
                       <td className="py-3.5 px-5 text-slate-600">
-                        {bid.completionDays ? `${bid.completionDays} Days` : "Standard"}
+                        {(bid.proposedDays ?? bid.completionDays)
+                          ? `${bid.proposedDays ?? bid.completionDays} Days`
+                          : "Standard"}
                       </td>
                       <td className="py-3.5 px-5">
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800 border border-amber-200">
@@ -391,11 +393,13 @@ function TendersPortalContent() {
                         </span>
                       </td>
                       <td className="py-3.5 px-5 font-mono text-slate-500 text-[11px]">
-                        {new Date(bid.createdAt).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {bid.submittedAt || bid.createdAt
+                          ? new Date(bid.submittedAt || bid.createdAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "Today"}
                       </td>
                     </tr>
                   ))}

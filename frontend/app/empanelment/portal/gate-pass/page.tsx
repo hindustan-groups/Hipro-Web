@@ -231,8 +231,8 @@ export default function VendorGatePassPage() {
             <div className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl text-slate-950 text-center shadow-lg">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                  `https://www.hindustanprojects.in/empanelment/verify-pass?id=${encodeURIComponent(
-                    activePass.passId || activePass.id
+                  `https://www.hindustanprojects.in/empanelment/verify-pass?passCode=${encodeURIComponent(
+                    activePass.passCode || activePass.passId || activePass.id
                   )}`
                 )}`}
                 alt="Gate Pass QR Code"

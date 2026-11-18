@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FolderOpen,
   FileCheck2,
@@ -108,7 +108,51 @@ export default function DocumentVaultPage() {
 
   const app = docData?.application || vendor?.application;
   const isDocsRequested = app?.status === "DOCS_REQUESTED";
-  const documentsList = docData?.documents || [];
+
+  const documentsList = useMemo(() => {
+    if (Array.isArray(docData?.documents)) {
+      return docData.documents;
+    }
+    const d = docData?.documents || {};
+    return [
+      {
+        name: "GST Registration Certificate",
+        url: d.gstCertificateUrl || app?.gstCertificateUrl || null,
+        required: true,
+        status: (d.gstCertificateUrl || app?.gstCertificateUrl) ? "VERIFIED" : "PENDING",
+      },
+      {
+        name: "Company / Authorized PAN Card",
+        url: d.panCardUrl || app?.panCardUrl || null,
+        required: true,
+        status: (d.panCardUrl || app?.panCardUrl) ? "VERIFIED" : "PENDING",
+      },
+      {
+        name: "Cancelled Bank Cheque / Statement",
+        url: d.bankChequeUrl || app?.bankChequeUrl || null,
+        required: true,
+        status: (d.bankChequeUrl || app?.bankChequeUrl) ? "VERIFIED" : "PENDING",
+      },
+      {
+        name: "MSME / Udyam Certificate",
+        url: d.msmeDocUrl || app?.msmeDocUrl || null,
+        required: false,
+        status: (d.msmeDocUrl || app?.msmeDocUrl) ? "UPLOADED" : "OPTIONAL",
+      },
+      {
+        name: "Past Work Experience / Completion Certificate",
+        url: d.workExperienceDocUrl || app?.workExperienceDocUrl || null,
+        required: false,
+        status: (d.workExperienceDocUrl || app?.workExperienceDocUrl) ? "UPLOADED" : "OPTIONAL",
+      },
+      {
+        name: "Authorized Signatory Passport Photo",
+        url: d.passportPhotoUrl || app?.passportPhotoUrl || null,
+        required: false,
+        status: (d.passportPhotoUrl || app?.passportPhotoUrl) ? "UPLOADED" : "OPTIONAL",
+      },
+    ];
+  }, [docData, app]);
 
   return (
     <div className="space-y-6">

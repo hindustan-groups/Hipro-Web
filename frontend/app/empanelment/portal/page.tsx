@@ -319,9 +319,10 @@ export default function VendorDashboardPage() {
                       </p>
                       <p className="text-[10px] text-slate-500 font-mono mt-0.5">
                         Ref: {bid.tender?.tenderNo || bid.tenderId} • Submitted:{" "}
-                        {new Date(bid.createdAt).toLocaleDateString("en-IN", {
+                        {new Date(bid.submittedAt || bid.createdAt || Date.now()).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
+                          year: "numeric",
                         })}
                       </p>
                     </div>

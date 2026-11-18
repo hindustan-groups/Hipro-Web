@@ -398,9 +398,10 @@ export default function TendersRadarPage() {
                               ₹{Number(bid.bidAmount).toLocaleString("en-IN")}
                             </p>
                             <span className="text-[10px] font-mono text-slate-400">
-                              Submitted {new Date(bid.createdAt).toLocaleDateString("en-IN", {
+                              Submitted {new Date(bid.submittedAt || bid.createdAt || Date.now()).toLocaleDateString("en-IN", {
                                 day: "numeric",
                                 month: "short",
+                                year: "numeric",
                               })}
                             </span>
                           </div>
