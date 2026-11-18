@@ -76,6 +76,14 @@ export default function EmpanelmentAdminLayout({
           </Link>
 
           <Link
+            href="/admin/empanelment/categories"
+            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 text-xs font-semibold inline-flex items-center gap-1.5 transition-all shadow-2xs"
+            title="Manage Trade Categories & Subcategories"
+          >
+            <span>Category Studio</span>
+          </Link>
+
+          <Link
             href="/admin/empanelment/content"
             className="px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs"
           >

@@ -48,6 +48,7 @@ export default function EmpanelmentNavbar() {
     { href: "/empanelment/tenders", label: "Tenders" },
     { href: "/empanelment/track", label: "Track Application" },
     { href: "/empanelment/gate-pass", label: "Gate Pass" },
+    { href: "/empanelment/login", label: "Vendor Portal" },
     { href: "/empanelment#faqs", label: "FAQs" },
   ];
 
@@ -100,6 +101,15 @@ export default function EmpanelmentNavbar() {
 
         {/* Right CTA Actions */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Desktop Vendor Portal Login */}
+          <Link
+            href="/empanelment/login"
+            className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-[#dc2626] px-3.5 py-2.5 rounded-xl border border-slate-200/90 hover:border-slate-300 transition-colors bg-white shadow-2xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#dc2626]" />
+            <span>Vendor Portal</span>
+          </Link>
+
           {/* Desktop Register as Vendor Primary CTA */}
           <Link
             href="/empanelment/apply"
@@ -133,8 +143,25 @@ export default function EmpanelmentNavbar() {
       {/* Mobile Drawer (Ultra-friendly mobile UI) */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-5 space-y-5 shadow-2xl animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto">
-          {/* Quick Action Tiles (2x2 Grid) */}
+          {/* Quick Action Tiles (2x2 Grid + Portal Banner) */}
           <div className="space-y-1.5">
+            <Link
+              href="/empanelment/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-950 text-white flex items-center justify-between shadow-xs mb-2.5"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#dc2626] text-white flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs text-white">Vendor Partner Portal</h4>
+                  <p className="text-[10px] text-slate-300">लॉगिन (टेंडर, गेट पास, स्थिति)</p>
+                </div>
+              </div>
+              <ArrowRight className="w-4 h-4 text-amber-400" />
+            </Link>
+
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Quick Services / त्वरित सेवाएं
             </p>
