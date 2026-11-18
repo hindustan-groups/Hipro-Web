@@ -1917,6 +1917,64 @@ router.patch("/admin/invoices/:id/status", async (req: Request, res: Response) =
 // EMPANELMENT PORTAL CMS & PAGE BUILDER ENDPOINTS
 // ===================================================================
 
+const DEFAULT_EMPANELMENT_CATEGORIES_STR = JSON.stringify([
+  {
+    id: "c1",
+    title: "Civil Construction",
+    description: "RCC structural works, masonry, plastering and site civil execution",
+    imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+    linkUrl: "/empanelment/apply?category=civil-construction",
+  },
+  {
+    id: "c2",
+    title: "Electrical & MEP",
+    description: "HT/LT electrical installations, substations, panels and cabling",
+    imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+    linkUrl: "/empanelment/apply?category=electrical-mep",
+  },
+  {
+    id: "c3",
+    title: "Plumbing & Sanitation",
+    description: "CPVC/PPR water supply, sewerage piping, fixtures and waterproofing",
+    imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+    linkUrl: "/empanelment/apply?category=plumbing-sanitation",
+  },
+  {
+    id: "c4",
+    title: "Fabrication & PEB",
+    description: "Pre-engineered buildings (PEB), heavy structural steel and railings",
+    imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+    linkUrl: "/empanelment/apply?category=fabrication-peb",
+  },
+  {
+    id: "c5",
+    title: "Flooring & Finishing",
+    description: "Tiles, granite, marble, epoxy flooring, painting and false ceilings",
+    imageUrl: "/images/empanelment/cat-interior-finishing.jpg",
+    linkUrl: "/empanelment/apply?category=flooring-finishing",
+  },
+  {
+    id: "c6",
+    title: "Material Supply",
+    description: "Bulk cement, TMT rebars, bricks, AAC blocks, aggregates and sand",
+    imageUrl: "/images/empanelment/cat-building-materials.jpg",
+    linkUrl: "/empanelment/apply?category=material-supply",
+  },
+]);
+
+function fallbackIfEmptyArray(raw: string | null | undefined, fallbackStr: string): string {
+  if (!raw || (typeof raw === "string" && (raw.trim() === "" || raw.trim() === "[]" || raw.trim() === "null"))) {
+    return fallbackStr;
+  }
+  try {
+    const p = JSON.parse(raw);
+    if (Array.isArray(p) && p.length === 0) return fallbackStr;
+    return raw;
+  } catch {
+    return fallbackStr;
+  }
+}
+
 /**
  * Public: Get Empanelment Portal CMS Content
  * GET /api/empanelment/content
@@ -1929,11 +1987,19 @@ router.get("/content", async (_req: Request, res: Response) => {
 
     if (!content) {
       content = await prisma.empanelmentContent.create({
-        data: { id: "singleton" },
+        data: {
+          id: "singleton",
+          categoriesList: DEFAULT_EMPANELMENT_CATEGORIES_STR,
+        },
       });
     }
 
-    return res.json({ success: true, content });
+    const sanitizedContent = {
+      ...content,
+      categoriesList: fallbackIfEmptyArray(content.categoriesList, DEFAULT_EMPANELMENT_CATEGORIES_STR),
+    };
+
+    return res.json({ success: true, content: sanitizedContent });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }

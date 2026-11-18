@@ -633,13 +633,15 @@ export async function fetchEmpanelmentContent(): Promise<EmpanelmentContent> {
 }
 
 export function parseJsonField<T>(raw: string | null | undefined, fallback: T): T {
-  if (!raw || (typeof raw === "string" && raw.trim() === "")) return fallback;
+  if (!raw || (typeof raw === "string" && (raw.trim() === "" || raw.trim() === "[]" || raw.trim() === "null"))) {
+    return fallback;
+  }
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(fallback) && fallback.length > 0 && Array.isArray(parsed) && parsed.length === 0) {
       return fallback;
     }
-    return parsed as T;
+    return (parsed ?? fallback) as T;
   } catch {
     return fallback;
   }

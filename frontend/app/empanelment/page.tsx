@@ -181,7 +181,42 @@ export default function EmpanelmentPortalHomePage() {
         if (contentRes.ok) {
           const json = await contentRes.json();
           if (json.success && json.content) {
-            setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
+            const c = json.content;
+            const isInvalidJsonArray = (val: any) =>
+              !val ||
+              val === "[]" ||
+              val === "null" ||
+              (typeof val === "string" && val.trim() === "");
+
+            setContent((prev) => ({
+              ...DEFAULT_EMPANELMENT_CONTENT,
+              ...prev,
+              ...c,
+              categoriesList: isInvalidJsonArray(c.categoriesList)
+                ? DEFAULT_EMPANELMENT_CONTENT.categoriesList
+                : c.categoriesList,
+              heroPills: isInvalidJsonArray(c.heroPills)
+                ? DEFAULT_EMPANELMENT_CONTENT.heroPills
+                : c.heroPills,
+              stats: isInvalidJsonArray(c.stats)
+                ? DEFAULT_EMPANELMENT_CONTENT.stats
+                : c.stats,
+              processSteps: isInvalidJsonArray(c.processSteps)
+                ? DEFAULT_EMPANELMENT_CONTENT.processSteps
+                : c.processSteps,
+              benefitsList: isInvalidJsonArray(c.benefitsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.benefitsList
+                : c.benefitsList,
+              impactPillars: isInvalidJsonArray(c.impactPillars)
+                ? DEFAULT_EMPANELMENT_CONTENT.impactPillars
+                : c.impactPillars,
+              docsList: isInvalidJsonArray(c.docsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.docsList
+                : c.docsList,
+              faqsList: isInvalidJsonArray(c.faqsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.faqsList
+                : c.faqsList,
+            }));
           }
         }
 
@@ -199,23 +234,29 @@ export default function EmpanelmentPortalHomePage() {
   }, []);
 
   // 4 Feature pills below hero buttons
-  const heroPills: EmpanelmentHeroPill[] = parseJsonField(content.heroPills, [
+  const fallbackHeroPills: EmpanelmentHeroPill[] = [
     { id: "p1", title: "Fair & Transparent\nProcurement", iconName: "Handshake" },
     { id: "p2", title: "Local Business\nOpportunities", iconName: "Users" },
     { id: "p3", title: "Long-Term\nPartnerships", iconName: "TrendingUp" },
     { id: "p4", title: "Quality &\nCompliance", iconName: "Settings" },
-  ]);
+  ];
+  const parsedHeroPills = parseJsonField(content.heroPills, fallbackHeroPills);
+  const heroPills: EmpanelmentHeroPill[] =
+    Array.isArray(parsedHeroPills) && parsedHeroPills.length > 0 ? parsedHeroPills : fallbackHeroPills;
 
   // Floating stats counter bar
-  const stats: EmpanelmentStat[] = parseJsonField(content.stats, [
+  const fallbackStats: EmpanelmentStat[] = [
     { id: "s1", value: "200+", label: "Trusted Vendors", iconName: "Users" },
     { id: "s2", value: "150+", label: "Projects Supplied", iconName: "FileText" },
     { id: "s3", value: "15+", label: "Cities Across Rajasthan", iconName: "MapPin" },
     { id: "s4", value: "100%", label: "Transparent Process", iconName: "ShieldCheck" },
-  ]);
+  ];
+  const parsedStats = parseJsonField(content.stats, fallbackStats);
+  const stats: EmpanelmentStat[] =
+    Array.isArray(parsedStats) && parsedStats.length > 0 ? parsedStats : fallbackStats;
 
   // 6 Canonical Approved Master Categories
-  const categories: EmpanelmentCategory[] = parseJsonField(content.categoriesList, [
+  const fallbackCategories: EmpanelmentCategory[] = [
     {
       id: "c1",
       title: "Civil Construction",
@@ -258,10 +299,13 @@ export default function EmpanelmentPortalHomePage() {
       imageUrl: "/images/empanelment/cat-building-materials.jpg",
       linkUrl: "/empanelment/apply?category=material-supply",
     },
-  ]);
+  ];
+  const parsedCategories = parseJsonField(content.categoriesList, fallbackCategories);
+  const categories: EmpanelmentCategory[] =
+    Array.isArray(parsedCategories) && parsedCategories.length > 0 ? parsedCategories : fallbackCategories;
 
   // 4 Registration steps
-  const steps: EmpanelmentProcessStep[] = parseJsonField(content.processSteps, [
+  const fallbackSteps: EmpanelmentProcessStep[] = [
     {
       step: "01",
       title: "Create Profile",
@@ -286,10 +330,13 @@ export default function EmpanelmentPortalHomePage() {
       description: "Once approved, you will be listed in our vendor network and can receive opportunities.",
       iconName: "Award",
     },
-  ]);
+  ];
+  const parsedSteps = parseJsonField(content.processSteps, fallbackSteps);
+  const steps: EmpanelmentProcessStep[] =
+    Array.isArray(parsedSteps) && parsedSteps.length > 0 ? parsedSteps : fallbackSteps;
 
   // 6 Vendor benefits
-  const benefits: EmpanelmentBenefit[] = parseJsonField(content.benefitsList, [
+  const fallbackBenefits: EmpanelmentBenefit[] = [
     {
       id: "b1",
       title: "Consistent Opportunities",
@@ -326,28 +373,37 @@ export default function EmpanelmentPortalHomePage() {
       description: "Focus on quality, safety and compliance in every project.",
       iconName: "Award",
     },
-  ]);
+  ];
+  const parsedBenefits = parseJsonField(content.benefitsList, fallbackBenefits);
+  const benefits: EmpanelmentBenefit[] =
+    Array.isArray(parsedBenefits) && parsedBenefits.length > 0 ? parsedBenefits : fallbackBenefits;
 
   // 4 Impact pillars
-  const impactPillars: EmpanelmentImpactPillar[] = parseJsonField(content.impactPillars, [
+  const fallbackImpactPillars: EmpanelmentImpactPillar[] = [
     { id: "ip1", title: "Local Economic Growth", iconName: "TrendingUp" },
     { id: "ip2", title: "Sustainable Infrastructure", iconName: "Building2" },
     { id: "ip3", title: "Stronger Communities", iconName: "Users" },
     { id: "ip4", title: "A Better Rajasthan", iconName: "Landmark" },
-  ]);
+  ];
+  const parsedPillars = parseJsonField(content.impactPillars, fallbackImpactPillars);
+  const impactPillars: EmpanelmentImpactPillar[] =
+    Array.isArray(parsedPillars) && parsedPillars.length > 0 ? parsedPillars : fallbackImpactPillars;
 
   // 6 Documents required
-  const docsList: EmpanelmentDocument[] = parseJsonField(content.docsList, [
+  const fallbackDocsList: EmpanelmentDocument[] = [
     { id: "d1", title: "GST Details", description: "GST registration certificate", iconName: "FileCheck" },
     { id: "d2", title: "PAN Details", description: "PAN card of the business", iconName: "CreditCard" },
     { id: "d3", title: "Bank Details", description: "Cancelled cheque or bank statement", iconName: "Building2" },
     { id: "d4", title: "Business Profile", description: "Company profile and work experience", iconName: "Briefcase" },
     { id: "d5", title: "Relevant Certifications", description: "Quality, safety or industry-specific certificates", iconName: "Award" },
     { id: "d6", title: "Other Documents", description: "Any additional documents as per category", iconName: "FolderOpen" },
-  ]);
+  ];
+  const parsedDocs = parseJsonField(content.docsList, fallbackDocsList);
+  const docsList: EmpanelmentDocument[] =
+    Array.isArray(parsedDocs) && parsedDocs.length > 0 ? parsedDocs : fallbackDocsList;
 
   // 5 FAQs
-  const faqs: EmpanelmentFAQ[] = parseJsonField(content.faqsList, [
+  const fallbackFaqs: EmpanelmentFAQ[] = [
     {
       id: "f1",
       question: "Who can register as a vendor?",
@@ -378,7 +434,10 @@ export default function EmpanelmentPortalHomePage() {
       answer:
         "No. Vendor registration on Hindustan Projects Empanelment Portal is 100% free of charge. We never charge any processing or registration fees.",
     },
-  ]);
+  ];
+  const parsedFaqs = parseJsonField(content.faqsList, fallbackFaqs);
+  const faqs: EmpanelmentFAQ[] =
+    Array.isArray(parsedFaqs) && parsedFaqs.length > 0 ? parsedFaqs : fallbackFaqs;
 
   return (
     <div className="bg-white text-slate-900 font-sans antialiased flex flex-col selection:bg-red-100 selection:text-red-900">
