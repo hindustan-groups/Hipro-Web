@@ -145,7 +145,6 @@ export default function TendersRadarPage() {
         title="Tenders & Bidding Radar"
         description="Publish site procurement packages, review competitive vendor quotations, and evaluate lowest compliant L1/L2 bids."
         breadcrumbs={[
-          { label: "Empanelment", href: "/admin/empanelment" },
           { label: "Tenders Radar" },
         ]}
         actions={
@@ -292,11 +291,13 @@ export default function TendersRadarPage() {
                     <span>
                       Deadline:{" "}
                       <strong className="text-slate-800 font-semibold">
-                        {new Date(selectedTender.deadline).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        {selectedTender.deadline && !isNaN(new Date(selectedTender.deadline).getTime())
+                          ? new Date(selectedTender.deadline).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
+                          : "Rolling / Open Submission"}
                       </strong>
                     </span>
                   </p>

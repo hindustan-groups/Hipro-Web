@@ -143,7 +143,6 @@ export default function AdminTicketsPage() {
         title="Vendor Support Tickets"
         description="Review queries, statutory verification requests, and dispatch official procurement replies."
         breadcrumbs={[
-          { label: "Empanelment", href: "/admin/empanelment" },
           { label: "Support Tickets" },
         ]}
         actions={

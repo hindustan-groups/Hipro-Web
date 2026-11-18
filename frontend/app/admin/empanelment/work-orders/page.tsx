@@ -294,7 +294,6 @@ export default function WorkOrdersBillingPage() {
         title="Work Orders & Invoicing Suite"
         description="Issue project packages to empanelled contractors, track milestone progress, and record RTGS payouts."
         breadcrumbs={[
-          { label: "Empanelment", href: "/admin/empanelment" },
           { label: "Work Orders & Billing" },
         ]}
         actions={

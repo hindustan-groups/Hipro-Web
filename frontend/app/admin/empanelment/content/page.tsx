@@ -491,18 +491,11 @@ export default function EmpanelmentContentCmsPage() {
   return (
     <div className="space-y-4 font-sans max-w-7xl mx-auto">
       {/* ================================================================ */}
-      {/* 1. TOP COMMAND BAR (macOS Translucent Studio Bar) */}
+      {/* 1. TOP COMMAND BAR (Apple Translucent Studio Bar) */}
       {/* ================================================================ */}
-      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl border border-slate-200/70 p-3.5 sm:px-4.5 sm:py-3 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-3 sticky top-0 z-20">
+      <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-slate-200/70 p-4 sm:px-6 sm:py-4 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-4 sticky top-[75px] z-20">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            {/* macOS Traffic Lights */}
-            <div className="flex items-center gap-1.5 mr-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] border border-[#e0443e] inline-block shadow-2xs" />
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] border border-[#dea123] inline-block shadow-2xs" />
-              <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f] border border-[#1aab29] inline-block shadow-2xs" />
-            </div>
-
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 inline-flex items-center gap-1.5">
               <Sparkles className="w-3 h-3 text-amber-600" />
               <span>Portal Studio CMS</span>
@@ -533,7 +526,7 @@ export default function EmpanelmentContentCmsPage() {
             )}
           </div>
 
-          <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             Public Empanelment Portal Studio
           </h1>
           <p className="text-[11.5px] text-slate-500 mt-0.5">

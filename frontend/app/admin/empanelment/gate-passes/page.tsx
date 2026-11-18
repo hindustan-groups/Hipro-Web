@@ -88,7 +88,6 @@ export default function GatePassesSecurityLogPage() {
         title="Site Security & 24-Hour Gate Pass Registry"
         description="Live log of authorized contractor entries, workforce headcounts, vehicle numbers, and guard scanner verifications."
         breadcrumbs={[
-          { label: "Empanelment", href: "/admin/empanelment" },
           { label: "Gate Passes" },
         ]}
         actions={
