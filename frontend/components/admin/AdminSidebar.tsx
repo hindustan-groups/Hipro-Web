@@ -194,6 +194,7 @@ export const EMPANELMENT_NAV_SECTIONS: HbsNavSection[] = [
     items: [
       { href: "/admin/empanelment/applications", label: "Application Pipeline", icon: Inbox, badge: "KYC", sectionKey: "empanelment-applications" },
       { href: "/admin/empanelment/directory", label: "Verified Partners Directory", icon: Users, badge: "Tiers", sectionKey: "empanelment-directory" },
+      { href: "/admin/empanelment/categories", label: "Trade Category Studio", icon: Layers, badge: "Master", sectionKey: "empanelment-categories" },
     ],
   },
   {
