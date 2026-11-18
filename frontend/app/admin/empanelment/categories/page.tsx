@@ -43,16 +43,20 @@ export default function CategoryStudioPage() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/empanelment/categories", {
+      let res = await fetch("/api/empanelment/admin/categories", {
         credentials: "include",
         cache: "no-store",
       });
+      if (!res.ok) {
+        res = await fetch("/api/empanelment/categories", { cache: "no-store" });
+      }
       if (res.ok) {
         const json = await res.json();
-        if (json.success && json.data) {
-          setCategories(json.data);
-          if (json.data.length > 0 && !expandedCategoryId) {
-            setExpandedCategoryId(json.data[0].id);
+        const list = json.categories || json.data || [];
+        if (json.success && Array.isArray(list)) {
+          setCategories(list);
+          if (list.length > 0 && !expandedCategoryId) {
+            setExpandedCategoryId(list[0].id);
           }
         }
       }
@@ -76,7 +80,7 @@ export default function CategoryStudioPage() {
 
     try {
       const res = await fetch(
-        `/api/empanelment/categories/${targetCategory.id}/subcategories`,
+        `/api/empanelment/admin/categories/${targetCategory.id}/subcategories`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
