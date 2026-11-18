@@ -14,7 +14,7 @@ import {
   MapPin,
   Lock,
 } from "lucide-react";
-import { useVendorPortal } from "../context";
+import { useVendorPortal, vendorFetch } from "../context";
 
 export default function VendorProfilePage() {
   const { vendor, refreshVendor } = useVendorPortal();
@@ -40,13 +40,10 @@ export default function VendorProfilePage() {
     async function fetchProfile() {
       try {
         setLoading(true);
-        const token = localStorage.getItem("hipro_vendor_token");
-        const res = await fetch("/api/vendor/portal/profile", {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await vendorFetch("/api/vendor/portal/profile");
         if (res.ok) {
           const data = await res.json();
-          const app = data.application || {};
+          const app = data.application || data.data?.application || {};
           setFormData({
             contactName: app.contactName || "",
             phone: app.phone || "",
@@ -76,12 +73,10 @@ export default function VendorProfilePage() {
     setError("");
 
     try {
-      const token = localStorage.getItem("hipro_vendor_token");
-      const res = await fetch("/api/vendor/portal/profile", {
+      const res = await vendorFetch("/api/vendor/portal/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(formData),
       });

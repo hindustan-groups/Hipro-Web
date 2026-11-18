@@ -14,6 +14,7 @@ import {
   AlertCircle,
   TrendingUp,
 } from "lucide-react";
+import { vendorFetch } from "../context";
 
 export default function VendorActivityPage() {
   const [logs, setLogs] = useState<any[]>([]);
@@ -23,15 +24,13 @@ export default function VendorActivityPage() {
   useEffect(() => {
     async function loadActivity() {
       try {
-        const res = await fetch("/api/vendor/portal/activity", {
-          credentials: "include",
+        const res = await vendorFetch("/api/vendor/portal/activity", {
           cache: "no-store",
         });
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data) {
-            setLogs(json.data);
-          }
+          const activityList = json.data || json.logs || [];
+          setLogs(activityList);
         }
       } catch (err: any) {
         setError(err.message || "Failed to load audit logs");

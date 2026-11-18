@@ -36,3 +36,26 @@ export const VendorPortalContext = createContext<VendorPortalContextType>({
 });
 
 export const useVendorPortal = () => useContext(VendorPortalContext);
+
+export function getVendorToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
+}
+
+export function getVendorAuthHeaders(): Record<string, string> {
+  const token = getVendorToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function vendorFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers || {});
+  const token = getVendorToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  return fetch(input, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
+}

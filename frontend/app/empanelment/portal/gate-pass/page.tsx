@@ -18,7 +18,7 @@ import {
   Phone,
   FileText,
 } from "lucide-react";
-import { useVendorPortal } from "../context";
+import { useVendorPortal, vendorFetch } from "../context";
 
 export default function VendorGatePassPage() {
   const { vendor } = useVendorPortal();
@@ -39,15 +39,13 @@ export default function VendorGatePassPage() {
   const fetchPasses = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/vendor/portal/gate-passes", {
-        credentials: "include",
+      const res = await vendorFetch("/api/vendor/portal/gate-passes", {
         cache: "no-store",
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.success && json.data) {
-          setPasses(json.data);
-        }
+        const passList = json.data || json.passes || [];
+        setPasses(passList);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load site gate passes");
@@ -71,10 +69,9 @@ export default function VendorGatePassPage() {
     setFormError("");
 
     try {
-      const res = await fetch("/api/vendor/portal/gate-passes", {
+      const res = await vendorFetch("/api/vendor/portal/gate-passes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           siteName: projectName.trim(),
           workerCount: parseInt(workerCount, 10) || 1,

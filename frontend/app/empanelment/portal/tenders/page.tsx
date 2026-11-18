@@ -20,7 +20,7 @@ import {
   Sparkles,
   ShieldCheck,
 } from "lucide-react";
-import { useVendorPortal } from "../context";
+import { useVendorPortal, vendorFetch } from "../context";
 
 function TendersPortalContent() {
   const { vendor } = useVendorPortal();
@@ -50,22 +50,20 @@ function TendersPortalContent() {
     setError("");
     try {
       const [tendersRes, bidsRes] = await Promise.all([
-        fetch("/api/vendor/portal/tenders", { credentials: "include", cache: "no-store" }),
-        fetch("/api/vendor/portal/bids", { credentials: "include", cache: "no-store" }),
+        vendorFetch("/api/vendor/portal/tenders", { cache: "no-store" }),
+        vendorFetch("/api/vendor/portal/bids", { cache: "no-store" }),
       ]);
 
       if (tendersRes.ok) {
         const json = await tendersRes.json();
-        if (json.success && json.data) {
-          setTenders(json.data);
-        }
+        const tendersList = json.data || json.tenders || [];
+        setTenders(tendersList);
       }
 
       if (bidsRes.ok) {
         const json = await bidsRes.json();
-        if (json.success && json.data) {
-          setMyBids(json.data);
-        }
+        const bidsList = json.data || json.bids || [];
+        setMyBids(bidsList);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load tenders and bidding data");
@@ -109,10 +107,9 @@ function TendersPortalContent() {
     setBidSuccess("");
 
     try {
-      const res = await fetch(`/api/vendor/portal/tenders/${selectedTender.id}/bid`, {
+      const res = await vendorFetch(`/api/vendor/portal/tenders/${selectedTender.id}/bid`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           amount: amountNum,
           completionDays: completionDays ? parseInt(completionDays, 10) : undefined,

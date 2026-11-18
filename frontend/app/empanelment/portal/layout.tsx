@@ -20,7 +20,7 @@ import {
   User,
   AlertCircle,
 } from "lucide-react";
-import { VendorPortalContext, VendorPortalUser } from "./context";
+import { VendorPortalContext, VendorPortalUser, vendorFetch } from "./context";
 
 export default function VendorPortalLayout({
   children,
@@ -36,8 +36,7 @@ export default function VendorPortalLayout({
 
   const fetchVendorProfile = async () => {
     try {
-      const res = await fetch("/api/vendor/auth/me", {
-        credentials: "include",
+      const res = await vendorFetch("/api/vendor/auth/me", {
         cache: "no-store",
       });
 
@@ -72,12 +71,12 @@ export default function VendorPortalLayout({
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/vendor/auth/logout", {
+      await vendorFetch("/api/vendor/auth/logout", {
         method: "POST",
-        credentials: "include",
       });
       localStorage.removeItem("vendor_token");
       localStorage.removeItem("vendor_account");
+      localStorage.removeItem("hipro_vendor_token");
     } catch (_e) {}
     router.replace("/empanelment/login");
   };

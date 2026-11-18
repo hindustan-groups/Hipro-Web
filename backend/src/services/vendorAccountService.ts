@@ -464,7 +464,10 @@ export async function getSessionVendor(req: Request): Promise<{
  * Invalidate session on logout.
  */
 export async function logoutVendor(req: Request, res: Response): Promise<void> {
-  const token = req.cookies?.[VENDOR_SESSION_COOKIE];
+  let token = req.cookies?.[VENDOR_SESSION_COOKIE];
+  if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+    token = req.headers.authorization.substring(7).trim();
+  }
   if (token) {
     try {
       await (prisma as any).vendorSession.delete({ where: { token } }).catch(() => null);

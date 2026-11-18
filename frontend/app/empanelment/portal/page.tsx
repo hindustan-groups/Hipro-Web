@@ -19,7 +19,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { useVendorPortal } from "./context";
+import { useVendorPortal, vendorFetch } from "./context";
 import SmartCardPreviewModal from "@/components/admin/empanelment/SmartCardPreviewModal";
 
 export default function VendorDashboardPage() {
@@ -32,8 +32,7 @@ export default function VendorDashboardPage() {
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const res = await fetch("/api/vendor/portal/dashboard", {
-          credentials: "include",
+        const res = await vendorFetch("/api/vendor/portal/dashboard", {
           cache: "no-store",
         });
         if (!res.ok) {

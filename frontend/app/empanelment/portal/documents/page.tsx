@@ -15,7 +15,7 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
-import { useVendorPortal } from "../context";
+import { useVendorPortal, vendorFetch } from "../context";
 
 export default function DocumentVaultPage() {
   const { vendor, refreshVendor } = useVendorPortal();
@@ -38,8 +38,7 @@ export default function DocumentVaultPage() {
   const fetchDocs = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/vendor/portal/documents", {
-        credentials: "include",
+      const res = await vendorFetch("/api/vendor/portal/documents", {
         cache: "no-store",
       });
       if (res.ok) {
@@ -79,10 +78,9 @@ export default function DocumentVaultPage() {
     }
 
     try {
-      const res = await fetch("/api/vendor/portal/documents/reupload", {
+      const res = await vendorFetch("/api/vendor/portal/documents/reupload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           documents: updateDocs,
           comments: comments.trim(),
