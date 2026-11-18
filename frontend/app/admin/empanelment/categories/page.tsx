@@ -256,7 +256,7 @@ export default function CategoryStudioPage() {
 
                     {subcategories.length === 0 ? (
                       <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
-                        No subcategories registered yet. Click "Add Subcategory" to add one.
+                        No subcategories registered yet. Click &quot;Add Subcategory&quot; to add one.
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -387,3 +387,4 @@ export default function CategoryStudioPage() {
     </div>
   );
 }
+

@@ -359,7 +359,7 @@ function TendersPortalContent() {
 
           {myBids.length === 0 ? (
             <div className="p-12 text-center text-slate-400 text-xs">
-              You haven't submitted any bids yet. Explore active tenders and submit your first proposal.
+              You haven&apos;t submitted any bids yet. Explore active tenders and submit your first proposal.
             </div>
           ) : (
             <div className="divide-y divide-slate-100 overflow-x-auto">

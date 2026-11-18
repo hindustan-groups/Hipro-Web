@@ -102,3 +102,4 @@ export async function getVendorActivityLogs(applicationId: string): Promise<Acti
     return store.filter((r) => r.applicationId === applicationId);
   }
 }
+

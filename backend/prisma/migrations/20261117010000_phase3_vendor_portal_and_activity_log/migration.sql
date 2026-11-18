@@ -92,3 +92,4 @@ ALTER TABLE "VendorActivityLog" ADD CONSTRAINT "VendorActivityLog_applicationId_
 
 -- AddForeignKey
 ALTER TABLE "VendorActivityLog" ADD CONSTRAINT "VendorActivityLog_vendorAccountId_fkey" FOREIGN KEY ("vendorAccountId") REFERENCES "VendorAccount"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+

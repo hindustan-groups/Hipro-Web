@@ -150,7 +150,7 @@ export default function DocumentVaultPage() {
           </p>
           {docData?.adminRemarks && (
             <div className="p-3.5 rounded-2xl bg-white border border-purple-200/80 font-medium text-xs text-purple-950">
-              "{docData.adminRemarks}"
+              &ldquo;{docData.adminRemarks}&rdquo;
             </div>
           )}
           <button

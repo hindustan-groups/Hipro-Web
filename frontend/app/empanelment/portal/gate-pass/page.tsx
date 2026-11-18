@@ -255,7 +255,7 @@ export default function VendorGatePassPage() {
           <QrCode className="w-12 h-12 text-slate-300 mx-auto" />
           <h2 className="font-black text-sm text-slate-950">No Active 24-Hour Gate Pass</h2>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            You do not currently have an active site gate pass. If your team is mobilizing to a site today, click "New Daily Gate Pass" to issue entry credentials.
+            You do not currently have an active site gate pass. If your team is mobilizing to a site today, click &quot;New Daily Gate Pass&quot; to issue entry credentials.
           </p>
         </div>
       )}
