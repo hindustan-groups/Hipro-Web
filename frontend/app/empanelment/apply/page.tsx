@@ -58,6 +58,31 @@ export default function EmpanelmentRegistrationWizard() {
     loadCms();
   }, []);
 
+  // Pre-select trade category from URL query parameters (?category=slug)
+  useEffect(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const catParam = searchParams.get("category");
+      if (catParam) {
+        const p = catParam.toLowerCase().trim();
+        const matched = APPROVED_TRADE_CATEGORIES.find(
+          (c) =>
+            c.value.toLowerCase() === p ||
+            c.value.toLowerCase().replace(/[^a-z0-9]/g, "-") === p ||
+            (p.includes("civil") && c.value === "Civil Construction") ||
+            (p.includes("electr") && c.value === "Electrical & MEP") ||
+            (p.includes("plumb") && c.value === "Plumbing & Sanitation") ||
+            (p.includes("fab") && c.value === "Fabrication & PEB") ||
+            (p.includes("floor") && c.value === "Flooring & Finishing") ||
+            (p.includes("material") && c.value === "Material Supply")
+        );
+        if (matched) {
+          setFormData((prev) => ({ ...prev, category: matched.value }));
+        }
+      }
+    } catch (_e) {}
+  }, []);
+
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Enterprise Profile

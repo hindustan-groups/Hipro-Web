@@ -12,6 +12,7 @@ import {
   Phone,
   Mail,
   ShieldCheck,
+  Lock,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -24,9 +25,19 @@ export default function PublicTendersRadarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Package Details Modal State
   const [selectedTender, setSelectedTender] = useState<any | null>(null);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
+      if (token) {
+        setIsLoggedIn(true);
+      }
+    } catch (_e) {}
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -170,9 +181,15 @@ export default function PublicTendersRadarPage() {
                   <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
                     {tender.tenderNo || tender.tenderNumber}
                   </span>
-                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    ACTIVE PACKAGE
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      ACTIVE PACKAGE
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+                      <Lock className="w-2.5 h-2.5 text-amber-600" />
+                      <span>Portal Bidding</span>
+                    </span>
+                  </div>
                 </div>
 
                 <h3 className="font-bold text-slate-900 text-sm tracking-tight leading-snug">
@@ -212,14 +229,43 @@ export default function PublicTendersRadarPage() {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <button
-                onClick={() => handleOpenBid(tender)}
-                className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs"
-              >
-                <span>View Package & Bid Details</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              {/* Action Buttons: Gated Behind Portal Authentication */}
+              {isLoggedIn ? (
+                <Link
+                  href="/empanelment/portal/tenders"
+                  className="w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs text-center"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>View in Portal & Submit Bid</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              ) : (
+                <div className="space-y-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href={`/empanelment/login?redirect=/empanelment/portal/tenders`}
+                      className="py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs text-center"
+                    >
+                      <Lock className="w-3 h-3 text-amber-400" />
+                      <span>Login to Bid</span>
+                    </Link>
+                    <Link
+                      href="/empanelment/apply"
+                      className="py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold flex items-center justify-center gap-1 text-xs text-center transition-colors"
+                    >
+                      <span>Register</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                    </Link>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenBid(tender)}
+                    className="w-full text-center py-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  >
+                    View Public Summary & Scope &rarr;
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -288,26 +334,40 @@ export default function PublicTendersRadarPage() {
               <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 space-y-2.5 text-xs">
                 <div className="flex items-center gap-2 text-slate-900 font-bold">
                   <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
-                  <span>Authenticated Vendor Portal Bidding</span>
+                  <span>Commercial Bidding & Drawings Restricted</span>
                 </div>
                 <p className="text-[11px] text-slate-600 leading-relaxed">
-                  To ensure procurement compliance and transparent auditability, competitive bids and technical proposals must be submitted through your authenticated HiPRO Vendor Portal account.
+                  Full tender drawings, detailed BOQ schedules, and commercial quotation submission are strictly reserved for verified empanelled vendors. Please log in to your partner portal account or register your firm to participate.
                 </p>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                  <Link
-                    href={`/empanelment/login?redirect=/empanelment/portal/tenders`}
-                    className="px-4 py-2 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs text-center"
-                  >
-                    <span>Sign In to Submit Bid</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  {isLoggedIn ? (
+                    <Link
+                      href="/empanelment/portal/tenders"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs text-center"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Open in Partner Portal</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        href={`/empanelment/login?redirect=/empanelment/portal/tenders`}
+                        className="px-4 py-2 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs text-center"
+                      >
+                        <Lock className="w-3 h-3 text-amber-300" />
+                        <span>Sign In to Submit Bid</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
 
-                  <Link
-                    href="/empanelment/apply"
-                    className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-white text-slate-700 font-bold text-xs text-center"
-                  >
-                    Register as Vendor
-                  </Link>
+                      <Link
+                        href="/empanelment/apply"
+                        className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-white text-slate-700 font-bold text-xs text-center"
+                      >
+                        Register as Vendor
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
 
