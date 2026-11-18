@@ -120,15 +120,26 @@ export default function PublicTendersRadarPage() {
         />
       </div>
 
-      {/* Security Containment Banner */}
-      <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 flex items-start sm:items-center gap-3 shadow-2xs max-w-4xl mx-auto">
-        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
-        <div className="flex-1 text-xs text-amber-900 leading-relaxed">
-          <span className="font-bold">Portal Security Upgrade Notice: </span>
-          <span>
-            Self-service electronic tender bidding is temporarily suspended while contractor authentication and verification systems are being upgraded. Tender packages and BOQ specifications remain published for informational review.
-          </span>
+      {/* Active Procurement Notice Banner */}
+      <div className="bg-slate-900 text-white rounded-2xl p-4 flex items-start sm:items-center justify-between gap-4 shadow-sm max-w-4xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 font-bold">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div className="text-xs leading-relaxed">
+            <span className="font-bold text-amber-300">Empanelled Contractor Commercial Bidding: </span>
+            <span className="text-slate-300">
+              Only verified and approved partners can submit commercial tender bids. New vendors must complete onboarding registration first.
+            </span>
+          </div>
         </div>
+        <Link
+          href="/empanelment/portal/tenders"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shrink-0 transition-colors"
+        >
+          <span>Partner Bidding Radar</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
       </div>
 
       {error && (
@@ -206,7 +217,7 @@ export default function PublicTendersRadarPage() {
                 onClick={() => handleOpenBid(tender)}
                 className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs"
               >
-                <span>View Package & Bidding Notice</span>
+                <span>View Package & Bid Details</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

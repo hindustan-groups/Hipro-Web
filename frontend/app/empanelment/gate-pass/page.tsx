@@ -4,8 +4,17 @@ import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
-  AlertCircle,
-  Info,
+  QrCode,
+  ArrowRight,
+  HardHat,
+  Truck,
+  Users,
+  CheckCircle2,
+  Phone,
+  Mail,
+  ExternalLink,
+  Clock,
+  Building2,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -14,6 +23,14 @@ import {
 
 function GatePassContent() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
+      if (token) setIsLoggedIn(true);
+    } catch (_e) {}
+  }, []);
 
   useEffect(() => {
     async function fetchCms() {
@@ -31,70 +48,186 @@ function GatePassContent() {
   }, []);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 md:py-16 space-y-8 text-xs">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16 space-y-8 text-xs">
       {/* Header */}
-      <div className="text-center space-y-2">
-        <span className="text-xs font-mono font-bold uppercase tracking-widest text-rose-700 bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
-          24-HOUR SITE SECURITY CLEARANCE
+      <div className="text-center space-y-2.5 max-w-2xl mx-auto">
+        <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#dc2626] bg-red-50 px-3 py-1 rounded-full border border-red-200">
+          SITE ACCESS & SECURITY CLEARANCE
         </span>
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight font-display">
-          Daily Site Gate Pass Generator (डेली गेट पास)
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-950 tracking-tight font-display">
+          24-Hour Site Gate Pass Gateway (डेली साइट पास)
         </h1>
-        <p className="text-xs md:text-sm text-slate-500">
-          Digital security clearance portal for project sites and authorized personnel.
+        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+          Official digital gate clearance system for Hindustan Projects construction sites, authorized contractor teams, machinery operators, and security checkpoints.
         </p>
       </div>
 
-      {content.gatePassInstructions && (
-        <div className="bg-rose-50/70 border border-rose-200/80 rounded-2xl p-4 flex items-start gap-3">
-          <Info className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <p className="text-xs text-rose-900 leading-relaxed">{content.gatePassInstructions}</p>
-        </div>
-      )}
+      {/* Primary Gateway Cards (2-Column Bento) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Card 1: Empanelled Contractor Official Pass Issuance */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-5 relative overflow-hidden">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-red-50 text-[#dc2626] border border-red-200 flex items-center justify-center font-bold">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <span className="font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                AUTHORIZED PARTNERS
+              </span>
+            </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm space-y-6 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
-          <AlertCircle className="w-6 h-6" />
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                Empanelled Contractor Daily Passes
+              </h2>
+              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                Approved vendors can instantly issue verified 24-hour QR gate passes for field supervisors, labour teams, and delivery trucks directly through their partner dashboard.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5 text-[11px] text-slate-600">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>24-Hour valid printable pass with security QR code</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Headcount tracking & vehicle registration numbers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Automatic entry logging in project site register</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            {isLoggedIn ? (
+              <Link
+                href="/empanelment/portal/gate-pass"
+                className="w-full py-3 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+              >
+                <span>Generate Official Site Gate Pass ➔</span>
+              </Link>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Link
+                  href="/empanelment/login?redirect=/empanelment/portal/gate-pass"
+                  className="flex-1 py-3 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs text-center"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Partner Login to Issue Pass</span>
+                </Link>
+                <Link
+                  href="/empanelment/apply"
+                  className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors text-center"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <h2 className="text-lg font-bold text-slate-900 font-display">
-            Self-Service Gate Pass Generation Temporarily Suspended
-          </h2>
-          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-            Online self-service gate pass generation is temporarily suspended pending portal authentication and security upgrades.
-          </p>
+        {/* Card 2: Security Gate Guard QR Scanner */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-5 relative overflow-hidden">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-700 border border-violet-200 flex items-center justify-center font-bold">
+                <QrCode className="w-5 h-5" />
+              </div>
+              <span className="font-mono text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
+                SECURITY DESK
+              </span>
+            </div>
+
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                Security Guard Gate Pass Scanner
+              </h2>
+              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
+                Project site security guards and gate officers can verify incoming contractor passes, inspect validity countdowns, and check approved worker numbers in real time.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-1.5 text-[11px] text-slate-600">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                <span>Instant QR code scanning from smartphone camera</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                <span>6-character Pass Code lookup tool</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-violet-600 shrink-0" />
+                <span>Active vs Expired status detection</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <Link
+              href="/empanelment/verify-pass"
+              className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+            >
+              <QrCode className="w-3.5 h-3.5 text-rose-400" />
+              <span>Open Gate Pass Scanner Tool ↗</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Site Access & Safety Compliance Guidelines */}
+      <div className="bg-slate-50 rounded-3xl border border-slate-200 p-6 md:p-8 space-y-4">
+        <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+          <HardHat className="w-4 h-4 text-amber-600" />
+          <span>Construction Site Entry Protocols & PPE Compliance</span>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left space-y-2 text-xs">
-          <p className="font-bold text-slate-800">Site Access & Clearance Guidelines:</p>
-          <ul className="list-disc list-inside space-y-1.5 text-slate-600 text-[11px] leading-relaxed">
-            <li>
-              Online self-service gate pass generation is temporarily suspended pending portal authentication and security upgrades.
-            </li>
-            <li>
-              Contractors and vendor personnel requiring site access must contact their respective project site administration or project management team for approved site clearance procedures.
-            </li>
-            <li>
-              Verification of previously issued digital passes remains active and can be verified using the link below.
-            </li>
-          </ul>
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+            <span className="font-mono text-[10px] font-bold text-[#dc2626]">01. PASS CODE</span>
+            <h4 className="font-bold text-slate-900">Valid Digital Pass</h4>
+            <p className="text-[11px] text-slate-500">Every worker group must present an active 24-hr QR gate pass at the security booth.</p>
+          </div>
 
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/empanelment/verify-pass"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs"
-          >
-            <ShieldCheck className="w-4 h-4 text-rose-400" />
-            <span>Verify Existing Gate Pass (पास जांचें)</span>
-          </Link>
-          <Link
-            href="/empanelment"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-bold transition-colors text-xs text-center"
-          >
-            Empanelment Home
-          </Link>
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+            <span className="font-mono text-[10px] font-bold text-amber-600">02. MANDATORY PPE</span>
+            <h4 className="font-bold text-slate-900">Safety Gear Required</h4>
+            <p className="text-[11px] text-slate-500">Hard hats, reflective safety jackets, and steel-toe safety boots are strictly mandatory.</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+            <span className="font-mono text-[10px] font-bold text-violet-600">03. VEHICLE LOG</span>
+            <h4 className="font-bold text-slate-900">Machinery & Trucks</h4>
+            <p className="text-[11px] text-slate-500">Commercial vehicles must record PUC and driver credentials with the site gate register.</p>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+            <span className="font-mono text-[10px] font-bold text-emerald-600">04. ID SMART CARD</span>
+            <h4 className="font-bold text-slate-900">Contractor Verification</h4>
+            <p className="text-[11px] text-slate-500">Empanelled supervisors must carry their official HiPRO PVC Contractor Smart ID.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Central Support Desk */}
+      <div className="max-w-2xl mx-auto p-4 rounded-2xl bg-white border border-slate-200/80 text-center space-y-2 shadow-2xs">
+        <p className="text-xs text-slate-500">
+          For project site gate access inquiries or security supervisor coordination, contact:
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-slate-700">
+          {content.phone && (
+            <a href={`tel:${content.phone.replace(/\s+/g, "")}`} className="hover:text-amber-600 transition-colors">
+              📞 {content.phone}
+            </a>
+          )}
+          {content.email && (
+            <a href={`mailto:${content.email}`} className="hover:text-amber-600 transition-colors">
+              ✉️ {content.email}
+            </a>
+          )}
         </div>
       </div>
     </div>
