@@ -3,10 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Inbox,
+  Users,
+  Clock,
   Briefcase,
   QrCode,
-  Clock,
+  ArrowUpRight,
+  ShieldCheck,
+  AlertCircle,
   CheckCircle2,
 } from "lucide-react";
 
@@ -30,11 +33,11 @@ interface EmpanelmentKpiCardsProps {
 export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCardsProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-5">
-        {[1, 2, 3, 4, 5].map((i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="h-28 rounded-2xl bg-white/70 border border-slate-200/60 p-4 animate-pulse shadow-xs"
+            className="h-32 rounded-3xl bg-white/70 border border-slate-200/60 p-5 animate-pulse shadow-xs"
           />
         ))}
       </div>
@@ -51,89 +54,85 @@ export default function EmpanelmentKpiCards({ stats, loading }: EmpanelmentKpiCa
 
   const cards = [
     {
-      label: "Total Applications",
-      value: totalApps,
-      sub: "Registrations received",
-      icon: Inbox,
-      href: "/admin/empanelment/applications",
-      badge: "All KYC",
-      badgeColor: "bg-slate-100 text-slate-600 border-slate-200",
-      iconColor: "text-slate-700 bg-slate-100 border-slate-200/60",
-    },
-    {
-      label: "Pending Review",
-      value: pendingKyc,
-      sub: pendingKyc > 0 ? `${pendingKyc} need verification` : "All reviews cleared",
-      icon: Clock,
-      href: "/admin/empanelment/applications?status=PENDING",
-      badge: pendingKyc > 0 ? "Action Required" : "Cleared",
-      badgeColor: pendingKyc > 0 ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconColor: pendingKyc > 0 ? "text-amber-700 bg-amber-50 border-amber-200" : "text-emerald-700 bg-emerald-50 border-emerald-200",
-    },
-    {
       label: "Empanelled Partners",
       value: approvedPartners,
-      sub: "Verified contractors",
-      icon: CheckCircle2,
+      detail: `${totalApps} total applicants registered`,
+      icon: Users,
       href: "/admin/empanelment/directory",
       badge: "Approved",
-      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
+      badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+      accent: "text-emerald-700",
     },
     {
-      label: "Active Tenders",
+      label: "Pending KYC Review",
+      value: pendingKyc,
+      detail: pendingKyc > 0 ? "Requires compliance verification" : "All dossiers up to date",
+      icon: Clock,
+      href: "/admin/empanelment/applications?status=PENDING",
+      badge: pendingKyc > 0 ? "Action Needed" : "All Clear",
+      badgeColor: pendingKyc > 0 ? "bg-amber-500/10 text-amber-900 border-amber-500/20" : "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+      accent: pendingKyc > 0 ? "text-amber-800" : "text-emerald-700",
+      isUrgent: pendingKyc > 0,
+    },
+    {
+      label: "Active Site Tenders",
       value: activeTendersCount,
-      sub: `${s.totalBids || 0} commercial bids`,
+      detail: `${s.totalBids || 0} commercial quotes collected`,
       icon: Briefcase,
       href: "/admin/empanelment/tenders",
       badge: "Live RFQs",
-      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
-      iconColor: "text-blue-700 bg-blue-50 border-blue-200",
+      badgeColor: "bg-blue-50 text-blue-800 border-blue-200/80",
+      accent: "text-blue-700",
     },
     {
       label: "Today's Gate Passes",
       value: todayPasses,
-      sub: "24-Hr site entries",
+      detail: "24-Hr site entry authorizations",
       icon: QrCode,
       href: "/admin/empanelment/gate-passes",
-      badge: "Security",
-      badgeColor: "bg-violet-50 text-violet-700 border-violet-200",
-      iconColor: "text-violet-700 bg-violet-50 border-violet-200",
+      badge: "Site Security",
+      badgeColor: "bg-slate-100 text-slate-800 border-slate-200/80",
+      accent: "text-slate-800",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-5">
-      {cards.map((c, i) => {
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {cards.map((c) => {
         const Icon = c.icon;
         return (
           <Link
-            key={i}
+            key={c.label}
             href={c.href}
             scroll={false}
-            className="group bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.05)] hover:border-slate-300 transition-all duration-200 flex flex-col justify-between select-none relative overflow-hidden"
+            className={`group relative bg-white/80 backdrop-blur-2xl rounded-3xl p-5 border transition-all duration-200 flex flex-col justify-between ${
+              c.isUrgent
+                ? "border-amber-300/80 shadow-[0_8px_30px_rgba(245,158,11,0.06)] ring-1 ring-amber-400/20 hover:border-amber-400"
+                : "border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:shadow-md hover:border-slate-200"
+            }`}
           >
+            {/* Top row: Label + Badge + Arrow */}
             <div className="flex items-start justify-between gap-2">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider group-hover:text-slate-900 transition-colors">
-                {c.label}
-              </span>
-              <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 shadow-2xs ${c.iconColor}`}>
-                <Icon className="w-4 h-4" />
+              <span className="text-xs font-semibold text-slate-500">{c.label}</span>
+              <div className="flex items-center gap-1.5">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border ${c.badgeColor}`}>
+                  {c.badge}
+                </span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-700 transition-colors" />
               </div>
             </div>
 
-            <div className="mt-3">
-              <div className="flex items-baseline justify-between gap-1.5">
-                <span className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight font-sans">
-                  {c.value ?? 0}
-                </span>
-                <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border ${c.badgeColor} shrink-0`}>
-                  {c.badge}
-                </span>
+            {/* Middle: Big Metric */}
+            <div className="my-4">
+              <div className="text-3xl font-black tracking-tight text-slate-900 font-sans">
+                {c.value}
               </div>
-              <p className="text-[11px] text-slate-400 mt-1 truncate font-medium">
-                {c.sub}
-              </p>
+            </div>
+
+            {/* Bottom: Subtitle + Icon */}
+            <div className="pt-3 border-t border-slate-100/80 flex items-center justify-between text-xs text-slate-500">
+              <span className="truncate pr-2 font-medium text-[11px]">{c.detail}</span>
+              <Icon className={`w-4 h-4 shrink-0 ${c.accent}`} />
             </div>
           </Link>
         );
