@@ -510,6 +510,16 @@ export default function EmpanelmentContentCmsPage() {
 
             <span className="text-slate-300">•</span>
 
+            <nav className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+              <Link href="/admin/empanelment" className="hover:text-amber-800 transition-colors">
+                Empanelment
+              </Link>
+              <span className="text-slate-300">/</span>
+              <span className="text-slate-800 font-semibold">Portal Studio</span>
+            </nav>
+
+            <span className="text-slate-300">•</span>
+
             {hasUnsavedChanges ? (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-900 border border-amber-300 inline-flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />

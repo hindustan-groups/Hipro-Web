@@ -451,8 +451,8 @@ export default function AdminSidebar({ user }: { user: any }) {
 
             {/* 4. macOS Refined Footer */}
             <div className="p-2.5 border-t border-slate-200/50 bg-white/40 backdrop-blur-md shrink-0 space-y-1">
-              <a
-                href="https://empanelment.hindustanprojects.in"
+              <Link
+                href="/empanelment"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11.5px] font-medium text-amber-900 bg-amber-500/10 hover:bg-amber-500/15 rounded-lg transition-all border border-amber-500/20 shadow-2xs group"
@@ -462,7 +462,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                   <span>Public Portal</span>
                 </div>
                 <ExternalLink className="w-3 h-3 text-amber-600 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </Link>
               <button
                 onClick={async () => {
                   try {

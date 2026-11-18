@@ -1,29 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Boxes,
-  Layers,
   Plus,
   CheckCircle2,
   AlertCircle,
   ChevronDown,
   ChevronRight,
-  Edit2,
-  Save,
   X,
-  Search,
-  ArrowLeft,
-  Building2,
   HardHat,
   Zap,
   Droplets,
   Hammer,
   Paintbrush,
   Truck,
-  Sparkles,
+  RefreshCw,
 } from "lucide-react";
+import EmpanelmentAdminPageHeader from "@/components/admin/empanelment/EmpanelmentAdminPageHeader";
 
 export default function CategoryStudioPage() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -69,6 +63,7 @@ export default function CategoryStudioPage() {
 
   useEffect(() => {
     fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddSubcategory = async (e: React.FormEvent) => {
@@ -132,54 +127,43 @@ export default function CategoryStudioPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Top Header */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link
-              href="/admin/empanelment"
-              className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Empanelment Admin</span>
-            </Link>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs font-mono font-bold text-[#dc2626]">CATEGORY STUDIO</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
-            Vendor Trade & Subcategory Studio
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Manage canonical trade categories, subcategories, Hindi translations, and procurement classification.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
-            6 Canonical Categories Active
-          </span>
-        </div>
-      </div>
+    <div className="space-y-5">
+      {/* Apple-Style Page Header */}
+      <EmpanelmentAdminPageHeader
+        breadcrumbs={[{ label: "Category Studio" }]}
+        title="Trade & Category Studio"
+        description="Manage canonical contractor classifications, specialized subcategories, Hindi terms, and procurement scopes."
+        badge={`${categories.length} Master Trades`}
+      >
+        <button
+          onClick={fetchCategories}
+          disabled={loading}
+          className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/80 transition-all shadow-xs disabled:opacity-50"
+          title="Refresh Categories"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+        </button>
+      </EmpanelmentAdminPageHeader>
 
       {actionSuccess && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-medium">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-semibold">{actionSuccess}</span>
+          <span>{actionSuccess}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2 animate-in fade-in">
-          <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-medium">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Categories Grid / List */}
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-400 bg-white rounded-3xl border border-slate-200">
+          <div className="p-14 text-center text-xs text-slate-400 bg-white/70 backdrop-blur-xl rounded-3xl border border-slate-200/60">
+            <RefreshCw className="w-5 h-5 animate-spin mx-auto text-amber-600 mb-2" />
             Loading categories and subcategories...
           </div>
         ) : (
@@ -190,28 +174,28 @@ export default function CategoryStudioPage() {
             return (
               <div
                 key={cat.id}
-                className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden transition-all"
+                className="bg-white/85 backdrop-blur-xl rounded-3xl border border-slate-200/60 shadow-[0_2px_12px_rgba(15,23,42,0.02)] overflow-hidden transition-all duration-200"
               >
                 {/* Category Header Bar */}
                 <div
                   onClick={() => setExpandedCategoryId(isExpanded ? null : cat.id)}
-                  className="p-5 sm:p-6 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 transition-colors"
+                  className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-center shrink-0 shadow-2xs">
                       {getCategoryIcon(cat.slug)}
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="font-black text-sm sm:text-base text-slate-950">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="font-bold text-sm sm:text-base text-slate-900">
                           {cat.name}
                         </h2>
                         {cat.nameHindi && (
-                          <span className="text-xs text-slate-500 font-medium">
+                          <span className="text-xs text-slate-400 font-medium">
                             ({cat.nameHindi})
                           </span>
                         )}
-                        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-100 text-slate-600">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-slate-100 text-slate-600 border border-slate-200">
                           {cat.slug}
                         </span>
                       </div>
@@ -221,8 +205,8 @@ export default function CategoryStudioPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#dc2626] border border-red-200">
+                  <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                       {subcategories.length} Subcategories
                     </span>
                     <button
@@ -235,15 +219,15 @@ export default function CategoryStudioPage() {
                         setSubDesc("");
                         setSubModalError("");
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1 shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1 shadow-xs transition-colors"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add Subcategory</span>
+                      <Plus className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Add Sub</span>
                     </button>
                     {isExpanded ? (
-                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-slate-400" />
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
                     )}
                   </div>
                 </div>
@@ -251,39 +235,39 @@ export default function CategoryStudioPage() {
                 {/* Subcategories Expanded Table */}
                 {isExpanded && (
                   <div className="border-t border-slate-100 bg-slate-50/40 p-5 sm:p-6 space-y-3">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
                       <span>Subcategories under {cat.name}</span>
                       <span className="font-mono text-slate-400 text-[11px]">
-                        Order: {cat.sortOrder}
+                        Order: {cat.sortOrder ?? 0}
                       </span>
                     </div>
 
                     {subcategories.length === 0 ? (
-                      <div className="p-6 text-center text-xs text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
-                        No subcategories registered yet. Click &quot;Add Subcategory&quot; to add one.
+                      <div className="p-8 text-center text-xs text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+                        No subcategories registered yet. Click &quot;Add Sub&quot; to define specific scopes.
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {subcategories.map((sub: any) => (
                           <div
                             key={sub.id}
-                            className="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-1.5"
+                            className="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-2xs space-y-1.5"
                           >
                             <div className="flex items-start justify-between gap-1">
                               <div>
                                 <h3 className="font-bold text-xs text-slate-900">{sub.name}</h3>
                                 {sub.nameHindi && (
-                                  <p className="text-[11px] text-slate-500 font-medium">
+                                  <p className="text-[11px] text-slate-400 font-medium">
                                     {sub.nameHindi}
                                   </p>
                                 )}
                               </div>
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 text-slate-600">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 text-slate-500 border border-slate-200">
                                 {sub.slug}
                               </span>
                             </div>
                             {sub.description && (
-                              <p className="text-[11px] text-slate-500 line-clamp-2">
+                              <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                                 {sub.description}
                               </p>
                             )}
@@ -302,15 +286,15 @@ export default function CategoryStudioPage() {
       {/* Add Subcategory Modal */}
       {targetCategory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs" onClick={() => setTargetCategory(null)} />
+          <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs" onClick={() => setTargetCategory(null)} />
 
-          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-4">
+          <div className="relative z-10 w-full max-w-md bg-white rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200/80 space-y-4">
             <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
-                <span className="font-mono text-[10px] font-bold text-[#dc2626]">
+                <span className="font-mono text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
                   {targetCategory.name}
                 </span>
-                <h3 className="font-black text-slate-950 text-base">Add Subcategory</h3>
+                <h3 className="font-bold text-slate-900 text-base mt-1">Add Specialized Subcategory</h3>
               </div>
               <button
                 onClick={() => setTargetCategory(null)}
@@ -321,15 +305,15 @@ export default function CategoryStudioPage() {
             </div>
 
             {subModalError && (
-              <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <div>{subModalError}</div>
               </div>
             )}
 
-            <form onSubmit={handleAddSubcategory} className="space-y-4">
+            <form onSubmit={handleAddSubcategory} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Subcategory Name (English) *
                 </label>
                 <input
@@ -338,12 +322,12 @@ export default function CategoryStudioPage() {
                   value={subName}
                   onChange={(e) => setSubName(e.target.value)}
                   placeholder="e.g. Earthwork & Excavation"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-[#dc2626]/20 text-slate-900 bg-slate-50/50"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-amber-500 text-slate-900 bg-slate-50/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Hindi Translation (वैकल्पिक)
                 </label>
                 <input
@@ -351,35 +335,35 @@ export default function CategoryStudioPage() {
                   value={subHindi}
                   onChange={(e) => setSubHindi(e.target.value)}
                   placeholder="e.g. मिट्टी खुदाई एवं भराव"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-[#dc2626]/20 text-slate-900 bg-slate-50/50"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-amber-500 text-slate-900 bg-slate-50/50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Description / Trade Scope
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Trade Scope / Description
                 </label>
                 <textarea
                   rows={2}
                   value={subDesc}
                   onChange={(e) => setSubDesc(e.target.value)}
                   placeholder="Details of works covered under this subcategory..."
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-[#dc2626]/20 text-slate-900 bg-slate-50/50"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-amber-500 text-slate-900 bg-slate-50/50"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2.5">
+              <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setTargetCategory(null)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingSub}
-                  className="px-5 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold transition-all shadow-xs disabled:opacity-50"
                 >
                   {submittingSub ? "Saving..." : "Add Subcategory"}
                 </button>
@@ -391,4 +375,3 @@ export default function CategoryStudioPage() {
     </div>
   );
 }
-
