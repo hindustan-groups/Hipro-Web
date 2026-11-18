@@ -638,6 +638,61 @@ model AutomailSetting {
 // HINDUSTAN PROJECTS — VENDOR & CONTRACTOR EMPANELMENT PORTAL MODELS
 // ===================================================================
 
+model VendorCategory {
+  id              String               @id @default(cuid())
+  slug            String               @unique
+  name            String
+  nameHindi       String?
+  description     String?              @db.Text
+  icon            String?
+  sortOrder       Int                  @default(0)
+  isActive        Boolean              @default(true)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  subcategories   VendorSubcategory[]
+  applications    VendorApplication[]
+  tenders         EmpanelmentTender[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model VendorSubcategory {
+  id              String                         @id @default(cuid())
+  categoryId      String
+  slug            String
+  name            String
+  nameHindi       String?
+  description     String?                        @db.Text
+  sortOrder       Int                            @default(0)
+  isActive        Boolean                        @default(true)
+  createdAt       DateTime                       @default(now())
+  updatedAt       DateTime                       @updatedAt
+
+  category        VendorCategory                 @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  applications    VendorApplicationSubcategory[]
+
+  @@unique([categoryId, slug])
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([sortOrder])
+}
+
+model VendorApplicationSubcategory {
+  id              String            @id @default(cuid())
+  applicationId   String
+  subcategoryId   String
+  createdAt       DateTime          @default(now())
+
+  application     VendorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  subcategory     VendorSubcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+
+  @@unique([applicationId, subcategoryId])
+  @@index([applicationId])
+  @@index([subcategoryId])
+}
+
 model VendorApplication {
   id                    String            @id @default(cuid())
   trackingId            String            @unique // e.g. "HP-EMP-849201"
@@ -648,6 +703,7 @@ model VendorApplication {
   
   // Category & Core Competence
   category              String?           // Civil Construction, Electrical & MEP, Plumbing & Sanitation, Fabrication & PEB, Flooring & Finishing, Material Supply (Null = Pending Trade Classification)
+  categoryId            String?
   primaryRole           String?
   specialization        String?
   skillsDetails         String?           @db.Text
@@ -715,6 +771,10 @@ model VendorApplication {
   updatedAt             DateTime          @updatedAt
 
   // Relations
+  primaryCategory       VendorCategory?   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategories         VendorApplicationSubcategory[]
+  account               VendorAccount?
+  activityLogs          VendorActivityLog[]
   bids                  VendorBid[]
   gatePasses            SiteGatePass[]
   workOrders            VendorWorkOrder[]
@@ -723,10 +783,66 @@ model VendorApplication {
 
   @@index([status])
   @@index([category])
+  @@index([categoryId])
   @@index([tier])
   @@index([email])
   @@index([phone])
   @@index([city])
+}
+
+model VendorAccount {
+  id               String              @id @default(cuid())
+  applicationId    String              @unique
+  email            String              @unique
+  passwordHash     String?
+  status           String              @default("PENDING_ACTIVATION") // PENDING_ACTIVATION, ACTIVE, SUSPENDED
+  activationToken  String?             @unique
+  activationExpiry DateTime?
+  resetToken       String?             @unique
+  resetExpiry      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  application      VendorApplication   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sessions         VendorSession[]
+  activityLogs     VendorActivityLog[]
+
+  @@index([email])
+  @@index([status])
+}
+
+model VendorSession {
+  id              String         @id @default(cuid())
+  vendorAccountId String
+  token           String         @unique
+  expiresAt       DateTime
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime       @default(now())
+
+  vendorAccount   VendorAccount  @relation(fields: [vendorAccountId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([vendorAccountId])
+}
+
+model VendorActivityLog {
+  id              String             @id @default(cuid())
+  applicationId   String
+  vendorAccountId String?
+  actorType       String             // "ADMIN", "VENDOR", "SYSTEM"
+  actorId         String?
+  actorName       String
+  action          String             // e.g. "APPLICATION_SUBMITTED", "STATUS_CHANGED", "DOCS_REQUESTED", "INVITATION_SENT", "BID_SUBMITTED"
+  details         String?            @db.Text
+  createdAt       DateTime           @default(now())
+
+  application     VendorApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  vendorAccount   VendorAccount?     @relation(fields: [vendorAccountId], references: [id], onDelete: SetNull)
+
+  @@index([applicationId])
+  @@index([createdAt])
 }
 
 model EmpanelmentTender {
@@ -734,6 +850,7 @@ model EmpanelmentTender {
   tenderNo              String      @unique // e.g. "HP-TND-2026-08"
   title                 String
   category              String      // Civil, MEP, Suppliers, etc.
+  categoryId            String?
   location              String
   estimatedBudget       String
   emdAmount             String?
@@ -746,10 +863,12 @@ model EmpanelmentTender {
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 
+  primaryCategory       VendorCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   bids                  VendorBid[]
 
   @@index([status])
   @@index([category])
+  @@index([categoryId])
 }
 
 model VendorBid {

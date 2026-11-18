@@ -69,6 +69,29 @@ export default function VerifiedPartnersDirectoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tierFilter]);
 
+  const [copiedInviteVendorId, setCopiedInviteVendorId] = useState<string | null>(null);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
+
+  const handleInviteVendor = async (vendorId: string) => {
+    setInvitingId(vendorId);
+    try {
+      const res = await fetch(`/api/empanelment/admin/accounts/invite/${vendorId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (json.success) {
+        const link = json.data?.activationUrl || `${window.location.origin}/empanelment/activate?token=${json.data?.token}`;
+        navigator.clipboard.writeText(link);
+        setCopiedInviteVendorId(vendorId);
+        setTimeout(() => setCopiedInviteVendorId(null), 3000);
+      }
+    } catch (_e) {
+    } finally {
+      setInvitingId(null);
+    }
+  };
+
   const handleOpenSmartCard = (vendor: any) => {
     setSelectedVendorForCard(vendor);
     setIsCardOpen(true);
@@ -270,21 +293,38 @@ export default function VerifiedPartnersDirectoryPage() {
               </div>
 
               {/* Card Actions */}
-              <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+              <div className="pt-3 border-t border-slate-100 space-y-2">
                 <button
-                  onClick={() => handleOpenSmartCard(partner)}
-                  className="py-1.5 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300/60 font-bold text-[11px] flex items-center justify-center gap-1 transition-all"
+                  onClick={() => handleInviteVendor(partner.id)}
+                  disabled={invitingId === partner.id}
+                  className="w-full py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-2xs"
                 >
-                  <Award className="w-3 h-3 text-amber-700" />
-                  <span>PVC Card</span>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>
+                    {copiedInviteVendorId === partner.id
+                      ? "Activation Link Copied!"
+                      : invitingId === partner.id
+                      ? "Generating..."
+                      : "Invite / Copy Portal Link"}
+                  </span>
                 </button>
-                <button
-                  onClick={() => handlePrintDossier(partner)}
-                  className="py-1.5 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1 transition-all"
-                >
-                  <Printer className="w-3 h-3 text-slate-500" />
-                  <span>A4 Dossier</span>
-                </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleOpenSmartCard(partner)}
+                    className="py-1.5 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300/60 font-bold text-[11px] flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Award className="w-3 h-3 text-amber-700" />
+                    <span>PVC Card</span>
+                  </button>
+                  <button
+                    onClick={() => handlePrintDossier(partner)}
+                    className="py-1.5 px-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center justify-center gap-1 transition-all"
+                  >
+                    <Printer className="w-3 h-3 text-slate-500" />
+                    <span>A4 Dossier</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

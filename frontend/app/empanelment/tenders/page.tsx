@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Briefcase,
   Search,
@@ -10,6 +11,7 @@ import {
   Bell,
   Phone,
   Mail,
+  ShieldCheck,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -271,18 +273,31 @@ export default function PublicTendersRadarPage() {
                 </div>
               )}
 
-              {/* Professional Suspension Notice */}
-              <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-amber-900 font-bold">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Online Bidding Temporarily Suspended</span>
+              {/* Bidding Notice */}
+              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 space-y-2.5 text-xs">
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
+                  <span>Authenticated Vendor Portal Bidding</span>
                 </div>
-                <p className="text-[11px] text-amber-800 leading-relaxed">
-                  Electronic tender bidding is temporarily suspended while portal authentication and security upgrades are being implemented. Published tender packages and technical specifications remain available for informational review.
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  To ensure procurement compliance and transparent auditability, competitive bids and technical proposals must be submitted through your authenticated HiPRO Vendor Portal account.
                 </p>
-                <p className="text-[11px] text-amber-800 leading-relaxed">
-                  For technical queries or procurement clarifications regarding published tender requirements, please contact the Central Procurement Desk.
-                </p>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                  <Link
+                    href={`/empanelment/login?redirect=/empanelment/portal/tenders`}
+                    className="px-4 py-2 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs text-center"
+                  >
+                    <span>Sign In to Submit Bid</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+
+                  <Link
+                    href="/empanelment/apply"
+                    className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-white text-slate-700 font-bold text-xs text-center"
+                  >
+                    Register as Vendor
+                  </Link>
+                </div>
               </div>
 
               <div className="pt-2 flex justify-end">

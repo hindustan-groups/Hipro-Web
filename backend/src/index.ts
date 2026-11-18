@@ -33,6 +33,8 @@ import leadsRouter from "./routes/leads";
 import hbsRouter from "./routes/hbs";
 import automailRouter from "./routes/automail";
 import empanelmentRouter from "./routes/empanelment";
+import vendorAuthRouter from "./routes/vendorAuth";
+import vendorPortalRouter from "./routes/vendorPortal";
 import { securityHeaders } from "./middleware/securityHeaders";
 
 const app = express();
@@ -99,6 +101,8 @@ app.use("/api/leads", leadsRouter);
 app.use("/api/hbs", hbsRouter);
 app.use("/api/automail", automailRouter);
 app.use("/api/empanelment", empanelmentRouter);
+app.use("/api/vendor/auth", vendorAuthRouter);
+app.use("/api/vendor/portal", vendorPortalRouter);
 
 // Health check endpoints (for Render/Railway & Keep-Alive pings)
 app.get("/health", (req, res) => {

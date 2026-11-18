@@ -225,6 +225,26 @@ function TrackingContent() {
             <p className="text-xs font-semibold text-slate-900">{result.currentStage || result.status}</p>
           </div>
 
+          {/* When DOCS_REQUESTED: Action Prompt */}
+          {result.status === "DOCS_REQUESTED" && (
+            <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-900 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-xs">
+                <AlertCircle className="w-4 h-4 text-purple-600" />
+                <span>Action Required: Document Revision Requested</span>
+              </div>
+              <p className="text-[11px] text-purple-800 leading-relaxed">
+                The verification committee has requested updated documents or clarifications for your empanelment. Please sign in to the Vendor Portal to review remarks and submit revised files.
+              </p>
+              <Link
+                href="/empanelment/login?redirect=/empanelment/portal/documents"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-700 text-white font-bold text-xs hover:bg-purple-800 transition-colors"
+              >
+                <span>Log In to Document Vault</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
+
           {/* When APPROVED: Show PVC Smart Card Action & Gate Pass Launch */}
           {result.status === "APPROVED" && (
             <div className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 text-white space-y-4 shadow-xl">
@@ -239,6 +259,14 @@ function TrackingContent() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1 w-full">
+                <Link
+                  href="/empanelment/login"
+                  className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Log in to Vendor Portal</span>
+                </Link>
+
                 <button
                   onClick={() => setIsSmartCardOpen(true)}
                   className="px-4 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
@@ -253,13 +281,6 @@ function TrackingContent() {
                 >
                   <QrCode className="w-3.5 h-3.5 text-amber-300" />
                   <span>Generate Daily Site Gate Pass</span>
-                </Link>
-
-                <Link
-                  href="/empanelment/tenders"
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <span>Participate in Active Tenders ↗</span>
                 </Link>
               </div>
             </div>

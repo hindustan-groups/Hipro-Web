@@ -416,12 +416,19 @@ export default function EmpanelmentPortalHomePage() {
               </Link>
 
               <Link
-                href="/empanelment/track"
+                href="/empanelment/login"
                 className="inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl border border-slate-300 transition-all shadow-2xs group w-full sm:w-auto text-center"
               >
-                <User className="w-4 h-4 text-slate-700 shrink-0" />
-                <span>{content.heroLoginBtnText || "Vendor Login"}</span>
+                <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
+                <span>{content.heroLoginBtnText || "Vendor Portal Login"}</span>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform shrink-0" />
+              </Link>
+            </div>
+
+            <div className="text-xs text-slate-500 flex items-center gap-2 pt-0.5">
+              <span>Applied recently?</span>
+              <Link href="/empanelment/track" className="font-bold text-slate-800 hover:text-[#dc2626] underline">
+                Track Application & Smart ID Status &rarr;
               </Link>
             </div>
 
