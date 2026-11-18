@@ -112,40 +112,46 @@ function renderIcon(iconName: string, className = "w-6 h-6") {
   }
 }
 
-// Category floating icon selector matching the 6 canonical categories
+// Category floating icon selector matching all portal and admin categories
 function getCategoryIcon(title: string) {
-  const t = title.toLowerCase();
+  const t = (title || "").toLowerCase();
   const iconClass = "w-5 h-5 text-[#dc2626] group-hover:text-white transition-colors";
   if (t.includes("material")) return <Boxes className={iconClass} />;
-  if (t.includes("civil")) return <Building2 className={iconClass} />;
+  if (t.includes("civil") || t.includes("structur")) return <Building2 className={iconClass} />;
+  if (t.includes("machin") || t.includes("equipment")) return <Wrench className={iconClass} />;
   if (t.includes("electr") || t.includes("mep")) return <Zap className={iconClass} />;
   if (t.includes("plumb") || t.includes("sanit")) return <Wrench className={iconClass} />;
   if (t.includes("fab") || t.includes("peb")) return <Layers className={iconClass} />;
-  if (t.includes("floor") || t.includes("finish")) return <Paintbrush className={iconClass} />;
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return <Paintbrush className={iconClass} />;
+  if (t.includes("logistic") || t.includes("transport")) return <Truck className={iconClass} />;
   return <Layers className={iconClass} />;
 }
 
-// Category tags providing genuine construction context matching approved subcategories
+// Category tags providing genuine construction context matching approved subcategories & CMS
 function getCategoryTags(title: string): string[] {
-  const t = title.toLowerCase();
-  if (t.includes("material")) return ["OPC/PPC Cement", "TMT Rebars", "Bricks & AAC", "Aggregates & Sand"];
-  if (t.includes("civil")) return ["RCC Foundations", "Brickwork & Masonry", "Plastering & Curing", "Earthworks"];
+  const t = (title || "").toLowerCase();
+  if (t.includes("material") || t.includes("building material")) return ["Cement & TMT", "Bricks & AAC", "Aggregates & Sand", "Bulk Supply"];
+  if (t.includes("civil") || t.includes("structural")) return ["RCC Works", "PEB Sheds", "Fabrication", "Industrial Paving"];
+  if (t.includes("machin") || t.includes("equipment")) return ["Excavators (JCB)", "Transit Mixers", "Tower Cranes", "Piling Rigs"];
   if (t.includes("electr") || t.includes("mep")) return ["HT/LT Substation", "Conduit Wiring", "Transformers", "Fire Alarms"];
   if (t.includes("plumb") || t.includes("sanit")) return ["CPVC/PPR Piping", "Drainage & Sewerage", "Sanitary Fixtures", "Waterproofing"];
   if (t.includes("fab") || t.includes("peb")) return ["PEB Structural Sheds", "MS/SS Railings", "Truss Fabrication", "Roofing Sheets"];
-  if (t.includes("floor") || t.includes("finish")) return ["Tiles & Granite", "Epoxy Flooring", "Wall Painting", "False Ceilings"];
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return ["Tiles & Granite", "Epoxy Flooring", "Wall Painting", "False Ceilings"];
+  if (t.includes("logistic") || t.includes("transport")) return ["Dumper Fleet", "Bulk Haulage", "Heavy Flatbeds", "Site Logistics"];
   return ["Contract Supply", "Material Procurement", "Statutory Verified"];
 }
 
 // Category demand indicator badge
 function getCategoryBadge(title: string): string {
-  const t = title.toLowerCase();
-  if (t.includes("material")) return "High Procurement Demand";
-  if (t.includes("civil")) return "Active Site Contracts";
+  const t = (title || "").toLowerCase();
+  if (t.includes("material") || t.includes("building material")) return "High Procurement Demand";
+  if (t.includes("civil") || t.includes("structural")) return "Active Site Contracts";
+  if (t.includes("machin") || t.includes("equipment")) return "Plant & Machinery RFQ";
   if (t.includes("electr") || t.includes("mep")) return "MEP Packages Open";
   if (t.includes("plumb") || t.includes("sanit")) return "Plumbing RFQs Live";
   if (t.includes("fab") || t.includes("peb")) return "Structural PEB Open";
-  if (t.includes("floor") || t.includes("finish")) return "Finishing Works Open";
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return "Finishing Works Open";
+  if (t.includes("logistic") || t.includes("transport")) return "Fleet Registration Open";
   return "Empanelment Open";
 }
 
