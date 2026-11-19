@@ -19,11 +19,36 @@ import CTASection from "@/components/CTASection";
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Why Us | Engineering Discipline & Execution Reliability",
+  title: "Why Choose Us — Engineering Discipline & Construction Reliability",
   description:
     "Learn why clients choose Hindustan Projects (HiPRO) for integrated architectural planning, precision land surveying, turnkey civil construction, and project management in Bhilwara and Rajasthan.",
   alternates: {
     canonical: "/why-us",
+  },
+  openGraph: {
+    title: "Why Choose HiPRO | Engineering Discipline & Construction Reliability",
+    description:
+      "Learn why clients choose Hindustan Projects (HiPRO) for integrated architectural planning, precision land surveying, turnkey civil construction, and project management in Bhilwara and Rajasthan.",
+    url: "https://www.hindustanprojects.in/why-us",
+    siteName: "Hindustan Projects (HiPRO)",
+    locale: "en_IN",
+    type: "website",
+    images: [
+      {
+        url: "/og-banner.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Why Choose Hindustan Projects (HiPRO) in Bhilwara",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Why Choose HiPRO | Engineering Discipline & Construction Reliability",
+    description:
+      "Learn why clients choose Hindustan Projects (HiPRO) for integrated architectural planning, precision land surveying, turnkey civil construction, and project management in Bhilwara and Rajasthan.",
+    images: ["/og-banner.jpg"],
   },
 };
 
