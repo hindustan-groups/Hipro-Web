@@ -227,13 +227,12 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
     },
     publisher: {
       "@type": "Organization",
-      name: "Hind Build",
-      url: isSubdomain
-        ? "https://hindbuilding.hindustanprojects.in"
-        : "https://www.hindustanprojects.in/hbs",
+      name: "Hind Building Solutions",
+      alternateName: "Hind Build",
+      url: getHbsCanonicalUrl(""),
       logo: {
         "@type": "ImageObject",
-        url: content.logoPrimary || `${isSubdomain ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in"}/hbs-logo.jpg`,
+        url: content.logoPrimary || "https://hindbuilding.hindustanprojects.in/hbs-logo.jpg",
       },
     },
     mainEntityOfPage: {
@@ -250,17 +249,13 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in"
-          : "https://www.hindustanprojects.in/hbs",
+        item: getHbsCanonicalUrl(""),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Projects",
-        item: isSubdomain
-          ? "https://hindbuilding.hindustanprojects.in/projects"
-          : "https://www.hindustanprojects.in/hbs/projects",
+        item: getHbsCanonicalUrl("projects"),
       },
       {
         "@type": "ListItem",
@@ -812,7 +807,7 @@ export default async function HbsProjectDetailPage({ params }: ProjectPageProps)
                     className="w-full inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 text-xs uppercase tracking-wider transition-all duration-200 border border-white/20 min-h-[44px] rounded-xl active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-red-400" />
-                    <span>Call: {content.phone || "+91 94625 77757"}</span>
+                    <span>Call: {content.phone || "+91 94628 77757"}</span>
                   </a>
                 </div>
 

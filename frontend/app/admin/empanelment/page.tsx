@@ -5,27 +5,24 @@ import Link from "next/link";
 import {
   Inbox,
   Briefcase,
-  ShieldCheck,
-  Users,
-  ExternalLink,
   Plus,
   RefreshCw,
-  Search,
   ChevronRight,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
   Eye,
   Award,
-  Mail,
+  AlertCircle,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  Layers,
+  QrCode,
+  FileText,
+  Sparkles,
+  ArrowRight,
   MapPin,
   Calendar,
-  Building2,
-  QrCode,
-  ArrowRight,
-  FileText,
-  Filter,
 } from "lucide-react";
+import EmpanelmentAdminPageHeader from "@/components/admin/empanelment/EmpanelmentAdminPageHeader";
 import EmpanelmentKpiCards from "@/components/admin/empanelment/EmpanelmentKpiCards";
 import ApplicationReviewDrawer, {
   VendorApplicationDetail,
@@ -38,10 +35,6 @@ export default function EmpanelmentAdminDashboard() {
   const [activeTenders, setActiveTenders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Filters & Search
-  const [pipelineFilter, setPipelineFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Modals / Drawers
   const [selectedApplication, setSelectedApplication] = useState<VendorApplicationDetail | null>(null);
@@ -61,9 +54,7 @@ export default function EmpanelmentAdminDashboard() {
             return null;
           }
           const ct = res.headers.get("content-type") || "";
-          if (!ct.includes("application/json")) {
-            return null;
-          }
+          if (!ct.includes("application/json")) return null;
           if (!res.ok) return null;
           return await res.json();
         } catch {
@@ -103,546 +94,268 @@ export default function EmpanelmentAdminDashboard() {
     fetchDashboardData();
   };
 
-  // Filtered applications
-  const filteredApplications = recentApplications.filter((app) => {
-    if (pipelineFilter === "PENDING") {
-      const isPending = [
-        "SUBMITTED",
-        "UNDER_VERIFICATION",
-        "TECHNICAL_AUDIT",
-        "FINANCIAL_REVIEW",
-        "DOCS_REQUESTED",
-      ].includes(app.status);
-      if (!isPending) return false;
-    } else if (pipelineFilter === "APPROVED" && app.status !== "APPROVED") {
-      return false;
-    } else if (pipelineFilter === "REJECTED" && app.status !== "REJECTED") {
-      return false;
-    }
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matchName = app.companyName?.toLowerCase().includes(q);
-      const matchOwner =
-        app.contactName?.toLowerCase().includes(q) || app.tradeName?.toLowerCase().includes(q);
-      const matchPhone = app.phone?.toLowerCase().includes(q);
-      const matchTracking = app.trackingId?.toLowerCase().includes(q);
-      const matchCat = app.category?.toLowerCase().includes(q);
-      if (!matchName && !matchOwner && !matchPhone && !matchTracking && !matchCat) return false;
-    }
-    return true;
-  });
-
-  const getInitials = (name?: string) => {
-    if (!name) return "VN";
-    const parts = name.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  };
-
-  const renderTierBadge = (tier?: string) => {
-    switch (tier) {
-      case "CLASS_A":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-900 border border-amber-300 shadow-2xs">
-            <Award className="w-3 h-3 text-amber-700" />
-            Class A
-          </span>
-        );
-      case "CLASS_B":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-800 border border-amber-200/70">
-            Class B
-          </span>
-        );
-      case "CLASS_C":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/80">
-            Class C
-          </span>
-        );
-      case "CLASS_D":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200/60">
-            Class D
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-slate-400 bg-slate-50/60 border border-slate-200/60">
-            Unassigned
-          </span>
-        );
-    }
-  };
-
-  const renderStatusBadge = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-800 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Approved
-          </span>
-        );
-      case "REJECTED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-rose-500/10 text-rose-800 border border-rose-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            Rejected
-          </span>
-        );
-      case "DOCS_REQUESTED":
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-800 border border-amber-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Docs Pending
-          </span>
-        );
-      default:
-        return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-800 border border-amber-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            {status.replace(/_/g, " ")}
-          </span>
-        );
-    }
-  };
-
-  const pendingCount = recentApplications.filter((a) =>
+  // Pending review applications (highest priority for the admin)
+  const pendingApps = recentApplications.filter((a) =>
     ["SUBMITTED", "UNDER_VERIFICATION", "TECHNICAL_AUDIT", "FINANCIAL_REVIEW", "DOCS_REQUESTED"].includes(a.status)
-  ).length;
+  );
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto">
-      {/* Sub-Header Operational Toolbar (macOS Style) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-        <div>
+    <div className="space-y-6">
+      {/* Clean Apple Page Header */}
+      <EmpanelmentAdminPageHeader
+        title="Vendor Empanelment Overview"
+        description="Unified operations center for contractor onboarding, KYC compliance verification, active tenders, and daily site gate passes."
+        badge="Live Operations"
+        actions={
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
-              <span>Operations Control Desk</span>
-            </h2>
-            <span className="inline-flex items-center gap-1.5 text-[9.5px] font-mono font-semibold tracking-wider text-slate-600 bg-slate-100/90 border border-slate-200/80 px-2.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Live Operations
-            </span>
+            <button
+              onClick={() => fetchDashboardData()}
+              disabled={loading}
+              className="p-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/80 transition-all shadow-xs disabled:opacity-50"
+              title="Refresh All Metrics"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amber-600" : ""}`} />
+            </button>
+
+            <button
+              onClick={() => setIsTenderModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-2 transition-all shadow-xs active:scale-[0.99]"
+            >
+              <Plus className="w-4 h-4 text-amber-400" />
+              <span>Post Tender</span>
+            </button>
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Real-time pipeline of incoming contractor KYC registrations, verified partners, and tenders.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => fetchDashboardData()}
-            className="p-1.5 rounded-full bg-white/80 hover:bg-slate-100 text-slate-600 border border-slate-200/80 transition-all shadow-2xs"
-            title="Refresh All Metrics"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          </button>
-
-          <button
-            onClick={() => setIsTenderModalOpen(true)}
-            className="px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5 text-amber-400" />
-            <span>Post New Tender</span>
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {error && (
-        <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-medium">
+        <div className="p-4 rounded-2xl bg-rose-50/80 border border-rose-200/80 text-rose-800 text-xs flex items-center gap-2.5 font-medium">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* KPI Cards Row with Interactive Drilldowns */}
+      {/* Bento KPI Metric Cards */}
       <EmpanelmentKpiCards stats={stats} loading={loading} />
 
-      {/* Main Section: KYC Applications Verification Queue (macOS Bento Card) */}
-      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl border border-slate-200/70 shadow-[0_2px_16px_rgba(15,23,42,0.02)] overflow-hidden">
-        {/* Table Toolbar */}
-        <div className="p-3 sm:px-4 sm:py-3 border-b border-slate-200/60 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/50 backdrop-blur-md">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1.5">
-              <div className="w-6 h-6 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-700">
-                <Inbox className="w-3.5 h-3.5" />
+      {/* Main 2-Column Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column (7 Cols): Pending KYC Queue */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-800 flex items-center justify-center font-bold">
+                  <Inbox className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 leading-tight">
+                    KYC Verification Queue
+                  </h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Contractors awaiting statutory audit and empanelment approval
+                  </p>
+                </div>
               </div>
-              <h3 className="text-xs font-bold text-slate-900">
-                Applications Queue
-              </h3>
-              <span className="text-[10px] font-mono font-bold bg-white text-slate-700 border border-slate-200 px-1.5 py-0.2 rounded-full">
-                {recentApplications.length}
+
+              <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/20">
+                {pendingApps.length} Pending
               </span>
             </div>
 
-            {/* Apple Segmented Control Filter Tabs */}
-            <div className="flex items-center gap-0.5 p-0.5 bg-slate-200/60 rounded-full text-[11px] font-medium">
-              <button
-                onClick={() => setPipelineFilter("ALL")}
-                className={`px-2.5 py-0.5 rounded-full transition-all ${
-                  pipelineFilter === "ALL"
-                    ? "bg-white text-slate-900 font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                All ({recentApplications.length})
-              </button>
-              <button
-                onClick={() => setPipelineFilter("PENDING")}
-                className={`px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1 ${
-                  pipelineFilter === "PENDING"
-                    ? "bg-white text-slate-900 font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <span>Pending Review</span>
-                {pendingCount > 0 && (
-                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
-                    {pendingCount}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setPipelineFilter("APPROVED")}
-                className={`px-2.5 py-0.5 rounded-full transition-all ${
-                  pipelineFilter === "APPROVED"
-                    ? "bg-white text-slate-900 font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Approved
-              </button>
-              <button
-                onClick={() => setPipelineFilter("REJECTED")}
-                className={`px-2.5 py-0.5 rounded-full transition-all ${
-                  pipelineFilter === "REJECTED"
-                    ? "bg-white text-slate-900 font-bold shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                Rejected
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search firm, phone, tracking ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-7 pr-3 py-1 bg-white/90 border border-slate-200/80 rounded-full text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 w-48 sm:w-56 transition-all"
-              />
-            </div>
-
-            <Link
-              href="/admin/empanelment/applications"
-              className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-0.5 shrink-0 px-2 py-1 rounded-full hover:bg-slate-100 transition-colors"
-            >
-              <span>Pipeline</span>
-              <ChevronRight className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Table Content */}
-        {filteredApplications.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-500 space-y-2">
-            <Inbox className="w-8 h-8 text-slate-300 mx-auto" />
-            <p className="font-bold text-slate-700">
-              {loading ? "Loading incoming applications..." : "No matching applications found."}
-            </p>
-            <p className="text-[11px] text-slate-400">
-              Try adjusting your search query or switching filters.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/50 border-b border-slate-200/60 text-[9.5px] font-bold text-slate-400 uppercase tracking-wider">
-                <tr>
-                  <th className="px-3.5 py-2.5 font-semibold">Vendor / Enterprise</th>
-                  <th className="px-3 py-2.5 font-semibold">Category & Scope</th>
-                  <th className="px-3 py-2.5 font-semibold">Capacity Tier</th>
-                  <th className="px-3 py-2.5 font-semibold">Tracking ID</th>
-                  <th className="px-3 py-2.5 font-semibold">Applied Date</th>
-                  <th className="px-3 py-2.5 font-semibold">Status</th>
-                  <th className="px-3.5 py-2.5 text-right font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredApplications.map((app) => (
-                  <tr
-                    key={app.id}
-                    className="hover:bg-slate-50/70 transition-colors group cursor-pointer"
-                    onClick={() => handleOpenReview(app)}
-                  >
-                    {/* Enterprise & Owner */}
-                    <td className="px-3.5 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200/80 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0">
-                          {getInitials(app.companyName)}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-900 group-hover:text-amber-800 transition-colors truncate">
-                            {app.companyName}
-                          </p>
-                          <p className="text-[10.5px] text-slate-400 font-medium truncate flex items-center gap-1.5 mt-0.5">
-                            <span>{app.contactName}</span>
-                            <span>•</span>
-                            <span>{app.phone}</span>
-                            {app.gstin && (
-                              <span className="text-[9.5px] font-mono font-semibold text-slate-600 bg-slate-100/90 px-1.5 py-0.2 rounded border border-slate-200/80">
-                                GSTIN ✓
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Category */}
-                    <td className="px-3 py-3">
-                      <span className="font-medium text-slate-800 block truncate">
-                        {app.category}
-                      </span>
-                      <span className="text-[10.5px] text-slate-400 truncate block mt-0.5">
-                        {app.tradeName || "Contractor / Vendor"}
-                      </span>
-                    </td>
-
-                    {/* Tier */}
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {renderTierBadge(app.tier)}
-                    </td>
-
-                    {/* Tracking ID */}
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span className="font-mono text-[10.5px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80">
-                        {app.trackingId}
-                      </span>
-                    </td>
-
-                    {/* Applied Date */}
-                    <td className="px-3 py-3 whitespace-nowrap text-slate-400 font-medium text-[10.5px]">
-                      {app.createdAt && !isNaN(new Date(app.createdAt).getTime())
-                        ? new Date(app.createdAt).toLocaleDateString()
-                        : "Recent"}
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {renderStatusBadge(app.status)}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-3.5 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        {app.email && (
-                          <Link
-                            href={`/admin/automail/compose?to=${encodeURIComponent(app.email)}&name=${encodeURIComponent(app.companyName)}&brand=empanelment&template=empanelment_kyc_approval`}
-                            className="p-1.5 rounded-full text-slate-400 hover:text-amber-700 hover:bg-amber-50 transition-colors"
-                            title="Send AutoMail Notice"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                          </Link>
-                        )}
-
-                        <button
-                          onClick={() => handleOpenReview(app)}
-                          className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 font-semibold transition-colors text-[10.5px] inline-flex items-center gap-1 shadow-2xs"
-                        >
-                          <Eye className="w-3 h-3" />
-                          <span>Review KYC</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Lower Section: Active Tenders & Capacity Standards (macOS Bento Widgets) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column (7 cols): Active Commercial Tenders */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-4 shadow-[0_2px_12px_rgba(15,23,42,0.02)] space-y-3">
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700">
-                  <Briefcase className="w-3.5 h-3.5" />
-                </div>
-                <h3 className="font-bold text-slate-900 text-xs">
-                  Active Commercial Tenders
-                </h3>
-                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.2 rounded-full">
-                  {activeTenders.length}
-                </span>
+            {loading ? (
+              <div className="p-12 text-center text-slate-400 text-xs">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-500" />
+                Checking contractor pipeline...
               </div>
-              <Link
-                href="/admin/empanelment/tenders"
-                className="text-xs font-semibold text-amber-700 hover:text-amber-800"
-              >
-                Manage All →
-              </Link>
-            </div>
-
-            {activeTenders.length === 0 ? (
-              <div className="text-center py-6 text-slate-400 text-xs space-y-1.5">
-                <Briefcase className="w-6 h-6 text-slate-300 mx-auto" />
-                <p className="font-semibold text-slate-600">No active tender notices right now.</p>
-                <p className="text-[10.5px] text-slate-400">Click below to post a new contractor work package.</p>
+            ) : pendingApps.length === 0 ? (
+              <div className="py-12 px-6 text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <p className="font-bold text-slate-800 text-sm">All KYC reviews up to date</p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  No pending vendor dossiers requiring verification. New registrations will appear here in real time.
+                </p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {activeTenders.slice(0, 3).map((tender) => (
+              <div className="divide-y divide-slate-100">
+                {pendingApps.slice(0, 5).map((app) => (
                   <div
-                    key={tender.id}
-                    className="p-3 rounded-xl bg-slate-50/60 border border-slate-200/70 hover:border-slate-300 hover:bg-slate-50 transition-all space-y-1.5"
+                    key={app.id}
+                    className="py-3.5 flex items-center justify-between gap-3 group hover:bg-slate-50/50 -mx-2 px-2 rounded-2xl transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                        {app.companyName.slice(0, 2).toUpperCase()}
+                      </div>
                       <div className="min-w-0">
-                        <span className="font-mono text-[9.5px] font-bold text-slate-700 bg-white border border-slate-200 px-1.5 py-0.2 rounded">
-                          {tender.tenderNo}
-                        </span>
-                        <p className="font-semibold text-slate-900 text-xs mt-0.5 line-clamp-1">
-                          {tender.title}
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-slate-900 text-xs truncate">
+                            {app.companyName}
+                          </h4>
+                          <span className="font-mono text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 border border-slate-200">
+                            {app.trackingId}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                          {app.contactName} • {app.category || "General Trade"} • {app.city || "Rajasthan"}
                         </p>
                       </div>
-                      <span className="font-mono text-[9.5px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full shrink-0">
-                        {tender.bidsCount || 0} Bids
-                      </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-1.5 border-t border-slate-200/50">
-                      <span className="truncate max-w-[150px] font-medium text-slate-600">{tender.category}</span>
-                      <span className="font-bold text-slate-900">{tender.estimatedBudget || "TBD"}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-slate-400" />
-                        <span className="truncate max-w-[140px]">{tender.location}</span>
-                      </span>
-                      <span className="flex items-center gap-1 font-mono">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        <span>Due {new Date(tender.dueDate).toLocaleDateString()}</span>
-                      </span>
-                    </div>
+                    <button
+                      onClick={() => handleOpenReview(app)}
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shrink-0 flex items-center gap-1 shadow-xs transition-all active:scale-[0.98]"
+                    >
+                      <Eye className="w-3 h-3 text-amber-400" />
+                      <span>Review</span>
+                    </button>
                   </div>
                 ))}
               </div>
             )}
 
-            <button
-              onClick={() => setIsTenderModalOpen(true)}
-              className="w-full py-2 rounded-xl border border-dashed border-slate-300 hover:border-amber-500 bg-slate-50/40 hover:bg-amber-50/30 text-slate-600 hover:text-amber-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Post New Tender Notice</span>
-            </button>
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">
+                Showing top urgent items
+              </span>
+              <Link
+                href="/admin/empanelment/applications"
+                className="text-xs font-semibold text-amber-800 hover:text-amber-900 flex items-center gap-1 group"
+              >
+                <span>Open Full Applications Pipeline</span>
+                <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
           </div>
         </div>
 
-        {/* Right Column (5 cols): Standards & Quick Navigation */}
+        {/* Right Column (5 Cols): Active Tenders & Quick Modules */}
         <div className="lg:col-span-5 space-y-4">
-          {/* Capacity Tier Classification Standards */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-4 shadow-[0_2px_12px_rgba(15,23,42,0.02)] space-y-2.5 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700">
-                  <Award className="w-3.5 h-3.5" />
+          {/* Active Tenders Card */}
+          <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-700 flex items-center justify-center font-bold">
+                  <Briefcase className="w-4 h-4" />
                 </div>
-                <h3 className="font-bold text-slate-900 text-xs">
-                  Capacity Standards
-                </h3>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                    Active Site Tenders
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Commercial packages accepting contractor bids
+                  </p>
+                </div>
               </div>
-              <span className="text-[9.5px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 font-semibold">
-                CPWD / HiPRO
-              </span>
+
+              <Link
+                href="/admin/empanelment/tenders"
+                className="text-xs font-semibold text-slate-600 hover:text-slate-900"
+              >
+                View Radar →
+              </Link>
             </div>
 
-            <p className="text-slate-500 text-[10.5px] leading-relaxed">
-              Assigned during KYC evaluation based on past turnover and track record:
-            </p>
+            {loading ? (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                Loading live tenders...
+              </div>
+            ) : activeTenders.length === 0 ? (
+              <div className="py-8 text-center space-y-1 text-slate-400 text-xs">
+                <p className="font-semibold text-slate-700">No active tender notices right now</p>
+                <p className="text-[11px]">Click &quot;Post Tender&quot; to publish a procurement package.</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {activeTenders.slice(0, 3).map((tender) => (
+                  <Link
+                    key={tender.id}
+                    href="/admin/empanelment/tenders"
+                    className="block p-3.5 rounded-2xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/60 transition-all space-y-1.5 group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="font-mono text-[9px] font-bold text-amber-900 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-200/60">
+                          {tender.tenderNumber}
+                        </span>
+                        <h4 className="font-bold text-slate-900 text-xs mt-1 truncate group-hover:text-amber-800 transition-colors">
+                          {tender.title}
+                        </h4>
+                      </div>
+                      <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200/80 shadow-2xs shrink-0">
+                        {tender.bidsCount || 0} quotes
+                      </span>
+                    </div>
 
-            <div className="space-y-1 pt-0.5 text-xs">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-amber-500/10 border border-amber-200/70">
-                <span className="font-bold text-amber-900 text-[10.5px]">CLASS A</span>
-                <span className="text-slate-700 font-medium text-[10.5px]">Turnkey &gt; ₹2 Crore</span>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                      <span>{tender.category}</span>
+                      <span className="font-semibold text-slate-800">{tender.estimatedBudget || "—"}</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-amber-500/5 border border-amber-200/50">
-                <span className="font-bold text-amber-800 text-[10.5px]">CLASS B</span>
-                <span className="text-slate-700 font-medium text-[10.5px]">Core Civil ₹50L – ₹2 Cr</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/80 border border-slate-200/80">
-                <span className="font-bold text-slate-800 text-[10.5px]">CLASS C</span>
-                <span className="text-slate-600 font-medium text-[10.5px]">Specialized ₹10L – ₹50L</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50/80 border border-slate-200/60">
-                <span className="font-bold text-slate-600 text-[10.5px]">CLASS D</span>
-                <span className="text-slate-500 font-medium text-[10.5px]">Local Supplies &lt; ₹10L</span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Quick Hub Modules Navigation */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-3.5 shadow-[0_2px_12px_rgba(15,23,42,0.02)] space-y-2">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Procurement Directorate Modules
-            </h4>
+          {/* Quick Operational Shortcuts */}
+          <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+              Empanelment Modules
+            </h3>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Link
-                href="/admin/empanelment/gate-passes"
-                className="p-2 rounded-xl bg-slate-50/60 hover:bg-slate-100/80 border border-slate-200/60 hover:border-slate-300 transition-all group"
+                href="/admin/empanelment/directory"
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
-                <div className="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
-                  <QrCode className="w-3 h-3" />
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <Award className="w-4 h-4" />
                 </div>
-                <p className="font-bold text-slate-900 text-xs">Site Passes</p>
-                <p className="text-[9.5px] text-slate-400">24-Hr gate security</p>
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Partner Directory</p>
+                  <p className="text-[10px] text-slate-400">Class A/B/C cards</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/gate-passes"
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Gate Passes</p>
+                  <p className="text-[10px] text-slate-400">24-Hr site registry</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/categories"
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <Layers className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Trade Categories</p>
+                  <p className="text-[10px] text-slate-400">Master trade studio</p>
+                </div>
               </Link>
 
               <Link
                 href="/admin/empanelment/work-orders"
-                className="p-2 rounded-xl bg-slate-50/60 hover:bg-slate-100/80 border border-slate-200/60 hover:border-slate-300 transition-all group"
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
-                <div className="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
-                  <FileText className="w-3 h-3" />
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <FileText className="w-4 h-4" />
                 </div>
-                <p className="font-bold text-slate-900 text-xs">Work Orders</p>
-                <p className="text-[9.5px] text-slate-400">Milestone billing</p>
-              </Link>
-
-              <Link
-                href="/admin/empanelment/directory"
-                className="p-2 rounded-xl bg-slate-50/60 hover:bg-slate-100/80 border border-slate-200/60 hover:border-slate-300 transition-all group"
-              >
-                <div className="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
-                  <Users className="w-3 h-3" />
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Work Orders</p>
+                  <p className="text-[10px] text-slate-400">Billing &amp; RTGS</p>
                 </div>
-                <p className="font-bold text-slate-900 text-xs">Directory</p>
-                <p className="text-[9.5px] text-slate-400">Verified Rolodex</p>
-              </Link>
-
-              <Link
-                href="/admin/automail?brand=empanelment"
-                className="p-2 rounded-xl bg-slate-50/60 hover:bg-slate-100/80 border border-slate-200/60 hover:border-slate-300 transition-all group"
-              >
-                <div className="w-5 h-5 rounded-md bg-white border border-slate-200 text-slate-700 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
-                  <Mail className="w-3 h-3" />
-                </div>
-                <p className="font-bold text-slate-900 text-xs">AutoMail Hub</p>
-                <p className="text-[9.5px] text-slate-400">Broadcast notices</p>
               </Link>
             </div>
           </div>

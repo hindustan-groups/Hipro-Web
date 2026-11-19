@@ -152,7 +152,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const phoneRaw = cleanTelNumber(content.phone || "+91 94625 77757");
+  const phoneRaw = cleanTelNumber(content.phone || "+91 94628 77757");
   const serviceWaUrl = getServiceWhatsAppUrl(content.whatsapp, service.title);
 
   // Parse structured CMS lists safely
@@ -167,34 +167,79 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
     .filter((s) => s.slug !== service.slug)
     .slice(0, 4);
 
-  // Structured Data (Schema.org Service + Optional FAQPage)
+  const canonicalUrl = getHbsCanonicalUrl(`services/${service.slug}`);
+  const servicesHubUrl = getHbsCanonicalUrl("services");
+  const homeCanonicalUrl = getHbsCanonicalUrl("");
+
+  // Structured Data (Schema.org BreadcrumbList, Service, FAQPage)
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: homeCanonicalUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Services",
+        item: servicesHubUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: service.title,
+        item: canonicalUrl,
+      },
+    ],
+  };
+
   const serviceJsonLd: any = {
     "@context": "https://schema.org",
     "@type": "Service",
     name: service.title,
     serviceType: service.title,
     description: service.shortDescription || service.fullDescription || undefined,
+    url: canonicalUrl,
     provider: {
       "@type": "HomeAndConstructionBusiness",
-      name: "Hind Build",
-      url: isSubdomain
-        ? "https://hindbuilding.hindustanprojects.in"
-        : "https://www.hindustanprojects.in/hbs",
-      telephone: content.phone,
+      name: "Hind Building Solutions",
+      alternateName: "Hind Build",
+      url: homeCanonicalUrl,
+      telephone: content.phone || "+91 94628 77757",
+      email: content.email || "hbs@hindustanprojects.in",
+      parentOrganization: {
+        "@type": "Organization",
+        name: "Hindustan Projects",
+        alternateName: "HiPRO",
+        url: "https://www.hindustanprojects.in",
+      },
       address: {
         "@type": "PostalAddress",
+        streetAddress: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
         addressLocality: "Bhilwara",
         addressRegion: "Rajasthan",
+        postalCode: "311001",
         addressCountry: "IN",
       },
     },
-    areaServed: {
-      "@type": "AdministrativeArea",
-      name: "Rajasthan, India",
-    },
-    url: isSubdomain
-      ? `https://hindbuilding.hindustanprojects.in/services/${service.slug}`
-      : `https://www.hindustanprojects.in/hbs/services/${service.slug}`,
+    areaServed: [
+      {
+        "@type": "City",
+        name: "Bhilwara",
+      },
+      {
+        "@type": "AdministrativeArea",
+        name: "Rajasthan",
+      },
+      {
+        "@type": "Country",
+        name: "India",
+      },
+    ],
   };
 
   const faqJsonLd =
@@ -218,6 +263,10 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-0">
       {/* Schema.org Inject */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
@@ -697,7 +746,7 @@ export default async function HbsServiceDetailPage({ params }: ServicePageProps)
       {/* Pre-Footer Call Ribbon */}
       <HbsHomePreFooterCta
         phoneRaw={phoneRaw}
-        phoneDisplay={content.phone || "+91 94625 77757"}
+        phoneDisplay={content.phone || "+91 94628 77757"}
         whatsappNumber={content.whatsapp}
         prefix={prefix}
       />

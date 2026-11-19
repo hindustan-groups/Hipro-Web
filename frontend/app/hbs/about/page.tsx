@@ -165,8 +165,8 @@ export default async function HbsAboutPage() {
   const prefix = isSubdomain ? "" : "/hbs";
   const homeHref = prefix || "/";
 
-  const phoneRaw = cleanTelNumber(content.phone || "+919462577757");
-  const contactWaUrl = getContactWhatsAppUrl(content.whatsapp || "919462577757");
+  const phoneRaw = cleanTelNumber(content.phone || "+919462877757");
+  const contactWaUrl = getContactWhatsAppUrl(content.whatsapp || "919462877757");
 
   const aboutData = parseAboutImagesData(content.aboutImages);
 
@@ -187,8 +187,76 @@ export default async function HbsAboutPage() {
     }
   } catch {}
 
+  const homeCanonicalUrl = getHbsCanonicalUrl("");
+  const aboutCanonicalUrl = getHbsCanonicalUrl("about");
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: homeCanonicalUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "About Us",
+        item: aboutCanonicalUrl,
+      },
+    ],
+  };
+
+  const aboutPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About Hind Building Solutions (HiBUILD)",
+    description:
+      content.metaDescription ||
+      "Learn about Hind Building Solutions (HiBUILD), an engineering-grade building maintenance and restoration division of Hindustan Projects in Bhilwara, Rajasthan.",
+    url: aboutCanonicalUrl,
+    mainEntity: {
+      "@type": "HomeAndConstructionBusiness",
+      name: "Hind Building Solutions",
+      alternateName: "Hind Build",
+      url: homeCanonicalUrl,
+      telephone: content.phone || "+91 94628 77757",
+      email: content.email || "hbs@hindustanprojects.in",
+      parentOrganization: {
+        "@type": "Organization",
+        name: "Hindustan Projects",
+        alternateName: "HiPRO",
+        url: "https://www.hindustanprojects.in",
+      },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj",
+        addressLocality: "Bhilwara",
+        addressRegion: "Rajasthan",
+        postalCode: "311001",
+        addressCountry: "IN",
+      },
+      areaServed: [
+        { "@type": "City", name: "Bhilwara" },
+        { "@type": "AdministrativeArea", name: "Rajasthan" },
+        { "@type": "Country", name: "India" },
+      ],
+    },
+  };
+
   return (
     <div className="space-y-12 sm:space-y-16 lg:space-y-20 bg-white overflow-hidden">
+      {/* Schema.org JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd) }}
+      />
       {/* ─────────────────────────────────────────────────────────────────
           1. HERO SECTION (Clean Architectural Canvas)
       ───────────────────────────────────────────────────────────────── */}
@@ -265,7 +333,7 @@ export default async function HbsAboutPage() {
                     className="inline-flex items-center gap-2 px-5 py-3.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-800 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>{content.phone || "+91 94625 77757"}</span>
+                    <span>{content.phone || "+91 94628 77757"}</span>
                   </a>
                 </div>
               </div>
@@ -367,7 +435,7 @@ export default async function HbsAboutPage() {
                     className="inline-flex items-center gap-2 px-5 py-3.5 bg-white border border-slate-300 hover:border-slate-400 text-slate-800 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-[0.98]"
                   >
                     <Phone className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>{content.phone || "+91 94625 77757"}</span>
+                    <span>{content.phone || "+91 94628 77757"}</span>
                   </a>
                 </div>
               </div>
@@ -666,8 +734,8 @@ export default async function HbsAboutPage() {
       ───────────────────────────────────────────────────────────────── */}
       <HbsHomePreFooterCta
         phoneRaw={phoneRaw}
-        phoneDisplay={content.phone || "+91 94625 77757"}
-        whatsappNumber={content.whatsapp || "919462577757"}
+        phoneDisplay={content.phone || "+91 94628 77757"}
+        whatsappNumber={content.whatsapp || "919462877757"}
         prefix={prefix}
       />
     </div>

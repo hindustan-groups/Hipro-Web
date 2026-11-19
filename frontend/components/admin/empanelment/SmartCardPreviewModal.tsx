@@ -37,8 +37,9 @@ export default function SmartCardPreviewModal({ vendor, isOpen, onClose }: Smart
     : "CURRENT";
   const validThru = "OCT 2027";
 
+  const CANONICAL_HOST = "https://www.hindustanprojects.in";
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-    `https://empanelment.hindustanprojects.in/verify-partner?trackingId=${vendor.trackingId}`
+    `${CANONICAL_HOST}/empanelment/verify-partner?id=${encodeURIComponent(vendor.trackingId)}`
   )}`;
 
   const handlePrint = () => {
@@ -48,26 +49,31 @@ export default function SmartCardPreviewModal({ vendor, isOpen, onClose }: Smart
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onClick={onClose} />
 
       {/* Modal Dialog */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden text-xs">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200/80 bg-slate-50/70 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-amber-600" />
-            <h2 className="text-sm font-bold text-slate-900">Official PVC Smart Partner Card</h2>
+        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center border border-amber-500/20">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">Official PVC Smart Partner Card</h2>
+              <p className="text-[11px] text-slate-500 font-medium">Verified contractor identity token</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center"
+            className="w-7 h-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {/* Card Canvas */}
-        <div className="p-6 bg-slate-100/70 flex flex-col items-center">
+        <div className="p-6 bg-slate-100/60 flex flex-col items-center">
           {/* Credit Card Aspect Ratio (85.6mm x 53.98mm ~ 1.58 ratio) */}
           <div
             ref={cardRef}
@@ -144,18 +150,18 @@ export default function SmartCardPreviewModal({ vendor, isOpen, onClose }: Smart
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-200/80 bg-slate-50/70 flex items-center justify-end gap-2">
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex items-center justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-semibold"
+            className="px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 font-semibold transition-colors"
           >
             Close
           </button>
           <button
             onClick={handlePrint}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold shadow-md shadow-amber-600/20 flex items-center gap-1.5 transition-all"
+            className="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-xs flex items-center gap-2 transition-all active:scale-[0.99]"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Printer className="w-3.5 h-3.5 text-amber-400" />
             <span>Print PVC Card</span>
           </button>
         </div>

@@ -32,6 +32,7 @@ import {
   Boxes,
   Zap,
   Paintbrush,
+  Lock,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -111,38 +112,45 @@ function renderIcon(iconName: string, className = "w-6 h-6") {
   }
 }
 
-// Category floating icon selector matching each category
+// Category floating icon selector matching all portal and admin categories
 function getCategoryIcon(title: string) {
-  const t = title.toLowerCase();
-  if (t.includes("material")) return <Boxes className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("civil") || t.includes("structural")) return <Building2 className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("machin") || t.includes("equipment")) return <Wrench className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("electr") || t.includes("plumb")) return <Zap className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("interior") || t.includes("finish")) return <Paintbrush className="w-5 h-5 text-[#dc2626]" />;
-  if (t.includes("logistic") || t.includes("transport")) return <Truck className="w-5 h-5 text-[#dc2626]" />;
-  return <Layers className="w-5 h-5 text-[#dc2626]" />;
+  const t = (title || "").toLowerCase();
+  const iconClass = "w-5 h-5 text-[#dc2626] group-hover:text-white transition-colors";
+  if (t.includes("material")) return <Boxes className={iconClass} />;
+  if (t.includes("civil") || t.includes("structur")) return <Building2 className={iconClass} />;
+  if (t.includes("machin") || t.includes("equipment")) return <Wrench className={iconClass} />;
+  if (t.includes("electr") || t.includes("mep")) return <Zap className={iconClass} />;
+  if (t.includes("plumb") || t.includes("sanit")) return <Wrench className={iconClass} />;
+  if (t.includes("fab") || t.includes("peb")) return <Layers className={iconClass} />;
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return <Paintbrush className={iconClass} />;
+  if (t.includes("logistic") || t.includes("transport")) return <Truck className={iconClass} />;
+  return <Layers className={iconClass} />;
 }
 
-// Category tags providing genuine construction context and filling empty dead space
+// Category tags providing genuine construction context matching approved subcategories & CMS
 function getCategoryTags(title: string): string[] {
-  const t = title.toLowerCase();
-  if (t.includes("material")) return ["Cement & TMT", "Bricks & AAC", "Aggregates", "Sand & Steel"];
+  const t = (title || "").toLowerCase();
+  if (t.includes("material") || t.includes("building material")) return ["Cement & TMT", "Bricks & AAC", "Aggregates & Sand", "Bulk Supply"];
   if (t.includes("civil") || t.includes("structural")) return ["RCC Works", "PEB Sheds", "Fabrication", "Industrial Paving"];
   if (t.includes("machin") || t.includes("equipment")) return ["Excavators (JCB)", "Transit Mixers", "Tower Cranes", "Piling Rigs"];
-  if (t.includes("electr") || t.includes("plumb")) return ["MEP Cabling", "Transformers", "PVC/HDPE Pipes", "Switchgears"];
-  if (t.includes("interior") || t.includes("finish")) return ["Tiles & Marble", "Commercial Paint", "False Ceilings", "Glass Facades"];
+  if (t.includes("electr") || t.includes("mep")) return ["HT/LT Substation", "Conduit Wiring", "Transformers", "Fire Alarms"];
+  if (t.includes("plumb") || t.includes("sanit")) return ["CPVC/PPR Piping", "Drainage & Sewerage", "Sanitary Fixtures", "Waterproofing"];
+  if (t.includes("fab") || t.includes("peb")) return ["PEB Structural Sheds", "MS/SS Railings", "Truss Fabrication", "Roofing Sheets"];
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return ["Tiles & Granite", "Epoxy Flooring", "Wall Painting", "False Ceilings"];
   if (t.includes("logistic") || t.includes("transport")) return ["Dumper Fleet", "Bulk Haulage", "Heavy Flatbeds", "Site Logistics"];
   return ["Contract Supply", "Material Procurement", "Statutory Verified"];
 }
 
 // Category demand indicator badge
 function getCategoryBadge(title: string): string {
-  const t = title.toLowerCase();
-  if (t.includes("material")) return "High Procurement Demand";
+  const t = (title || "").toLowerCase();
+  if (t.includes("material") || t.includes("building material")) return "High Procurement Demand";
   if (t.includes("civil") || t.includes("structural")) return "Active Site Contracts";
   if (t.includes("machin") || t.includes("equipment")) return "Plant & Machinery RFQ";
-  if (t.includes("electr") || t.includes("plumb")) return "MEP Packages Open";
-  if (t.includes("interior") || t.includes("finish")) return "Finishing Works Open";
+  if (t.includes("electr") || t.includes("mep")) return "MEP Packages Open";
+  if (t.includes("plumb") || t.includes("sanit")) return "Plumbing RFQs Live";
+  if (t.includes("fab") || t.includes("peb")) return "Structural PEB Open";
+  if (t.includes("floor") || t.includes("finish") || t.includes("interior")) return "Finishing Works Open";
   if (t.includes("logistic") || t.includes("transport")) return "Fleet Registration Open";
   return "Empanelment Open";
 }
@@ -150,17 +158,72 @@ function getCategoryBadge(title: string): string {
 export default function EmpanelmentPortalHomePage() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [openFaqId, setOpenFaqId] = useState<string | null>("f1");
+  const [tenders, setTenders] = useState<any[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
+      if (token) setIsLoggedIn(true);
+    } catch (_e) {}
+  }, []);
 
   useEffect(() => {
     async function loadData() {
       try {
         const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
         const cleanUrl = rawUrl.replace(/\/+$/, "");
-        const res = await fetch(`${cleanUrl}/api/empanelment/content`);
-        if (res.ok) {
-          const json = await res.json();
+        const [contentRes, tendersRes] = await Promise.all([
+          fetch(`${cleanUrl}/api/empanelment/content`),
+          fetch(`${cleanUrl}/api/empanelment/tenders`),
+        ]);
+
+        if (contentRes.ok) {
+          const json = await contentRes.json();
           if (json.success && json.content) {
-            setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
+            const c = json.content;
+            const isInvalidJsonArray = (val: any) =>
+              !val ||
+              val === "[]" ||
+              val === "null" ||
+              (typeof val === "string" && val.trim() === "");
+
+            setContent((prev) => ({
+              ...DEFAULT_EMPANELMENT_CONTENT,
+              ...prev,
+              ...c,
+              categoriesList: isInvalidJsonArray(c.categoriesList)
+                ? DEFAULT_EMPANELMENT_CONTENT.categoriesList
+                : c.categoriesList,
+              heroPills: isInvalidJsonArray(c.heroPills)
+                ? DEFAULT_EMPANELMENT_CONTENT.heroPills
+                : c.heroPills,
+              stats: isInvalidJsonArray(c.stats)
+                ? DEFAULT_EMPANELMENT_CONTENT.stats
+                : c.stats,
+              processSteps: isInvalidJsonArray(c.processSteps)
+                ? DEFAULT_EMPANELMENT_CONTENT.processSteps
+                : c.processSteps,
+              benefitsList: isInvalidJsonArray(c.benefitsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.benefitsList
+                : c.benefitsList,
+              impactPillars: isInvalidJsonArray(c.impactPillars)
+                ? DEFAULT_EMPANELMENT_CONTENT.impactPillars
+                : c.impactPillars,
+              docsList: isInvalidJsonArray(c.docsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.docsList
+                : c.docsList,
+              faqsList: isInvalidJsonArray(c.faqsList)
+                ? DEFAULT_EMPANELMENT_CONTENT.faqsList
+                : c.faqsList,
+            }));
+          }
+        }
+
+        if (tendersRes.ok) {
+          const tendersJson = await tendersRes.json();
+          if (tendersJson.success && Array.isArray(tendersJson.tenders)) {
+            setTenders(tendersJson.tenders);
           }
         }
       } catch (_e) {
@@ -171,69 +234,78 @@ export default function EmpanelmentPortalHomePage() {
   }, []);
 
   // 4 Feature pills below hero buttons
-  const heroPills: EmpanelmentHeroPill[] = parseJsonField(content.heroPills, [
+  const fallbackHeroPills: EmpanelmentHeroPill[] = [
     { id: "p1", title: "Fair & Transparent\nProcurement", iconName: "Handshake" },
     { id: "p2", title: "Local Business\nOpportunities", iconName: "Users" },
     { id: "p3", title: "Long-Term\nPartnerships", iconName: "TrendingUp" },
     { id: "p4", title: "Quality &\nCompliance", iconName: "Settings" },
-  ]);
+  ];
+  const parsedHeroPills = parseJsonField(content.heroPills, fallbackHeroPills);
+  const heroPills: EmpanelmentHeroPill[] =
+    Array.isArray(parsedHeroPills) && parsedHeroPills.length > 0 ? parsedHeroPills : fallbackHeroPills;
 
   // Floating stats counter bar
-  const stats: EmpanelmentStat[] = parseJsonField(content.stats, [
+  const fallbackStats: EmpanelmentStat[] = [
     { id: "s1", value: "200+", label: "Trusted Vendors", iconName: "Users" },
     { id: "s2", value: "150+", label: "Projects Supplied", iconName: "FileText" },
     { id: "s3", value: "15+", label: "Cities Across Rajasthan", iconName: "MapPin" },
     { id: "s4", value: "100%", label: "Transparent Process", iconName: "ShieldCheck" },
-  ]);
+  ];
+  const parsedStats = parseJsonField(content.stats, fallbackStats);
+  const stats: EmpanelmentStat[] =
+    Array.isArray(parsedStats) && parsedStats.length > 0 ? parsedStats : fallbackStats;
 
-  // 6 Photographic categories
-  const categories: EmpanelmentCategory[] = parseJsonField(content.categoriesList, [
+  // 6 Canonical Approved Master Categories
+  const fallbackCategories: EmpanelmentCategory[] = [
     {
       id: "c1",
-      title: "Building Materials",
-      description: "Cement, steel, bricks, aggregates and more",
-      imageUrl: "/images/empanelment/cat-building-materials.jpg",
-      linkUrl: "/empanelment/apply?category=building-materials",
+      title: "Civil Construction",
+      description: "RCC structural works, masonry, plastering and site civil execution",
+      imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+      linkUrl: "/empanelment/apply?category=civil-construction",
     },
     {
       id: "c2",
-      title: "Civil & Structural Work",
-      description: "Construction, fabrication and structural services",
-      imageUrl: "/images/empanelment/cat-civil-structural.jpg",
-      linkUrl: "/empanelment/apply?category=civil-structural",
+      title: "Electrical & MEP",
+      description: "HT/LT electrical installations, substations, panels and cabling",
+      imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+      linkUrl: "/empanelment/apply?category=electrical-mep",
     },
     {
       id: "c3",
-      title: "Machinery & Equipment",
-      description: "Construction machinery, plants and equipment rental/supply",
-      imageUrl: "/images/empanelment/cat-machinery-equipment.jpg",
-      linkUrl: "/empanelment/apply?category=machinery-equipment",
+      title: "Plumbing & Sanitation",
+      description: "CPVC/PPR water supply, sewerage piping, fixtures and waterproofing",
+      imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+      linkUrl: "/empanelment/apply?category=plumbing-sanitation",
     },
     {
       id: "c4",
-      title: "Electrical & Plumbing",
-      description: "Electrical, plumbing and MEP materials & services",
-      imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
-      linkUrl: "/empanelment/apply?category=electrical-plumbing",
+      title: "Fabrication & PEB",
+      description: "Pre-engineered buildings (PEB), heavy structural steel and railings",
+      imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+      linkUrl: "/empanelment/apply?category=fabrication-peb",
     },
     {
       id: "c5",
-      title: "Interior & Finishing",
-      description: "Interior, flooring, painting and finishing work",
+      title: "Flooring & Finishing",
+      description: "Tiles, granite, marble, epoxy flooring, painting and false ceilings",
       imageUrl: "/images/empanelment/cat-interior-finishing.jpg",
-      linkUrl: "/empanelment/apply?category=interior-finishing",
+      linkUrl: "/empanelment/apply?category=flooring-finishing",
     },
     {
       id: "c6",
-      title: "Logistics & Transportation",
-      description: "Material transportation and logistics support work",
-      imageUrl: "/images/empanelment/cat-logistics-transport.jpg",
-      linkUrl: "/empanelment/apply?category=logistics-transportation",
+      title: "Material Supply",
+      description: "Bulk cement, TMT rebars, bricks, AAC blocks, aggregates and sand",
+      imageUrl: "/images/empanelment/cat-building-materials.jpg",
+      linkUrl: "/empanelment/apply?category=material-supply",
     },
-  ]);
+  ];
+  const parsedCategories = parseJsonField(content.categoriesList, fallbackCategories);
+  const categories: EmpanelmentCategory[] =
+    Array.isArray(parsedCategories) && parsedCategories.length > 0 ? parsedCategories : fallbackCategories;
 
   // 4 Registration steps
-  const steps: EmpanelmentProcessStep[] = parseJsonField(content.processSteps, [
+  const fallbackSteps: EmpanelmentProcessStep[] = [
     {
       step: "01",
       title: "Create Profile",
@@ -258,10 +330,13 @@ export default function EmpanelmentPortalHomePage() {
       description: "Once approved, you will be listed in our vendor network and can receive opportunities.",
       iconName: "Award",
     },
-  ]);
+  ];
+  const parsedSteps = parseJsonField(content.processSteps, fallbackSteps);
+  const steps: EmpanelmentProcessStep[] =
+    Array.isArray(parsedSteps) && parsedSteps.length > 0 ? parsedSteps : fallbackSteps;
 
   // 6 Vendor benefits
-  const benefits: EmpanelmentBenefit[] = parseJsonField(content.benefitsList, [
+  const fallbackBenefits: EmpanelmentBenefit[] = [
     {
       id: "b1",
       title: "Consistent Opportunities",
@@ -298,28 +373,37 @@ export default function EmpanelmentPortalHomePage() {
       description: "Focus on quality, safety and compliance in every project.",
       iconName: "Award",
     },
-  ]);
+  ];
+  const parsedBenefits = parseJsonField(content.benefitsList, fallbackBenefits);
+  const benefits: EmpanelmentBenefit[] =
+    Array.isArray(parsedBenefits) && parsedBenefits.length > 0 ? parsedBenefits : fallbackBenefits;
 
   // 4 Impact pillars
-  const impactPillars: EmpanelmentImpactPillar[] = parseJsonField(content.impactPillars, [
+  const fallbackImpactPillars: EmpanelmentImpactPillar[] = [
     { id: "ip1", title: "Local Economic Growth", iconName: "TrendingUp" },
     { id: "ip2", title: "Sustainable Infrastructure", iconName: "Building2" },
     { id: "ip3", title: "Stronger Communities", iconName: "Users" },
     { id: "ip4", title: "A Better Rajasthan", iconName: "Landmark" },
-  ]);
+  ];
+  const parsedPillars = parseJsonField(content.impactPillars, fallbackImpactPillars);
+  const impactPillars: EmpanelmentImpactPillar[] =
+    Array.isArray(parsedPillars) && parsedPillars.length > 0 ? parsedPillars : fallbackImpactPillars;
 
   // 6 Documents required
-  const docsList: EmpanelmentDocument[] = parseJsonField(content.docsList, [
+  const fallbackDocsList: EmpanelmentDocument[] = [
     { id: "d1", title: "GST Details", description: "GST registration certificate", iconName: "FileCheck" },
     { id: "d2", title: "PAN Details", description: "PAN card of the business", iconName: "CreditCard" },
     { id: "d3", title: "Bank Details", description: "Cancelled cheque or bank statement", iconName: "Building2" },
     { id: "d4", title: "Business Profile", description: "Company profile and work experience", iconName: "Briefcase" },
     { id: "d5", title: "Relevant Certifications", description: "Quality, safety or industry-specific certificates", iconName: "Award" },
     { id: "d6", title: "Other Documents", description: "Any additional documents as per category", iconName: "FolderOpen" },
-  ]);
+  ];
+  const parsedDocs = parseJsonField(content.docsList, fallbackDocsList);
+  const docsList: EmpanelmentDocument[] =
+    Array.isArray(parsedDocs) && parsedDocs.length > 0 ? parsedDocs : fallbackDocsList;
 
   // 5 FAQs
-  const faqs: EmpanelmentFAQ[] = parseJsonField(content.faqsList, [
+  const fallbackFaqs: EmpanelmentFAQ[] = [
     {
       id: "f1",
       question: "Who can register as a vendor?",
@@ -350,7 +434,10 @@ export default function EmpanelmentPortalHomePage() {
       answer:
         "No. Vendor registration on Hindustan Projects Empanelment Portal is 100% free of charge. We never charge any processing or registration fees.",
     },
-  ]);
+  ];
+  const parsedFaqs = parseJsonField(content.faqsList, fallbackFaqs);
+  const faqs: EmpanelmentFAQ[] =
+    Array.isArray(parsedFaqs) && parsedFaqs.length > 0 ? parsedFaqs : fallbackFaqs;
 
   return (
     <div className="bg-white text-slate-900 font-sans antialiased flex flex-col selection:bg-red-100 selection:text-red-900">
@@ -415,12 +502,19 @@ export default function EmpanelmentPortalHomePage() {
               </Link>
 
               <Link
-                href="/empanelment/track"
+                href="/empanelment/login"
                 className="inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-50 text-slate-900 text-xs sm:text-sm font-bold px-6 py-3.5 rounded-xl border border-slate-300 transition-all shadow-2xs group w-full sm:w-auto text-center"
               >
-                <User className="w-4 h-4 text-slate-700 shrink-0" />
-                <span>{content.heroLoginBtnText || "Vendor Login"}</span>
+                <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
+                <span>{content.heroLoginBtnText || "Vendor Portal Login"}</span>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:translate-x-1 transition-transform shrink-0" />
+              </Link>
+            </div>
+
+            <div className="text-xs text-slate-500 flex items-center gap-2 pt-0.5">
+              <span>Applied recently?</span>
+              <Link href="/empanelment/track" className="font-bold text-slate-800 hover:text-[#dc2626] underline">
+                Track Application & Smart ID Status &rarr;
               </Link>
             </div>
 
@@ -574,6 +668,174 @@ export default function EmpanelmentPortalHomePage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* 3B. ACTIVE CONSTRUCTION TENDERS RADAR (चालू टेंडर) */}
+      {/* ================================================================ */}
+      <section className="bg-white py-16 sm:py-20 border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+            <div className="max-w-2xl space-y-2.5">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#dc2626] uppercase">
+                <span className="w-5 h-0.5 bg-[#dc2626]"></span>
+                <span>LIVE PROCUREMENT OPPORTUNITIES</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
+                Active Construction Tenders Radar (चालू टेंडर)
+              </h2>
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                Procurement packages published by our project teams. Detailed BOQ drawings, specifications, and commercial quotation submissions are restricted to authenticated empanelled partners.
+              </p>
+            </div>
+            <Link
+              href="/empanelment/tenders"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#dc2626] hover:text-[#b91c1c] transition-colors whitespace-nowrap self-start md:self-end group"
+            >
+              <span>View All Tenders Radar</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {/* Tenders Display */}
+          {tenders.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 sm:p-10 text-center max-w-2xl mx-auto space-y-4">
+              <Briefcase className="w-8 h-8 mx-auto text-slate-400" />
+              <div className="space-y-1">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                  Upcoming Procurement Cycles in Progress
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
+                  New site procurement packages for our Jaipur and Rajasthan projects are posted regularly. Register today to receive instant notifications when packages matching your trade are published.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <Link
+                  href="/empanelment/apply"
+                  className="px-5 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Register as Vendor</span>
+                </Link>
+                <Link
+                  href="/empanelment/login"
+                  className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-white text-slate-800 font-bold text-xs flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#dc2626]" />
+                  <span>Partner Portal Login</span>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {tenders.slice(0, 3).map((tender) => (
+                  <div
+                    key={tender.id}
+                    className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
+                          {tender.tenderNo || tender.tenderNumber}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                            ACTIVE
+                          </span>
+                          <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
+                            <Lock className="w-2.5 h-2.5 text-amber-600" />
+                            <span>Portal Bidding</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <h3 className="font-bold text-slate-900 text-sm tracking-tight leading-snug line-clamp-2">
+                        {tender.title}
+                      </h3>
+
+                      <div className="text-[11px] text-slate-500 font-medium">
+                        Category: <span className="text-slate-800 font-bold">{tender.category}</span>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 space-y-1.5 text-[11px] text-slate-600">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Site Location:</span>
+                          <span className="font-semibold text-slate-800">{tender.location || "Jaipur, RJ"}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Est. Value:</span>
+                          <span className="font-bold text-slate-900 font-mono">{tender.estimatedBudget || "Competitive"}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">Due Date:</span>
+                          <span className="font-bold text-amber-700 font-mono">
+                            {tender.dueDate || tender.deadline
+                              ? new Date(tender.dueDate || tender.deadline).toLocaleDateString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : "Open Package"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-start gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        <span className="leading-tight">Technical drawings, BOQ and commercial bidding restricted to empanelled vendors.</span>
+                      </div>
+                    </div>
+
+                    {/* Action Gating */}
+                    {isLoggedIn ? (
+                      <Link
+                        href="/empanelment/portal/tenders"
+                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs text-center"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>View in Portal & Submit Bid</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Link
+                          href="/empanelment/login?redirect=/empanelment/portal/tenders"
+                          className="py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1 shadow-xs text-xs text-center transition-colors"
+                        >
+                          <Lock className="w-3 h-3 text-amber-400" />
+                          <span>Login to Bid</span>
+                        </Link>
+                        <Link
+                          href="/empanelment/apply"
+                          className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold flex items-center justify-center gap-1 text-xs text-center transition-colors"
+                        >
+                          <span>Register</span>
+                          <ArrowRight className="w-3 h-3 text-slate-400" />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-slate-700 font-medium text-center sm:text-left">
+                  <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
+                  <span>Looking for more active packages across civil, electrical, plumbing, fabrication and materials?</span>
+                </div>
+                <Link
+                  href="/empanelment/tenders"
+                  className="font-bold text-[#dc2626] hover:text-[#b91c1c] flex items-center gap-1 shrink-0"
+                >
+                  <span>Explore Full Procurement Radar</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

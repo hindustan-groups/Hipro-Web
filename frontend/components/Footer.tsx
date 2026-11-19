@@ -536,8 +536,10 @@ export default async function Footer({
                 </a>
 
                 {/* 3. Hind Build Solutions */}
-                <Link
-                  href="/hbs"
+                <a
+                  href="https://hindbuilding.hindustanprojects.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group block p-3 bg-white border border-slate-200/90 rounded-xl shadow-xs hover:shadow-md hover:border-slate-300 transition-all cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -557,7 +559,7 @@ export default async function Footer({
                   <span className="inline-block text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/70 px-2 py-0.5 rounded-full">
                     Live Portal ↗
                   </span>
-                </Link>
+                </a>
               </div>
             </div>
 

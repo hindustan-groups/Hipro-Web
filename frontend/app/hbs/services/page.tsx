@@ -179,7 +179,7 @@ export default async function HbsServicesPage() {
   const isSubdomain = process.env.NEXT_PUBLIC_HBS_SUBDOMAIN_ACTIVE === "true";
   const prefix = isSubdomain ? "" : "/hbs";
 
-  const phoneRaw = cleanTelNumber(content.phone || "+91 94625 77757");
+  const phoneRaw = cleanTelNumber(content.phone || "+91 94628 77757");
   const heroWaUrl = buildHbsWhatsAppUrl(
     content.whatsapp,
     "Hi Hind Build, I would like to inquire about your specialized building services."
@@ -208,8 +208,31 @@ export default async function HbsServicesPage() {
     })),
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://hindbuilding.hindustanprojects.in",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Services",
+        item: "https://hindbuilding.hindustanprojects.in/services",
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -266,7 +289,7 @@ export default async function HbsServicesPage() {
                 className="inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded-xl bg-[#0D2D5E] hover:bg-[#0A2349] text-white text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
               >
                 <Phone className="w-4 h-4 text-white" />
-                <span>Call: {content.phone || "+91 94625 77757"}</span>
+                <span>Call: {content.phone || "+91 94628 77757"}</span>
               </a>
 
               <a
@@ -396,7 +419,7 @@ export default async function HbsServicesPage() {
         {/* ── 6. Full-Width Pre-Footer Ribbon ──────────────────────── */}
         <HbsHomePreFooterCta
           phoneRaw={phoneRaw}
-          phoneDisplay={content.phone || "+91 94625 77757"}
+          phoneDisplay={content.phone || "+91 94628 77757"}
           whatsappNumber={content.whatsapp}
           prefix={prefix}
         />

@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   Phone,
-  User,
   FileText,
   Briefcase,
   Search,
@@ -16,7 +15,6 @@ import {
   HelpCircle,
   ArrowRight,
   MessageSquare,
-  Building2,
 } from "lucide-react";
 import {
   EmpanelmentContent,
@@ -27,6 +25,16 @@ export default function EmpanelmentNavbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
+      if (token) {
+        setIsLoggedIn(true);
+      }
+    } catch (_e) {}
+  }, []);
 
   useEffect(() => {
     async function loadCms() {
@@ -48,8 +56,7 @@ export default function EmpanelmentNavbar() {
     { href: "/empanelment", label: "Home" },
     { href: "/empanelment/guidelines", label: "Guidelines" },
     { href: "/empanelment/tenders", label: "Tenders" },
-    { href: "/empanelment/apply", label: "Registration" },
-    { href: "/empanelment/track", label: "Track Status" },
+    { href: "/empanelment/track", label: "Track Application" },
     { href: "/empanelment/gate-pass", label: "Gate Pass" },
     { href: "/empanelment#faqs", label: "FAQs" },
   ];
@@ -79,7 +86,7 @@ export default function EmpanelmentNavbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-[13px] xl:text-[14px] font-medium text-slate-700">
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-7 2xl:gap-8 text-[13px] xl:text-[14px] font-medium">
           {navLinks.map((link) => {
             const isHome = link.href === "/empanelment";
             const active = isHome
@@ -89,10 +96,10 @@ export default function EmpanelmentNavbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`relative transition-colors pb-1 ${
+                className={`relative transition-colors pb-1 whitespace-nowrap ${
                   active
                     ? "text-[#dc2626] font-bold after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2.5px] after:bg-[#dc2626] after:rounded-full"
-                    : "text-slate-600 hover:text-slate-950"
+                    : "text-slate-700 hover:text-slate-950 font-medium"
                 }`}
               >
                 {link.label}
@@ -102,23 +109,33 @@ export default function EmpanelmentNavbar() {
         </nav>
 
         {/* Right CTA Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Desktop Vendor Login / Track */}
-          <Link
-            href="/empanelment/track"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3.5 py-2 rounded-lg transition-all border border-slate-200/80"
-          >
-            <User className="w-3.5 h-3.5 text-slate-600" />
-            <span>Track & Login</span>
-          </Link>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Desktop Vendor Portal / Dashboard Link */}
+          {isLoggedIn ? (
+            <Link
+              href="/empanelment/portal"
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 px-3.5 py-2.5 rounded-xl border border-emerald-200 transition-colors shadow-2xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Portal Dashboard ➔</span>
+            </Link>
+          ) : (
+            <Link
+              href="/empanelment/login"
+              className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-[#dc2626] px-3.5 py-2.5 rounded-xl border border-slate-200/90 hover:border-slate-300 transition-colors bg-white shadow-2xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#dc2626]" />
+              <span>Vendor Login</span>
+            </Link>
+          )}
 
-          {/* Desktop Register CTA */}
+          {/* Desktop Register as Vendor Primary CTA */}
           <Link
             href="/empanelment/apply"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-xs"
+            className="hidden sm:inline-flex items-center gap-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs sm:text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-xl transition-all shadow-xs hover:shadow-sm whitespace-nowrap shrink-0 group"
           >
-            <span>Register Now</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>Register as Vendor</span>
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform shrink-0" />
           </Link>
 
           {/* Mobile Tap-to-Call Quick Button */}
@@ -145,8 +162,44 @@ export default function EmpanelmentNavbar() {
       {/* Mobile Drawer (Ultra-friendly mobile UI) */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-5 space-y-5 shadow-2xl animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto">
-          {/* Quick Action Tiles (2x2 Grid) */}
+          {/* Quick Action Tiles (2x2 Grid + Portal Banner) */}
           <div className="space-y-1.5">
+            {isLoggedIn ? (
+              <Link
+                href="/empanelment/portal"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950 to-slate-950 text-white flex items-center justify-between shadow-xs mb-2.5 border border-emerald-800/40"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-white">Vendor Partner Dashboard</h4>
+                    <p className="text-[10px] text-emerald-300">डैशबोर्ड, टेंडर, गेट पास व प्रोफाइल ➔</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-emerald-400" />
+              </Link>
+            ) : (
+              <Link
+                href="/empanelment/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-950 text-white flex items-center justify-between shadow-xs mb-2.5"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#dc2626] text-white flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs text-white">Vendor Partner Portal</h4>
+                    <p className="text-[10px] text-slate-300">लॉगिन (टेंडर, गेट पास, स्थिति)</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-4 h-4 text-amber-400" />
+              </Link>
+            )}
+
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
               Quick Services / त्वरित सेवाएं
             </p>

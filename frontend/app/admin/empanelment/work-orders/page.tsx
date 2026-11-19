@@ -17,7 +17,11 @@ import {
   X,
   Loader2,
   Calendar,
+  IndianRupee,
+  ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
+import EmpanelmentAdminPageHeader from "@/components/admin/empanelment/EmpanelmentAdminPageHeader";
 
 interface WorkOrder {
   id: string;
@@ -261,155 +265,195 @@ export default function WorkOrdersBillingPage() {
   const totalInvoicedVal = invoices.reduce((acc, inv) => acc + (inv.amount || 0), 0);
   const totalPaidVal = invoices.filter((i) => i.status === "PAID").reduce((acc, inv) => acc + (inv.netPayable || 0), 0);
 
+  const filteredWorkOrders = workOrders.filter((wo) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      wo.workOrderNo.toLowerCase().includes(q) ||
+      wo.projectName.toLowerCase().includes(q) ||
+      wo.packageTitle.toLowerCase().includes(q) ||
+      wo.vendor?.companyName.toLowerCase().includes(q)
+    );
+  });
+
+  const filteredInvoices = invoices.filter((inv) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      inv.invoiceNo.toLowerCase().includes(q) ||
+      inv.vendor?.companyName.toLowerCase().includes(q) ||
+      inv.workOrder?.packageTitle.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+    <div className="space-y-6">
+      {/* Apple Page Header */}
+      <EmpanelmentAdminPageHeader
+        badge="Contracts & Billing"
+        title="Work Orders & Invoicing Suite"
+        description="Issue project packages to empanelled contractors, track milestone progress, and record RTGS payouts."
+        breadcrumbs={[
+          { label: "Work Orders & Billing" },
+        ]}
+        actions={
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-              CONTRACTS & BILLING
-            </span>
-            <span className="text-xs text-slate-400 font-semibold">&bull; Work Orders & Milestones</span>
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="p-2.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-600 transition-colors shadow-xs disabled:opacity-50"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-amber-600" : ""}`} />
+            </button>
+            <button
+              onClick={() => setIsInvoiceModalOpen(true)}
+              className="px-3.5 py-2.5 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-800 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.99]"
+            >
+              <DollarSign className="w-4 h-4 text-slate-500" />
+              <span>Record Invoice</span>
+            </button>
+            <button
+              onClick={() => setIsWoModalOpen(true)}
+              className="px-4 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center gap-2 shadow-xs transition-all active:scale-[0.99]"
+            >
+              <Plus className="w-4 h-4 text-amber-400" />
+              <span>Issue Work Order</span>
+            </button>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight font-display mt-1">
-            Work Orders & Invoicing Suite
-          </h1>
-          <p className="text-xs text-slate-500">
-            Issue project packages to empanelled contractors, track milestone progress, and record RTGS payouts.
-          </p>
-        </div>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsWoModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-black text-xs font-bold text-white transition-all shadow-xs"
-          >
-            <Plus className="w-3.5 h-3.5 text-amber-400" />
-            <span>Issue Work Order</span>
-          </button>
-
-          <button
-            onClick={() => setIsInvoiceModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 text-xs font-bold text-slate-800 transition-all shadow-2xs"
-          >
-            <DollarSign className="w-3.5 h-3.5 text-slate-500" />
-            <span>Record Invoice</span>
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
+      {/* Apple Bento KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+        <div className="bg-white/80 backdrop-blur-2xl p-5 rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Contract Value</div>
-          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-mono">
             ₹ {(totalContractVal / 10000000).toFixed(2)} Cr
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">{workOrders.length} Active Packages</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-medium">{workOrders.length} Active Packages</div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+        <div className="bg-white/80 backdrop-blur-2xl p-5 rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gross Invoiced</div>
-          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
-            ₹ {(totalInvoicedVal / 100000).toFixed(2)} Lakhs
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-mono">
+            ₹ {(totalInvoicedVal / 100000).toFixed(2)} L
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">{invoices.length} Milestone Claims</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-medium">{invoices.length} Milestone Claims</div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200/70 shadow-2xs">
+        <div className="bg-white/80 backdrop-blur-2xl p-5 rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RTGS Disbursed</div>
-          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-sans">
-            ₹ {(totalPaidVal / 100000).toFixed(2)} Lakhs
+          <div className="text-2xl font-black text-slate-900 tracking-tight mt-1 font-mono text-emerald-700">
+            ₹ {(totalPaidVal / 100000).toFixed(2)} L
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">Audited & Settled</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-medium">Audited &amp; Settled Payouts</div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-6 text-xs font-bold">
-        <button
-          onClick={() => setActiveTab("work-orders")}
-          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === "work-orders"
-              ? "border-amber-600 text-amber-700 font-extrabold"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          <FileText className="w-4 h-4" />
-          <span>Active Work Orders ({workOrders.length})</span>
-        </button>
+      {/* Tabs and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Apple Segmented Tabs */}
+        <div className="inline-flex items-center p-1 bg-slate-200/50 rounded-2xl border border-slate-200/60 max-w-fit">
+          <button
+            onClick={() => setActiveTab("work-orders")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === "work-orders"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-amber-600" />
+            <span>Active Work Orders ({workOrders.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab("invoices")}
-          className={`pb-3 border-b-2 transition-colors flex items-center gap-2 ${
-            activeTab === "invoices"
-              ? "border-amber-600 text-amber-700 font-extrabold"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          <span>Milestone Invoices ({invoices.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab("invoices")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+              activeTab === "invoices"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Milestone Invoices ({invoices.length})</span>
+          </button>
+        </div>
+
+        {/* Search Field */}
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder={activeTab === "work-orders" ? "Search work order, project, vendor..." : "Search invoice no, vendor..."}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3.5 py-2 bg-white rounded-2xl border border-slate-200/80 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 shadow-xs"
+          />
+        </div>
       </div>
 
       {/* Tab 1: Work Orders */}
       {activeTab === "work-orders" && (
-        <div className="space-y-4">
+        <div>
           {loading ? (
-            <div className="p-12 text-center text-slate-400 text-xs">
+            <div className="p-16 text-center text-slate-400 text-xs bg-white/80 rounded-3xl border border-slate-200/80">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500" />
               Loading work orders...
             </div>
-          ) : workOrders.length === 0 ? (
-            <div className="bg-white p-12 text-center text-slate-400 text-xs rounded-3xl border border-slate-200">
-              No work orders issued yet. Click &quot;Issue Work Order&quot; to award a package.
+          ) : filteredWorkOrders.length === 0 ? (
+            <div className="bg-white/80 backdrop-blur-2xl p-16 text-center text-slate-400 text-xs rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+                <FileText className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-800 text-sm">No work orders issued yet</p>
+              <p className="text-xs text-slate-400">Click &quot;Issue Work Order&quot; to award a package to an empanelled partner.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {workOrders.map((wo) => (
+              {filteredWorkOrders.map((wo) => (
                 <div
                   key={wo.id}
-                  className="bg-white rounded-3xl p-5 border border-slate-200 shadow-2xs space-y-4 hover:border-amber-300 transition-all"
+                  className="bg-white/80 backdrop-blur-2xl rounded-3xl p-5 border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4 hover:shadow-md transition-all"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-900 border border-amber-200/70">
                         {wo.workOrderNo}
                       </span>
-                      <h3 className="text-sm font-bold text-slate-900 mt-1.5">{wo.packageTitle}</h3>
+                      <h3 className="text-sm font-bold text-slate-900 mt-2">{wo.packageTitle}</h3>
                       <p className="text-xs text-slate-500">{wo.projectName}</p>
                     </div>
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                         wo.status === "COMPLETED"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-blue-100 text-blue-800"
+                          ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
+                          : "bg-blue-500/10 text-blue-800 border border-blue-500/20"
                       }`}
                     >
-                      {wo.status}
+                      {wo.status?.replace(/_/g, " ")}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200/80">
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50/70 p-3.5 rounded-2xl border border-slate-200/60">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Contractor</span>
-                      <span className="font-bold text-slate-800">{wo.vendor?.companyName}</span>
-                      <span className="text-[10px] text-amber-700 block font-mono">({wo.vendor?.tier})</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Contractor</span>
+                      <span className="font-bold text-slate-800 text-xs block truncate">{wo.vendor?.companyName}</span>
+                      <span className="text-[10px] text-amber-800 block font-mono font-semibold">({wo.vendor?.tier?.replace("_", " ")})</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Contract Value</span>
-                      <span className="font-bold text-amber-600 font-mono text-sm">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Contract Value</span>
+                      <span className="font-bold text-slate-900 font-mono text-sm block">
                         ₹ {wo.contractAmount.toLocaleString("en-IN")}
                       </span>
                     </div>
                   </div>
 
                   {/* Progress Slider */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 pt-1">
                     <div className="flex justify-between text-xs">
-                      <span className="font-bold text-slate-600 text-[11px]">Site Execution Progress:</span>
-                      <span className="font-bold font-mono text-amber-600">{wo.progressPercent}%</span>
+                      <span className="font-semibold text-slate-600 text-[11px]">Site Execution Progress:</span>
+                      <span className="font-bold font-mono text-amber-700">{wo.progressPercent}%</span>
                     </div>
                     <input
                       type="range"
@@ -429,92 +473,98 @@ export default function WorkOrdersBillingPage() {
 
       {/* Tab 2: Invoices */}
       {activeTab === "invoices" && (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/90 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-slate-400 text-xs">
+            <div className="p-16 text-center text-slate-400 text-xs">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-500" />
               Loading invoices...
             </div>
-          ) : invoices.length === 0 ? (
-            <div className="p-12 text-center text-slate-400 text-xs">
-              No milestone invoices recorded yet. Click &quot;Record Invoice&quot; above.
+          ) : filteredInvoices.length === 0 ? (
+            <div className="p-16 text-center text-slate-400 text-xs space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-800 text-sm">No milestone invoices found</p>
+              <p className="text-xs text-slate-400">Click &quot;Record Invoice&quot; to log a contractor milestone claim.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-200">
+                <thead className="bg-slate-50/70 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
                   <tr>
-                    <th className="py-3 px-4">Invoice No</th>
-                    <th className="py-3 px-4">Vendor & Package</th>
-                    <th className="py-3 px-4">Gross Claim</th>
-                    <th className="py-3 px-4">TDS (2%)</th>
-                    <th className="py-3 px-4">Net Payable</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Action</th>
+                    <th className="py-3.5 px-5">Invoice No</th>
+                    <th className="py-3.5 px-5">Vendor &amp; Package</th>
+                    <th className="py-3.5 px-5">Gross Claim</th>
+                    <th className="py-3.5 px-5">TDS (2%)</th>
+                    <th className="py-3.5 px-5">Net Payable</th>
+                    <th className="py-3.5 px-5">Status</th>
+                    <th className="py-3.5 px-5 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {invoices.map((inv) => (
+                <tbody className="divide-y divide-slate-100/80">
+                  {filteredInvoices.map((inv) => (
                     <tr key={inv.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-mono font-bold text-slate-900">{inv.invoiceNo}</div>
-                        <div className="text-[10px] text-slate-400">
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <div className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md inline-block border border-slate-200/50">
+                          {inv.invoiceNo}
+                        </div>
+                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">
                           {new Date(inv.createdAt).toLocaleDateString("en-IN")}
                         </div>
                       </td>
 
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-5">
                         <div className="font-bold text-slate-900">{inv.vendor?.companyName}</div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-[11px] text-slate-500">
                           {inv.workOrder ? inv.workOrder.packageTitle : "General Milestone"}
                         </div>
                       </td>
 
-                      <td className="py-3 px-4 font-mono font-bold text-slate-800">
+                      <td className="py-4 px-5 font-mono font-bold text-slate-800">
                         ₹ {inv.amount.toLocaleString("en-IN")}
                       </td>
 
-                      <td className="py-3 px-4 font-mono text-slate-500">
+                      <td className="py-4 px-5 font-mono text-slate-500">
                         ₹ {inv.tdsDeduction.toLocaleString("en-IN")}
                       </td>
 
-                      <td className="py-3 px-4 font-mono font-extrabold text-amber-600">
+                      <td className="py-4 px-5 font-mono font-extrabold text-amber-800">
                         ₹ {inv.netPayable.toLocaleString("en-IN")}
                       </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-4 px-5 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             inv.status === "PAID"
-                              ? "bg-emerald-100 text-emerald-800"
+                              ? "bg-emerald-500/10 text-emerald-800 border border-emerald-500/20"
                               : inv.status === "APPROVED"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-amber-100 text-amber-800"
+                              ? "bg-blue-500/10 text-blue-800 border border-blue-500/20"
+                              : "bg-amber-500/10 text-amber-800 border border-amber-500/20"
                           }`}
                         >
                           {inv.status}
                         </span>
                         {inv.rtgsRef && (
-                          <div className="text-[9px] font-mono text-slate-400 mt-0.5">
+                          <div className="text-[10px] font-mono text-slate-400 mt-1">
                             RTGS: {inv.rtgsRef}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-3 px-4 whitespace-nowrap text-right">
+                      <td className="py-4 px-5 whitespace-nowrap text-right">
                         {inv.status !== "PAID" ? (
                           <button
                             onClick={() => {
                               setSelectedInvoice(inv);
                               setIsPayModalOpen(true);
                             }}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs"
+                            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs active:scale-[0.98]"
                           >
                             Mark Paid
                           </button>
                         ) : (
-                          <span className="text-[10px] font-bold text-emerald-600 flex items-center justify-end gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span className="text-[11px] font-bold text-emerald-700 flex items-center justify-end gap-1">
+                            <CheckCircle2 className="w-4 h-4" />
                             <span>Settled</span>
                           </span>
                         )}
@@ -530,40 +580,43 @@ export default function WorkOrdersBillingPage() {
 
       {/* Modal 1: Issue Work Order */}
       {isWoModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-start justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200/80 space-y-4">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900">Issue New Work Order</h3>
-                <p className="text-xs text-slate-500">Award contract package to verified partner</p>
+                <p className="text-xs text-slate-500 mt-0.5">Award contract package to verified partner</p>
               </div>
-              <button onClick={() => setIsWoModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100">
-                <X className="w-4 h-4 text-slate-500" />
+              <button
+                onClick={() => setIsWoModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateWorkOrder} className="space-y-3">
+            <form onSubmit={handleCreateWorkOrder} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Select Approved Contractor *
                 </label>
                 <select
                   value={woVendorId}
                   onChange={(e) => setWoVendorId(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
                   <option value="">-- Choose Empanelled Partner --</option>
                   {approvedVendors.map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.companyName} ({v.tier} &bull; {v.city})
+                      {v.companyName} ({v.tier?.replace("_", " ")} &bull; {v.city || "Rajasthan"})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Project Name *
                 </label>
                 <input
@@ -572,12 +625,12 @@ export default function WorkOrdersBillingPage() {
                   value={woProjectName}
                   onChange={(e) => setWoProjectName(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Package Title / Scope *
                 </label>
                 <input
@@ -586,13 +639,13 @@ export default function WorkOrdersBillingPage() {
                   value={woPackageTitle}
                   onChange={(e) => setWoPackageTitle(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Contract Amount (₹) *
                   </label>
                   <input
@@ -601,35 +654,35 @@ export default function WorkOrdersBillingPage() {
                     value={woAmount}
                     onChange={(e) => setWoAmount(e.target.value)}
                     required
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Target Completion
                   </label>
                   <input
                     type="date"
                     value={woCompletionDate}
                     onChange={(e) => setWoCompletionDate(e.target.value)}
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsWoModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                   <span>Issue Work Order</span>
@@ -642,28 +695,31 @@ export default function WorkOrdersBillingPage() {
 
       {/* Modal 2: Record Invoice */}
       {isInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-start justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200/80 space-y-4">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900">Record Milestone Invoice</h3>
-                <p className="text-xs text-slate-500">Log contractor claim for audit</p>
+                <p className="text-xs text-slate-500 mt-0.5">Log contractor claim for audit</p>
               </div>
-              <button onClick={() => setIsInvoiceModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100">
-                <X className="w-4 h-4 text-slate-500" />
+              <button
+                onClick={() => setIsInvoiceModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateInvoice} className="space-y-3">
+            <form onSubmit={handleCreateInvoice} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Select Contractor *
                 </label>
                 <select
                   value={invVendorId}
                   onChange={(e) => setInvVendorId(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
                   <option value="">-- Choose Empanelled Partner --</option>
                   {approvedVendors.map((v) => (
@@ -675,13 +731,13 @@ export default function WorkOrdersBillingPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Link to Work Order (Optional)
                 </label>
                 <select
                   value={invWoId}
                   onChange={(e) => setInvWoId(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 >
                   <option value="">-- None / General Milestone --</option>
                   {workOrders.map((wo) => (
@@ -692,9 +748,9 @@ export default function WorkOrdersBillingPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Invoice No *
                   </label>
                   <input
@@ -703,12 +759,12 @@ export default function WorkOrdersBillingPage() {
                     value={invNo}
                     onChange={(e) => setInvNo(e.target.value.toUpperCase())}
                     required
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 uppercase font-mono"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                     Gross Amount (₹) *
                   </label>
                   <input
@@ -717,23 +773,23 @@ export default function WorkOrdersBillingPage() {
                     value={invAmount}
                     onChange={(e) => setInvAmount(e.target.value)}
                     required
-                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsInvoiceModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                   <span>Save Invoice</span>
@@ -746,19 +802,22 @@ export default function WorkOrdersBillingPage() {
 
       {/* Modal 3: Mark Paid with RTGS */}
       {isPayModalOpen && selectedInvoice && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-start justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/80 space-y-4">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-base font-bold text-slate-900">Record RTGS Settlement</h3>
-                <p className="text-xs text-slate-500">Invoice: {selectedInvoice.invoiceNo}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Invoice: {selectedInvoice.invoiceNo}</p>
               </div>
-              <button onClick={() => setIsPayModalOpen(false)} className="p-1 rounded-full hover:bg-slate-100">
-                <X className="w-4 h-4 text-slate-500" />
+              <button
+                onClick={() => setIsPayModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs space-y-1">
+            <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/60 text-xs space-y-1.5">
               <div className="flex justify-between">
                 <span className="text-slate-400">Vendor:</span>
                 <span className="font-bold text-slate-800">{selectedInvoice.vendor?.companyName}</span>
@@ -771,9 +830,9 @@ export default function WorkOrdersBillingPage() {
               </div>
             </div>
 
-            <form onSubmit={handleMarkPaid} className="space-y-3">
+            <form onSubmit={handleMarkPaid} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                   Bank UTR / RTGS Ref No *
                 </label>
                 <input
@@ -782,25 +841,25 @@ export default function WorkOrdersBillingPage() {
                   value={rtgsInput}
                   onChange={(e) => setRtgsInput(e.target.value.toUpperCase())}
                   required
-                  className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 uppercase font-mono"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 uppercase font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/20"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsPayModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                  <span>Confirm Payment</span>
+                  <span>Confirm Settlement</span>
                 </button>
               </div>
             </form>

@@ -1558,7 +1558,7 @@ export default function HbsAdminHome() {
               <div className="flex items-center gap-2 shrink-0">
                 <div className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs">
                   <Phone className="w-3.5 h-3.5" />
-                  <span>{preFooterCta.callLabel || "Call"}: {content.phone || "+91 94625 77757"}</span>
+                  <span>{preFooterCta.callLabel || "Call"}: {content.phone || "+91 94628 77757"}</span>
                 </div>
                 <div className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-xs">
                   <MessageSquare className="w-3.5 h-3.5" />

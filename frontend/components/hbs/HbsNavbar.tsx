@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Phone, MessageSquare, ArrowRight, ChevronRight, X, MapPin, ExternalLink } from "lucide-react";
 import type { HbsContent, HbsNavbarConfig } from "@/lib/types";
 import { cleanTelNumber, getContactWhatsAppUrl } from "@/lib/hbsWhatsApp";
+import { trackHbsEvent } from "@/lib/hbsAnalytics";
 
 export const DEFAULT_NAVBAR_CONFIG: HbsNavbarConfig = {
   navItems: [
@@ -315,8 +316,8 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
     : `${prefix}${navConfig.primaryCta.destination?.startsWith("/") ? "" : "/"}${navConfig.primaryCta.destination || "/contact"}`;
 
   const isPrimaryCtaEnabled = navConfig.primaryCta.enabled !== false;
-  const activePhone = navConfig.contactActions.phone || content.phone || "+91 9482877757";
-  const activeWhatsapp = navConfig.contactActions.whatsappNumber || content.whatsapp || "+91 9482877757";
+  const activePhone = navConfig.contactActions.phone || content.phone || "+91 94628 77757";
+  const activeWhatsapp = navConfig.contactActions.whatsappNumber || content.whatsapp || "+91 94628 77757";
 
   const isCallEnabled = navConfig.contactActions.callEnabled !== false && Boolean(activePhone);
   const isWhatsappEnabled = navConfig.contactActions.whatsappEnabled !== false && Boolean(activeWhatsapp);
@@ -506,7 +507,14 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
                     target="_blank"
                     rel="noopener noreferrer"
                     data-hbs-cta="whatsapp"
-                    onClick={() => closeMenu(false)}
+                    onClick={() => {
+                      trackHbsEvent("click_whatsapp", {
+                        whatsapp_type: "direct",
+                        link_location: "navbar_mobile_menu",
+                        source_page: "navbar",
+                      });
+                      closeMenu(false);
+                    }}
                     tabIndex={mobileMenuOpen ? undefined : -1}
                     className="min-h-[44px] rounded-full inline-flex items-center justify-center gap-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-[13px] shadow-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                   >
@@ -518,7 +526,14 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
                   <a
                     href={`tel:${phoneRaw}`}
                     data-hbs-cta="call"
-                    onClick={() => closeMenu(false)}
+                    onClick={() => {
+                      trackHbsEvent("click_to_call", {
+                        phone_type: "primary",
+                        link_location: "navbar_mobile_menu",
+                        source_page: "navbar",
+                      });
+                      closeMenu(false);
+                    }}
                     tabIndex={mobileMenuOpen ? undefined : -1}
                     className="min-h-[44px] rounded-full inline-flex items-center justify-center gap-1.5 px-3 bg-white/90 hover:bg-white active:bg-slate-100 border border-slate-300/80 text-slate-900 font-semibold text-[13px] shadow-xs transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900"
                     aria-label={`Call Hind Building Solutions at ${activePhone}`}
@@ -579,6 +594,13 @@ export default function HbsNavbar({ content, previewConfig, previewViewport }: H
             <span className="text-white/30">|</span>
             <a
               href={`tel:${phoneRaw}`}
+              onClick={() =>
+                trackHbsEvent("click_to_call", {
+                  phone_type: "primary",
+                  link_location: "navbar_top_ticker",
+                  source_page: "navbar",
+                })
+              }
               className="flex items-center gap-1.5 text-white hover:text-red-200 font-semibold transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-white" />
