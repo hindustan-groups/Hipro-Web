@@ -52,7 +52,33 @@ export function middleware(req: NextRequest) {
   }
 
   if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
+    const isPrimaryDomain =
+      hostHeader === "www.hindustanprojects.in" ||
+      hostHeader === "hindustanprojects.in" ||
+      nextHostname === "www.hindustanprojects.in" ||
+      nextHostname === "hindustanprojects.in";
+
+    if (isPrimaryDomain) {
+      if (pathname === "/hbs") {
+        return NextResponse.redirect(new URL(`/${search}`, "https://hindbuilding.hindustanprojects.in"), 301);
+      }
+      if (pathname.startsWith("/hbs/")) {
+        const cleanPath = pathname.replace(/^\/hbs/, "");
+        return NextResponse.redirect(new URL(`${cleanPath}${search}`, "https://hindbuilding.hindustanprojects.in"), 301);
+      }
+    }
+
     return NextResponse.next();
+  }
+
+  // HBS dedicated sitemap and robots on subdomain
+  if (isHbsSubdomain) {
+    if (pathname === "/sitemap.xml") {
+      return NextResponse.rewrite(new URL("/api/hbs-sitemap", req.url));
+    }
+    if (pathname === "/robots.txt") {
+      return NextResponse.rewrite(new URL("/api/hbs-robots", req.url));
+    }
   }
 
   // Admin and API protection: NEVER route /admin, /admin-login, /api, or static assets through subdomain hostname routing

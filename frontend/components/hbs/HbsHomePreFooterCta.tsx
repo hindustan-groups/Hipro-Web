@@ -88,7 +88,7 @@ export default function HbsHomePreFooterCta({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.98] text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer"
           >
             <Phone className="w-4 h-4 stroke-[2.2]" />
-            <span>{ctaConfig.callLabel}: {phoneDisplay || "+91 94625 77757"}</span>
+            <span>{ctaConfig.callLabel}: {phoneDisplay || "+91 94628 77757"}</span>
             <ArrowRight className="w-4 h-4" />
           </a>
 

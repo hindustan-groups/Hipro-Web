@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = content.metaTitle || HBS_DEFAULT_TITLE;
   const description = content.metaDescription || HBS_DEFAULT_DESCRIPTION;
 
-  const hbsFavicon = content.favicon || "/hbs-favicon.jpg";
+  const hbsFavicon = content.favicon || "/hbs-favicon.ico";
   const hbsAppleIcon = content.logoMark || "/hbs-icon.jpg";
 
   const customOg = content.ogImage || content.ogDefaultImage;
@@ -43,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
     publisher: "Hindustan Projects (HiPRO)",
     icons: {
       icon: [
-        { url: hbsFavicon, sizes: "32x32", type: "image/jpeg" },
+        { url: hbsFavicon, sizes: "32x32", type: hbsFavicon.endsWith(".ico") ? "image/x-icon" : "image/jpeg" },
       ],
       shortcut: hbsFavicon,
       apple: [
@@ -208,11 +208,12 @@ export default async function HbsLayout({
           font-family: 'Playfair Display', Georgia, serif !important;
         }
       `}</style>
-      {content.gaMeasurementId && (
+      {/* GA4 Analytics Integration (via CMS or NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID) */}
+      {(content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID) && (
         <>
           <Script
             strategy="lazyOnload"
-            src={`https://www.googletagmanager.com/gtag/js?id=${content.gaMeasurementId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID}`}
           />
           <Script
             id="hbs-google-analytics"
@@ -222,7 +223,7 @@ export default async function HbsLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${content.gaMeasurementId}', {
+                gtag('config', '${content.gaMeasurementId || process.env.NEXT_PUBLIC_HBS_GA_MEASUREMENT_ID}', {
                   page_path: window.location.pathname,
                 });
               `,

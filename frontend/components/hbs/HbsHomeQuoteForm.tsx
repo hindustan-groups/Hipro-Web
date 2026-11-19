@@ -32,6 +32,7 @@ import {
   Trees,
 } from "lucide-react";
 import type { HbsService } from "@/lib/types";
+import { trackHbsEvent } from "@/lib/hbsAnalytics";
 
 interface HbsHomeQuoteFormProps {
   services?: HbsService[];
@@ -68,8 +69,8 @@ const PROPERTY_TYPES = [
 
 export default function HbsHomeQuoteForm({
   services = [],
-  phoneRaw = "+919482877757",
-  whatsappUrl = "https://wa.me/919482877757",
+  phoneRaw = "+919462877757",
+  whatsappUrl = "https://wa.me/919462877757",
 }: HbsHomeQuoteFormProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -81,6 +82,18 @@ export default function HbsHomeQuoteForm({
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [hasStartedForm, setHasStartedForm] = useState(false);
+
+  const handleFormStart = () => {
+    if (!hasStartedForm) {
+      setHasStartedForm(true);
+      trackHbsEvent("form_start", {
+        form_id: "hbs_home_quote_box",
+        service_category: effectiveService || "general",
+        source_page: "home",
+      });
+    }
+  };
 
   // Determine effective service name
   const effectiveService =
@@ -122,6 +135,17 @@ export default function HbsHomeQuoteForm({
       const json = await res.json().catch(() => null);
       if (res.ok && json?.success !== false) {
         setSuccess(true);
+        trackHbsEvent("generate_lead", {
+          form_id: "hbs_home_quote_box",
+          service_category: effectiveService || "general",
+          source_page: "home",
+          lead_type: propertyType || "residential",
+        });
+        trackHbsEvent("quote_request", {
+          service_name: effectiveService || "general",
+          source_page: "home",
+          form_id: "hbs_home_quote_box",
+        });
       } else {
         setSuccess(true);
       }
@@ -207,7 +231,7 @@ export default function HbsHomeQuoteForm({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} onFocusCapture={handleFormStart} className="space-y-4">
         {error && (
           <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs font-semibold border border-red-200/80 flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />

@@ -1328,10 +1328,10 @@ export default function HbsAdminSettings() {
                       </div>
                       <div className="p-2 bg-white border border-slate-200 rounded-lg">
                         <span className="text-[9px] uppercase tracking-wider text-slate-500 font-bold block">Priority Hotline</span>
-                        <span className="font-black text-slate-900 text-xs">{content.phone || "+91 94625 77757"}</span>
+                        <span className="font-black text-slate-900 text-xs">{content.phone || "+91 94628 77757"}</span>
                       </div>
                       <div className="text-emerald-700 font-bold">
-                        WhatsApp: {content.whatsapp || "+91 94625 77757"}
+                        WhatsApp: {content.whatsapp || "+91 94628 77757"}
                       </div>
                       <div className="text-slate-500 text-[10px]">
                         Hours: {content.businessHours || "Mon – Sat: 8:00 AM – 8:00 PM"}
@@ -1456,7 +1456,7 @@ export default function HbsAdminSettings() {
                     type="text"
                     value={content.phone || ""}
                     onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="+91 94625 77757"
+                    placeholder="+91 94628 77757"
                     className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
                   />
                 </div>
@@ -1469,7 +1469,7 @@ export default function HbsAdminSettings() {
                     type="text"
                     value={content.whatsapp || ""}
                     onChange={(e) => handleChange("whatsapp", e.target.value)}
-                    placeholder="919462577757"
+                    placeholder="919462877757"
                     className="w-full text-xs font-mono border border-slate-300 p-2.5 bg-slate-50 focus:bg-white focus:outline-slate-900 rounded-lg"
                   />
                 </div>
