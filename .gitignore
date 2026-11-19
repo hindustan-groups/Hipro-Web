@@ -17,6 +17,8 @@ Thumbs.db
 *.log
 npm-debug.log*
 yarn-debug.log*
+backend/empanelment_email_logs.json
+backend/*_store.json
 
 # Build outputs
 frontend/.next/

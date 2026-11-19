@@ -19,7 +19,7 @@ import {
 
 function VerifyPassContent() {
   const searchParams = useSearchParams();
-  const initialPassCode = searchParams?.get("passCode") || "";
+  const initialPassCode = searchParams?.get("passCode") || searchParams?.get("id") || searchParams?.get("code") || "";
 
   const [passCodeInput, setPassCodeInput] = useState(initialPassCode);
   const [loading, setLoading] = useState(false);

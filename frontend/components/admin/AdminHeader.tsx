@@ -49,6 +49,7 @@ const titles: Record<string, string> = {
   "/admin/empanelment":             "Vendor Empanelment",
   "/admin/empanelment/applications":"KYC Applications Pipeline",
   "/admin/empanelment/directory":   "Verified Partners Directory",
+  "/admin/empanelment/categories":  "Trade Category Studio",
   "/admin/empanelment/tenders":     "Tenders & Bidding Radar",
   "/admin/empanelment/gate-passes": "Daily Site Gate Passes",
   "/admin/empanelment/work-orders": "Work Orders & Billing",

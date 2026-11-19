@@ -26,6 +26,15 @@ import {
   parseJsonField,
 } from "@/lib/empanelmentContent";
 
+const APPROVED_TRADE_CATEGORIES = [
+  { value: "Civil Construction", label: "Civil Construction (आरसीसी एवं चिनाई)" },
+  { value: "Electrical & MEP", label: "Electrical & MEP (विद्युत एवं सबस्टेशन)" },
+  { value: "Plumbing & Sanitation", label: "Plumbing & Sanitation (प्लंबिंग कार्य)" },
+  { value: "Fabrication & PEB", label: "Fabrication & PEB (फैब्रिकेशन एवं स्टील)" },
+  { value: "Flooring & Finishing", label: "Flooring & Finishing (फ्लोरिंग एवं फिनिशिंग)" },
+  { value: "Material Supply", label: "Material Supply (निर्माण सामग्री)" },
+] as const;
+
 export default function EmpanelmentRegistrationWizard() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -49,12 +58,37 @@ export default function EmpanelmentRegistrationWizard() {
     loadCms();
   }, []);
 
+  // Pre-select trade category from URL query parameters (?category=slug)
+  useEffect(() => {
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const catParam = searchParams.get("category");
+      if (catParam) {
+        const p = catParam.toLowerCase().trim();
+        const matched = APPROVED_TRADE_CATEGORIES.find(
+          (c) =>
+            c.value.toLowerCase() === p ||
+            c.value.toLowerCase().replace(/[^a-z0-9]/g, "-") === p ||
+            (p.includes("civil") && c.value === "Civil Construction") ||
+            (p.includes("electr") && c.value === "Electrical & MEP") ||
+            (p.includes("plumb") && c.value === "Plumbing & Sanitation") ||
+            (p.includes("fab") && c.value === "Fabrication & PEB") ||
+            (p.includes("floor") && c.value === "Flooring & Finishing") ||
+            (p.includes("material") && c.value === "Material Supply")
+        );
+        if (matched) {
+          setFormData((prev) => ({ ...prev, category: matched.value }));
+        }
+      }
+    } catch (_e) {}
+  }, []);
+
   // Form State
   const [formData, setFormData] = useState({
     // Step 1: Enterprise Profile
     companyName: "",
     tradeName: "",
-    category: "Civil Construction",
+    category: "", // Empty = Unassigned (Pending Classification by HiPRO)
     gstin: "",
     pan: "",
     state: "Rajasthan",
@@ -68,22 +102,18 @@ export default function EmpanelmentRegistrationWizard() {
     city: "Jaipur",
     pincode: "",
 
-    // Step 3: Banking & Financials
-    // NOTE: Keys deliberately match the backend Prisma VendorApplication model fields.
-    // Do not rename these keys without updating backend/src/routes/empanelment.ts
-    // and backend/prisma/schema.prisma in the same PR.
+    // Step 3: Banking & Financials (Phase 2B Data Contract)
     bankName: "",
-    accountNumber: "",   // was: bankAccountNumber (caused silent DB data loss — DATA-CRIT-01)
-    ifscCode: "",        // was: bankIfsc (caused silent DB data loss — DATA-CRIT-01)
-    yearsInBusiness: 5,
-    annualTurnover: "₹50 Lakh – ₹1 Crore",
-    workforceCount: 20,
+    accountNumber: "",
+    ifscCode: "",
+    establishmentYear: "",
+    turnoverBracket: "",
+    teamSize: "",
 
     // Step 4: KYC Documents (base64 canvas-compressed or data URL)
-    // NOTE: Keys match backend VendorApplication Prisma schema.
-    gstCertificateUrl: "",   // was: gstDocUrl (caused silent DB null — DATA-CRIT-01)
-    panCardUrl: "",          // was: panDocUrl (caused silent DB null — DATA-CRIT-01)
-    bankChequeUrl: "",       // was: chequeDocUrl (caused silent DB null — DATA-CRIT-01)
+    gstCertificateUrl: "",
+    panCardUrl: "",
+    bankChequeUrl: "",
     msmeDocUrl: "",
     pastWorkDocUrl: "",
 
@@ -188,10 +218,19 @@ export default function EmpanelmentRegistrationWizard() {
     setError("");
 
     try {
+      const payload = {
+        ...formData,
+        pan: (formData.pan || "").trim().toUpperCase(),
+        category: formData.category ? formData.category.trim() : null,
+        turnoverBracket: formData.turnoverBracket ? formData.turnoverBracket.trim() : null,
+        teamSize: formData.teamSize ? formData.teamSize.trim() : null,
+        workExperienceDocUrl: formData.pastWorkDocUrl,
+      };
+
       const res = await fetch("/api/empanelment/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const json = await res.json();
@@ -430,37 +469,23 @@ export default function EmpanelmentRegistrationWizard() {
 
               <div>
                 <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Trade Category *
+                  Trade Category (Optional — Select if known)
                 </label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
                 >
-                  {(() => {
-                    const cats: EmpanelmentCategory[] = parseJsonField(
-                      content.categoriesList,
-                      parseJsonField(DEFAULT_EMPANELMENT_CONTENT.categoriesList, [])
-                    );
-                    if (cats.length > 0) {
-                      return cats.map((cat) => (
-                        <option key={cat.id || cat.title} value={cat.title}>
-                          {cat.title}
-                        </option>
-                      ));
-                    }
-                    return (
-                      <>
-                        <option value="Civil Construction">Civil Construction (आरसीसी एवं चिनाई)</option>
-                        <option value="Electrical & MEP">Electrical & MEP (विद्युत एवं सबस्टेशन)</option>
-                        <option value="Plumbing & Sanitation">Plumbing & Sanitation (प्लंबिंग कार्य)</option>
-                        <option value="Fabrication & PEB">Fabrication & PEB (फेब्रिकेशन एवं स्टील)</option>
-                        <option value="Flooring & Finishing">Flooring & Finishing (फ्लोरिंग एवं फिनिशिंग)</option>
-                        <option value="Material Supply">Material Supply (निर्माण सामग्री सप्लायर)</option>
-                      </>
-                    );
-                  })()}
+                  <option value="">— Select Category (or leave unassigned for HiPRO assistance) —</option>
+                  {APPROVED_TRADE_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
                 </select>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Unsure? Leave blank. Our procurement officer will assess and assign your trade category during audit.
+                </p>
               </div>
             </div>
 
@@ -646,26 +671,29 @@ export default function EmpanelmentRegistrationWizard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div>
                 <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Years in Business
+                  Year of Establishment (स्थापना वर्ष)
                 </label>
                 <input
                   type="number"
-                  min="0"
-                  value={formData.yearsInBusiness}
-                  onChange={(e) => setFormData({ ...formData, yearsInBusiness: parseInt(e.target.value, 10) || 0 })}
+                  min="1950"
+                  max={new Date().getFullYear()}
+                  placeholder="e.g. 2018"
+                  value={formData.establishmentYear}
+                  onChange={(e) => setFormData({ ...formData, establishmentYear: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Annual Turnover Bracket
+                  Annual Turnover Bracket (वार्षिक टर्नओवर)
                 </label>
                 <select
-                  value={formData.annualTurnover}
-                  onChange={(e) => setFormData({ ...formData, annualTurnover: e.target.value })}
+                  value={formData.turnoverBracket}
+                  onChange={(e) => setFormData({ ...formData, turnoverBracket: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
                 >
+                  <option value="">— Select Turnover Bracket (Optional) —</option>
                   <option value="Above ₹2 Crore">Above ₹2 Crore (&gt; ₹2 Cr)</option>
                   <option value="₹50 Lakh – ₹2 Crore">₹50 Lakh – ₹2 Crore</option>
                   <option value="₹10 Lakh – ₹50 Lakh">₹10 Lakh – ₹50 Lakh</option>
@@ -675,15 +703,19 @@ export default function EmpanelmentRegistrationWizard() {
 
               <div>
                 <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">
-                  Direct Skilled Workforce
+                  Direct Skilled Workforce (कार्यबल क्षमता)
                 </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.workforceCount}
-                  onChange={(e) => setFormData({ ...formData, workforceCount: parseInt(e.target.value, 10) || 1 })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-slate-900 focus:outline-none"
-                />
+                <select
+                  value={formData.teamSize}
+                  onChange={(e) => setFormData({ ...formData, teamSize: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-800 focus:outline-none"
+                >
+                  <option value="">— Select Workforce Capacity (Optional) —</option>
+                  <option value="1-10">1 – 10 Personnel (Small Crew / Artisan)</option>
+                  <option value="11-50">11 – 50 Personnel (Mid-Size Contractor)</option>
+                  <option value="51-200">51 – 200 Personnel (Large Contractor)</option>
+                  <option value="200+">200+ Personnel (Enterprise / Infrastructure)</option>
+                </select>
               </div>
             </div>
           </div>
@@ -701,9 +733,9 @@ export default function EmpanelmentRegistrationWizard() {
 
             <div className="space-y-3">
               {[
-                { label: "GST Certificate (जीएसटी प्रमाण पत्र)", key: "gstCertificateUrl", required: true },
-                { label: "PAN Card Document (पैन कार्ड)", key: "panCardUrl", required: true },
-                { label: "Cancelled Cheque / Passbook (कैंसिल्ड चेक)", key: "bankChequeUrl", required: true },
+                { label: "GST Certificate (जीएसटी प्रमाण पत्र)", key: "gstCertificateUrl", required: Boolean(formData.gstin) },
+                { label: "PAN Card Document (पैन कार्ड)", key: "panCardUrl", required: false },
+                { label: "Cancelled Cheque / Passbook (कैंसिल्ड चेक)", key: "bankChequeUrl", required: false },
                 { label: "MSME / Udyam Certificate (एमएसएमई / उद्यम)", key: "msmeDocUrl", required: false },
                 { label: "Past Projects / Experience Proof (कार्य अनुभव)", key: "pastWorkDocUrl", required: false },
               ].map((doc) => {
@@ -816,9 +848,17 @@ export default function EmpanelmentRegistrationWizard() {
             <button
               type="button"
               onClick={() => {
-                if (step === 1 && (!formData.companyName || !formData.pan)) {
-                  setError("Please enter Company Name and PAN number.");
-                  return;
+                if (step === 1) {
+                  if (!formData.companyName || !formData.pan) {
+                    setError("Please enter Company Name and PAN number.");
+                    return;
+                  }
+                  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+                  const cleanPan = (formData.pan || "").trim().toUpperCase();
+                  if (!PAN_REGEX.test(cleanPan)) {
+                    setError("Please enter a valid 10-character PAN number (e.g. ABCDE1234F).");
+                    return;
+                  }
                 }
                 if (step === 2 && (!formData.contactName || !formData.phone || !formData.email)) {
                   setError("Please enter Contact Person Name, Phone, and Email.");

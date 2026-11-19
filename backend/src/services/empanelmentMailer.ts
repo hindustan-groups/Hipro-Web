@@ -1,4 +1,123 @@
+import fs from "fs";
+import path from "path";
 import { sendOneEmail } from "./automail/emailSender";
+import { logVendorActivity } from "./vendorActivityService";
+import { prisma } from "../lib/db";
+
+export interface EmpanelmentEmailLog {
+  id: string;
+  applicationId: string;
+  recipientEmail: string;
+  recipientName?: string;
+  subject: string;
+  templateKey: string;
+  status: "sent" | "failed" | "queued";
+  error?: string | null;
+  htmlBody: string;
+  sentAt: string;
+}
+
+const EMAIL_LOGS_PATH = path.resolve(__dirname, "../../empanelment_email_logs.json");
+
+function loadEmailLogs(): EmpanelmentEmailLog[] {
+  try {
+    if (fs.existsSync(EMAIL_LOGS_PATH)) {
+      return JSON.parse(fs.readFileSync(EMAIL_LOGS_PATH, "utf-8"));
+    }
+  } catch (e) {
+    console.error("[EMPANELMENT MAILER] Failed to read email logs:", e);
+  }
+  return [];
+}
+
+function saveEmailLogs(logs: EmpanelmentEmailLog[]) {
+  try {
+    fs.writeFileSync(EMAIL_LOGS_PATH, JSON.stringify(logs, null, 2), "utf-8");
+  } catch (e) {
+    console.error("[EMPANELMENT MAILER] Failed to save email logs:", e);
+  }
+}
+
+async function recordEmailDispatch(params: {
+  applicationId: string;
+  recipientEmail: string;
+  recipientName?: string;
+  subject: string;
+  templateKey: string;
+  htmlBody: string;
+  success: boolean;
+  errorMessage?: string;
+}) {
+  const log: EmpanelmentEmailLog = {
+    id: `eml_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    applicationId: params.applicationId,
+    recipientEmail: params.recipientEmail,
+    recipientName: params.recipientName,
+    subject: params.subject,
+    templateKey: params.templateKey,
+    status: params.success ? "sent" : "failed",
+    error: params.errorMessage || null,
+    htmlBody: params.htmlBody,
+    sentAt: new Date().toISOString(),
+  };
+
+  const allLogs = loadEmailLogs();
+  allLogs.unshift(log);
+  saveEmailLogs(allLogs);
+
+  // Also log to VendorActivityLog
+  await logVendorActivity({
+    applicationId: params.applicationId,
+    actorType: "SYSTEM",
+    actorName: "HiPRO AutoMail Engine",
+    action: "EMAIL_DISPATCHED",
+    details: `Subject: "${params.subject}" | To: ${params.recipientEmail} | Status: ${log.status}${params.errorMessage ? ` (${params.errorMessage})` : ""}`,
+  }).catch(() => null);
+
+  return log;
+}
+
+export async function getEmpanelmentEmailLogs(applicationId: string): Promise<EmpanelmentEmailLog[]> {
+  const allLogs = loadEmailLogs();
+  return allLogs.filter((l) => l.applicationId === applicationId);
+}
+
+export async function retryEmpanelmentEmail(logId: string): Promise<{ success: boolean; error?: string }> {
+  const allLogs = loadEmailLogs();
+  const index = allLogs.findIndex((l) => l.id === logId);
+  if (index === -1) return { success: false, error: "Email log not found" };
+
+  const log = allLogs[index];
+  try {
+    await sendOneEmail({
+      to: log.recipientEmail,
+      subject: log.subject,
+      htmlBody: log.htmlBody,
+      brand: "empanelment",
+      senderName: "HiPRO Empanelment Desk",
+    });
+
+    log.status = "sent";
+    log.error = null;
+    log.sentAt = new Date().toISOString();
+    saveEmailLogs(allLogs);
+
+    await logVendorActivity({
+      applicationId: log.applicationId,
+      actorType: "ADMIN",
+      actorName: "Procurement Officer",
+      action: "EMAIL_RETRIED",
+      details: `Retried delivery of email "${log.subject}" to ${log.recipientEmail} - Success`,
+    }).catch(() => null);
+
+    return { success: true };
+  } catch (err: any) {
+    log.status = "failed";
+    log.error = err.message || "Retry failed";
+    saveEmailLogs(allLogs);
+    return { success: false, error: log.error || undefined };
+  }
+}
 
 interface ApplicationEmailParams {
   email: string;
@@ -9,6 +128,7 @@ interface ApplicationEmailParams {
   tier: string;
   pan: string;
   gstin?: string | null;
+  applicationId?: string;
 }
 
 interface StatusEmailParams {
@@ -16,11 +136,12 @@ interface StatusEmailParams {
   companyName: string;
   contactName: string;
   trackingId: string;
-  status: "APPROVED" | "REJECTED" | "UNDER_REVIEW";
+  status: "APPROVED" | "REJECTED" | "UNDER_REVIEW" | "DOCS_REQUESTED";
   registrationNo?: string | null;
   tier?: string;
   remarks?: string;
   validUntil?: Date | string | null;
+  applicationId?: string;
 }
 
 interface GatePassEmailParams {
@@ -32,13 +153,14 @@ interface GatePassEmailParams {
   purpose: string;
   validUntil: string;
   phone: string;
+  applicationId?: string;
 }
 
 /**
  * 1. Send Application Submission Acknowledgment Email
  */
 export async function sendApplicationReceivedEmail(params: ApplicationEmailParams): Promise<void> {
-  const { email, companyName, contactName, trackingId, category, tier, pan, gstin } = params;
+  const { email, companyName, contactName, trackingId, category, tier, pan, gstin, applicationId } = params;
 
   if (!email || !email.includes("@")) {
     console.warn(`[EMPANELMENT MAILER] Skipping email, invalid address: ${email}`);
@@ -47,6 +169,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
 
   const trackUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
   const currentYear = new Date().getFullYear();
+  const subject = `Empanelment Application Received [${trackingId}] - ${companyName}`;
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -124,7 +247,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
                 </tr>
                 <tr>
                   <td style="color: #94a3b8; border-bottom: 1px solid #334155;">Category:</td>
-                  <td style="font-weight: 600; border-bottom: 1px solid #334155;">${category}</td>
+                  <td style="font-weight: 600; border-bottom: 1px solid #334155;">${category || "Pending Classification"}</td>
                 </tr>
                 <tr>
                   <td style="color: #94a3b8; border-bottom: 1px solid #334155;">Provisional Tier:</td>
@@ -141,36 +264,12 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
                 </tr>` : ""}
               </table>
 
-              <!-- Next Steps -->
-              <h3 style="color: #f8fafc; font-size: 15px; margin-bottom: 10px;">Verification Workflow</h3>
-              <ol style="color: #94a3b8; font-size: 13px; line-height: 1.6; padding-left: 20px; margin-top: 0; margin-bottom: 28px;">
-                <li><strong>Document Audit:</strong> CA turnover, GST/PAN compliance cross-checked.</li>
-                <li><strong>Technical Scoring:</strong> Past civil work orders and capacity tier verification.</li>
-                <li><strong>Approval & Smart Card:</strong> Digital authorization and PVC smart ID release.</li>
-              </ol>
-
               <!-- Action Button -->
               <div style="text-align: center; margin-bottom: 24px;">
                 <a href="${trackUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);">
                   Track Application Status Online &rarr;
                 </a>
               </div>
-
-              <p style="color: #64748b; font-size: 12px; line-height: 1.5; margin-bottom: 0;">
-                If you did not initiate this empanelment request, please ignore this email or reach us at <a href="mailto:empanelment@hindustanprojects.in" style="color: #fdba74;">empanelment@hindustanprojects.in</a>.
-              </p>
-            </td>
-          </tr>
-
-          <!-- Quick Action & Verification Bar -->
-          <tr>
-            <td style="background-color: #0b1120; padding: 16px 24px; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; text-align: center;">
-              <a href="https://empanelment.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; margin-right: 8px;">
-                🌐 Visit empanelment.hindustanprojects.in
-              </a>
-              <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
-                💬 Helpline: +91 75970 00601
-              </a>
             </td>
           </tr>
 
@@ -180,19 +279,11 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
               <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
                 Hindustan Projects Procurement & Vendor Empanelment Directorate
               </div>
-              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
-                📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px;">
+                📍 Bhopal Ganj, Bhilwara - 311001, Rajasthan • Helpline: +91 75970 00601
               </p>
-              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">
-                📞 <strong>Direct Helpline:</strong> <a href="tel:+917597000601" style="color: #fb923c; text-decoration: none;">+91 75970 00601</a>
-                <span style="color: #475569; margin: 0 6px;">•</span>
-                ✉️ <strong>Official Desk:</strong> <a href="mailto:empanelment@hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment@hindustanprojects.in</a>
-              </p>
-              <div style="margin: 12px 0 8px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; font-size: 9.5px; color: #94a3b8; text-align: justify; border: 1px solid rgba(255,255,255,0.06);">
-                <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic transmission is intended solely for the designated contractor recipient (${email}). It contains statutory empanelment credentials. Any unauthorized review, dissemination, or reproduction is strictly prohibited.
-              </div>
               <p style="margin: 8px 0 0; font-size: 10px; color: #64748b;">
-                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} Hindustan Projects Group. All rights reserved.
+                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} All rights reserved.
               </p>
             </td>
           </tr>
@@ -205,25 +296,43 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
 </html>
   `;
 
+  let success = false;
+  let errorMessage: string | undefined;
+
   try {
     await sendOneEmail({
       to: email,
-      subject: `Empanelment Application Received [${trackingId}] - ${companyName}`,
+      subject,
       htmlBody,
       brand: "empanelment",
       senderName: "HiPRO Empanelment Desk",
     });
+    success = true;
     console.log(`[EMPANELMENT MAILER] Acknowledgment email sent to ${email} for ${trackingId}`);
   } catch (err: any) {
-    console.warn(`[EMPANELMENT MAILER] Failed to send acknowledgment email:`, err?.message || err);
+    errorMessage = err?.message || String(err);
+    console.warn(`[EMPANELMENT MAILER] Failed to send acknowledgment email:`, errorMessage);
+  } finally {
+    if (applicationId) {
+      await recordEmailDispatch({
+        applicationId,
+        recipientEmail: email,
+        recipientName: contactName,
+        subject,
+        templateKey: "application_received",
+        htmlBody,
+        success,
+        errorMessage,
+      });
+    }
   }
 }
 
 /**
- * 2. Send Status Change Notification (APPROVED or REJECTED)
+ * 2. Send Status Change Notification (APPROVED, REJECTED, DOCS_REQUESTED)
  */
 export async function sendApplicationStatusEmail(params: StatusEmailParams): Promise<void> {
-  const { email, companyName, contactName, trackingId, status, registrationNo, tier, remarks } = params;
+  const { email, companyName, contactName, trackingId, status, registrationNo, tier, remarks, applicationId } = params;
 
   if (!email || !email.includes("@")) {
     console.warn(`[EMPANELMENT MAILER] Skipping status email, invalid address: ${email}`);
@@ -231,16 +340,29 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
   }
 
   const isApproved = status === "APPROVED";
+  const isDocsRequested = status === "DOCS_REQUESTED";
   const portalUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
   const tendersUrl = `https://empanelment.hindustanprojects.in/tenders`;
   const currentYear = new Date().getFullYear();
 
-  const subject = isApproved
-    ? `Congratulations! Empanelment Approved [${registrationNo || trackingId}] - Hindustan Projects`
-    : `Empanelment Application Status Update [${trackingId}] - Hindustan Projects`;
+  let subject = `Empanelment Application Status Update [${trackingId}] - Hindustan Projects`;
+  if (isApproved) {
+    subject = `Congratulations! Empanelment Approved [${registrationNo || trackingId}] - Hindustan Projects`;
+  } else if (isDocsRequested) {
+    subject = `Action Required: Document Revision Requested [${trackingId}] - Hindustan Projects`;
+  }
 
-  const bannerColor = isApproved ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" : "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
-  const statusBadge = isApproved ? "EMPANELMENT APPROVED" : "APPLICATION REJECTED / NEEDS REVISION";
+  const bannerColor = isApproved
+    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)"
+    : isDocsRequested
+    ? "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)"
+    : "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
+
+  const statusBadge = isApproved
+    ? "EMPANELMENT APPROVED"
+    : isDocsRequested
+    ? "DOCUMENT REVISION REQUESTED"
+    : "APPLICATION REJECTED / NEEDS REVISION";
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -262,7 +384,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
-                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: ${isApproved ? "#22c55e" : "#ef4444"}; margin-right: 6px; vertical-align: middle;"></span>
+                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: ${isApproved ? "#22c55e" : isDocsRequested ? "#a855f7" : "#ef4444"}; margin-right: 6px; vertical-align: middle;"></span>
                     <span>OFFICIAL STATUS AUDIT NOTICE</span>
                   </td>
                   <td align="right" style="font-size: 10px; font-family: monospace; color: #fdba74;">
@@ -305,14 +427,10 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                     <td>
                       <div style="font-size: 11px; text-transform: uppercase; color: #6ee7b7; font-weight: 700;">OFFICIAL VENDOR REGISTRATION NUMBER</div>
                       <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: 1.5px; margin: 4px 0; font-family: monospace;">${registrationNo || trackingId}</div>
-                      <div style="font-size: 12px; color: #a7f3d0;">Capacity Tier: <strong>${(tier || "CLASS_C").replace("_", " ")}</strong> &bull; Validity: 2 Years from issuance</div>
+                      <div style="font-size: 12px; color: #a7f3d0;">Capacity Tier: <strong>${(tier || "CLASS_C").replace("_", " ")}</strong> &bull; Validity: 2 Years</div>
                     </td>
                   </tr>
                 </table>
-
-                <p style="color: #cbd5e1; font-size: 13px; line-height: 1.6;">
-                  You are now authorized to participate in exclusive Hindustan Projects tenders, issue digital site gate passes for your workforce, and submit commercial bids directly through the Empanelment portal.
-                </p>
 
                 <div style="text-align: center; margin: 28px 0 16px 0;">
                   <a href="${portalUrl}" target="_blank" style="display: inline-block; background: #059669; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 14px; margin-right: 8px;">
@@ -320,6 +438,27 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                   </a>
                   <a href="${tendersUrl}" target="_blank" style="display: inline-block; background: #ea580c; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 14px;">
                     Browse Active Tenders &rarr;
+                  </a>
+                </div>
+              ` : isDocsRequested ? `
+                <h2 style="color: #c084fc; font-size: 20px; margin-top: 0;">Document Revision Required</h2>
+                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">
+                  Dear ${contactName},<br>
+                  During the preliminary document audit of your empanelment application (Tracking ID: <strong>${trackingId}</strong>), our review team noted that one or more documents require clarification or re-upload.
+                </p>
+
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 10px; padding: 16px; margin: 20px 0;">
+                  <tr>
+                    <td>
+                      <div style="font-size: 11px; text-transform: uppercase; color: #c4b5fd; font-weight: 700;">AUDIT COMMITTEE INSTRUCTIONS</div>
+                      <div style="font-size: 13px; color: #ede9fe; margin-top: 6px; line-height: 1.5;">${remarks || "Please re-upload legible and complete statutory certificates via the vendor portal."}</div>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="text-align: center; margin: 28px 0 16px 0;">
+                  <a href="https://empanelment.hindustanprojects.in/login" target="_blank" style="display: inline-block; background: #7c3aed; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 14px;">
+                    Log In to Document Vault & Re-upload &rarr;
                   </a>
                 </div>
               ` : `
@@ -337,23 +476,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                     </td>
                   </tr>
                 </table>
-
-                <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
-                  You may re-apply with rectified certificates or contact our Procurement Desk for assistance at <a href="mailto:empanelment@hindustanprojects.in" style="color: #fdba74;">empanelment@hindustanprojects.in</a>.
-                </p>
               `}
-            </td>
-          </tr>
-
-          <!-- Quick Action & Verification Bar -->
-          <tr>
-            <td style="background-color: #0b1120; padding: 16px 24px; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; text-align: center;">
-              <a href="https://empanelment.hindustanprojects.in" target="_blank" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; margin-right: 8px;">
-                🌐 Visit empanelment.hindustanprojects.in
-              </a>
-              <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
-                💬 Helpline: +91 75970 00601
-              </a>
             </td>
           </tr>
 
@@ -361,21 +484,10 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
           <tr data-hipro-corporate-footer="true">
             <td style="background: #090d16; padding: 26px 30px 20px; text-align: center; border-top: 1px solid #1e293b; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
               <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
-                Hindustan Projects Procurement & Vendor Empanelment Directorate
+                Hindustan Projects Procurement Directorate
               </div>
-              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
-                📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
-              </p>
-              <p style="margin: 4px 0 0; color: #94a3b8; font-size: 11px;">
-                📞 <strong>Direct Helpline:</strong> <a href="tel:+917597000601" style="color: #fb923c; text-decoration: none;">+91 75970 00601</a>
-                <span style="color: #475569; margin: 0 6px;">•</span>
-                ✉️ <strong>Official Desk:</strong> <a href="mailto:empanelment@hindustanprojects.in" style="color: #fb923c; text-decoration: none;">empanelment@hindustanprojects.in</a>
-              </p>
-              <div style="margin: 12px 0 8px; padding: 10px; background: rgba(0,0,0,0.4); border-radius: 6px; font-size: 9.5px; color: #94a3b8; text-align: justify; border: 1px solid rgba(255,255,255,0.06);">
-                <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic transmission is intended solely for the designated contractor recipient (${email}). It contains statutory empanelment credentials. Any unauthorized review, dissemination, or reproduction is strictly prohibited.
-              </div>
-              <p style="margin: 8px 0 0; font-size: 10px; color: #64748b;">
-                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} Hindustan Projects Group. All rights reserved.
+              <p style="margin: 8px 0 0; color: #e2e8f0; font-size: 11px;">
+                📍 Bhopal Ganj, Bhilwara - 311001, Rajasthan • Helpline: +91 75970 00601
               </p>
             </td>
           </tr>
@@ -388,6 +500,9 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
 </html>
   `;
 
+  let success = false;
+  let errorMessage: string | undefined;
+
   try {
     await sendOneEmail({
       to: email,
@@ -396,9 +511,24 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
       brand: "empanelment",
       senderName: "HiPRO Empanelment Desk",
     });
+    success = true;
     console.log(`[EMPANELMENT MAILER] Status update email sent to ${email} (${status})`);
   } catch (err: any) {
-    console.warn(`[EMPANELMENT MAILER] Failed to send status email:`, err?.message || err);
+    errorMessage = err?.message || String(err);
+    console.warn(`[EMPANELMENT MAILER] Failed to send status email:`, errorMessage);
+  } finally {
+    if (applicationId) {
+      await recordEmailDispatch({
+        applicationId,
+        recipientEmail: email,
+        recipientName: contactName,
+        subject,
+        templateKey: `status_${status.toLowerCase()}`,
+        htmlBody,
+        success,
+        errorMessage,
+      });
+    }
   }
 }
 
@@ -406,7 +536,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
  * 3. Send Daily Site Gate Pass Email
  */
 export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promise<void> {
-  const { email, visitorName, companyName, passCode, siteLocation, purpose, validUntil } = params;
+  const { email, visitorName, companyName, passCode, siteLocation, purpose, validUntil, applicationId } = params;
 
   if (!email || !email.includes("@")) {
     return;
@@ -414,6 +544,7 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
 
   const verifyUrl = `https://empanelment.hindustanprojects.in/verify-pass?passCode=${encodeURIComponent(passCode)}`;
   const currentYear = new Date().getFullYear();
+  const subject = `Site Gate Pass [${passCode}] - ${siteLocation} (${visitorName})`;
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -460,7 +591,7 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
               <div style="text-align: center; margin-bottom: 20px;">
                 <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700;">PASS IDENTIFIER</div>
                 <div style="font-size: 26px; font-weight: 900; color: #60a5fa; font-family: monospace; letter-spacing: 2px;">${passCode}</div>
-                <div style="font-size: 12px; color: #34d399; font-weight: 600; margin-top: 4px;">&#10004; ACTIVE & VALID</div>
+                <div style="font-size: 12px; color: #34d399; font-weight: 600; margin-top: 4px;">&#10004; ACTIVE & VALID (24 HOURS)</div>
               </div>
 
               <table role="presentation" width="100%" cellpadding="8" cellspacing="0" style="font-size: 13px; color: #e2e8f0; border-top: 1px solid #334155; margin-bottom: 20px;">
@@ -491,25 +622,6 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
                   Open Security QR Verification &rarr;
                 </a>
               </div>
-
-              <div style="font-size: 11px; color: #94a3b8; text-align: center; line-height: 1.4;">
-                Present this digital pass or QR code at site checkpoint security. Pass expires automatically after 24 hours.
-              </div>
-            </td>
-          </tr>
-
-          <!-- Corporate Headquarters & Credentials Footer -->
-          <tr data-hipro-corporate-footer="true">
-            <td style="background: #090d16; padding: 22px 24px 18px; text-align: center; border-top: 1px solid #1e293b; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
-              <div style="font-size: 12px; font-weight: 800; color: #ffffff; text-transform: uppercase;">
-                Hindustan Projects Site Security Directorate
-              </div>
-              <p style="margin: 6px 0 0; color: #e2e8f0; font-size: 10.5px;">
-                📍 Corporate HQ: Bhopal Ganj, Bhilwara 311001, Rajasthan &bull; Helpline: +91 75970 00601
-              </p>
-              <p style="margin: 6px 0 0; font-size: 10px; color: #64748b;">
-                ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • © ${currentYear} All rights reserved.
-              </p>
             </td>
           </tr>
 
@@ -521,16 +633,309 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
 </html>
   `;
 
+  let success = false;
+  let errorMessage: string | undefined;
+
   try {
     await sendOneEmail({
       to: email,
-      subject: `Site Gate Pass [${passCode}] - ${siteLocation} (${visitorName})`,
+      subject,
       htmlBody,
       brand: "empanelment",
       senderName: "HiPRO Site Security",
     });
+    success = true;
     console.log(`[EMPANELMENT MAILER] Gate pass email sent to ${email} (${passCode})`);
   } catch (err: any) {
-    console.warn(`[EMPANELMENT MAILER] Failed to send gate pass email:`, err?.message || err);
+    errorMessage = err?.message || String(err);
+    console.warn(`[EMPANELMENT MAILER] Failed to send gate pass email:`, errorMessage);
+  } finally {
+    if (applicationId) {
+      await recordEmailDispatch({
+        applicationId,
+        recipientEmail: email,
+        recipientName: visitorName,
+        subject,
+        templateKey: "gate_pass_issued",
+        htmlBody,
+        success,
+        errorMessage,
+      });
+    }
   }
+}
+
+/**
+ * 4. Send Vendor Account Activation Invitation Email
+ */
+export async function sendVendorActivationEmail(params: {
+  email: string;
+  contactName: string;
+  companyName: string;
+  activationToken: string;
+  applicationId: string;
+}): Promise<void> {
+  const { email, contactName, companyName, activationToken, applicationId } = params;
+  const activateUrl = `https://empanelment.hindustanprojects.in/activate?token=${encodeURIComponent(activationToken)}`;
+  const subject = `Activate Your HiPRO Vendor Portal Account — ${companyName}`;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<body style="margin: 0; padding: 20px; background: #0f172a; font-family: -apple-system, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="580" style="background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 30px;">
+          <tr>
+            <td>
+              <div style="font-size: 18px; font-weight: 800; color: #f97316; text-transform: uppercase;">Hindustan Projects</div>
+              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Vendor Portal Account Activation</h2>
+              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+                Dear ${contactName},<br>
+                Congratulations! Your company <strong>${companyName}</strong> has been granted authorized access to the Hindustan Projects Vendor & Contractor Portal.
+              </p>
+              <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
+                Through your dedicated portal, you can participate in active tender bidding, issue 24-hour daily site gate passes, update company credentials, and view contract work orders.
+              </p>
+              <div style="text-align: center; margin: 26px 0;">
+                <a href="${activateUrl}" target="_blank" style="background: #ea580c; color: #fff; padding: 13px 30px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-block;">
+                  Activate Vendor Account & Set Password &rarr;
+                </a>
+              </div>
+              <p style="color: #64748b; font-size: 11.5px;">
+                This invitation link remains valid for 72 hours. If you did not request this, please contact empanelment@hindustanprojects.in.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  let success = false;
+  let errorMessage: string | undefined;
+
+  try {
+    await sendOneEmail({
+      to: email,
+      subject,
+      htmlBody,
+      brand: "empanelment",
+      senderName: "HiPRO Vendor Access Desk",
+    });
+    success = true;
+  } catch (err: any) {
+    errorMessage = err?.message || String(err);
+  } finally {
+    await recordEmailDispatch({
+      applicationId,
+      recipientEmail: email,
+      recipientName: contactName,
+      subject,
+      templateKey: "vendor_activation_invite",
+      htmlBody,
+      success,
+      errorMessage,
+    });
+  }
+}
+
+/**
+ * 5. Send Password Reset Assistance Email
+ */
+export async function sendPasswordResetEmail(params: {
+  email: string;
+  contactName: string;
+  resetToken: string;
+  applicationId: string;
+}): Promise<void> {
+  const { email, contactName, resetToken, applicationId } = params;
+  const resetUrl = `https://empanelment.hindustanprojects.in/reset-password?token=${encodeURIComponent(resetToken)}`;
+  const subject = `Reset Your HiPRO Vendor Portal Password`;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<body style="margin: 0; padding: 20px; background: #0f172a; font-family: -apple-system, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="580" style="background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 30px;">
+          <tr>
+            <td>
+              <div style="font-size: 18px; font-weight: 800; color: #f97316;">Hindustan Projects</div>
+              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Password Reset Request</h2>
+              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+                Dear ${contactName},<br>
+                A password reset request was initiated for your Hindustan Projects Vendor Portal account.
+              </p>
+              <div style="text-align: center; margin: 26px 0;">
+                <a href="${resetUrl}" target="_blank" style="background: #2563eb; color: #fff; padding: 13px 30px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-block;">
+                  Reset Your Password &rarr;
+                </a>
+              </div>
+              <p style="color: #64748b; font-size: 11.5px;">
+                This link will expire in 2 hours. If you did not request a password reset, please ignore this email.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  let success = false;
+  let errorMessage: string | undefined;
+
+  try {
+    await sendOneEmail({
+      to: email,
+      subject,
+      htmlBody,
+      brand: "empanelment",
+      senderName: "HiPRO Vendor Security",
+    });
+    success = true;
+  } catch (err: any) {
+    errorMessage = err?.message || String(err);
+  } finally {
+    await recordEmailDispatch({
+      applicationId,
+      recipientEmail: email,
+      recipientName: contactName,
+      subject,
+      templateKey: "password_reset",
+      htmlBody,
+      success,
+      errorMessage,
+    });
+  }
+}
+
+/**
+ * 6. Send Bid Confirmation Notification Email
+ */
+export async function sendBidConfirmationEmail(params: {
+  email: string;
+  companyName: string;
+  contactName: string;
+  tenderNo: string;
+  tenderTitle: string;
+  bidAmount: number;
+  proposedDays?: number | null;
+  applicationId: string;
+}): Promise<void> {
+  const { email, companyName, contactName, tenderNo, tenderTitle, bidAmount, proposedDays, applicationId } = params;
+  const subject = `Tender Bid Submitted [${tenderNo}] — ${tenderTitle}`;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html lang="en" data-hipro-branded="true">
+<body style="margin: 0; padding: 20px; background: #0f172a; font-family: -apple-system, sans-serif; color: #f1f5f9;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="580" style="background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 30px;">
+          <tr>
+            <td>
+              <div style="font-size: 18px; font-weight: 800; color: #f97316;">Hindustan Projects Procurement</div>
+              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Commercial Bid Acknowledgment</h2>
+              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+                Dear ${contactName} (${companyName}),<br>
+                Your electronic commercial bid for tender <strong>${tenderNo}</strong> (${tenderTitle}) has been securely logged into the procurement evaluation registry.
+              </p>
+              <table style="width: 100%; background: #0f172a; border-radius: 8px; padding: 12px; margin: 16px 0; font-size: 13px; color: #e2e8f0;">
+                <tr><td style="color: #94a3b8; width: 40%;">Tender Package:</td><td style="font-weight: 700;">${tenderTitle}</td></tr>
+                <tr><td style="color: #94a3b8;">Commercial Quote:</td><td style="font-weight: 700; color: #34d399;">₹${bidAmount.toLocaleString("en-IN")}</td></tr>
+                ${proposedDays ? `<tr><td style="color: #94a3b8;">Completion Timeline:</td><td>${proposedDays} Working Days</td></tr>` : ""}
+              </table>
+              <p style="color: #94a3b8; font-size: 12px;">
+                The procurement evaluation committee will review all submitted bids post the tender closing deadline.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `;
+
+  let success = false;
+  let errorMessage: string | undefined;
+
+  try {
+    await sendOneEmail({
+      to: email,
+      subject,
+      htmlBody,
+      brand: "empanelment",
+      senderName: "HiPRO Procurement Directorate",
+    });
+    success = true;
+  } catch (err: any) {
+    errorMessage = err?.message || String(err);
+  } finally {
+    await recordEmailDispatch({
+      applicationId,
+      recipientEmail: email,
+      recipientName: contactName,
+      subject,
+      templateKey: "bid_submitted",
+      htmlBody,
+      success,
+      errorMessage,
+    });
+  }
+}
+
+/**
+ * 7. Send Custom Email to Vendor (Admin Manual Send with Preview/Edit)
+ */
+export async function sendCustomVendorEmail(params: {
+  applicationId: string;
+  recipientEmail: string;
+  recipientName: string;
+  subject: string;
+  htmlBody: string;
+  adminName: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const { applicationId, recipientEmail, recipientName, subject, htmlBody, adminName } = params;
+
+  let success = false;
+  let errorMessage: string | undefined;
+
+  try {
+    await sendOneEmail({
+      to: recipientEmail,
+      subject,
+      htmlBody,
+      brand: "empanelment",
+      senderName: adminName ? `${adminName} (HiPRO Procurement)` : "HiPRO Empanelment Desk",
+    });
+    success = true;
+  } catch (err: any) {
+    errorMessage = err?.message || String(err);
+  } finally {
+    await recordEmailDispatch({
+      applicationId,
+      recipientEmail,
+      recipientName,
+      subject,
+      templateKey: "custom_admin_dispatch",
+      htmlBody,
+      success,
+      errorMessage,
+    });
+  }
+
+  return { success, error: errorMessage };
 }

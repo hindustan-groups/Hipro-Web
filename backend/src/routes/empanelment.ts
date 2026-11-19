@@ -6,7 +6,31 @@ import {
   sendApplicationReceivedEmail,
   sendApplicationStatusEmail,
   sendSiteGatePassEmail,
+  sendVendorActivationEmail,
+  sendPasswordResetEmail,
+  sendCustomVendorEmail,
+  getEmpanelmentEmailLogs,
+  retryEmpanelmentEmail,
 } from "../services/empanelmentMailer";
+import {
+  createOrGetVendorAccount,
+  generateActivationToken,
+  requestPasswordReset,
+} from "../services/vendorAccountService";
+import {
+  logVendorActivity,
+  getVendorActivityLogs,
+} from "../services/vendorActivityService";
+import {
+  getPublicCategories,
+  getAdminCategories,
+  createAdminCategory,
+  updateAdminCategory,
+  createAdminSubcategory,
+  updateAdminSubcategory,
+  resolveTradeCategory,
+  resolveSubcategories,
+} from "../services/vendorCategoryService";
 
 const router = Router();
 
@@ -62,6 +86,52 @@ const ENTITY_TYPE_MAP: Record<string, string> = {
 };
 
 // ===================================================================
+// PHASE 2B: CANONICAL CATEGORIES & CAPACITY BRACKETS
+// ===================================================================
+
+export const APPROVED_VENDOR_CATEGORIES = [
+  "Civil Construction",
+  "Electrical & MEP",
+  "Plumbing & Sanitation",
+  "Fabrication & PEB",
+  "Flooring & Finishing",
+  "Material Supply",
+] as const;
+
+export const ALLOWED_TEAM_SIZE_BRACKETS = ["1-10", "11-50", "51-200", "200+"] as const;
+
+export const ALLOWED_TURNOVER_BRACKETS = [
+  "Under ₹10 Lakh",
+  "₹10 Lakh – ₹50 Lakh",
+  "₹50 Lakh – ₹2 Crore",
+  "Above ₹2 Crore",
+] as const;
+
+export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+export const GSTIN_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+
+export function resolveTeamSizeBracket(rawTeamSize: any, _legacyWorkforceCount?: any): string | null {
+  if (typeof rawTeamSize === "string") {
+    const trimmed = rawTeamSize.trim();
+    if (ALLOWED_TEAM_SIZE_BRACKETS.includes(trimmed as any)) {
+      return trimmed;
+    }
+  }
+  return null;
+}
+
+export function resolveTurnoverBracket(rawBracket: any, _legacyAnnualTurnover?: any): string | null {
+  if (typeof rawBracket !== "string") return null;
+  const trimmed = rawBracket.trim();
+  if (!trimmed) return null;
+  const normalized = trimmed.replace(/\s*[\u2013\u2014-]\s*/g, " – ").replace(/\s+/g, " ");
+  const match = ALLOWED_TURNOVER_BRACKETS.find(
+    (b) => b === trimmed || b === normalized || b.toLowerCase() === normalized.toLowerCase()
+  );
+  return match || null;
+}
+
+// ===================================================================
 // PUBLIC VENDOR ENDPOINTS
 // ===================================================================
 
@@ -72,9 +142,8 @@ const ENTITY_TYPE_MAP: Record<string, string> = {
 router.post("/gst-verify", (req: Request, res: Response) => {
   try {
     const raw = (req.body?.gstin || "").trim().toUpperCase();
-    const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 
-    if (!raw || raw.length !== 15 || !gstinRegex.test(raw)) {
+    if (!raw || raw.length !== 15 || !GSTIN_REGEX.test(raw)) {
       return res.status(400).json({
         success: false,
         valid: false,
@@ -111,10 +180,134 @@ router.post("/apply", async (req: Request, res: Response) => {
   try {
     const data = req.body;
 
-    if (!data.companyName || !data.contactName || !data.phone || !data.email || !data.pan) {
+    // Validate mandatory registration fields
+    const companyName = typeof data.companyName === "string" ? data.companyName.trim() : "";
+    const contactName = typeof data.contactName === "string" ? data.contactName.trim() : "";
+    const phone = typeof data.phone === "string" ? data.phone.trim() : "";
+    const email = typeof data.email === "string" ? data.email.trim() : "";
+    const pan = typeof data.pan === "string" ? data.pan.trim().toUpperCase() : "";
+
+    if (!companyName || !contactName || !phone || !email || !pan) {
       return res.status(400).json({
         success: false,
         error: "Mandatory fields missing (Company Name, Contact Person, Phone, Email, PAN)",
+      });
+    }
+
+    // Structural PAN format validation (Standard 10-char Indian PAN: 5 uppercase letters, 4 digits, 1 uppercase letter)
+    if (!PAN_REGEX.test(pan)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid PAN number format. Permanent Account Number must be 10 characters (e.g. ABCDE1234F).",
+      });
+    }
+
+    // Require explicit terms and code of conduct agreement
+    if (data.termsAgreed !== true) {
+      return res.status(400).json({
+        success: false,
+        error: "You must agree to the code of conduct declaration before submitting.",
+      });
+    }
+
+    // Resolve work experience / past work document with canonical precedence over legacy alias.
+    // Ensure an empty legacy alias cannot overwrite a valid canonical value.
+    let resolvedWorkExperienceDocUrl: string | null = null;
+    if (typeof data.workExperienceDocUrl === "string" && data.workExperienceDocUrl.trim().length > 0) {
+      resolvedWorkExperienceDocUrl = data.workExperienceDocUrl.trim();
+    } else if (typeof data.pastWorkDocUrl === "string" && data.pastWorkDocUrl.trim().length > 0) {
+      resolvedWorkExperienceDocUrl = data.pastWorkDocUrl.trim();
+    }
+
+    // Resolve MSME / Udyam document URL
+    let resolvedMsmeDocUrl: string | null = null;
+    if (typeof data.msmeDocUrl === "string" && data.msmeDocUrl.trim().length > 0) {
+      resolvedMsmeDocUrl = data.msmeDocUrl.trim();
+    }
+
+    // Resolve Establishment Year (Store actual calendar year, NEVER calculate from yearsInBusiness)
+    let resolvedEstablishmentYear: string | null = null;
+    if (typeof data.establishmentYear === "string" && data.establishmentYear.trim().length > 0) {
+      resolvedEstablishmentYear = data.establishmentYear.trim();
+    } else if (typeof data.establishmentYear === "number" && !isNaN(data.establishmentYear)) {
+      resolvedEstablishmentYear = String(data.establishmentYear);
+    }
+
+    // Resolve Turnover Bracket (Dedicated field, never write into audited multi-year turnover fields)
+    const rawTurnoverCandidate =
+      (typeof data.turnoverBracket === "string" && data.turnoverBracket.trim().length > 0 ? data.turnoverBracket.trim() : null) ||
+      (typeof data.annualTurnover === "string" && data.annualTurnover.trim().length > 0 ? data.annualTurnover.trim() : null);
+
+    const resolvedTurnoverBracket = resolveTurnoverBracket(data.turnoverBracket, data.annualTurnover);
+
+    if (rawTurnoverCandidate && !resolvedTurnoverBracket) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid annual turnover bracket '${rawTurnoverCandidate}'. Allowed brackets: ${ALLOWED_TURNOVER_BRACKETS.join(", ")}`,
+      });
+    }
+
+    // Resolve Workforce Capacity (teamSize bracket)
+    const resolvedTeamSize = resolveTeamSizeBracket(data.teamSize, data.workforceCount);
+
+    // Resolve Category & Unclassified State with Dual-Write
+    let resolvedCategory: string | null = null;
+    let resolvedCategoryId: string | null = null;
+    let currentStage = "Pending Trade Classification";
+
+    try {
+      const categoryRes = await resolveTradeCategory(prisma, {
+        categoryId: data.categoryId,
+        category: data.category,
+      });
+      resolvedCategory = categoryRes.category;
+      resolvedCategoryId = categoryRes.categoryId;
+      if (resolvedCategory) {
+        currentStage = "Document Audit & Compliance Verification";
+      }
+    } catch (catErr: any) {
+      return res.status(catErr.status || 400).json({
+        success: false,
+        error: catErr.message || "Invalid trade category",
+      });
+    }
+
+    // Resolve Subcategories (if provided)
+    let resolvedSubcategoryIds: string[] = [];
+    const rawSubcategories = data.subcategories !== undefined ? data.subcategories : data.subcategoryIds;
+    if (rawSubcategories !== undefined) {
+      try {
+        resolvedSubcategoryIds = await resolveSubcategories(
+          prisma,
+          rawSubcategories,
+          resolvedCategoryId,
+          resolvedCategory
+        );
+      } catch (subErr: any) {
+        return res.status(subErr.status || 400).json({
+          success: false,
+          error: subErr.message || "Invalid subcategory selection",
+        });
+      }
+    }
+
+    // Resolve GSTIN & Safety: Never trust client-submitted isGstVerified
+    const rawGstin = typeof data.gstin === "string" && data.gstin.trim() ? data.gstin.trim().toUpperCase() : null;
+    const isGstVerified = false; // Always starts unverified on public registration
+
+    // Resolve GST Certificate URL & Server-Side Conditional Validation
+    let resolvedGstCertificateUrl: string | null = null;
+    if (typeof data.gstCertificateUrl === "string" && data.gstCertificateUrl.trim().length > 0) {
+      resolvedGstCertificateUrl = data.gstCertificateUrl.trim();
+    }
+
+    // Server-Side Conditional GST Certificate Validation:
+    // When GSTIN is supplied, non-empty GST certificate document upload is strictly mandatory.
+    // When GSTIN is absent/omitted, GST certificate remains optional.
+    if (rawGstin && !resolvedGstCertificateUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "GST certificate document upload is required when GSTIN is provided.",
       });
     }
 
@@ -128,20 +321,41 @@ router.post("/apply", async (req: Request, res: Response) => {
 
     // Calculate initial eligibility score (0-100)
     let score = 20; // baseline for complete statutory profile
-    const estYear = parseInt(data.establishmentYear || "2024", 10);
-    const yearsInBusiness = Math.max(0, new Date().getFullYear() - estYear);
 
-    if (yearsInBusiness >= 10) score += 20;
-    else if (yearsInBusiness >= 5) score += 15;
-    else if (yearsInBusiness >= 2) score += 10;
+    // Score: Tenure (based on calendar year if validly supplied)
+    if (resolvedEstablishmentYear) {
+      const estYear = parseInt(resolvedEstablishmentYear, 10);
+      const currentYear = new Date().getFullYear();
+      if (!isNaN(estYear) && estYear >= 1900 && estYear <= currentYear) {
+        const years = currentYear - estYear;
+        if (years >= 10) score += 20;
+        else if (years >= 5) score += 15;
+        else if (years >= 2) score += 10;
+      }
+    }
 
+    // Score: Financial Capacity
     const t1 = parseFloat((data.turnoverYear3 || data.turnoverYear1 || "0").replace(/[^0-9.]/g, ""));
-    if (t1 >= 50000000) score += 30; // 5 Cr+
-    else if (t1 >= 10000000) score += 20; // 1 Cr+
-    else if (t1 >= 2500000) score += 10; // 25 Lakh+
+    if (resolvedTurnoverBracket === "Above ₹2 Crore" || t1 >= 50000000) {
+      score += 30;
+    } else if (resolvedTurnoverBracket === "₹50 Lakh – ₹2 Crore" || t1 >= 10000000) {
+      score += 20;
+    } else if (resolvedTurnoverBracket === "₹10 Lakh – ₹50 Lakh" || t1 >= 2500000) {
+      score += 10;
+    }
 
-    if (data.gstin && data.isGstVerified) score += 15;
-    if (data.workExperienceDocUrl) score += 10;
+    // Score: Workforce Capacity
+    if (resolvedTeamSize === "200+") score += 15;
+    else if (resolvedTeamSize === "51-200") score += 10;
+    else if (resolvedTeamSize === "11-50") score += 5;
+
+    // Score: Valid GSTIN format (format syntax only, NOT verified registry flag)
+    if (rawGstin && GSTIN_REGEX.test(rawGstin)) {
+      score += 10;
+    }
+
+    if (resolvedWorkExperienceDocUrl) score += 10;
+    if (resolvedMsmeDocUrl) score += 5;
     if (data.signatureUrl) score += 5;
 
     score = Math.min(100, Math.max(10, score));
@@ -151,54 +365,68 @@ router.post("/apply", async (req: Request, res: Response) => {
     if (score >= 75) tier = "CLASS_A";
     else if (score >= 50) tier = "CLASS_B";
 
+    const createData: any = {
+      trackingId,
+      hashSignature,
+      status: "SUBMITTED",
+      currentStage,
+      tier,
+      category: resolvedCategory,
+      categoryId: resolvedCategoryId,
+      primaryRole: data.primaryRole || "",
+      specialization: data.specialization || "",
+      skillsDetails: data.skillsDetails || "",
+      teamSize: resolvedTeamSize,
+      companyName: companyName,
+      entityType: data.entityType || "PROPRIETORSHIP",
+      establishmentYear: resolvedEstablishmentYear,
+      ownerName: data.ownerName || contactName,
+      ownerContact: data.ownerContact || phone,
+      contactName: contactName,
+      designation: data.designation || "Director / Proprietor",
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
+      address: data.address || "",
+      city: data.city || "Bhilwara",
+      district: data.district || "",
+      state: data.state || "Rajasthan",
+      pincode: data.pincode || "311001",
+      gstin: rawGstin,
+      isGstVerified: false,
+      pan: pan,
+      aadharNo: data.aadharNo || null,
+      msmeUdyamNo: data.msmeUdyamNo || null,
+      bankName: data.bankName || "",
+      accountNumber: data.accountNumber || "",
+      ifscCode: data.ifscCode || "",
+      turnoverBracket: resolvedTurnoverBracket,
+      turnoverYear1: data.turnoverYear1 || "",
+      turnoverYear2: data.turnoverYear2 || "",
+      turnoverYear3: data.turnoverYear3 || "",
+      largestOrderValue: data.largestOrderValue || "",
+      existingEmpanelments: data.existingEmpanelments || "",
+      gstCertificateUrl: resolvedGstCertificateUrl,
+      panCardUrl: typeof data.panCardUrl === "string" && data.panCardUrl.trim().length > 0 ? data.panCardUrl.trim() : null,
+      bankChequeUrl: typeof data.bankChequeUrl === "string" && data.bankChequeUrl.trim().length > 0 ? data.bankChequeUrl.trim() : null,
+      msmeDocUrl: resolvedMsmeDocUrl,
+      workExperienceDocUrl: resolvedWorkExperienceDocUrl,
+      passportPhotoUrl: data.passportPhotoUrl || null,
+      signatureUrl: data.signatureUrl || null,
+      signatoryName: data.signatoryName || contactName,
+      eligibilityScore: score,
+      ipAddress: req.ip || req.socket.remoteAddress || "",
+    };
+
     const application = await prisma.vendorApplication.create({
       data: {
-        trackingId,
-        hashSignature,
-        status: "SUBMITTED",
-        currentStage: "Document Audit & Compliance Verification",
-        tier,
-        category: data.category || "Civil Construction",
-        primaryRole: data.primaryRole || "",
-        specialization: data.specialization || "",
-        skillsDetails: data.skillsDetails || "",
-        teamSize: data.teamSize || "1-10",
-        companyName: data.companyName,
-        entityType: data.entityType || "PROPRIETORSHIP",
-        establishmentYear: data.establishmentYear || "",
-        ownerName: data.ownerName || data.contactName,
-        ownerContact: data.ownerContact || data.phone,
-        contactName: data.contactName,
-        designation: data.designation || "Director / Proprietor",
-        email: data.email.toLowerCase().trim(),
-        phone: data.phone.trim(),
-        address: data.address || "",
-        city: data.city || "Bhilwara",
-        district: data.district || "",
-        state: data.state || "Rajasthan",
-        pincode: data.pincode || "311001",
-        gstin: data.gstin ? data.gstin.toUpperCase().trim() : null,
-        isGstVerified: Boolean(data.isGstVerified),
-        pan: data.pan.toUpperCase().trim(),
-        aadharNo: data.aadharNo || null,
-        msmeUdyamNo: data.msmeUdyamNo || null,
-        bankName: data.bankName || "",
-        accountNumber: data.accountNumber || "",
-        ifscCode: data.ifscCode || "",
-        turnoverYear1: data.turnoverYear1 || "",
-        turnoverYear2: data.turnoverYear2 || "",
-        turnoverYear3: data.turnoverYear3 || "",
-        largestOrderValue: data.largestOrderValue || "",
-        existingEmpanelments: data.existingEmpanelments || "",
-        gstCertificateUrl: data.gstCertificateUrl || null,
-        panCardUrl: data.panCardUrl || null,
-        bankChequeUrl: data.bankChequeUrl || null,
-        workExperienceDocUrl: data.workExperienceDocUrl || null,
-        passportPhotoUrl: data.passportPhotoUrl || null,
-        signatureUrl: data.signatureUrl || null,
-        signatoryName: data.signatoryName || data.contactName,
-        eligibilityScore: score,
-        ipAddress: req.ip || req.socket.remoteAddress || "",
+        ...createData,
+        ...(resolvedSubcategoryIds.length > 0
+          ? {
+              subcategories: {
+                create: resolvedSubcategoryIds.map((subId) => ({ subcategoryId: subId })),
+              },
+            }
+          : {}),
       },
     });
 
@@ -208,13 +436,22 @@ router.post("/apply", async (req: Request, res: Response) => {
       companyName: application.companyName,
       contactName: application.contactName,
       trackingId: application.trackingId,
-      category: application.category,
+      category: application.category || "Unassigned (Pending Classification)",
       tier: application.tier,
       pan: application.pan,
       gstin: application.gstin,
+      applicationId: application.id,
     }).catch((mailErr) => {
       console.warn("[EMPANELMENT] Asynchronous confirmation email failed:", mailErr?.message || mailErr);
     });
+
+    logVendorActivity({
+      applicationId: application.id,
+      actorType: "VENDOR",
+      actorName: application.contactName,
+      action: "APPLICATION_SUBMITTED",
+      details: `Empanelment application submitted online. Tracking ID: ${application.trackingId}`,
+    }).catch(() => null);
 
     return res.status(201).json({
       success: true,
@@ -303,6 +540,108 @@ router.get("/track/:trackingId", async (req: Request, res: Response) => {
 });
 
 /**
+ * Validate that a certificate URL uses a safe protocol (https, http, or data:application/pdf).
+ * Blocks javascript:, vbscript:, data:text/html, and arbitrary unsafe schemes.
+ */
+function sanitizePublicCertificateUrl(url?: string | null): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  const lower = trimmed.toLowerCase();
+  if (
+    lower.startsWith("javascript:") ||
+    lower.startsWith("vbscript:") ||
+    lower.startsWith("data:text/html")
+  ) {
+    return null;
+  }
+  if (lower.startsWith("https://") || lower.startsWith("http://")) {
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return trimmed;
+      }
+    } catch {
+      return null;
+    }
+  }
+  if (lower.startsWith("data:application/pdf") || lower.startsWith("data:image/")) {
+    return trimmed;
+  }
+  return null;
+}
+
+/**
+ * 3b. Dedicated Public Smart Partner Verification
+ * GET /api/empanelment/verify/:trackingId
+ *
+ * Exposes strictly minimal public contractor authenticity credentials for Smart Card verification.
+ * Zero PII, financial details, contact persons, scores, or internal notes exposed.
+ */
+router.get("/verify/:trackingId", async (req: Request, res: Response) => {
+  try {
+    const raw = String(req.params.trackingId || "").trim();
+    if (!raw) {
+      return res.status(400).json({ success: false, error: "Empanelment Tracking ID is required" });
+    }
+
+    const application = await prisma.vendorApplication.findUnique({
+      where: { trackingId: raw.toUpperCase() },
+      select: {
+        trackingId: true,
+        status: true,
+        companyName: true,
+        category: true,
+        tier: true,
+        city: true,
+        state: true,
+        approvedAt: true,
+        digitalCertificateUrl: true,
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        error: `No partner credential found for '${raw}'. Please check your Reference Code.`,
+      });
+    }
+
+    const safeCertificateUrl = sanitizePublicCertificateUrl(application.digitalCertificateUrl);
+
+    return res.json({
+      success: true,
+      application: {
+        trackingId: application.trackingId,
+        status: application.status,
+        companyName: application.companyName,
+        category: application.category,
+        tier: application.tier,
+        city: application.city,
+        state: application.state,
+        approvedAt: application.approvedAt,
+        digitalCertificateUrl: safeCertificateUrl,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Public: List Active Vendor Categories & Subcategories (Phase 2C.4)
+ * GET /api/empanelment/categories
+ */
+router.get("/categories", async (_req: Request, res: Response) => {
+  try {
+    const categories = await getPublicCategories(prisma);
+    return res.json({ success: true, categories });
+  } catch (err: any) {
+    console.error("[CATEGORY API ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to retrieve categories" });
+  }
+});
+
+/**
  * 4. Active Public Tenders
  * GET /api/empanelment/tenders
  */
@@ -321,155 +660,37 @@ router.get("/tenders", async (req: Request, res: Response) => {
 });
 
 /**
- * 5. Submit Bid for a Tender
+ * 5. Submit Bid for a Tender (SUSPENDED - FAIL CLOSED FOR SECURITY)
  * POST /api/empanelment/tenders/:tenderId/bid
+ *
+ * SECURITY CONTAINMENT (Phase 2B.3):
+ * Public unauthenticated electronic bidding is temporarily suspended while vendor
+ * authentication and ownership verification are being implemented.
+ * Unconditionally fails closed with HTTP 503 Service Unavailable.
+ * Never creates VendorBid records, never increments bidsCount, and does not trust trackingId.
  */
-router.post("/tenders/:tenderId/bid", async (req: Request, res: Response) => {
-  try {
-    const tenderId = String(req.params.tenderId);
-    const { trackingId, bidAmount, proposedDays, remarks } = req.body;
-
-    if (!trackingId || !bidAmount) {
-      return res.status(400).json({ success: false, error: "Tracking ID and Bid Amount are required" });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: trackingId.trim().toUpperCase() },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor registration not found" });
-    }
-
-    if (vendor.status !== "APPROVED") {
-      return res.status(403).json({
-        success: false,
-        error: "Only APPROVED empanelled partners can bid on active tenders. Your application status is: " + vendor.status,
-      });
-    }
-
-    const bid = await prisma.vendorBid.create({
-      data: {
-        tenderId,
-        vendorId: vendor.id,
-        bidAmount: parseFloat(bidAmount),
-        proposedDays: proposedDays ? parseInt(proposedDays, 10) : null,
-        remarks: remarks || "",
-        status: "UNDER_REVIEW",
-      },
-    });
-
-    await prisma.empanelmentTender.update({
-      where: { id: tenderId },
-      data: { bidsCount: { increment: 1 } },
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Commercial bid submitted successfully for tender review.",
-      bidId: bid.id,
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
+router.post("/tenders/:tenderId/bid", async (_req: Request, res: Response) => {
+  return res.status(503).json({
+    success: false,
+    error: "Electronic tender bidding is temporarily unavailable while portal authentication security is being upgraded. Please contact the Central Procurement Desk for procurement clarification guidance.",
+  });
 });
 
 /**
- * 6. Generate Daily 24-Hour Site Gate Pass (Approved Vendors Only)
+ * 6. Generate Daily 24-Hour Site Gate Pass (SUSPENDED - FAIL CLOSED FOR SECURITY)
  * POST /api/empanelment/gate-pass/generate
+ *
+ * SECURITY CONTAINMENT (Phase 2B.3):
+ * Public unauthenticated gate pass generation is temporarily suspended while vendor
+ * identity verification is being upgraded.
+ * Unconditionally fails closed with HTTP 503 Service Unavailable.
+ * Never creates SiteGatePass records, never generates QR pass codes, and does not trust trackingId.
  */
-router.post("/gate-pass/generate", async (req: Request, res: Response) => {
-  try {
-    const { trackingId, siteLocation } = req.body;
-    const rawTracking = (trackingId || "").trim().toUpperCase();
-
-    if (!rawTracking) {
-      return res.status(400).json({
-        success: false,
-        error: "Empanelment Tracking ID is required",
-      });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: rawTracking },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor tracking record not found" });
-    }
-
-    if (vendor.status !== "APPROVED") {
-      return res.status(403).json({
-        success: false,
-        error: "Only Approved Empanelled Partners can generate daily site gate passes.",
-      });
-    }
-
-    const visitorName = (req.body.visitorName || req.body.supervisor || req.body.contactName || vendor.contactName || "Site Incharge").trim();
-    const workerCount = parseInt((req.body.workerCount || req.body.personsCount || 1).toString(), 10) || 1;
-    const vehicleNo = (req.body.vehicleNo || req.body.vehicleNumber || "").trim() || null;
-    const chosenLocation = (siteLocation || "Mansarovar Commercial Site, Jaipur").trim();
-    const purpose = (req.body.purpose || "Authorized Site Work & Execution").trim();
-
-    const passSuffix = Math.floor(10000 + Math.random() * 90000).toString();
-    const passCode = `HP-GP-${passSuffix}`;
-    const validTill = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 Hours valid
-
-    const pass = await prisma.siteGatePass.create({
-      data: {
-        passCode,
-        vendorId: vendor.id,
-        visitorName,
-        workerCount,
-        vehicleNo,
-        siteLocation: chosenLocation,
-        validTill,
-        status: "ACTIVE",
-      },
-    });
-
-    // Asynchronously dispatch Gate Pass confirmation email
-    sendSiteGatePassEmail({
-      email: vendor.email,
-      visitorName: pass.visitorName,
-      companyName: vendor.companyName,
-      passCode: pass.passCode,
-      siteLocation: pass.siteLocation,
-      purpose,
-      validUntil: pass.validTill.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-      phone: vendor.phone,
-    }).catch((mailErr) => {
-      console.warn("[EMPANELMENT] Asynchronous gate pass email failed:", mailErr?.message || mailErr);
-    });
-
-    return res.status(201).json({
-      success: true,
-      pass: {
-        passCode: pass.passCode,
-        companyName: vendor.companyName,
-        visitorName: pass.visitorName,
-        supervisor: pass.visitorName,
-        workerCount: pass.workerCount,
-        personsCount: pass.workerCount,
-        vehicleNo: pass.vehicleNo,
-        vehicleNumber: pass.vehicleNo,
-        siteLocation: pass.siteLocation,
-        purpose,
-        validFrom: pass.validFrom,
-        validTill: pass.validTill,
-        validDate: pass.validTill,
-        status: pass.status,
-        vendor: {
-          companyName: vendor.companyName,
-          contactName: vendor.contactName,
-          phone: vendor.phone,
-          tier: vendor.tier,
-        },
-      },
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
+router.post("/gate-pass/generate", async (_req: Request, res: Response) => {
+  return res.status(503).json({
+    success: false,
+    error: "Daily site gate pass self-service generation is temporarily unavailable while access security is being upgraded. Please contact project site administration for approved access clearance.",
+  });
 });
 
 /**
@@ -544,28 +765,46 @@ router.get("/gate-pass/verify/:passCode", async (req: Request, res: Response) =>
  */
 router.post("/tickets", async (req: Request, res: Response) => {
   try {
-    const { trackingId, subject, category, message } = req.body;
+    const { trackingId, subject, category, priority, message } = req.body;
 
-    if (!trackingId || !subject || !message) {
-      return res.status(400).json({ success: false, error: "Tracking ID, Subject, and Message are required" });
+    const trimmedTrackingId = typeof trackingId === "string" ? trackingId.trim().toUpperCase() : "";
+    const trimmedSubject = typeof subject === "string" ? subject.trim() : "";
+    const trimmedMessage = typeof message === "string" ? message.trim() : "";
+    const validCategory = typeof category === "string" && category.trim().length > 0 ? category.trim() : "General Support";
+    const validPriority =
+      typeof priority === "string" && ["LOW", "NORMAL", "HIGH", "URGENT"].includes(priority.trim().toUpperCase())
+        ? priority.trim().toUpperCase()
+        : "NORMAL";
+
+    if (!trimmedTrackingId || !trimmedSubject || !trimmedMessage) {
+      return res.status(400).json({
+        success: false,
+        error: "Tracking ID, Subject, and Message are required",
+      });
     }
 
     const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: trackingId.trim().toUpperCase() },
+      where: { trackingId: trimmedTrackingId },
     });
 
     if (!vendor) {
-      return res.status(404).json({ success: false, error: "Vendor record not found" });
+      return res.status(404).json({
+        success: false,
+        error: "Vendor profile with this Tracking ID was not found",
+      });
     }
 
-    const ticketNo = `HP-TCK-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const ticketNo = `HP-TCK-${randomSuffix}`;
+
     const ticket = await prisma.empanelmentTicket.create({
       data: {
         ticketNo,
         vendorId: vendor.id,
-        subject,
-        category: category || "General Support",
-        message,
+        subject: trimmedSubject,
+        category: validCategory,
+        priority: validPriority,
+        message: trimmedMessage,
         status: "OPEN",
       },
     });
@@ -573,7 +812,8 @@ router.post("/tickets", async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       ticketNo: ticket.ticketNo,
-      message: "Ticket registered. Procurement helpdesk will revert shortly.",
+      ticket,
+      message: "Ticket submitted successfully. Procurement support team will review within 24 business hours.",
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
@@ -712,14 +952,52 @@ router.get("/admin/applications/:id", async (req: Request, res: Response) => {
  */
 router.patch("/admin/applications/:id/status", async (req: Request, res: Response) => {
   try {
-    const { status, tier, currentStage, adminRemarks, ceoSigned, eligibilityScore } = req.body;
+    const { status, tier, category, currentStage, adminRemarks, ceoSigned, eligibilityScore } = req.body;
+
+    const id = String(req.params.id);
+    const existing = await prisma.vendorApplication.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
 
     const updateData: any = {};
     if (status) updateData.status = status;
     if (tier) updateData.tier = tier;
+    if (category !== undefined || req.body.categoryId !== undefined) {
+      if (
+        (category === null || (typeof category === "string" && category.trim() === "")) &&
+        (req.body.categoryId === null || req.body.categoryId === undefined || (typeof req.body.categoryId === "string" && req.body.categoryId.trim() === ""))
+      ) {
+        updateData.category = null;
+        updateData.categoryId = null;
+      } else {
+        try {
+          const categoryRes = await resolveTradeCategory(prisma, {
+            categoryId: req.body.categoryId,
+            category: category,
+          });
+          updateData.category = categoryRes.category;
+          updateData.categoryId = categoryRes.categoryId;
+        } catch (catErr: any) {
+          return res.status(catErr.status || 400).json({
+            success: false,
+            error: catErr.message || "Invalid trade category specified",
+          });
+        }
+      }
+    }
     if (currentStage) updateData.currentStage = currentStage;
     if (adminRemarks !== undefined) updateData.adminRemarks = adminRemarks;
     if (eligibilityScore !== undefined) updateData.eligibilityScore = parseInt(eligibilityScore, 10);
+
+    // Safety: Cannot approve partner without assigning an approved trade category
+    const targetCategory = updateData.category !== undefined ? updateData.category : existing.category;
+    if ((updateData.status === "APPROVED" || ceoSigned === true) && (!targetCategory || targetCategory.trim() === "")) {
+      return res.status(400).json({
+        success: false,
+        error: "Cannot approve partner without assigning an approved trade category.",
+      });
+    }
 
     if (ceoSigned === true) {
       updateData.ceoSigned = true;
@@ -729,14 +1007,51 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
       updateData.currentStage = "Empanelled Partner — Active";
     }
 
-    const id = String(req.params.id);
     const updated = await prisma.vendorApplication.update({
       where: { id },
       data: updateData,
     });
 
-    // If status changed to APPROVED or REJECTED, notify the vendor
-    if (updated.status === "APPROVED" || updated.status === "REJECTED") {
+    // If subcategoryIds array is supplied, update application subcategories
+    if (Array.isArray(req.body.subcategoryIds) && updateData.categoryId) {
+      try {
+        const validatedSubIds = await resolveSubcategories(
+          prisma,
+          req.body.subcategoryIds,
+          updateData.categoryId,
+          updateData.category || existing.category
+        );
+        await (prisma as any).vendorApplicationSubcategory.deleteMany({
+          where: { applicationId: id },
+        });
+        if (validatedSubIds.length > 0) {
+          await (prisma as any).vendorApplicationSubcategory.createMany({
+            data: validatedSubIds.map((subId: string) => ({
+              applicationId: id,
+              subcategoryId: subId,
+            })),
+          });
+        }
+      } catch (subErr: any) {
+        console.warn("[EMPANELMENT] Subcategory update warning:", subErr?.message || subErr);
+      }
+    }
+
+    // Auto-provision VendorAccount stub if approved
+    if (updated.status === "APPROVED") {
+      await createOrGetVendorAccount(updated.id, updated.email).catch(() => null);
+    }
+
+    await logVendorActivity({
+      applicationId: updated.id,
+      actorType: "ADMIN",
+      actorName: (req as any).user?.name || "Procurement Officer",
+      action: "STATUS_CHANGED",
+      details: `Status set to ${updated.status}. Stage: ${updated.currentStage}. Remarks: ${updated.adminRemarks || "None"}`,
+    }).catch(() => null);
+
+    // If status changed to APPROVED, REJECTED, or DOCS_REQUESTED, notify the vendor
+    if (updated.status === "APPROVED" || updated.status === "REJECTED" || updated.status === "DOCS_REQUESTED") {
       sendApplicationStatusEmail({
         email: updated.email,
         companyName: updated.companyName,
@@ -746,6 +1061,7 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
         registrationNo: updated.trackingId,
         tier: updated.tier,
         remarks: updated.adminRemarks || undefined,
+        applicationId: updated.id,
       }).catch((mailErr) => {
         console.warn("[EMPANELMENT] Asynchronous status email failed:", mailErr?.message || mailErr);
       });
@@ -758,6 +1074,374 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Request Document Revision
+ * PATCH /api/empanelment/admin/applications/:id/request-revision
+ */
+router.patch("/admin/applications/:id/request-revision", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { remarks } = req.body;
+
+    const application = await prisma.vendorApplication.findUnique({ where: { id } });
+    if (!application) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+
+    const updated = await prisma.vendorApplication.update({
+      where: { id },
+      data: {
+        status: "DOCS_REQUESTED",
+        currentStage: "Document Revision Requested",
+        adminRemarks: remarks?.trim() || "Please re-upload legible and complete statutory certificates.",
+      },
+    });
+
+    await logVendorActivity({
+      applicationId: id,
+      actorType: "ADMIN",
+      actorName: (req as any).user?.name || "Procurement Officer",
+      action: "DOCS_REVISION_REQUESTED",
+      details: remarks?.trim() || "Requested document revision",
+    }).catch(() => null);
+
+    sendApplicationStatusEmail({
+      email: updated.email,
+      companyName: updated.companyName,
+      contactName: updated.contactName,
+      trackingId: updated.trackingId,
+      status: "DOCS_REQUESTED",
+      registrationNo: updated.trackingId,
+      tier: updated.tier,
+      remarks: updated.adminRemarks || undefined,
+      applicationId: updated.id,
+    }).catch((mailErr) => {
+      console.warn("[EMPANELMENT] Docs requested email failed:", mailErr?.message || mailErr);
+    });
+
+    return res.json({
+      success: true,
+      message: "Document revision requested successfully",
+      application: updated,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Get Email Logs for Application
+ * GET /api/empanelment/admin/applications/:id/emails
+ */
+router.get("/admin/applications/:id/emails", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const logs = await getEmpanelmentEmailLogs(id);
+    return res.json({ success: true, count: logs.length, logs });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Send Manual Email to Vendor from Review Drawer
+ * POST /api/empanelment/admin/applications/:id/send-email
+ */
+router.post("/admin/applications/:id/send-email", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { subject, htmlBody } = req.body;
+
+    if (!subject?.trim() || !htmlBody?.trim()) {
+      return res.status(400).json({ success: false, error: "Subject and message body are required" });
+    }
+
+    const application = await prisma.vendorApplication.findUnique({ where: { id } });
+    if (!application) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+
+    const adminName = (req as any).user?.name || "Procurement Officer";
+    const result = await sendCustomVendorEmail({
+      applicationId: id,
+      recipientEmail: application.email,
+      recipientName: application.contactName,
+      subject: subject.trim(),
+      htmlBody: htmlBody.trim(),
+      adminName,
+    });
+
+    await logVendorActivity({
+      applicationId: id,
+      actorType: "ADMIN",
+      actorName: adminName,
+      action: "MANUAL_EMAIL_SENT",
+      details: `Dispatched direct email: "${subject.trim()}"`,
+    }).catch(() => null);
+
+    return res.json({
+      success: result.success,
+      message: result.success ? "Email dispatched successfully" : "Email recorded in history",
+      error: result.error,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Retry Failed Email
+ * POST /api/empanelment/admin/emails/:logId/retry
+ */
+router.post("/admin/emails/:logId/retry", async (req: Request, res: Response) => {
+  try {
+    const logId = String(req.params.logId);
+    const result = await retryEmpanelmentEmail(logId);
+    if (!result.success) {
+      return res.status(400).json({ success: false, error: result.error || "Retry failed" });
+    }
+    return res.json({ success: true, message: "Email resent successfully" });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Get Audit Activity History for Application
+ * GET /api/empanelment/admin/applications/:id/activity
+ */
+router.get("/admin/applications/:id/activity", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const logs = await getVendorActivityLogs(id);
+    return res.json({ success: true, count: logs.length, logs });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Invite / Activate Approved Vendor
+ * POST /api/empanelment/admin/accounts/invite/:applicationId
+ */
+router.post("/admin/accounts/invite/:applicationId", async (req: Request, res: Response) => {
+  try {
+    const applicationId = String(req.params.applicationId);
+    const application = await prisma.vendorApplication.findUnique({ where: { id: applicationId } });
+    if (!application) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+
+    if (application.status !== "APPROVED") {
+      return res.status(400).json({
+        success: false,
+        error: "Only formally APPROVED vendors can be invited to access the vendor portal.",
+      });
+    }
+
+    await createOrGetVendorAccount(application.id, application.email);
+    const { token } = await generateActivationToken(application.id);
+
+    await sendVendorActivationEmail({
+      email: application.email,
+      contactName: application.contactName,
+      companyName: application.companyName,
+      activationToken: token,
+      applicationId: application.id,
+    });
+
+    await logVendorActivity({
+      applicationId: application.id,
+      actorType: "ADMIN",
+      actorName: (req as any).user?.name || "Procurement Officer",
+      action: "INVITATION_SENT",
+      details: `Dispatched vendor portal activation invitation to ${application.email}`,
+    }).catch(() => null);
+
+    return res.json({
+      success: true,
+      message: `Invitation successfully dispatched to ${application.email}`,
+      activationToken: token,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Direct Gate Pass Issuance
+ * POST /api/empanelment/admin/gate-passes
+ */
+router.post("/admin/gate-passes", async (req: Request, res: Response) => {
+  try {
+    const { applicationId, visitorName, phone, purpose, siteLocation, supervisor, labourCount, vehicleNumber } = req.body;
+
+    if (!applicationId || !visitorName?.trim() || !phone?.trim() || !purpose?.trim() || !siteLocation?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "Vendor Application, visitor name, phone, purpose, and site location are required",
+      });
+    }
+
+    const application = await prisma.vendorApplication.findUnique({ where: { id: applicationId } });
+    if (!application) {
+      return res.status(404).json({ success: false, error: "Vendor application not found" });
+    }
+
+    const passSuffix = Math.floor(10000 + Math.random() * 90000).toString();
+    const passCode = "HP-GP-" + passSuffix;
+    const validUntil = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 Hours
+
+    const gatePass = await prisma.siteGatePass.create({
+      data: {
+        passCode,
+        vendorId: application.id,
+        visitorName: visitorName.trim(),
+        workerCount: labourCount ? Number(labourCount) : 1,
+        vehicleNo: vehicleNumber?.trim() || null,
+        siteLocation: siteLocation.trim(),
+        validFrom: new Date(),
+        validTill: validUntil,
+        status: "ACTIVE",
+        securityRemarks: `Phone: ${phone.trim()} | Purpose: ${purpose.trim()} | Issued by: ${(req as any).user?.name || "Admin"}`,
+      },
+    });
+
+    await logVendorActivity({
+      applicationId: application.id,
+      actorType: "ADMIN",
+      actorName: (req as any).user?.name || "Site Security Officer",
+      action: "ADMIN_GATE_PASS_ISSUED",
+      details: `Admin issued 24-hr gate pass ${passCode} for ${visitorName.trim()} at ${siteLocation.trim()}`,
+    }).catch(() => null);
+
+    sendSiteGatePassEmail({
+      email: application.email,
+      visitorName: visitorName.trim(),
+      companyName: application.companyName,
+      passCode,
+      siteLocation: siteLocation.trim(),
+      purpose: purpose.trim(),
+      validUntil: validUntil.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      phone: phone.trim(),
+      applicationId: application.id,
+    }).catch(() => null);
+
+    return res.status(201).json({
+      success: true,
+      message: "Daily site gate pass issued successfully",
+      data: gatePass,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ===================================================================
+// ADMIN VENDOR CATEGORY & SUBCATEGORY MANAGEMENT (Phase 2C.4)
+// ===================================================================
+
+/**
+ * Admin: List All Categories with Nested Subcategories & Counts
+ * GET /api/empanelment/admin/categories
+ */
+router.get("/admin/categories", async (_req: Request, res: Response) => {
+  try {
+    const categories = await getAdminCategories(prisma);
+    return res.json({ success: true, categories });
+  } catch (err: any) {
+    console.error("[ADMIN CATEGORIES ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to retrieve admin categories" });
+  }
+});
+
+/**
+ * Admin: Create New Vendor Category
+ * POST /api/empanelment/admin/categories
+ */
+router.post("/admin/categories", async (req: Request, res: Response) => {
+  try {
+    const category = await createAdminCategory(prisma, req.body);
+    return res.status(201).json({
+      success: true,
+      category,
+      message: "Category created successfully",
+    });
+  } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
+    console.error("[ADMIN CREATE CATEGORY ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to create category" });
+  }
+});
+
+/**
+ * Admin: Update Vendor Category (Display fields & active status)
+ * PATCH /api/empanelment/admin/categories/:id
+ */
+router.patch("/admin/categories/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const category = await updateAdminCategory(prisma, id, req.body);
+    return res.json({
+      success: true,
+      category,
+      message: "Category updated successfully",
+    });
+  } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
+    console.error("[ADMIN UPDATE CATEGORY ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to update category" });
+  }
+});
+
+/**
+ * Admin: Create Subcategory under Category
+ * POST /api/empanelment/admin/categories/:id/subcategories
+ */
+router.post("/admin/categories/:id/subcategories", async (req: Request, res: Response) => {
+  try {
+    const categoryId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const subcategory = await createAdminSubcategory(prisma, categoryId, req.body);
+    return res.status(201).json({
+      success: true,
+      subcategory,
+      message: "Subcategory created successfully",
+    });
+  } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
+    console.error("[ADMIN CREATE SUBCATEGORY ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to create subcategory" });
+  }
+});
+
+/**
+ * Admin: Update Subcategory (Display fields & active status)
+ * PATCH /api/empanelment/admin/subcategories/:id
+ */
+router.patch("/admin/subcategories/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const subcategory = await updateAdminSubcategory(prisma, id, req.body);
+    return res.json({
+      success: true,
+      subcategory,
+      message: "Subcategory updated successfully",
+    });
+  } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
+    console.error("[ADMIN UPDATE SUBCATEGORY ERROR]", err);
+    return res.status(500).json({ success: false, error: "Failed to update subcategory" });
   }
 });
 
@@ -788,11 +1472,17 @@ router.get("/admin/tenders", async (req: Request, res: Response) => {
 
 router.post("/admin/tenders", async (req: Request, res: Response) => {
   try {
-    const { title, category, location, estimatedBudget, emdAmount, dueDate, scopeOfWork, documentUrl } = req.body;
+    const { title, category, categoryId, location, estimatedBudget, emdAmount, dueDate, scopeOfWork, documentUrl } = req.body;
 
-    if (!title || !category || !dueDate) {
+    if (!title || (!category && !categoryId) || !dueDate) {
       return res.status(400).json({ success: false, error: "Title, Category, and Due Date are required" });
     }
+
+    const categoryRes = await resolveTradeCategory(
+      prisma,
+      { categoryId, category },
+      { isRequired: true }
+    );
 
     const count = await prisma.empanelmentTender.count();
     const tenderNo = `HP-TND-2026-${String(count + 1).padStart(2, "0")}`;
@@ -801,7 +1491,8 @@ router.post("/admin/tenders", async (req: Request, res: Response) => {
       data: {
         tenderNo,
         title,
-        category,
+        category: categoryRes.category!,
+        categoryId: categoryRes.categoryId!,
         location: location || "Rajasthan",
         estimatedBudget: estimatedBudget || "Disclosed in RFP",
         emdAmount: emdAmount || "Exempted for MSME",
@@ -814,22 +1505,59 @@ router.post("/admin/tenders", async (req: Request, res: Response) => {
 
     return res.status(201).json({ success: true, tender });
   } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
     return res.status(500).json({ success: false, error: err.message });
   }
 });
 
-router.put("/admin/tenders/:id", async (req: Request, res: Response) => {
+const handleTenderUpdate = async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
+    const existing = await prisma.empanelmentTender.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ success: false, error: "Tender not found" });
+    }
+
+    const updateData: any = { ...req.body };
+    delete updateData.id;
+
+    if (req.body.category !== undefined || req.body.categoryId !== undefined) {
+      const categoryRes = await resolveTradeCategory(
+        prisma,
+        {
+          categoryId: req.body.categoryId,
+          category: req.body.category,
+        },
+        { isRequired: true }
+      );
+      updateData.category = categoryRes.category!;
+      updateData.categoryId = categoryRes.categoryId!;
+    } else {
+      delete updateData.category;
+      delete updateData.categoryId;
+    }
+
+    if (updateData.dueDate) {
+      updateData.dueDate = new Date(updateData.dueDate);
+    }
+
     const tender = await prisma.empanelmentTender.update({
       where: { id },
-      data: req.body,
+      data: updateData,
     });
     return res.json({ success: true, tender });
   } catch (err: any) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, error: err.message });
+    }
     return res.status(500).json({ success: false, error: err.message });
   }
-});
+};
+
+router.put("/admin/tenders/:id", handleTenderUpdate);
+router.patch("/admin/tenders/:id", handleTenderUpdate);
 
 router.delete("/admin/tenders/:id", async (req: Request, res: Response) => {
   try {
@@ -906,58 +1634,6 @@ router.get("/admin/gate-passes", async (req: Request, res: Response) => {
 // ===================================================================
 // VENDOR HELPDESK TICKETS ENDPOINTS
 // ===================================================================
-
-/**
- * Public/Vendor: Submit Support Ticket
- * POST /api/empanelment/tickets
- */
-router.post("/tickets", async (req: Request, res: Response) => {
-  try {
-    const { trackingId, subject, category, priority, message } = req.body;
-
-    if (!trackingId || !subject || !message) {
-      return res.status(400).json({
-        success: false,
-        error: "Tracking ID, Subject, and Message are required",
-      });
-    }
-
-    const vendor = await prisma.vendorApplication.findUnique({
-      where: { trackingId: String(trackingId).trim().toUpperCase() },
-    });
-
-    if (!vendor) {
-      return res.status(404).json({
-        success: false,
-        error: "Vendor profile with this Tracking ID was not found",
-      });
-    }
-
-    const count = await prisma.empanelmentTicket.count();
-    const ticketNo = `HP-TCK-${String(count + 1).padStart(3, "0")}`;
-
-    const ticket = await prisma.empanelmentTicket.create({
-      data: {
-        ticketNo,
-        vendorId: vendor.id,
-        subject,
-        category: category || "General Query",
-        priority: priority || "NORMAL",
-        message,
-        status: "OPEN",
-      },
-    });
-
-    return res.status(201).json({
-      success: true,
-      ticketNo: ticket.ticketNo,
-      ticket,
-      message: "Ticket submitted successfully. Procurement support team will review within 24 business hours.",
-    });
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
-  }
-});
 
 /**
  * Admin: List All Vendor Helpdesk Tickets
@@ -1241,6 +1917,64 @@ router.patch("/admin/invoices/:id/status", async (req: Request, res: Response) =
 // EMPANELMENT PORTAL CMS & PAGE BUILDER ENDPOINTS
 // ===================================================================
 
+const DEFAULT_EMPANELMENT_CATEGORIES_STR = JSON.stringify([
+  {
+    id: "c1",
+    title: "Civil Construction",
+    description: "RCC structural works, masonry, plastering and site civil execution",
+    imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+    linkUrl: "/empanelment/apply?category=civil-construction",
+  },
+  {
+    id: "c2",
+    title: "Electrical & MEP",
+    description: "HT/LT electrical installations, substations, panels and cabling",
+    imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+    linkUrl: "/empanelment/apply?category=electrical-mep",
+  },
+  {
+    id: "c3",
+    title: "Plumbing & Sanitation",
+    description: "CPVC/PPR water supply, sewerage piping, fixtures and waterproofing",
+    imageUrl: "/images/empanelment/cat-electrical-plumbing.jpg",
+    linkUrl: "/empanelment/apply?category=plumbing-sanitation",
+  },
+  {
+    id: "c4",
+    title: "Fabrication & PEB",
+    description: "Pre-engineered buildings (PEB), heavy structural steel and railings",
+    imageUrl: "/images/empanelment/cat-civil-structural.jpg",
+    linkUrl: "/empanelment/apply?category=fabrication-peb",
+  },
+  {
+    id: "c5",
+    title: "Flooring & Finishing",
+    description: "Tiles, granite, marble, epoxy flooring, painting and false ceilings",
+    imageUrl: "/images/empanelment/cat-interior-finishing.jpg",
+    linkUrl: "/empanelment/apply?category=flooring-finishing",
+  },
+  {
+    id: "c6",
+    title: "Material Supply",
+    description: "Bulk cement, TMT rebars, bricks, AAC blocks, aggregates and sand",
+    imageUrl: "/images/empanelment/cat-building-materials.jpg",
+    linkUrl: "/empanelment/apply?category=material-supply",
+  },
+]);
+
+function fallbackIfEmptyArray(raw: string | null | undefined, fallbackStr: string): string {
+  if (!raw || (typeof raw === "string" && (raw.trim() === "" || raw.trim() === "[]" || raw.trim() === "null"))) {
+    return fallbackStr;
+  }
+  try {
+    const p = JSON.parse(raw);
+    if (Array.isArray(p) && p.length === 0) return fallbackStr;
+    return raw;
+  } catch {
+    return fallbackStr;
+  }
+}
+
 /**
  * Public: Get Empanelment Portal CMS Content
  * GET /api/empanelment/content
@@ -1253,11 +1987,19 @@ router.get("/content", async (_req: Request, res: Response) => {
 
     if (!content) {
       content = await prisma.empanelmentContent.create({
-        data: { id: "singleton" },
+        data: {
+          id: "singleton",
+          categoriesList: DEFAULT_EMPANELMENT_CATEGORIES_STR,
+        },
       });
     }
 
-    return res.json({ success: true, content });
+    const sanitizedContent = {
+      ...content,
+      categoriesList: fallbackIfEmptyArray(content.categoriesList, DEFAULT_EMPANELMENT_CATEGORIES_STR),
+    };
+
+    return res.json({ success: true, content: sanitizedContent });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }
