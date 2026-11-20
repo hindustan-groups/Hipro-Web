@@ -5,6 +5,7 @@ import {
   getSessionVendor,
   logoutVendor,
   activateVendorAccount,
+  findVendorByActivationToken,
   requestPasswordReset,
   resetPasswordWithToken,
 } from "../services/vendorAccountService";
@@ -98,6 +99,38 @@ router.get("/me", async (req: Request, res: Response) => {
       data: {
         account: session.account,
         application: session.application,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/vendor/auth/verify-token?token=...
+ * Inspects an activation link and returns associated verified enterprise metadata.
+ */
+router.get("/verify-token", async (req: Request, res: Response) => {
+  try {
+    const token = String(req.query.token || "").trim();
+    if (!token) {
+      return res.status(400).json({ success: false, error: "Activation token is required" });
+    }
+
+    const result = await findVendorByActivationToken(token);
+    if (!result) {
+      return res.status(400).json({
+        success: false,
+        error: "This activation link is invalid or has expired. Please request a new setup link from administration.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        email: result.account.email,
+        companyName: result.companyName,
+        contactName: result.contactName,
       },
     });
   } catch (err: any) {

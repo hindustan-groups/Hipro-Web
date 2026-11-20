@@ -157,6 +157,24 @@ interface GatePassEmailParams {
 }
 
 /**
+ * Resolves full public URL for empanelment portal routes.
+ */
+export function getEmpanelmentUrl(subpath: string = ""): string {
+  const base = (
+    process.env.EMPANELMENT_FRONTEND_URL ||
+    process.env.FRONTEND_URL ||
+    process.env.APP_URL ||
+    "https://hindustanprojects.in/empanelment"
+  ).replace(/\/+$/, "");
+
+  const cleanSub = subpath ? (subpath.startsWith("/") ? subpath : `/${subpath}`) : "";
+  if (base.endsWith("/empanelment") && cleanSub.startsWith("/empanelment")) {
+    return `${base}${cleanSub.substring("/empanelment".length)}`;
+  }
+  return `${base}${cleanSub}`;
+}
+
+/**
  * 1. Send Application Submission Acknowledgment Email
  */
 export async function sendApplicationReceivedEmail(params: ApplicationEmailParams): Promise<void> {
@@ -167,7 +185,7 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
     return;
   }
 
-  const trackUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
+  const trackUrl = getEmpanelmentUrl(`/track?trackingId=${encodeURIComponent(trackingId)}`);
   const currentYear = new Date().getFullYear();
   const subject = `Empanelment Application Received [${trackingId}] - ${companyName}`;
 
@@ -341,8 +359,8 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
 
   const isApproved = status === "APPROVED";
   const isDocsRequested = status === "DOCS_REQUESTED";
-  const portalUrl = `https://empanelment.hindustanprojects.in/track?trackingId=${encodeURIComponent(trackingId)}`;
-  const tendersUrl = `https://empanelment.hindustanprojects.in/tenders`;
+  const portalUrl = getEmpanelmentUrl(`/track?trackingId=${encodeURIComponent(trackingId)}`);
+  const tendersUrl = getEmpanelmentUrl(`/tenders`);
   const currentYear = new Date().getFullYear();
 
   let subject = `Empanelment Application Status Update [${trackingId}] - Hindustan Projects`;
@@ -457,7 +475,7 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
                 </table>
 
                 <div style="text-align: center; margin: 28px 0 16px 0;">
-                  <a href="https://empanelment.hindustanprojects.in/login" target="_blank" style="display: inline-block; background: #7c3aed; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 14px;">
+                  <a href="${getEmpanelmentUrl("/login")}" target="_blank" style="display: inline-block; background: #7c3aed; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 14px;">
                     Log In to Document Vault & Re-upload &rarr;
                   </a>
                 </div>
@@ -542,7 +560,7 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
     return;
   }
 
-  const verifyUrl = `https://empanelment.hindustanprojects.in/verify-pass?passCode=${encodeURIComponent(passCode)}`;
+  const verifyUrl = getEmpanelmentUrl(`/verify-pass?passCode=${encodeURIComponent(passCode)}`);
   const currentYear = new Date().getFullYear();
   const subject = `Site Gate Pass [${passCode}] - ${siteLocation} (${visitorName})`;
 
@@ -676,8 +694,8 @@ export async function sendVendorActivationEmail(params: {
   applicationId: string;
 }): Promise<void> {
   const { email, contactName, companyName, activationToken, applicationId } = params;
-  const activateUrl = `https://empanelment.hindustanprojects.in/activate?token=${encodeURIComponent(activationToken)}`;
-  const subject = `Activate Your HiPRO Vendor Portal Account — ${companyName}`;
+  const activateUrl = getEmpanelmentUrl(`/activate?token=${encodeURIComponent(activationToken)}`);
+  const subject = `Congratulations! Empanelment Approved — Set Password & Enter Vendor Portal — ${companyName}`;
 
   const htmlBody = `
 <!DOCTYPE html>
@@ -690,21 +708,24 @@ export async function sendVendorActivationEmail(params: {
           <tr>
             <td>
               <div style="font-size: 18px; font-weight: 800; color: #f97316; text-transform: uppercase;">Hindustan Projects</div>
-              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Vendor Portal Account Activation</h2>
+              <div style="display: inline-block; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 10px; letter-spacing: 0.5px;">
+                ✔ EMPANELMENT APPROVED & VERIFIED
+              </div>
+              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Access Your HiPRO Vendor Portal</h2>
               <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
                 Dear ${contactName},<br>
-                Congratulations! Your company <strong>${companyName}</strong> has been granted authorized access to the Hindustan Projects Vendor & Contractor Portal.
+                Congratulations! Your company <strong>${companyName}</strong> has been officially approved as an authorized partner for Hindustan Projects.
               </p>
               <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
-                Through your dedicated portal, you can participate in active tender bidding, issue 24-hour daily site gate passes, update company credentials, and view contract work orders.
+                To get started, please set your secure account password. Once configured, you will automatically be logged in to your dedicated dashboard to browse live tenders, place commercial bids, and generate daily 24-hr site gate passes.
               </p>
               <div style="text-align: center; margin: 26px 0;">
-                <a href="${activateUrl}" target="_blank" style="background: #ea580c; color: #fff; padding: 13px 30px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-block;">
-                  Activate Vendor Account & Set Password &rarr;
+                <a href="${activateUrl}" target="_blank" style="background: linear-gradient(135deg, #ea580c 0%, #f97316 100%); color: #fff; padding: 14px 34px; border-radius: 10px; font-weight: 800; text-decoration: none; font-size: 14px; display: inline-block; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);">
+                  Set Password & Enter Portal &rarr;
                 </a>
               </div>
-              <p style="color: #64748b; font-size: 11.5px;">
-                This invitation link remains valid for 72 hours. If you did not request this, please contact empanelment@hindustanprojects.in.
+              <p style="color: #64748b; font-size: 11.5px; line-height: 1.5;">
+                This secure setup link is valid for 72 hours. If you did not apply for empanelment, please notify empanelment@hindustanprojects.in.
               </p>
             </td>
           </tr>
@@ -754,7 +775,7 @@ export async function sendPasswordResetEmail(params: {
   applicationId: string;
 }): Promise<void> {
   const { email, contactName, resetToken, applicationId } = params;
-  const resetUrl = `https://empanelment.hindustanprojects.in/reset-password?token=${encodeURIComponent(resetToken)}`;
+  const resetUrl = getEmpanelmentUrl(`/reset-password?token=${encodeURIComponent(resetToken)}`);
   const subject = `Reset Your HiPRO Vendor Portal Password`;
 
   const htmlBody = `

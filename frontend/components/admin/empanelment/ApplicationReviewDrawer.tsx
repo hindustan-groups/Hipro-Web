@@ -191,7 +191,11 @@ export default function ApplicationReviewDrawer({
         throw new Error(json.error || "Failed to update application status");
       }
 
-      setActionSuccess(`Application marked as ${newStatus}`);
+      if (newStatus === "APPROVED") {
+        setActionSuccess("Application APPROVED! Official setup email dispatched to vendor.");
+      } else {
+        setActionSuccess(`Application marked as ${newStatus}`);
+      }
       onStatusUpdated(json.application || {
         ...application,
         status: newStatus,
@@ -470,17 +474,18 @@ export default function ApplicationReviewDrawer({
                   <button
                     onClick={handleInviteToPortal}
                     disabled={inviting}
+                    title="Resend 1-click password setup link to vendor's email"
                     className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-2xs disabled:opacity-50"
                   >
                     <KeyRound className="w-3.5 h-3.5" />
-                    <span>{inviting ? "Inviting..." : "Invite to Portal"}</span>
+                    <span>{inviting ? "Sending..." : "Resend Setup Link"}</span>
                   </button>
                 </div>
               </div>
 
               {inviteSuccess && (
                 <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 space-y-2">
-                  <p className="font-bold text-xs">Portal Activation Link Generated:</p>
+                  <p className="font-bold text-xs">Direct Portal Password Setup Link:</p>
                   <div className="flex items-center gap-2">
                     <input
                       type="text"

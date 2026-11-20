@@ -294,6 +294,24 @@ export default function EmpanelmentRegistrationWizard() {
           </p>
         </div>
 
+        {/* What Happens Next Guidance Box */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 text-left space-y-2.5 max-w-lg mx-auto">
+          <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            What happens next? (आगे क्या प्रक्रिया होगी?)
+          </p>
+          <ol className="text-xs text-slate-600 space-y-2 list-decimal pl-4 leading-relaxed">
+            <li>
+              <strong>Document Review:</strong> HiPRO procurement audit team will verify your enterprise statutory credentials.
+            </li>
+            <li>
+              <strong>Instant Approval Email:</strong> Upon approval, an official email with a 1-click <em>&quot;Set Password &amp; Enter Portal&quot;</em> button will be dispatched to <strong>{formData.email}</strong>.
+            </li>
+            <li>
+              <strong>1-Click Direct Access:</strong> Once you choose your password, you will be automatically logged in to access live tenders and generate 24-hr site gate passes.
+            </li>
+          </ol>
+        </div>
+
         {/* Next Actions */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-4 w-full">
           <Link
