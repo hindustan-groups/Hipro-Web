@@ -1037,9 +1037,24 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
       }
     }
 
-    // Auto-provision VendorAccount stub if approved
+    // Auto-provision VendorAccount stub and auto-dispatch password setup invitation on APPROVAL
     if (updated.status === "APPROVED") {
-      await createOrGetVendorAccount(updated.id, updated.email).catch(() => null);
+      try {
+        const account = await createOrGetVendorAccount(updated.id, updated.email);
+        if (account.status === "PENDING_ACTIVATION") {
+          const { token } = await generateActivationToken(updated.id);
+          await sendVendorActivationEmail({
+            email: updated.email,
+            contactName: updated.contactName,
+            companyName: updated.companyName,
+            activationToken: token,
+            applicationId: updated.id,
+          });
+          console.log(`[EMPANELMENT] Automatically dispatched portal setup email to approved vendor: ${updated.email}`);
+        }
+      } catch (provisionErr: any) {
+        console.warn("[EMPANELMENT] Auto-provisioning activation email warning:", provisionErr?.message || provisionErr);
+      }
     }
 
     await logVendorActivity({
@@ -1050,8 +1065,8 @@ router.patch("/admin/applications/:id/status", async (req: Request, res: Respons
       details: `Status set to ${updated.status}. Stage: ${updated.currentStage}. Remarks: ${updated.adminRemarks || "None"}`,
     }).catch(() => null);
 
-    // If status changed to APPROVED, REJECTED, or DOCS_REQUESTED, notify the vendor
-    if (updated.status === "APPROVED" || updated.status === "REJECTED" || updated.status === "DOCS_REQUESTED") {
+    // If status changed to REJECTED or DOCS_REQUESTED, notify the vendor
+    if (updated.status === "REJECTED" || updated.status === "DOCS_REQUESTED") {
       sendApplicationStatusEmail({
         email: updated.email,
         companyName: updated.companyName,

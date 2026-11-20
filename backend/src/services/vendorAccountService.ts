@@ -182,6 +182,60 @@ export async function generateActivationToken(applicationId: string): Promise<{ 
 }
 
 /**
+ * Validates an activation token and returns vendor account + enterprise info without consuming it.
+ */
+export async function findVendorByActivationToken(token: string): Promise<{
+  account: VendorAccountRecord;
+  companyName: string;
+  contactName: string;
+} | null> {
+  const cleanToken = token.trim();
+  if (!cleanToken) return null;
+  const now = new Date();
+
+  let account: any = null;
+  try {
+    account = await (prisma as any).vendorAccount.findFirst({
+      where: { activationToken: cleanToken },
+    });
+  } catch {
+    const store = loadFallbackStore();
+    account = store.accounts.find((a) => a.activationToken === cleanToken) || null;
+  }
+
+  if (!account) return null;
+  if (account.activationExpiry && new Date(account.activationExpiry) < now) {
+    return null;
+  }
+
+  let companyName = "";
+  let contactName = "";
+  try {
+    const app = await prisma.vendorApplication.findUnique({
+      where: { id: account.applicationId },
+      select: { companyName: true, contactName: true },
+    });
+    if (app) {
+      companyName = app.companyName;
+      contactName = app.contactName;
+    }
+  } catch {}
+
+  return {
+    account: {
+      ...account,
+      createdAt: typeof account.createdAt === "object" ? account.createdAt.toISOString() : account.createdAt,
+      updatedAt: typeof account.updatedAt === "object" ? account.updatedAt.toISOString() : account.updatedAt,
+      activationExpiry: account.activationExpiry ? (typeof account.activationExpiry === "object" ? account.activationExpiry.toISOString() : account.activationExpiry) : null,
+      resetExpiry: account.resetExpiry ? (typeof account.resetExpiry === "object" ? account.resetExpiry.toISOString() : account.resetExpiry) : null,
+      lastLoginAt: account.lastLoginAt ? (typeof account.lastLoginAt === "object" ? account.lastLoginAt.toISOString() : account.lastLoginAt) : null,
+    },
+    companyName: companyName || "Empanelled Partner",
+    contactName: contactName || "Partner",
+  };
+}
+
+/**
  * Activates a vendor account using an invitation token and sets the initial password.
  */
 export async function activateVendorAccount(token: string, password: string): Promise<VendorAccountRecord> {

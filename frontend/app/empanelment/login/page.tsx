@@ -67,7 +67,12 @@ function LoginForm() {
         router.push(redirectUrl);
       }, 600);
     } catch (err: any) {
-      setError(err.message || "An error occurred during login. Please try again.");
+      const msg = err.message || "An error occurred during login. Please try again.";
+      if (msg.includes("not been activated") || msg.includes("PENDING_ACTIVATION")) {
+        setError("Your account is approved, but your password is not set yet. Please check your approval email or click 'Set Password' below.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -173,13 +178,13 @@ function LoginForm() {
       {/* Helpful Activation & Onboarding links */}
       <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
         <div className="flex items-center justify-between text-xs text-slate-600">
-          <span>Received an invitation email?</span>
+          <span>Approved partner setting password?</span>
           <Link
             href="/empanelment/activate"
             className="font-bold text-[#dc2626] hover:underline flex items-center gap-1"
           >
             <KeyRound className="w-3.5 h-3.5" />
-            <span>Activate Account</span>
+            <span>Set Password</span>
           </Link>
         </div>
 
