@@ -1,24 +1,20 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Printer,
   Download,
   ShieldCheck,
-  QrCode,
-  Sparkles,
   RotateCw,
-  Eye,
   Check,
-  Building2,
   Award,
-  Phone,
-  MapPin,
-  ExternalLink,
   Layers,
   ChevronDown,
-  Palette,
+  Globe,
+  MapPin,
+  Phone,
+  Mail,
 } from "lucide-react";
 
 export interface SmartCardVendor {
@@ -65,7 +61,7 @@ export default function SmartCardPreviewModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Reset flipped state when modal opens
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setIsFlipped(false);
@@ -84,6 +80,13 @@ export default function SmartCardPreviewModal({
   const city = vendor.city || "Bhilwara";
   const state = vendor.state || "Rajasthan";
   const phone = vendor.phone || "+91 75970 00601";
+
+  // Official Company Meta
+  const officialWebsite = "www.hindustanprojects.in";
+  const officialPortal = "empanelment.hindustanprojects.in";
+  const officialAddress = "Opp. Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India";
+  const officialHelpline = "+91 75970 00601";
+  const officialEmail = "procurement@hindustanprojects.in";
 
   const tierKey = (vendor.tier || "TIER_C").toUpperCase();
   const tierConfig: Record<
@@ -173,6 +176,17 @@ export default function SmartCardPreviewModal({
     window.print();
   };
 
+  // Helper to load image for canvas
+  const loadImg = (src: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Failed to load image: " + src));
+      img.src = src;
+    });
+  };
+
   // High-Resolution 300 DPI Canvas Rendering & Download Functionality
   const handleDownload = async (type: "front" | "back" | "both") => {
     setIsDownloading(true);
@@ -182,16 +196,22 @@ export default function SmartCardPreviewModal({
       const cardWidth = 1012; // 85.6mm at 300 DPI
       const cardHeight = 638; // 54mm at 300 DPI
 
-      // Helper function to draw the FRONT side on a 2D canvas context (Hindustan Projects Official Color Theme)
+      // Preload HiPRO logo and QR code
+      const [logoImg, qrImg] = await Promise.all([
+        loadImg("/hipro-logo.jpg").catch(() => null),
+        loadImg(qrUrl).catch(() => null),
+      ]);
+
+      // Draw FRONT side
       const drawFront = (ctx: CanvasRenderingContext2D, dx: number, dy: number) => {
         const isNavyTheme = cardTheme === "royal-navy";
 
-        // Base Card Surface (Crisp White Pearl / Royal Navy)
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(dx, dy, cardWidth, cardHeight, 36);
         ctx.clip();
 
+        // Card Base
         if (isNavyTheme) {
           const bgGrad = ctx.createLinearGradient(dx, dy, dx + cardWidth, dy + cardHeight);
           bgGrad.addColorStop(0, "#0F2C59");
@@ -200,7 +220,6 @@ export default function SmartCardPreviewModal({
           ctx.fillStyle = bgGrad;
           ctx.fillRect(dx, dy, cardWidth, cardHeight);
         } else {
-          // Official Brand Light Theme: Crisp Pearl Alabaster
           const bgGrad = ctx.createLinearGradient(dx, dy, dx, dy + cardHeight);
           bgGrad.addColorStop(0, "#FFFFFF");
           bgGrad.addColorStop(0.5, "#F8FAFC");
@@ -229,44 +248,62 @@ export default function SmartCardPreviewModal({
         // --- TOP BRAND HEADER BANNER ---
         const bannerHeight = 126;
         const bannerGrad = ctx.createLinearGradient(dx, dy, dx + cardWidth, dy + bannerHeight);
-        bannerGrad.addColorStop(0, "#0F2C59"); // Deep Royal Navy
+        bannerGrad.addColorStop(0, "#0F2C59");
         bannerGrad.addColorStop(0.7, "#0B2545");
         bannerGrad.addColorStop(1, "#091D36");
         ctx.fillStyle = bannerGrad;
         ctx.fillRect(dx, dy, cardWidth, bannerHeight);
 
         // Hindustan Projects Crimson Red Accent Strip
-        ctx.fillStyle = "#D9232A"; // Official Red
+        ctx.fillStyle = "#D9232A";
         ctx.fillRect(dx, dy + bannerHeight - 6, cardWidth, 6);
 
-        // Brand Emblem (Gold & Red shield icon simulation)
-        const emblemX = dx + 44;
-        const emblemY = dy + 32;
-        ctx.fillStyle = "#D9232A";
-        ctx.beginPath();
-        ctx.roundRect(emblemX, emblemY, 32, 36, 6);
-        ctx.fill();
-        ctx.strokeStyle = "#F59E0B";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "900 18px -apple-system, sans-serif";
-        ctx.fillText("H", emblemX + 9, emblemY + 25);
+        // Official HiPRO Brand Logo
+        const logoX = dx + 44;
+        const logoY = dy + 22;
+        const logoW = 86;
+        const logoH = 82;
+
+        if (logoImg) {
+          // White rounded backdrop for logo
+          ctx.fillStyle = "#FFFFFF";
+          ctx.beginPath();
+          ctx.roundRect(logoX, logoY, logoW, logoH, 12);
+          ctx.fill();
+          ctx.strokeStyle = "#E2E8F0";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.drawImage(logoImg, logoX + 6, logoY + 6, logoW - 12, logoH - 12);
+        } else {
+          // Fallback vector shield
+          ctx.fillStyle = "#D9232A";
+          ctx.beginPath();
+          ctx.roundRect(logoX, logoY + 14, 46, 52, 8);
+          ctx.fill();
+          ctx.strokeStyle = "#F59E0B";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "900 24px -apple-system, sans-serif";
+          ctx.fillText("H", logoX + 14, logoY + 50);
+        }
 
         // Header Title: HINDUSTAN PROJECTS
+        const textOffsetX = logoImg ? logoX + logoW + 20 : logoX + 64;
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "900 25px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         ctx.letterSpacing = "2px";
-        ctx.fillText("HINDUSTAN", dx + 88, dy + 56);
+        ctx.fillText("HINDUSTAN", textOffsetX, dy + 56);
 
         ctx.fillStyle = "#D9232A";
-        ctx.fillText("PROJECTS", dx + 264, dy + 56);
+        ctx.fillText("PROJECTS", textOffsetX + 172, dy + 56);
 
-        // Subtitle
+        // Subtitle & Website
         ctx.fillStyle = "#93C5FD";
         ctx.font = "700 12px -apple-system, monospace";
         ctx.letterSpacing = "1.5px";
-        ctx.fillText("GOVERNMENT & INFRASTRUCTURE EPC • VERIFIED PARTNER", dx + 88, dy + 82);
+        ctx.fillText("GOVERNMENT & INFRASTRUCTURE EPC • ISO 7810 ID-1", textOffsetX, dy + 82);
 
         // Gold Smart Microchip (Right Header)
         const chipX = dx + cardWidth - 146;
@@ -308,7 +345,6 @@ export default function SmartCardPreviewModal({
         ctx.stroke();
 
         // --- MIDDLE IDENTITY SECTION ---
-        // Tier Pill Badge
         const tierBadgeY = dy + 158;
         ctx.fillStyle = currentTier.code === "CLASS-C" ? "#D9232A" : "#0F2C59";
         ctx.beginPath();
@@ -328,26 +364,22 @@ export default function SmartCardPreviewModal({
         ctx.font = "900 34px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         ctx.letterSpacing = "0.5px";
         const displayComp = companyName.length > 28 ? companyName.substring(0, 26) + "..." : companyName;
-        ctx.fillText(displayComp, dx + 44, dy + 242);
+        ctx.fillText(displayComp, dx + 44, dy + 240);
 
         // Authorized Contact & Category
         ctx.fillStyle = isNavyTheme ? "#93C5FD" : "#D9232A";
         ctx.font = "700 20px -apple-system, sans-serif";
-        ctx.fillText(`${contactName} • ${category}`, dx + 44, dy + 280);
+        ctx.fillText(`${contactName} • ${category}`, dx + 44, dy + 278);
 
         // Location & Accreditation
         ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#475569";
         ctx.font = "600 16px -apple-system, sans-serif";
-        ctx.fillText(`📍 ${city}, ${state} • Empanelled Commercial Contractor`, dx + 44, dy + 314);
+        ctx.fillText(`📍 ${city}, ${state} • Approved Trade Partner`, dx + 44, dy + 312);
 
-        // Watermark Seal in Background (Center-Right)
-        ctx.save();
-        ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.04)" : "rgba(15, 44, 89, 0.05)";
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(dx + cardWidth - 220, dy + 300, 110, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
+        // Website line on front
+        ctx.fillStyle = isNavyTheme ? "#FDE68A" : "#0F2C59";
+        ctx.font = "700 14px -apple-system, monospace";
+        ctx.fillText(`🌐 ${officialWebsite}  •  ${officialPortal}`, dx + 44, dy + 342);
 
         // Divider
         ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0";
@@ -358,7 +390,7 @@ export default function SmartCardPreviewModal({
         ctx.stroke();
 
         // --- BOTTOM SECTION ---
-        // Empanelment ID Block in High-Contrast Container
+        // Empanelment ID Block
         const idBoxW = 420;
         const idBoxH = 100;
         const idBoxX = dx + 44;
@@ -387,7 +419,7 @@ export default function SmartCardPreviewModal({
         ctx.font = "700 12px -apple-system, monospace";
         ctx.fillText(`ISSUED: ${issueDate}  •  VALID: ${validThru}`, idBoxX + 22, idBoxY + 88);
 
-        // Circular Holographic Security Seal (Right bottom)
+        // Circular Holographic Seal (Right bottom)
         const sealX = dx + cardWidth - 210;
         const sealY = dy + 524;
         ctx.save();
@@ -412,16 +444,31 @@ export default function SmartCardPreviewModal({
         ctx.fillText("VERIFIED SEAL", sealX, sealY + 8);
         ctx.restore();
 
+        // QR Code
+        if (qrImg) {
+          const qrX = dx + cardWidth - 120;
+          const qrY = dy + 474;
+          const qrSize = 76;
+          ctx.fillStyle = "#FFFFFF";
+          ctx.beginPath();
+          ctx.roundRect(qrX, qrY, qrSize, qrSize, 10);
+          ctx.fill();
+          ctx.strokeStyle = "#CBD5E1";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.drawImage(qrImg, qrX + 4, qrY + 4, qrSize - 8, qrSize - 8);
+        }
+
         // Bottom Edge Official Dual Color Band
         ctx.fillStyle = "#0F2C59";
         ctx.fillRect(dx, dy + cardHeight - 8, cardWidth * 0.7, 8);
         ctx.fillStyle = "#D9232A";
         ctx.fillRect(dx + cardWidth * 0.7, dy + cardHeight - 8, cardWidth * 0.3, 8);
 
-        ctx.restore(); // restore clipping
+        ctx.restore();
       };
 
-      // Helper function to draw the BACK side on a 2D canvas context (Hindustan Projects Official Color Theme)
+      // Draw BACK side
       const drawBack = (ctx: CanvasRenderingContext2D, dx: number, dy: number) => {
         const isNavyTheme = cardTheme === "royal-navy";
 
@@ -451,9 +498,9 @@ export default function SmartCardPreviewModal({
 
         // HiCo Magnetic Stripe
         ctx.fillStyle = "#1E293B";
-        ctx.fillRect(dx, dy + 40, cardWidth, 80);
+        ctx.fillRect(dx, dy + 36, cardWidth, 80);
         ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.fillRect(dx, dy + 70, cardWidth, 16);
+        ctx.fillRect(dx, dy + 66, cardWidth, 16);
 
         // Notice text
         ctx.fillStyle = isNavyTheme ? "#94A3B8" : "#64748B";
@@ -461,13 +508,13 @@ export default function SmartCardPreviewModal({
         ctx.fillText(
           "Official property of Hindustan Projects. If found, please return to any Procurement Directorate office.",
           dx + 44,
-          dy + 150
+          dy + 144
         );
 
         // Signature Panel
         ctx.fillStyle = "#F1F5F9";
         ctx.beginPath();
-        ctx.roundRect(dx + 44, dy + 172, 540, 68, 8);
+        ctx.roundRect(dx + 44, dy + 162, 540, 68, 8);
         ctx.fill();
         ctx.strokeStyle = "#CBD5E1";
         ctx.lineWidth = 1;
@@ -475,7 +522,7 @@ export default function SmartCardPreviewModal({
 
         // Signature textured lines
         ctx.strokeStyle = "#E2E8F0";
-        for (let i = 182; i < 232; i += 8) {
+        for (let i = 172; i < 222; i += 8) {
           ctx.beginPath();
           ctx.moveTo(dx + 54, dy + i);
           ctx.lineTo(dx + 574, dy + i);
@@ -485,16 +532,16 @@ export default function SmartCardPreviewModal({
         // Script Signature
         ctx.fillStyle = "#0F2C59";
         ctx.font = "italic bold 28px 'Brush Script MT', cursive, Georgia, serif";
-        ctx.fillText("R. K. Sharma", dx + 80, dy + 218);
+        ctx.fillText("R. K. Sharma", dx + 80, dy + 208);
 
         ctx.fillStyle = "#64748B";
         ctx.font = "700 10px -apple-system, sans-serif";
-        ctx.fillText("DIRECTOR & AUTHORIZED SIGNATORY", dx + 44, dy + 256);
+        ctx.fillText("DIRECTOR & AUTHORIZED SIGNATORY", dx + 44, dy + 246);
 
         // Security Token Box (Right of signature)
         ctx.fillStyle = "#0F2C59";
         ctx.beginPath();
-        ctx.roundRect(dx + 610, dy + 172, cardWidth - 654, 68, 8);
+        ctx.roundRect(dx + 610, dy + 162, cardWidth - 654, 68, 8);
         ctx.fill();
         ctx.strokeStyle = "#D9232A";
         ctx.lineWidth = 1.5;
@@ -502,44 +549,46 @@ export default function SmartCardPreviewModal({
 
         ctx.fillStyle = "#93C5FD";
         ctx.font = "800 11px -apple-system, monospace";
-        ctx.fillText("SECURITY TOKEN", dx + 626, dy + 200);
+        ctx.fillText("SECURITY TOKEN", dx + 626, dy + 190);
         ctx.fillStyle = "#FFFFFF";
         ctx.font = "900 16px -apple-system, monospace";
-        ctx.fillText(trackingId, dx + 626, dy + 226);
+        ctx.fillText(trackingId, dx + 626, dy + 216);
 
         // Terms of Empanelment
         ctx.fillStyle = isNavyTheme ? "#FFFFFF" : "#0F2C59";
         ctx.font = "900 13px -apple-system, sans-serif";
-        ctx.fillText("TERMS & CONDITIONS OF VENDOR EMPANELMENT:", dx + 44, dy + 294);
+        ctx.fillText("TERMS & CONDITIONS OF VENDOR EMPANELMENT:", dx + 44, dy + 278);
 
         ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#334155";
         ctx.font = "500 12px -apple-system, sans-serif";
         const terms = [
-          "1. This card certifies authorized contractor status for commercial tender bidding and civil project execution.",
+          "1. This card certifies authorized contractor status for commercial bidding and turnkey civil execution.",
           "2. Mandatory for site in-charge & labour supervisor entry to generate official 24-hr daily gate passes.",
-          "3. Non-transferable. Misuse or tampered presentation will result in immediate contractor de-listing & penalties.",
+          "3. Non-transferable. Misuse or tampered presentation will result in immediate contractor de-listing.",
           "4. Valid for 24 months from issuance. For renewals or tier upgrades, visit empanelment.hindustanprojects.in.",
         ];
         terms.forEach((t, i) => {
-          ctx.fillText(t, dx + 44, dy + 320 + i * 20);
+          ctx.fillText(t, dx + 44, dy + 302 + i * 19);
         });
 
         // Corporate Footer
         ctx.fillStyle = isNavyTheme ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0";
-        ctx.fillRect(dx + 44, dy + 418, cardWidth - 88, 1);
+        ctx.fillRect(dx + 44, dy + 392, cardWidth - 88, 1);
 
         ctx.fillStyle = "#0F2C59";
         ctx.font = "900 14px -apple-system, sans-serif";
-        ctx.fillText("HINDUSTAN PROJECTS PROCUREMENT & CONTRACTS DIRECTORATE", dx + 44, dy + 446);
+        ctx.fillText("HINDUSTAN PROJECTS PROCUREMENT & CONTRACTS DIRECTORATE", dx + 44, dy + 418);
 
-        ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#475569";
+        // Address & Official Coordinates
+        ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#334155";
         ctx.font = "600 12.5px -apple-system, sans-serif";
-        ctx.fillText("📍 Headquarters: Bhopal Ganj, Bhilwara - 311001, Rajasthan, India", dx + 44, dy + 470);
-        ctx.fillText("📞 24x7 Helpline: +91 75970 00601   •   ✉️ procurement@hindustanprojects.in", dx + 44, dy + 492);
+        ctx.fillText(`📍 Corporate HQ: ${officialAddress}`, dx + 44, dy + 442);
+        ctx.fillText(`🌐 Official Website: ${officialWebsite}   •   Portal: ${officialPortal}`, dx + 44, dy + 464);
+        ctx.fillText(`📞 24x7 Helpline: ${officialHelpline}   •   ✉️ Email: ${officialEmail}`, dx + 44, dy + 486);
 
         // Barcode Graphic
         const barX = dx + 44;
-        const barY = dy + 518;
+        const barY = dy + 512;
         ctx.fillStyle = "#FFFFFF";
         ctx.beginPath();
         ctx.roundRect(barX, barY, 480, 60, 6);
@@ -605,7 +654,7 @@ export default function SmartCardPreviewModal({
 
         ctx.fillStyle = "#D9232A";
         ctx.font = "700 13px -apple-system, monospace";
-        ctx.fillText("CR-80 ISO 7810 COMPLIANT (85.60 × 53.98 MM) • DUAL-SIDED PRINT READY SHEET", sheetPadding, 74);
+        ctx.fillText(`CR-80 ISO 7810 COMPLIANT • ${officialWebsite} • ${officialPortal}`, sheetPadding, 74);
 
         // Front Card
         drawFront(ctx, sheetPadding, 100);
@@ -617,13 +666,13 @@ export default function SmartCardPreviewModal({
         ctx.fillStyle = "#64748B";
         ctx.font = "500 13px -apple-system, sans-serif";
         ctx.fillText(
-          "Instructions: Print at 100% scale (no scaling) on CR-80 PVC card blank (thermal printer) or photo paper. Cut on border.",
+          `Official Address: ${officialAddress} | Support: ${officialHelpline}`,
           sheetPadding,
           canvas.height - 30
         );
       }
 
-      // Convert to high-res PNG and trigger download
+      // Trigger download
       const dataUrl = canvas.toDataURL("image/png", 1.0);
       const link = document.createElement("a");
       const filename =
@@ -661,13 +710,17 @@ export default function SmartCardPreviewModal({
       <div className="hidden print:block fixed inset-0 bg-white p-8 text-black z-100">
         <div className="max-w-[190mm] mx-auto text-center space-y-4">
           <div className="border-b-2 border-[#0F2C59] pb-3 flex items-center justify-between">
-            <div className="text-left">
-              <h1 className="text-xl font-black uppercase tracking-wider text-[#0F2C59]">
-                HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-              </h1>
-              <p className="text-xs text-slate-600 font-mono">
-                OFFICIAL EMPANELLED CONTRACTOR PVC SMART CARD (ISO 7810 ID-1)
-              </p>
+            <div className="flex items-center gap-3 text-left">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hipro-logo.jpg" alt="HiPRO Logo" className="h-10 w-auto object-contain bg-white rounded p-0.5" />
+              <div>
+                <h1 className="text-xl font-black uppercase tracking-wider text-[#0F2C59]">
+                  HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
+                </h1>
+                <p className="text-xs text-slate-600 font-mono">
+                  OFFICIAL EMPANELLED CONTRACTOR PVC SMART CARD (ISO 7810 ID-1)
+                </p>
+              </div>
             </div>
             <div className="text-right font-mono text-xs font-bold text-slate-700">
               ID: {trackingId}
@@ -678,13 +731,17 @@ export default function SmartCardPreviewModal({
             {/* Print Front Side */}
             <div className="w-[85.6mm] h-[53.98mm] rounded-2xl p-4 bg-white text-slate-900 flex flex-col justify-between border-2 border-dashed border-[#0F2C59] relative overflow-hidden shadow-sm">
               <div className="bg-[#0F2C59] -mx-4 -mt-4 p-2.5 flex items-center justify-between text-white border-b-2 border-[#D9232A]">
-                <div>
-                  <p className="text-[9px] font-black tracking-wider">
-                    HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                  </p>
-                  <p className="text-[6px] text-sky-200 uppercase tracking-tight">
-                    VERIFIED PARTNER CREDENTIAL
-                  </p>
+                <div className="flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/hipro-logo.jpg" alt="Logo" className="h-6 w-auto object-contain bg-white rounded p-0.5" />
+                  <div>
+                    <p className="text-[9px] font-black tracking-wider leading-none">
+                      HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
+                    </p>
+                    <p className="text-[5.5px] text-sky-200 uppercase tracking-tight mt-0.5">
+                      {officialWebsite}
+                    </p>
+                  </div>
                 </div>
                 <div className="w-7 h-5 rounded bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-600 flex items-center justify-center">
                   <div className="w-3 h-2 border border-amber-800/40" />
@@ -735,9 +792,10 @@ export default function SmartCardPreviewModal({
                   <span className="text-[6px] font-mono text-slate-500 font-bold uppercase">Authorized Officer</span>
                 </div>
               </div>
-              <div className="border-t border-slate-200 pt-1 text-[6.5px] text-slate-600 space-y-0.5">
+              <div className="border-t border-slate-200 pt-1 text-[6px] text-slate-600 space-y-0.5">
                 <p className="font-bold text-[#0F2C59]">HINDUSTAN PROJECTS PROCUREMENT DIRECTORATE</p>
-                <p>📍 Bhopal Ganj, Bhilwara - 311001, Rajasthan • Helpline: +91 75970 00601</p>
+                <p>📍 {officialAddress}</p>
+                <p>🌐 {officialWebsite} • 📞 {officialHelpline}</p>
                 <p className="font-mono font-bold text-slate-800 pt-0.5">*{trackingId}* • ISO 7810 ID-1</p>
               </div>
             </div>
@@ -762,8 +820,9 @@ export default function SmartCardPreviewModal({
         {/* Header */}
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 bg-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#0F2C59] text-white flex items-center justify-center shadow-md border border-[#0B2545]">
-              <ShieldCheck className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded-2xl bg-[#0F2C59] p-1 flex items-center justify-center shadow-md border border-[#0B2545]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hipro-logo.jpg" alt="HiPRO Logo" className="h-full w-auto object-contain rounded-xl" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -775,7 +834,7 @@ export default function SmartCardPreviewModal({
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                Dual-sided ISO 7810 ID-1 smart card with Hindustan Projects official branding
+                Dual-sided ISO 7810 ID-1 card with HiPRO logo &amp; official address
               </p>
             </div>
           </div>
@@ -900,7 +959,7 @@ export default function SmartCardPreviewModal({
           {/* MODE 1: 3D Flip Interactive Card                             */}
           {/* ============================================================ */}
           {viewMode === "3d" && (
-            <div className="w-full max-w-[450px] flex flex-col items-center">
+            <div className="w-full max-w-[460px] flex flex-col items-center">
               <div
                 className="w-full aspect-[1.586] cursor-pointer relative"
                 style={{ perspective: "1400px" }}
@@ -923,17 +982,23 @@ export default function SmartCardPreviewModal({
                     }`}
                     style={{ backfaceVisibility: "hidden" }}
                   >
-                    {/* Top Header Banner */}
-                    <div className="bg-[#0F2C59] px-4 py-3 border-b-4 border-[#D9232A] flex items-center justify-between text-white shrink-0 relative">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-[#D9232A] border border-amber-400 flex items-center justify-center font-black text-white text-xs shadow-xs">
-                          H
+                    {/* Top Header Banner with HiPRO Logo */}
+                    <div className="bg-[#0F2C59] px-4 py-2.5 border-b-4 border-[#D9232A] flex items-center justify-between text-white shrink-0 relative">
+                      <div className="flex items-center gap-2.5">
+                        {/* Real HiPRO Logo */}
+                        <div className="h-8 sm:h-9 px-1.5 py-0.5 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-xs shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/hipro-logo.jpg"
+                            alt="HiPRO Official Logo"
+                            className="h-full w-auto object-contain"
+                          />
                         </div>
                         <div>
                           <div className="text-[12px] sm:text-[13px] font-black tracking-wider leading-none">
                             HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
                           </div>
-                          <p className="text-[7.5px] tracking-wide text-sky-200 uppercase font-semibold mt-0.5">
+                          <p className="text-[7px] sm:text-[7.5px] tracking-wide text-sky-200 uppercase font-semibold mt-0.5">
                             EPC &amp; INFRASTRUCTURE • VERIFIED CREDENTIAL
                           </p>
                         </div>
@@ -994,10 +1059,15 @@ export default function SmartCardPreviewModal({
                       <p className={`text-[8.5px] font-medium mt-0.5 ${isNavy ? "text-slate-300" : "text-slate-500"}`}>
                         📍 {city}, {state} • Approved Trade Partner
                       </p>
+
+                      {/* Website line */}
+                      <p className={`text-[8px] font-mono font-bold mt-1 ${isNavy ? "text-amber-300" : "text-[#0F2C59]"}`}>
+                        🌐 {officialWebsite} • {officialPortal}
+                      </p>
                     </div>
 
                     {/* Bottom Security & Verification Bar */}
-                    <div className="px-4 py-2.5 border-t border-slate-200/80 bg-slate-50/90 flex items-center justify-between gap-2 shrink-0">
+                    <div className="px-4 py-2 border-t border-slate-200/80 bg-slate-50/90 flex items-center justify-between gap-2 shrink-0">
                       {/* Empanelment ID Block */}
                       <div className="bg-[#0F2C59] text-white px-2.5 py-1 rounded-xl shadow-xs border border-[#0B2545]">
                         <p className="text-[6.5px] text-sky-200 font-mono tracking-widest uppercase font-bold">
@@ -1081,17 +1151,17 @@ export default function SmartCardPreviewModal({
                       </div>
 
                       {/* Official Terms */}
-                      <div className={`mt-2 text-[7px] space-y-0.5 leading-relaxed ${isNavy ? "text-slate-300" : "text-slate-600"}`}>
+                      <div className={`mt-1.5 text-[6.8px] space-y-0.5 leading-relaxed ${isNavy ? "text-slate-300" : "text-slate-600"}`}>
                         <p>• Mandatory for commercial tender bidding, site access &amp; 24-hr daily gate pass issuance.</p>
                         <p>• Misuse or unauthorized duplication will lead to immediate de-listing &amp; legal proceedings.</p>
                       </div>
                     </div>
 
-                    {/* Bottom Bar: Barcode & Corporate HQ */}
+                    {/* Official HQ Address & Website Section */}
                     <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 flex items-end justify-between shrink-0">
                       <div className="space-y-0.5">
                         <div className="bg-white rounded px-2 py-0.5 w-36 sm:w-40 flex flex-col items-center border border-slate-300">
-                          <div className="h-4 w-full flex items-center justify-between overflow-hidden">
+                          <div className="h-3.5 w-full flex items-center justify-between overflow-hidden">
                             {Array.from({ length: 36 }).map((_, idx) => (
                               <span
                                 key={idx}
@@ -1112,10 +1182,11 @@ export default function SmartCardPreviewModal({
                         </p>
                       </div>
 
-                      <div className="text-right text-[6.5px] text-slate-600 space-y-0.5">
-                        <p className="font-black text-[#0F2C59]">HINDUSTAN PROJECTS</p>
-                        <p>📍 Bhilwara - 311001, Rajasthan</p>
-                        <p>📞 +91 75970 00601</p>
+                      <div className="text-right text-[6.5px] text-slate-600 space-y-0.5 max-w-[240px]">
+                        <p className="font-black text-[#0F2C59] text-[7.5px]">HINDUSTAN PROJECTS</p>
+                        <p className="line-clamp-1">📍 {officialAddress}</p>
+                        <p className="font-mono font-bold text-[#D9232A]">🌐 {officialWebsite}</p>
+                        <p>📞 {officialHelpline} • ✉️ {officialEmail}</p>
                       </div>
                     </div>
 
@@ -1157,14 +1228,20 @@ export default function SmartCardPreviewModal({
                       : "bg-white text-slate-900 border-slate-300"
                   }`}
                 >
-                  <div className="bg-[#0F2C59] px-4 py-2.5 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
-                    <div>
-                      <p className="text-[11px] tracking-wider uppercase font-black">
-                        HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                      </p>
-                      <p className="text-[7px] tracking-wider text-sky-200 uppercase font-semibold">
-                        EMPANELLED PARTNER CREDENTIAL
-                      </p>
+                  <div className="bg-[#0F2C59] px-4 py-2 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-auto p-0.5 bg-white rounded flex items-center justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/hipro-logo.jpg" alt="Logo" className="h-full w-auto object-contain" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] tracking-wider uppercase font-black">
+                          HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
+                        </p>
+                        <p className="text-[6.5px] tracking-wider text-sky-200 uppercase font-semibold">
+                          EMPANELLED PARTNER CREDENTIAL
+                        </p>
+                      </div>
                     </div>
                     <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 flex items-center justify-center">
                       <div className="w-3 h-2 border border-amber-800/40" />
@@ -1184,6 +1261,9 @@ export default function SmartCardPreviewModal({
                     </h3>
                     <p className={`text-[10px] font-bold ${isNavy ? "text-sky-300" : "text-[#D9232A]"}`}>
                       {contactName} • {category}
+                    </p>
+                    <p className="text-[8px] font-mono text-slate-500 mt-0.5">
+                      🌐 {officialWebsite}
                     </p>
                   </div>
 
@@ -1230,9 +1310,10 @@ export default function SmartCardPreviewModal({
                       <span className="font-mono text-slate-800 font-bold">*{trackingId}*</span>
                       <p className="text-[6px]">ISO 7810 ID-1 CR-80 STANDARD</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right max-w-[240px]">
                       <p className="text-[#0F2C59] font-bold">HINDUSTAN PROJECTS</p>
-                      <p>📞 +91 75970 00601</p>
+                      <p className="line-clamp-1">📍 {officialAddress}</p>
+                      <p className="font-mono text-[#D9232A]">🌐 {officialWebsite}</p>
                     </div>
                   </div>
                 </div>
@@ -1244,7 +1325,7 @@ export default function SmartCardPreviewModal({
           {/* MODE 3: Front Only                                           */}
           {/* ============================================================ */}
           {viewMode === "front" && (
-            <div className="w-full max-w-[450px] animate-in fade-in">
+            <div className="w-full max-w-[460px] animate-in fade-in">
               <div
                 className={`w-full aspect-[1.586] rounded-2xl shadow-2xl flex flex-col justify-between border overflow-hidden select-none ${
                   isNavy
@@ -1252,14 +1333,20 @@ export default function SmartCardPreviewModal({
                     : "bg-white text-slate-900 border-slate-300"
                 }`}
               >
-                <div className="bg-[#0F2C59] px-4 py-3 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
-                  <div>
-                    <p className="text-xs tracking-wider uppercase font-black">
-                      HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                    </p>
-                    <p className="text-[8px] tracking-wider text-sky-200 uppercase font-semibold">
-                      EMPANELLED PARTNER CREDENTIAL
-                    </p>
+                <div className="bg-[#0F2C59] px-4 py-2.5 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-auto p-0.5 bg-white rounded flex items-center justify-center">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/hipro-logo.jpg" alt="Logo" className="h-full w-auto object-contain" />
+                    </div>
+                    <div>
+                      <p className="text-xs tracking-wider uppercase font-black">
+                        HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
+                      </p>
+                      <p className="text-[7.5px] tracking-wider text-sky-200 uppercase font-semibold">
+                        EMPANELLED PARTNER CREDENTIAL
+                      </p>
+                    </div>
                   </div>
                   <div className="w-9 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 flex items-center justify-center">
                     <div className="w-4 h-3 border border-amber-800/40" />
@@ -1283,6 +1370,9 @@ export default function SmartCardPreviewModal({
                   <p className={`text-[9px] font-medium mt-0.5 ${isNavy ? "text-slate-300" : "text-slate-500"}`}>
                     📍 {city}, {state} • Approved Trade Partner
                   </p>
+                  <p className="text-[8.5px] font-mono font-bold text-[#0F2C59] mt-1">
+                    🌐 {officialWebsite}
+                  </p>
                 </div>
 
                 <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
@@ -1301,7 +1391,7 @@ export default function SmartCardPreviewModal({
           {/* MODE 4: Back Only                                            */}
           {/* ============================================================ */}
           {viewMode === "back" && (
-            <div className="w-full max-w-[450px] animate-in fade-in">
+            <div className="w-full max-w-[460px] animate-in fade-in">
               <div
                 className={`w-full aspect-[1.586] rounded-2xl shadow-2xl flex flex-col justify-between border overflow-hidden select-none ${
                   isNavy
@@ -1326,9 +1416,11 @@ export default function SmartCardPreviewModal({
                     <span className="font-mono text-slate-800 font-bold">*{trackingId}*</span>
                     <p className="text-[6.5px]">ISO 7810 ID-1 CR-80 STANDARD</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right max-w-[240px]">
                     <p className="text-[#0F2C59] font-bold">HINDUSTAN PROJECTS</p>
-                    <p>📞 +91 75970 00601</p>
+                    <p className="line-clamp-1">📍 {officialAddress}</p>
+                    <p className="font-mono text-[#D9232A]">🌐 {officialWebsite}</p>
+                    <p>📞 {officialHelpline}</p>
                   </div>
                 </div>
               </div>
