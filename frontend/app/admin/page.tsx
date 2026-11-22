@@ -7,12 +7,6 @@ import {
   ClipboardList,
   Users,
   Building2,
-  Award,
-  RefreshCw,
-  BookOpen,
-  Plus,
-  ExternalLink,
-  Pencil,
   HardHat,
   Briefcase,
   Mail,
@@ -28,38 +22,68 @@ import {
   Sparkles,
   Activity,
   CheckCircle2,
-  Globe
+  Globe,
+  RefreshCw,
+  FolderOpen,
+  Star,
+  FileText,
+  Compass,
+  KeyRound,
+  ShieldAlert,
+  ChevronRight,
+  ExternalLink,
+  Flame,
+  UserCheck,
+  Check,
 } from "lucide-react";
-import StatCard from "@/components/admin/StatCard";
-import type { BlogPost } from "@/lib/types";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
-interface DashboardData {
-  contacts:     { total: number; new: number; read: number; replied: number };
-  quotes:       { total: number; pending: number; reviewed: number; approved: number; rejected: number };
-  newsletter:   { total: number };
-  projects:     { total: number; active: number; featured: number };
-  testimonials: { total: number; pending: number; approved: number };
-  blogs?:       { total: number; published: number; drafts: number };
-  applications?:{ total: number; new: number };
-  services?:    { total: number; active: number };
+interface ExecutiveData {
+  executive: {
+    totalInquiries: number;
+    pendingActions: number;
+    activePortalsCount: number;
+    systemHealth: string;
+  };
+  hipro: {
+    projects: { total: number; active: number; featured: number };
+    services: { total: number; active: number };
+    quotes: { total: number; pending: number; approved: number };
+    contacts: { total: number; new: number; replied: number };
+    blogs: { total: number; published: number };
+    careers: { total: number; new: number };
+  };
+  hbs: {
+    leads: { total: number; new: number; converted: number };
+    services: { total: number };
+    projects: { total: number };
+  };
+  vendorHub: {
+    applications: { total: number; submitted: number; approved: number };
+    tenders: { total: number; active: number };
+    gatePasses: { total: number; today: number };
+  };
+  automail: {
+    campaigns: number;
+    dispatchesToday: number;
+  };
+  recentQuotes: { id: string; name: string; email: string; phone?: string; projectType: string; budget: string; status: string; createdAt: string }[];
   recentContacts: { id: string; name: string; email: string; phone?: string; message: string; status: string; createdAt: string }[];
-  recentQuotes:   { id: string; name: string; email: string; phone?: string; projectType: string; budget: string; status: string; createdAt: string }[];
-  recentApplications?: { id: string; name: string; email: string; role: string; experience: string; cvUrl: string; status: string; createdAt: string }[];
-  recentBlogs?:   BlogPost[];
+  recentHbsLeads: { id: string; name: string; phone: string; email?: string; selectedService?: string; status: string; createdAt: string }[];
+  recentVendorApps: { id: string; trackingId: string; companyName: string; contactName: string; email: string; phone: string; category?: string; tier: string; status: string; submittedAt: string }[];
+  recentApplications: { id: string; name: string; email: string; role: string; experience: string; cvUrl: string; status: string; createdAt: string }[];
 }
 
-export default function AdminDashboard() {
-  const [data, setData]           = useState<DashboardData | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState("");
-  const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "applications">("quotes");
+export default function MasterCompanyDashboard() {
+  const [data, setData] = useState<ExecutiveData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeStreamTab, setActiveStreamTab] = useState<"all" | "quotes" | "hbs" | "vendors" | "contacts">("all");
 
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async (force = false) => {
-    // Prevent duplicate simultaneous fetches unless explicitly forced
     if (isFetchingRef.current && !force) return;
 
     if (abortControllerRef.current) {
@@ -69,7 +93,6 @@ export default function AdminDashboard() {
     abortControllerRef.current = controller;
     isFetchingRef.current = true;
 
-    // Only display full loading state if we have no existing cached data or if forced
     setData((currentData) => {
       if (force || !currentData) {
         setLoading(true);
@@ -87,40 +110,39 @@ export default function AdminDashboard() {
 
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Your admin session has expired. Redirecting to login...");
+          setError("Your session has expired. Redirecting to login...");
           window.location.href = "/admin-login";
           return;
         }
-        setError("Failed to load dashboard data from server.");
+        setError("Failed to load company dashboard data from server.");
         return;
       }
       const json = await res.json();
       if (json.success && json.data) {
         setData(json.data);
-        setAdminCache("admin:dashboard", json.data);
+        setAdminCache("admin:master_dashboard", json.data);
       } else {
-        setError(json.error || "Failed to load dashboard data.");
+        setError(json.error || "Invalid response from server.");
       }
     } catch (err: any) {
-      if (err.name === "AbortError") {
-        return; // Normal cleanup on route change / unmount
+      if (err.name !== "AbortError") {
+        setError("Network connection issue. Please check server.");
       }
-      setError("Network error — could not reach the server.");
     } finally {
-      isFetchingRef.current = false;
       setLoading(false);
+      isFetchingRef.current = false;
     }
   }, []);
 
   useEffect(() => {
-    // 1. Immediately hydrate from in-memory / sessionStorage cache if available (0ms render)
-    const cached = getAdminCache<DashboardData>("admin:dashboard");
+    const cached = getAdminCache<ExecutiveData>("admin:master_dashboard");
     if (cached) {
       setData(cached);
       setLoading(false);
+      fetchData(false);
+    } else {
+      fetchData(true);
     }
-    // 2. Perform background revalidation
-    fetchData();
 
     return () => {
       if (abortControllerRef.current) {
@@ -129,678 +151,573 @@ export default function AdminDashboard() {
     };
   }, [fetchData]);
 
-  const totalArticles = data?.blogs?.total ?? 0;
-  const publishedArticles = data?.blogs?.published ?? 0;
-  const recentBlogs = data?.recentBlogs || [];
+  // Unified stream list with normalized badges
+  const unifiedStream = useMemo(() => {
+    if (!data) return [];
+    const items: Array<{
+      id: string;
+      type: "quote" | "hbs" | "vendor" | "contact";
+      brandName: string;
+      brandColor: string;
+      title: string;
+      subtitle: string;
+      contact: string;
+      status: string;
+      date: string;
+      actionUrl: string;
+    }> = [];
 
-  const pendingQuotesCount = data?.quotes?.pending ?? 0;
-  const newContactsCount = data?.contacts?.new ?? 0;
-  const newApplicationsCount = data?.applications?.new ?? 0;
-  const totalActionableInquiries = pendingQuotesCount + newContactsCount + newApplicationsCount;
+    // HiPRO Quotes
+    (data.recentQuotes || []).forEach((q) => {
+      items.push({
+        id: `quote-${q.id}`,
+        type: "quote",
+        brandName: "HiPRO Corporate",
+        brandColor: "bg-blue-50 text-blue-800 border-blue-200",
+        title: q.name || "Client Quote Request",
+        subtitle: `${q.projectType || "General Construction"} · Budget: ${q.budget || "Custom"}`,
+        contact: q.phone || q.email,
+        status: q.status,
+        date: q.createdAt,
+        actionUrl: "/admin/quotes",
+      });
+    });
+
+    // HBS Leads
+    (data.recentHbsLeads || []).forEach((h) => {
+      items.push({
+        id: `hbs-${h.id}`,
+        type: "hbs",
+        brandName: "Hind Building (HBS)",
+        brandColor: "bg-orange-50 text-orange-800 border-orange-200",
+        title: h.name || "Repair Diagnostic Lead",
+        subtitle: h.selectedService || "Waterproofing & Rehabilitation",
+        contact: h.phone || h.email || "Phone",
+        status: h.status,
+        date: h.createdAt,
+        actionUrl: "/admin/hbs/leads",
+      });
+    });
+
+    // Vendor Applications
+    (data.recentVendorApps || []).forEach((v) => {
+      items.push({
+        id: `vendor-${v.id}`,
+        type: "vendor",
+        brandName: "Vendor Portal",
+        brandColor: "bg-amber-50 text-amber-800 border-amber-200",
+        title: v.companyName || v.contactName || "Subcontractor Application",
+        subtitle: `${v.category || "General Contracting"} · Tier: ${v.tier}`,
+        contact: `${v.contactName} (${v.phone || v.email})`,
+        status: v.status,
+        date: v.submittedAt || (v as any).createdAt,
+        actionUrl: "/admin/empanelment/applications",
+      });
+    });
+
+    // Contact Messages
+    (data.recentContacts || []).forEach((c) => {
+      items.push({
+        id: `contact-${c.id}`,
+        type: "contact",
+        brandName: "General Inquiry",
+        brandColor: "bg-slate-100 text-slate-800 border-slate-200",
+        title: c.name || "Direct Message",
+        subtitle: c.message?.slice(0, 70) || "Website contact submission",
+        contact: c.email || c.phone || "Email",
+        status: c.status,
+        date: c.createdAt,
+        actionUrl: "/admin/contacts",
+      });
+    });
+
+    // Sort by descending date
+    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [data]);
+
+  const filteredStream = useMemo(() => {
+    if (activeStreamTab === "all") return unifiedStream;
+    if (activeStreamTab === "quotes") return unifiedStream.filter((i) => i.type === "quote");
+    if (activeStreamTab === "hbs") return unifiedStream.filter((i) => i.type === "hbs");
+    if (activeStreamTab === "vendors") return unifiedStream.filter((i) => i.type === "vendor");
+    if (activeStreamTab === "contacts") return unifiedStream.filter((i) => i.type === "contact");
+    return unifiedStream;
+  }, [unifiedStream, activeStreamTab]);
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Top Banner & Header */}
-      <div className="bg-white border border-slate-200/80 p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xs relative overflow-hidden">
-        <div className="relative z-10 space-y-1.5">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/70 text-[11px] font-bold uppercase tracking-wider font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Live System Active
-            </span>
-            {totalActionableInquiries > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-construction-red/10 text-construction-red border border-construction-red/20 text-[11px] font-bold uppercase tracking-wider font-mono">
-                {totalActionableInquiries} New Inquiries
-              </span>
-            )}
+    <div className="max-w-7xl mx-auto space-y-8 pb-16">
+      {/* ── 1. Corporate Executive Command Bar ───────────────────── */}
+      <div className="bg-white border border-slate-200 shadow-xs p-6 md:p-8">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 bg-construction-navy p-2.5 rounded-none flex items-center justify-center shrink-0 shadow-xs border border-construction-red/40">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.jpg"
+                alt="HiPRO Corporate"
+                className="w-full h-full object-contain mix-blend-multiply bg-white"
+              />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight font-display">
+                  Hindustan Projects Group
+                </h1>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-bold uppercase tracking-wider border border-emerald-200/80">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  3 Digital Assets Live
+                </span>
+              </div>
+              <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium">
+                Master Headquarters Cockpit · Cross-brand portfolio, supply chain procurement & corporate governance.
+              </p>
+            </div>
           </div>
-          <h2 className="text-slate-900 font-bold text-2xl md:text-3xl tracking-tight font-display">
-            Executive Command Center
-          </h2>
-          <p className="text-slate-500 text-sm max-w-2xl">
-            Real-time management portal for Hindustan Projects. Monitor incoming inquiries, publish portfolio work, and coordinate site operations.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3 relative z-10 shrink-0">
-          <button
-            onClick={() => fetchData(true)}
-            disabled={loading}
-            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shadow-xs disabled:opacity-50"
-            title="Refresh statistics"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+            <button
+              onClick={() => fetchData(true)}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              title="Refresh Real-time Metrics"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-construction-navy" : ""}`} />
+              <span>{loading ? "Syncing..." : "Sync Metrics"}</span>
+            </button>
 
-          <Link
-            href="/admin/leads"
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-900 text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shadow-sm group"
-          >
-            <Inbox className="w-3.5 h-3.5 text-construction-red" />
-            <span>Open Leads Hub</span>
-            <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
+            <Link
+              href="/admin/automail"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-white bg-construction-navy hover:bg-slate-900 transition-colors shadow-xs"
+            >
+              <Send className="w-3.5 h-3.5 text-blue-300" />
+              <span>AutoMail Studio</span>
+            </Link>
+
+            <Link
+              href="/admin/settings"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors shadow-2xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Security & 2FA</span>
+            </Link>
+          </div>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center justify-between">
+        <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold flex items-center justify-between">
           <span>{error}</span>
-          <button onClick={() => fetchData(true)} className="underline font-bold hover:text-red-900">Retry</button>
+          <button onClick={() => fetchData(true)} className="underline hover:text-red-800">Retry</button>
         </div>
       )}
 
-      {loading && !data ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-28 bg-white border border-slate-200 shadow-xs" />
-            ))}
+      {/* ── 2. Top Executive Aggregated Bento Grid ───────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Inquiries */}
+        <div className="bg-white border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Total Business Inquiries</span>
+            <div className="w-8 h-8 rounded-none bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Inbox className="w-4 h-4" />
+            </div>
           </div>
-          <div className="grid lg:grid-cols-2 gap-6 animate-pulse">
-            <div className="h-80 bg-white border border-slate-200 shadow-xs" />
-            <div className="h-80 bg-white border border-slate-200 shadow-xs" />
+          <div className="mt-4">
+            <p className="text-3xl font-black text-slate-900 font-display">
+              {loading && !data ? "..." : data?.executive.totalInquiries ?? 0}
+            </p>
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <span className="font-bold text-amber-600">{data?.executive.pendingActions ?? 0}</span>
+              <span>pending review across portals</span>
+            </p>
           </div>
         </div>
-      ) : data ? (
-        <>
-          {/* Section 1: Core Key Metrics Cards (Categorized) */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-construction-red" />
-                Operational Key Metrics
-              </h3>
-              <span className="text-[11px] text-slate-400">Click any card to jump directly to section</span>
-            </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Quote Inquiries */}
-              <Link href="/admin/quotes" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Quote Requests"
-                  value={data.quotes.total}
-                  sub={`${data.quotes.pending} pending action`}
-                  icon={ClipboardList}
-                  trend={data.quotes.pending > 0 ? `${data.quotes.pending} New` : undefined}
-                />
-              </Link>
-
-              {/* Contact Messages */}
-              <Link href="/admin/contacts" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Contact Messages"
-                  value={data.contacts.total}
-                  sub={`${data.contacts.new} unread`}
-                  icon={Inbox}
-                  trend={data.contacts.new > 0 ? `${data.contacts.new} Unread` : undefined}
-                />
-              </Link>
-
-              {/* Job Applications */}
-              <Link href="/admin/applications" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Job Applications"
-                  value={data.applications?.total ?? 0}
-                  sub={`${data.applications?.new ?? 0} new candidates`}
-                  icon={Briefcase}
-                  trend={(data.applications?.new ?? 0) > 0 ? `${data.applications?.new} New` : undefined}
-                />
-              </Link>
-
-              {/* Newsletter Subscribers */}
-              <Link href="/admin/newsletter" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Newsletter Audience"
-                  value={data.newsletter.total}
-                  sub="Active subscribers"
-                  icon={Users}
-                />
-              </Link>
-
-              {/* Projects Portfolio */}
-              <Link href="/admin/projects" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Projects Portfolio"
-                  value={data.projects.total}
-                  sub={`${data.projects.active} active · ${data.projects.featured} featured`}
-                  icon={Building2}
-                />
-              </Link>
-
-              {/* Services Offered */}
-              <Link href="/admin/services" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Services Catalog"
-                  value={data.services?.total ?? 10}
-                  sub={`${data.services?.active ?? 10} active offerings`}
-                  icon={HardHat}
-                />
-              </Link>
-
-              {/* Blog Articles */}
-              <Link href="/admin/blogs" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Blog Articles"
-                  value={totalArticles}
-                  sub={`${publishedArticles} live published`}
-                  icon={BookOpen}
-                />
-              </Link>
-
-              {/* Client Reviews */}
-              <Link href="/admin/testimonials" className="block group transition-transform hover:-translate-y-0.5">
-                <StatCard
-                  label="Client Reviews"
-                  value={data.testimonials.total}
-                  sub={`${data.testimonials.pending} awaiting approval`}
-                  icon={Award}
-                  trend={data.testimonials.pending > 0 ? `${data.testimonials.pending} Pending` : undefined}
-                />
-              </Link>
+        {/* Procurement & Supply Chain */}
+        <div className="bg-white border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Vendor Network & KYC</span>
+            <div className="w-8 h-8 rounded-none bg-amber-50 text-amber-600 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
+          <div className="mt-4">
+            <p className="text-3xl font-black text-slate-900 font-display">
+              {loading && !data ? "..." : data?.vendorHub.applications.total ?? 0}
+            </p>
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <span className="font-bold text-emerald-600">{data?.vendorHub.applications.approved ?? 0}</span>
+              <span>verified partners ·</span>
+              <span className="font-bold text-blue-600">{data?.vendorHub.tenders.active ?? 0}</span>
+              <span>live tenders</span>
+            </p>
+          </div>
+        </div>
 
-          {/* Section 2: Quick Launch Operational Modules (Matches Sidebar Sections) */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-construction-navy" />
-              Quick Module Launch Deck
-            </h3>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Module 1: CRM & Leads */}
-              <div className="bg-white border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div>
-                  <div className="w-9 h-9 bg-red-50 text-construction-red flex items-center justify-center mb-3">
-                    <Inbox className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-slate-900 font-bold text-sm">Leads & Inquiries</h4>
-                  <p className="text-slate-500 text-xs mt-1">Review quotes, contact messages, and career submissions.</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
-                  <Link href="/admin/leads" className="font-semibold text-construction-navy hover:underline">Leads Hub &rarr;</Link>
-                  <Link href="/admin/quotes" className="text-slate-500 hover:text-slate-900">Quotes</Link>
-                  <Link href="/admin/contacts" className="text-slate-500 hover:text-slate-900">Contacts</Link>
-                </div>
-              </div>
-
-              {/* Module 2: Content & Portfolio */}
-              <div className="bg-white border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div>
-                  <div className="w-9 h-9 bg-blue-50 text-construction-navy flex items-center justify-center mb-3">
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-slate-900 font-bold text-sm">Content & Portfolio</h4>
-                  <p className="text-slate-500 text-xs mt-1">Manage project case studies, services, blogs, and testimonials.</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
-                  <Link href="/admin/projects" className="font-semibold text-construction-navy hover:underline">Projects &rarr;</Link>
-                  <Link href="/admin/services" className="text-slate-500 hover:text-slate-900">Services</Link>
-                  <Link href="/admin/blogs" className="text-slate-500 hover:text-slate-900">Blogs</Link>
-                </div>
-              </div>
-
-              {/* Module 3: Pages & Site CMS */}
-              <div className="bg-white border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div>
-                  <div className="w-9 h-9 bg-amber-50 text-amber-700 flex items-center justify-center mb-3">
-                    <LayoutTemplate className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-slate-900 font-bold text-sm">Pages & Site CMS</h4>
-                  <p className="text-slate-500 text-xs mt-1">Update hero banner slides, about story, contact details, and menus.</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
-                  <Link href="/admin/hero" className="font-semibold text-construction-navy hover:underline">Hero Banner &rarr;</Link>
-                  <Link href="/admin/projects-hero" className="text-slate-500 hover:text-slate-900">Projects Hero</Link>
-                  <Link href="/admin/about" className="text-slate-500 hover:text-slate-900">About</Link>
-                  <Link href="/admin/navigation" className="text-slate-500 hover:text-slate-900">Nav</Link>
-                </div>
-              </div>
-
-              {/* Module 4: System & Settings */}
-              <div className="bg-white border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between hover:border-slate-300 transition-all">
-                <div>
-                  <div className="w-9 h-9 bg-slate-100 text-slate-700 flex items-center justify-center mb-3">
-                    <Settings className="w-4 h-4" />
-                  </div>
-                  <h4 className="text-slate-900 font-bold text-sm">System & Roles</h4>
-                  <p className="text-slate-500 text-xs mt-1">Configure company profile, Cloudinary credentials, and employee roles.</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-2 text-xs">
-                  <Link href="/admin/settings" className="font-semibold text-construction-navy hover:underline">Settings &rarr;</Link>
-                  <Link href="/admin/users" className="text-slate-500 hover:text-slate-900">Users</Link>
-                  <Link href="/admin/stats" className="text-slate-500 hover:text-slate-900">Analytics</Link>
-                </div>
-              </div>
+        {/* Civil & Infrastructure Assets */}
+        <div className="bg-white border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Portfolio & Catalog</span>
+            <div className="w-8 h-8 rounded-none bg-rose-50 text-rose-600 flex items-center justify-center">
+              <Building2 className="w-4 h-4" />
             </div>
           </div>
+          <div className="mt-4">
+            <p className="text-3xl font-black text-slate-900 font-display">
+              {loading && !data ? "..." : (data?.hipro.projects.total ?? 0) + (data?.hbs.projects.total ?? 0)}
+            </p>
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <span>{data?.hipro.services.active ?? 0} HiPRO services ·</span>
+              <span>{data?.hbs.services.total ?? 0} HBS repair specs</span>
+            </p>
+          </div>
+        </div>
 
-          {/* Section: Group Ecosystem & Multi-Brand Admin Consoles */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-blue-600" />
-                Hindustan Group &middot; Multi-Brand Admin Consoles
-              </h3>
-              <span className="text-[11px] text-slate-400 font-mono">1-Click Direct Management</span>
+        {/* Security & System Operations */}
+        <div className="bg-white border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">Master Governance</span>
+            <div className="w-8 h-8 rounded-none bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <Activity className="w-4 h-4" />
             </div>
+          </div>
+          <div className="mt-4">
+            <div className="flex items-center gap-2">
+              <p className="text-xl font-black text-emerald-700 font-display">Operational</p>
+              <span className="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-mono">
+                2FA Active
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <span>{data?.automail.dispatchesToday ?? 0} emails dispatched today</span>
+            </p>
+          </div>
+        </div>
+      </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Portal 1: HiPRO Flagship */}
-              <div className="bg-white border-2 border-construction-navy/30 p-5 shadow-xs flex flex-col justify-between relative overflow-hidden group">
-                <div className="absolute top-0 right-0 bg-construction-navy text-white text-[9px] font-bold font-mono px-2.5 py-0.5 uppercase tracking-wider">
-                  Active Console
-                </div>
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2.5">
+      {/* ── 3. The 3 Hero Digital Web Properties (Enterprise Bento) ── */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider font-display">
+              Managed Web Properties & Brand Gateways
+            </h2>
+            <p className="text-xs text-slate-500">
+              Select any of the 3 corporate digital portals to access its isolated CMS, catalog, leads, or public interface.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── CARD 1: HiPRO Corporate ── */}
+          <div className="bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-construction-navy p-1.5 flex items-center justify-center shrink-0 border border-construction-red/30">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/logo.jpg" alt="HiPRO" className="w-9 h-9 object-contain rounded-xs mix-blend-multiply" />
-                    <div>
-                      <h4 className="text-slate-900 font-bold text-sm">Hindustan Projects</h4>
-                      <p className="text-[10px] text-slate-400 uppercase font-mono font-bold">Architecture &amp; Turnkey Infra</p>
-                    </div>
+                    <img src="/logo.jpg" alt="HiPRO" className="w-full h-full object-contain mix-blend-multiply bg-white" />
                   </div>
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    Flagship turnkey construction, municipal infrastructure, project case studies, and corporate client leads.
-                  </p>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
+                      HiPRO Corporate
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">hindustanprojects.in</p>
+                  </div>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono text-[11px]">hindustanprojects.in</span>
-                  <span className="font-bold text-construction-navy flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Current Console</span>
+                <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                  Flagship
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Core civil engineering, multi-crore infrastructure portfolio, architectural planning, dynamic cost estimation, and careers.
+              </p>
+
+              {/* Metrics Ribbon */}
+              <div className="grid grid-cols-3 gap-2 mt-5 p-3 bg-slate-50 border border-slate-100 text-center">
+                <div>
+                  <p className="text-base font-bold text-slate-900">{data?.hipro.projects.total ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Projects</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-amber-600">{data?.hipro.quotes.pending ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">New Quotes</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900">{data?.hipro.blogs.published ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Articles</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin/projects"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-construction-navy hover:bg-slate-900 text-white transition-colors"
+                >
+                  Manage Projects
+                </Link>
+                <Link
+                  href="/admin/quotes"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors"
+                >
+                  Quotes Hub
+                </Link>
+              </div>
+              <a
+                href="https://www.hindustanprojects.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-construction-navy"
+                title="Open Public Site (New Tab)"
+              >
+                <span>Live Site</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
+          {/* ── CARD 2: Hind Building Solutions (HBS) ── */}
+          <div className="bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-orange-50 border border-orange-200 flex items-center justify-center shrink-0">
+                    <Flame className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
+                      Hind Building (HBS)
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">hindbuilding.hindustanprojects.in</p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+                  Sub-Brand
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Specialized waterproofing, concrete retrofitting, structural crack repair, expansion joints, and automated repair BOQ generation.
+              </p>
+
+              {/* Metrics Ribbon */}
+              <div className="grid grid-cols-3 gap-2 mt-5 p-3 bg-slate-50 border border-slate-100 text-center">
+                <div>
+                  <p className="text-base font-bold text-orange-600">{data?.hbs.leads.new ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">New Leads</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900">{data?.hbs.services.total ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Services</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900">{data?.hbs.leads.total ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Total Leads</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin/hbs/leads"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-orange-600 hover:bg-orange-700 text-white transition-colors"
+                >
+                  Manage Leads
+                </Link>
+                <Link
+                  href="/admin/hbs"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors"
+                >
+                  HBS Studio
+                </Link>
+              </div>
+              <a
+                href="https://hindbuilding.hindustanprojects.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-orange-600"
+                title="Open HBS Site (New Tab)"
+              >
+                <span>Live Site</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
+          {/* ── CARD 3: Vendor Empanelment & Procurement Hub ── */}
+          <div className="bg-white border border-slate-200 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
+                      Vendor Procurement Hub
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">empanelment.hindustanprojects.in</p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                  Procurement
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Contractor KYC vetting, CPWD grading (Class A–D), digital Smart PVC cards, live tender bidding, and worker site gate passes.
+              </p>
+
+              {/* Metrics Ribbon */}
+              <div className="grid grid-cols-3 gap-2 mt-5 p-3 bg-slate-50 border border-slate-100 text-center">
+                <div>
+                  <p className="text-base font-bold text-amber-600">{data?.vendorHub.applications.submitted ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">KYC Queue</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-slate-900">{data?.vendorHub.tenders.active ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Live Tenders</p>
+                </div>
+                <div>
+                  <p className="text-base font-bold text-emerald-600">{data?.vendorHub.applications.approved ?? 0}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Partners</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/70 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/admin/empanelment/applications"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                >
+                  KYC Pipeline
+                </Link>
+                <Link
+                  href="/admin/empanelment"
+                  className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors"
+                >
+                  Vendor Hub
+                </Link>
+              </div>
+              <a
+                href="https://empanelment.hindustanprojects.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-amber-700"
+                title="Open Public Portal (New Tab)"
+              >
+                <span>Live Portal</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4. Unified Cross-Portal Live Stream (Inquiries Feed) ─── */}
+      <div className="bg-white border border-slate-200 shadow-xs">
+        <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider font-display">
+              Real-Time Cross-Portal Inquiries Stream
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Unified chronological feed of quotes, diagnostic leads, vendor registrations, and messages.
+            </p>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1">
+            <button
+              onClick={() => setActiveStreamTab("all")}
+              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeStreamTab === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              All ({unifiedStream.length})
+            </button>
+            <button
+              onClick={() => setActiveStreamTab("quotes")}
+              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeStreamTab === "quotes" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              HiPRO Quotes ({data?.recentQuotes.length ?? 0})
+            </button>
+            <button
+              onClick={() => setActiveStreamTab("hbs")}
+              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeStreamTab === "hbs" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              HBS Leads ({data?.recentHbsLeads.length ?? 0})
+            </button>
+            <button
+              onClick={() => setActiveStreamTab("vendors")}
+              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeStreamTab === "vendors" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Vendor KYC ({data?.recentVendorApps.length ?? 0})
+            </button>
+            <button
+              onClick={() => setActiveStreamTab("contacts")}
+              className={`px-3 py-1 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                activeStreamTab === "contacts" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              Contacts ({data?.recentContacts.length ?? 0})
+            </button>
+          </div>
+        </div>
+
+        {/* Stream Table */}
+        <div className="divide-y divide-slate-100 overflow-x-auto">
+          {filteredStream.length === 0 ? (
+            <div className="py-12 text-center text-slate-400 text-xs">
+              No recent inquiries found in this category.
+            </div>
+          ) : (
+            filteredStream.slice(0, 10).map((item) => (
+              <div
+                key={item.id}
+                className="p-4 md:px-6 hover:bg-slate-50/70 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+              >
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border shrink-0 ${item.brandColor}`}>
+                    {item.brandName}
                   </span>
-                </div>
-              </div>
-
-              {/* Portal 2: Hind Build (HiBUILD) */}
-              <div className="bg-white border border-slate-200/90 hover:border-red-300 p-5 shadow-xs flex flex-col justify-between transition-all group">
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/hbs-icon.jpg" alt="Hind Build" className="w-9 h-9 object-contain rounded-xs" />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-slate-900 font-bold text-sm">Hind Build (HiBUILD)</h4>
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                      </div>
-                      <p className="text-[10px] text-red-600 uppercase font-mono font-bold">Building Repair &amp; Maintenance</p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 truncate">{item.title}</p>
+                    <p className="text-slate-500 text-[11px] truncate mt-0.5">{item.subtitle}</p>
+                    <p className="text-slate-400 text-[10px] font-mono mt-0.5">{item.contact}</p>
                   </div>
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    Specialized waterproofing, structural rehabilitation, painting, trade catalogs, and property inspection bookings.
-                  </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono text-[11px]">/admin/hbs</span>
+
+                <div className="flex items-center gap-4 shrink-0 self-end sm:self-center">
+                  <span className="text-[11px] font-mono font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-none uppercase">
+                    {item.status}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {new Date(item.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
+                  </span>
                   <Link
-                    href="/admin/hbs"
-                    className="font-bold text-red-600 hover:text-red-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                    href={item.actionUrl}
+                    className="text-xs font-bold text-construction-navy hover:text-construction-red flex items-center gap-1 group"
                   >
-                    <span>Manage HiBUILD</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>View</span>
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                 </div>
               </div>
-
-              {/* Portal 3: SnapTech Digital */}
-              <div className="bg-gradient-to-br from-white to-blue-50/40 border border-blue-200/90 hover:border-blue-400 p-5 shadow-xs flex flex-col justify-between transition-all group relative overflow-hidden">
-                <div className="absolute top-0 right-0 bg-blue-600 text-white text-[9px] font-bold font-mono px-2.5 py-0.5 uppercase tracking-wider">
-                  IT &amp; Digital Portal
-                </div>
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/snaptech-icon.png" alt="SnapTech" className="w-9 h-9 object-contain rounded-full bg-white border border-blue-200/80 p-0.5 shadow-2xs shrink-0" />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="text-slate-900 font-bold text-sm">SnapTech Digital</h4>
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                      </div>
-                      <p className="text-[10px] text-blue-600 uppercase font-mono font-bold">Web &amp; App Development Agency</p>
-                    </div>
-                  </div>
-                  <p className="text-slate-500 text-xs leading-relaxed">
-                    Manage technology clients, custom software, digital agency inquiries, website projects, and app portals.
-                  </p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-blue-100/80 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono text-[11px]">snaptech.digital</span>
-                  <a
-                    href="https://www.snaptech.digital/admin-hp9z7k5w8v3q2m4x"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
-                  >
-                    <span>Launch Admin</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Recent Activity Feeds (Tabbed for clean organization) */}
-          <div className="bg-white border border-slate-200/80 shadow-xs overflow-hidden">
-            {/* Feed Tab Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200/80 px-6 py-4 bg-slate-50/50 gap-4">
-              <div className="flex items-center gap-1 bg-white p-1 border border-slate-200">
-                <button
-                  onClick={() => setActiveFeedTab("quotes")}
-                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                    activeFeedTab === "quotes"
-                      ? "bg-construction-navy text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Quote Requests ({data.recentQuotes.length})
-                </button>
-                <button
-                  onClick={() => setActiveFeedTab("contacts")}
-                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                    activeFeedTab === "contacts"
-                      ? "bg-construction-navy text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Contact Messages ({data.recentContacts.length})
-                </button>
-                <button
-                  onClick={() => setActiveFeedTab("applications")}
-                  className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
-                    activeFeedTab === "applications"
-                      ? "bg-construction-navy text-white shadow-xs"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Applications ({data.recentApplications?.length ?? 0})
-                </button>
-              </div>
-
-              <Link
-                href={`/admin/leads?type=${activeFeedTab === "quotes" ? "quote" : activeFeedTab === "contacts" ? "contact" : "application"}`}
-                className="text-xs font-bold uppercase tracking-wider text-construction-red hover:underline flex items-center gap-1.5"
-              >
-                <span>View Full Hub</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* Feed Content */}
-            <div className="p-0">
-              {activeFeedTab === "quotes" && (
-                data.recentQuotes.length === 0 ? (
-                  <div className="py-12 px-4 text-center">
-                    <ClipboardList className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">No quote requests recorded yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Inquiries submitted via cost calculator will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {data.recentQuotes.map((q) => (
-                      <div key={q.id} className="p-4 sm:px-6 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-10 bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 uppercase shrink-0">
-                            {(q.name || "Q").charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-slate-900 truncate">{q.name || "Anonymous"}</p>
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200">
-                                {q.status || "pending"}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 mt-0.5 truncate">
-                              {q.email} {q.phone && `· ${q.phone}`} · Project: <span className="font-semibold text-slate-700">{q.projectType || "General"}</span> · Budget: <span className="font-semibold text-slate-700">{q.budget || "N/A"}</span>
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                          <span className="text-[11px] text-slate-400 font-mono">
-                            {q.createdAt ? new Date(q.createdAt).toLocaleDateString() : ""}
-                          </span>
-                          <Link
-                            href="/admin/leads?type=quote"
-                            className="text-xs font-bold text-construction-navy hover:text-blue-700 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 transition-colors"
-                          >
-                            Details &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              )}
-
-              {activeFeedTab === "contacts" && (
-                data.recentContacts.length === 0 ? (
-                  <div className="py-12 px-4 text-center">
-                    <Inbox className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">No contact messages yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Direct inquiries from the contact form will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {data.recentContacts.map((c) => (
-                      <div key={c.id} className="p-4 sm:px-6 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-10 bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 uppercase shrink-0">
-                            {(c.name || "C").charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-slate-900 truncate">{c.name || "Anonymous"}</p>
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200">
-                                {c.status || "new"}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 mt-0.5 truncate">
-                              {c.email} {c.phone && `· ${c.phone}`} · &quot;{c.message?.slice(0, 70)}...&quot;
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                          <span className="text-[11px] text-slate-400 font-mono">
-                            {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
-                          </span>
-                          <Link
-                            href="/admin/leads?type=contact"
-                            className="text-xs font-bold text-construction-navy hover:text-blue-700 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 transition-colors"
-                          >
-                            Details &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              )}
-
-              {activeFeedTab === "applications" && (
-                (!data.recentApplications || data.recentApplications.length === 0) ? (
-                  <div className="py-12 px-4 text-center">
-                    <Briefcase className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-slate-700">No job applications submitted yet</p>
-                    <p className="text-xs text-slate-400 mt-1">Candidates applying via careers page will show up here.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {data.recentApplications.map((app) => (
-                      <div key={app.id} className="p-4 sm:px-6 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <div className="w-10 h-10 bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 uppercase shrink-0">
-                            {(app.name || "A").charAt(0)}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-bold text-slate-900 truncate">{app.name}</p>
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-purple-50 text-purple-800 border border-purple-200">
-                                {app.status || "new"}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-500 mt-0.5 truncate">
-                              Role: <span className="font-semibold text-slate-700">{app.role}</span> · Experience: {app.experience} · {app.email}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
-                          <span className="text-[11px] text-slate-400 font-mono">
-                            {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : ""}
-                          </span>
-                          <Link
-                            href="/admin/applications"
-                            className="text-xs font-bold text-construction-navy hover:text-blue-700 px-3 py-1.5 border border-slate-200 hover:bg-slate-50 transition-colors"
-                          >
-                            Review CV &rarr;
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-
-          {/* Section 4: Blog Articles & Content Publishing Spotlight */}
-          <div className="bg-white border border-slate-200/80 shadow-xs overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-5 border-b border-slate-100 bg-white gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-50 border border-red-100 flex items-center justify-center text-construction-red shrink-0">
-                  <BookOpen className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-slate-900 font-bold text-sm tracking-tight font-display">
-                    Content Engine & Regional SEO Insights
-                  </h3>
-                  <p className="text-slate-500 text-xs mt-0.5">
-                    {totalArticles} articles published ({publishedArticles} active). Target Rajasthan keywords and site architecture.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/admin/blogs"
-                  className="inline-flex items-center gap-1.5 bg-construction-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider px-4 py-2.5 transition-colors shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Write Article
-                </Link>
-                <Link
-                  href="/admin/blogs"
-                  className="text-construction-navy text-xs font-bold hover:text-blue-700 transition-colors uppercase tracking-wider"
-                >
-                  Manage All &rarr;
-                </Link>
-              </div>
-            </div>
-
-            {recentBlogs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50/50">
-                <div className="w-12 h-12 bg-white border border-slate-200 flex items-center justify-center mb-3 shadow-xs">
-                  <BookOpen className="w-5 h-5 text-slate-400" />
-                </div>
-                <p className="text-slate-900 font-semibold text-sm">No blog articles published yet</p>
-                <p className="text-slate-500 text-xs mt-1 mb-4 max-w-sm">
-                  Create construction guides, cost estimation insights, and local SEO articles.
-                </p>
-                <Link
-                  href="/admin/blogs"
-                  className="inline-flex items-center gap-1.5 bg-construction-red hover:bg-red-700 text-white text-xs font-bold uppercase tracking-wider px-4 py-2 transition-colors shadow-xs"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Create First Article
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {recentBlogs.map((b) => {
-                  const isPublished = (b.status || "published").toLowerCase() === "published" && b.active !== false;
-                  return (
-                    <div
-                      key={b.id || b.slug}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 gap-4 hover:bg-slate-50/80 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        {b.image ? (
-                          <div className="w-12 h-12 shrink-0 bg-slate-100 border border-slate-200 overflow-hidden relative">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={b.image}
-                              alt={b.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-12 h-12 shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500">
-                            <BookOpen className="w-5 h-5" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <span
-                              className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 ${
-                                isPublished
-                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                  : "bg-amber-100 text-amber-800 border border-amber-200"
-                              }`}
-                            >
-                              {isPublished ? "Published" : "Draft"}
-                            </span>
-                            {b.category && (
-                              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-2 py-0.5 border border-slate-200">
-                                {b.category}
-                              </span>
-                            )}
-                            {b.targetLocation && (
-                              <span className="text-[10px] font-medium text-slate-500 hidden md:inline">
-                                &middot; {b.targetLocation}
-                              </span>
-                            )}
-                          </div>
-                          <Link
-                            href="/admin/blogs"
-                            className="text-slate-900 text-sm font-bold hover:text-construction-red transition-colors block truncate"
-                          >
-                            {b.title}
-                          </Link>
-                          <p className="text-slate-400 text-xs mt-0.5 truncate">
-                            By {b.author || "Hindustan Projects"} &middot; {b.date || "Recent"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        <Link
-                          href={`/blogs/${b.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 border border-slate-200 hover:bg-slate-100 transition-colors"
-                          title="View live post on site"
-                        >
-                          <ExternalLink className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Live Post</span>
-                        </Link>
-                        <Link
-                          href="/admin/blogs"
-                          className="inline-flex items-center gap-1 text-xs font-bold text-white bg-construction-navy hover:bg-blue-900 px-3.5 py-1.5 transition-colors shadow-xs"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                          <span>Edit Article</span>
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </>
-      ) : null}
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

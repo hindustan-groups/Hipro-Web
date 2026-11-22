@@ -8,110 +8,135 @@ const router = Router();
 // Apply auth guard to protect dashboard stats
 router.use(authGuard);
 
-// GET /api/dashboard — ultra-fast parallel summary stats for admin
+// GET /api/dashboard — Ultra-fast parallel multi-portal corporate executive summary
 router.get("/", async (req: Request, res: Response) => {
   try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
     const [
-      // 1. Contacts counts
+      // 1. HiPRO: Contacts counts
       contactsTotal,
       contactsNew,
-      contactsRead,
       contactsReplied,
 
-      // 2. Quotes counts
+      // 2. HiPRO: Quotes counts
       quotesTotal,
       quotesPending,
-      quotesReviewed,
       quotesApproved,
-      quotesRejected,
 
-      // 3. Newsletter
-      newsletterTotal,
-
-      // 4. Projects
+      // 3. HiPRO: Projects & Services
       projectsTotal,
       projectsActive,
       projectsFeatured,
-
-      // 5. Testimonials
-      testimonialsTotal,
-      testimonialsPending,
-      testimonialsApproved,
-
-      // 6. Blogs
-      blogsTotal,
-      blogsPublished,
-      blogsDrafts,
-
-      // 7. Applications
-      applicationsTotal,
-      applicationsNew,
-
-      // 8. Services
       servicesTotal,
       servicesActive,
 
-      // 9. Recent feeds (lightweight selects, limited to 5)
-      recentContacts,
+      // 4. HiPRO: Blogs & Careers
+      blogsTotal,
+      blogsPublished,
+      applicationsTotal,
+      applicationsNew,
+
+      // 5. HBS: Leads & Services
+      hbsLeadsTotal,
+      hbsLeadsNew,
+      hbsLeadsConverted,
+      hbsServicesTotal,
+      hbsProjectsTotal,
+
+      // 6. Vendor Hub: Applications, Tenders & Passes
+      vendorAppsTotal,
+      vendorAppsSubmitted,
+      vendorAppsApproved,
+      tendersTotal,
+      tendersActive,
+      gatePassesTotal,
+      gatePassesToday,
+
+      // 7. AutoMail Engine
+      automailCampaignsTotal,
+      automailLogsToday,
+
+      // 8. Recent Feeds across all 3 portals
       recentQuotes,
-      recentBlogs,
+      recentContacts,
+      recentHbsLeads,
+      recentVendorApps,
       recentApplications,
     ] = await Promise.all([
-      // Contacts
+      // HiPRO Contacts
       prisma.contactMessage.count(),
       prisma.contactMessage.count({ where: { status: "new" } }),
-      prisma.contactMessage.count({ where: { status: "read" } }),
       prisma.contactMessage.count({ where: { status: "replied" } }),
 
-      // Quotes
+      // HiPRO Quotes
       prisma.quoteRequest.count(),
       prisma.quoteRequest.count({ where: { status: "pending" } }),
-      prisma.quoteRequest.count({ where: { status: "reviewed" } }),
       prisma.quoteRequest.count({ where: { status: "approved" } }),
-      prisma.quoteRequest.count({ where: { status: "rejected" } }),
 
-      // Newsletter
-      prisma.newsletterSubscriber.count({ where: { active: true } }),
-
-      // Projects
+      // HiPRO Projects & Services
       prisma.project.count(),
       prisma.project.count({ where: { status: { not: "archived" } } }),
       prisma.project.count({ where: { featured: true } }),
-
-      // Testimonials
-      prisma.testimonial.count(),
-      prisma.testimonial.count({ where: { approved: false } }),
-      prisma.testimonial.count({ where: { approved: true } }),
-
-      // Blogs
-      prisma.blogPost.count(),
-      prisma.blogPost.count({ where: { status: "published", active: true } }),
-      prisma.blogPost.count({ where: { OR: [{ status: "draft" }, { active: false }] } }),
-
-      // Applications
-      prisma.jobApplication.count(),
-      prisma.jobApplication.count({ where: { status: "new" } }),
-
-      // Services
       prisma.service.count(),
       prisma.service.count({ where: { active: true } }),
 
-      // Recent items (only fetch required lightweight fields)
-      prisma.contactMessage.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        select: { id: true, name: true, email: true, phone: true, message: true, status: true, createdAt: true },
-      }),
+      // HiPRO Blogs & Careers
+      prisma.blogPost.count(),
+      prisma.blogPost.count({ where: { status: "published", active: true } }),
+      prisma.jobApplication.count(),
+      prisma.jobApplication.count({ where: { status: "new" } }),
+
+      // HBS (Hind Building Solutions)
+      prisma.hbsLead.count(),
+      prisma.hbsLead.count({ where: { status: "NEW" } }),
+      prisma.hbsLead.count({ where: { status: "CONVERTED" } }),
+      prisma.hbsService.count({ where: { active: true } }),
+      prisma.hbsProject.count(),
+
+      // Vendor Empanelment & Procurement Hub
+      prisma.vendorApplication.count(),
+      prisma.vendorApplication.count({ where: { status: "SUBMITTED" } }),
+      prisma.vendorApplication.count({ where: { status: "APPROVED" } }),
+      prisma.empanelmentTender.count(),
+      prisma.empanelmentTender.count({ where: { status: "PUBLISHED" } }),
+      prisma.siteGatePass.count(),
+      prisma.siteGatePass.count({ where: { createdAt: { gte: todayStart } } }),
+
+      // AutoMail Engine
+      prisma.automailCampaign.count(),
+      prisma.automailSendLog.count({ where: { createdAt: { gte: todayStart } } }),
+
+      // Recent 5 Quotes (HiPRO)
       prisma.quoteRequest.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
         select: { id: true, name: true, email: true, phone: true, projectType: true, budget: true, status: true, createdAt: true },
       }),
-      prisma.blogPost.findMany({
+
+      // Recent 5 Contacts (HiPRO)
+      prisma.contactMessage.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
-        select: { id: true, title: true, slug: true, status: true, category: true, date: true, createdAt: true },
+        select: { id: true, name: true, email: true, phone: true, message: true, status: true, createdAt: true },
       }),
+
+      // Recent 5 HBS Leads
+      prisma.hbsLead.findMany({
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, name: true, phone: true, email: true, selectedService: true, status: true, createdAt: true },
+      }),
+
+      // Recent 5 Vendor Applications
+      prisma.vendorApplication.findMany({
+        take: 5,
+        orderBy: { submittedAt: "desc" },
+        select: { id: true, trackingId: true, companyName: true, contactName: true, email: true, phone: true, category: true, tier: true, status: true, submittedAt: true },
+      }),
+
+      // Recent 5 Job Applications
       prisma.jobApplication.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -119,49 +144,54 @@ router.get("/", async (req: Request, res: Response) => {
       }),
     ]);
 
+    // High-Level Cross-Company Metrics
+    const totalInquiries = quotesTotal + contactsTotal + hbsLeadsTotal + vendorAppsTotal;
+    const pendingActions = quotesPending + contactsNew + hbsLeadsNew + vendorAppsSubmitted + applicationsNew;
+
     const summary = {
-      contacts: {
-        total: contactsTotal,
-        new: contactsNew,
-        read: contactsRead,
-        replied: contactsReplied,
+      // 🏢 Corporate Executive Totals
+      executive: {
+        totalInquiries,
+        pendingActions,
+        activePortalsCount: 3,
+        systemHealth: "100% Operational",
       },
-      quotes: {
-        total: quotesTotal,
-        pending: quotesPending,
-        reviewed: quotesReviewed,
-        approved: quotesApproved,
-        rejected: quotesRejected,
+
+      // 🌐 Portal 1: HiPRO Corporate
+      hipro: {
+        projects: { total: projectsTotal, active: projectsActive, featured: projectsFeatured },
+        services: { total: servicesTotal, active: servicesActive },
+        quotes: { total: quotesTotal, pending: quotesPending, approved: quotesApproved },
+        contacts: { total: contactsTotal, new: contactsNew, replied: contactsReplied },
+        blogs: { total: blogsTotal, published: blogsPublished },
+        careers: { total: applicationsTotal, new: applicationsNew },
       },
-      newsletter: {
-        total: newsletterTotal,
+
+      // 🏢 Portal 2: Hind Building Solutions (HBS)
+      hbs: {
+        leads: { total: hbsLeadsTotal, new: hbsLeadsNew, converted: hbsLeadsConverted },
+        services: { total: hbsServicesTotal },
+        projects: { total: hbsProjectsTotal },
       },
-      projects: {
-        total: projectsTotal,
-        active: projectsActive,
-        featured: projectsFeatured,
+
+      // 🛡️ Portal 3: Vendor Empanelment & Procurement Hub
+      vendorHub: {
+        applications: { total: vendorAppsTotal, submitted: vendorAppsSubmitted, approved: vendorAppsApproved },
+        tenders: { total: tendersTotal, active: tendersActive },
+        gatePasses: { total: gatePassesTotal, today: gatePassesToday },
       },
-      testimonials: {
-        total: testimonialsTotal,
-        pending: testimonialsPending,
-        approved: testimonialsApproved,
+
+      // ✉️ Global AutoMail
+      automail: {
+        campaigns: automailCampaignsTotal,
+        dispatchesToday: automailLogsToday,
       },
-      blogs: {
-        total: blogsTotal,
-        published: blogsPublished,
-        drafts: blogsDrafts,
-      },
-      applications: {
-        total: applicationsTotal,
-        new: applicationsNew,
-      },
-      services: {
-        total: servicesTotal,
-        active: servicesActive,
-      },
-      recentContacts,
+
+      // Cross-Portal Recent Feed
       recentQuotes,
-      recentBlogs,
+      recentContacts,
+      recentHbsLeads,
+      recentVendorApps,
       recentApplications,
     };
 

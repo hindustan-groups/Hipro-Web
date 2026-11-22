@@ -126,58 +126,60 @@ export interface NavCategory {
 
 const navCategories: NavCategory[] = [
   {
-    id: "overview",
-    title: "Overview",
+    id: "headquarters",
+    title: "Company Headquarters",
     items: [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, sectionKey: "dashboard" },
-      { href: "/admin/stats", label: "Site Analytics", icon: BarChart2, sectionKey: "stats" },
+      { href: "/admin", label: "Master Dashboard", icon: LayoutDashboard, badge: "HQ", sectionKey: "dashboard" },
+      { href: "/admin/stats", label: "Global Analytics", icon: BarChart2, sectionKey: "stats" },
     ],
   },
   {
-    id: "crm",
-    title: "Leads & CRM",
+    id: "portal_hipro",
+    title: "Web 1: HiPRO Corporate",
     items: [
-      { href: "/admin/leads", label: "Leads Hub", icon: Inbox, badge: "All", sectionKey: "leads" },
-      { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Pro", sectionKey: "automail" },
-      { href: "/admin/quotes", label: "Quote Requests", icon: FileText, sectionKey: "quotes" },
-      { href: "/admin/contacts", label: "Contact Inquiries", icon: Mail, sectionKey: "contacts" },
+      { href: "/admin/projects", label: "Projects Portfolio", icon: FolderOpen, sectionKey: "projects" },
+      { href: "/admin/services", label: "Civil Services", icon: HardHat, sectionKey: "services" },
+      { href: "/admin/quotes", label: "Quotes Pipeline", icon: FileText, badge: "Quotes", sectionKey: "quotes" },
+      { href: "/admin/blogs", label: "Blog Insights", icon: BookOpen, sectionKey: "blogs" },
+      { href: "/admin/contacts", label: "Direct Inquiries", icon: Mail, sectionKey: "contacts" },
       { href: "/admin/applications", label: "Job Applications", icon: Briefcase, sectionKey: "applications" },
-      { href: "/admin/newsletter", label: "Newsletter", icon: Mail, sectionKey: "newsletter" },
-    ],
-  },
-  {
-    id: "content",
-    title: "Content & Portfolio",
-    items: [
-      { href: "/admin/projects", label: "Projects", icon: FolderOpen, sectionKey: "projects" },
-      { href: "/admin/services", label: "Services", icon: HardHat, sectionKey: "services" },
-      { href: "/admin/blogs", label: "Blog Articles", icon: BookOpen, sectionKey: "blogs" },
-      { href: "/admin/testimonials", label: "Client Reviews", icon: Star, sectionKey: "testimonials" },
-      { href: "/admin/team", label: "Team Members", icon: Users, sectionKey: "team" },
-    ],
-  },
-  {
-    id: "pages",
-    title: "Pages & Site CMS",
-    items: [
-      { href: "/admin/hero", label: "Hero Banner", icon: LayoutTemplate, sectionKey: "hero" },
-      { href: "/admin/image-showcase", label: "Image Showcase", icon: Sparkles, sectionKey: "image-showcase" },
-      { href: "/admin/projects-hero", label: "Projects Page Hero", icon: Layers, sectionKey: "projects-hero" },
-      { href: "/admin/blogs-hero", label: "Blogs Page Hero", icon: BookOpen, sectionKey: "blogs-hero" },
-      { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
-      { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
+      { href: "/admin/hero", label: "HiPRO Page Builder", icon: LayoutTemplate, sectionKey: "hero" },
       { href: "/admin/cost-estimator", label: "Cost Estimator CMS", icon: Calculator, sectionKey: "cost-estimator" },
-      { href: "/admin/jobs", label: "Job Postings", icon: Briefcase, sectionKey: "jobs" },
-      { href: "/admin/cta-management", label: "CTA Management", icon: Megaphone, sectionKey: "cta-management" },
-      { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },
+      { href: "/admin/testimonials", label: "Client Reviews", icon: Star, sectionKey: "testimonials" },
+      { href: "/admin/team", label: "Leadership & Team", icon: Users, sectionKey: "team" },
     ],
   },
   {
-    id: "portals",
-    title: "Group Ventures",
+    id: "portal_hbs",
+    title: "Web 2: Hind Building (HBS)",
     items: [
-      { href: "/admin/snaptech", label: "SnapTech Admin", icon: Globe, badge: "IT Portal", sectionKey: "snaptech" },
-      { href: "/admin/empanelment", label: "Vendor Empanelment", icon: ShieldCheck, badge: "Portal", sectionKey: "empanelment" },
+      { href: "/admin/hbs", label: "HBS Control Center", icon: Flame, badge: "HBS", sectionKey: "hbs" },
+      { href: "/admin/hbs/leads", label: "Customer Repair Leads", icon: Inbox, badge: "Live", sectionKey: "hbs" },
+      { href: "/admin/hbs/services", label: "Waterproofing Specs", icon: HardHat, sectionKey: "hbs" },
+      { href: "/admin/hbs/projects", label: "Repair Case Studies", icon: FolderOpen, sectionKey: "hbs" },
+      { href: "/admin/hbs/home", label: "HBS Page CMS", icon: LayoutTemplate, sectionKey: "hbs" },
+      { href: "/admin/hbs/branding", label: "HBS Brand & Logos", icon: Palette, sectionKey: "hbs" },
+    ],
+  },
+  {
+    id: "portal_vendor",
+    title: "Web 3: Vendor Procurement",
+    items: [
+      { href: "/admin/empanelment", label: "Vendor Hub Overview", icon: ShieldCheck, badge: "Portal", sectionKey: "empanelment" },
+      { href: "/admin/empanelment/applications", label: "Contractor KYC Review", icon: Users, badge: "KYC", sectionKey: "empanelment" },
+      { href: "/admin/empanelment/directory", label: "Partner Directory & PVC", icon: FileText, sectionKey: "empanelment" },
+      { href: "/admin/empanelment/tenders", label: "Tenders & Bidding", icon: Briefcase, badge: "Radar", sectionKey: "empanelment" },
+      { href: "/admin/empanelment/gate-passes", label: "Site Gate Passes", icon: ShieldCheck, sectionKey: "empanelment" },
+    ],
+  },
+  {
+    id: "global_ops",
+    title: "Company Operations",
+    items: [
+      { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Global", sectionKey: "automail" },
+      { href: "/admin/settings", label: "Security & 2FA", icon: KeyRound, badge: "2FA", sectionKey: "settings" },
+      { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, sectionKey: "users" },
+      { href: "/admin/settings?tab=contact", label: "Company Profile", icon: Settings, sectionKey: "settings" },
     ],
   },
 ];
@@ -650,14 +652,14 @@ export default function AdminSidebar({ user }: { user: any }) {
             </div>
             <div>
               <p className="text-slate-900 font-black text-[13px] leading-tight uppercase tracking-wider font-display">
-                Hindustan
+                Hindustan Group
               </p>
               <div className="flex items-center gap-1.5">
                 <span className="text-construction-navy font-extrabold text-[10px] leading-tight uppercase tracking-widest font-display">
-                  Projects
+                  HQ Cockpit
                 </span>
-                <span className="inline-block px-1.5 py-0.5 bg-construction-red/10 text-construction-red text-[8px] font-mono font-bold tracking-tight rounded-md border border-construction-red/20">
-                  ADMIN
+                <span className="inline-block px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-mono font-bold tracking-tight rounded-md border border-emerald-200/80">
+                  3 Portals
                 </span>
               </div>
             </div>

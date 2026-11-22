@@ -8,7 +8,7 @@ import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
 
 const titles: Record<string, string> = {
-  "/admin":             "Dashboard",
+  "/admin":             "Company Headquarters Cockpit",
   "/admin/stats":       "Site Stats & Analytics",
   "/admin/leads":       "Leads Hub",
   "/admin/automail":    "AutoMail Studio",
