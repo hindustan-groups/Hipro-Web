@@ -21,10 +21,10 @@ export interface PortalOption {
 export const PORTAL_OPTIONS: PortalOption[] = [
   {
     id: "hipro",
-    name: "HiPRO Master Admin",
-    shortName: "HiPRO Master",
-    badge: "Master Console",
-    description: "Core website CMS, customer leads & operations",
+    name: "Master Admin HQ",
+    shortName: "Holding HQ",
+    badge: "Holding HQ",
+    description: "Central holding governance, multi-portal cockpit & tools",
     href: "/admin",
     logo: "/logo.jpg",
     themeColor: "emerald",

@@ -50,7 +50,7 @@ router.post("/login", authLoginLimiter, async (req: Request, res: Response) => {
           data: {
             email: envAdminEmail,
             password: hashPassword(envAdminPassword),
-            name: process.env.ADMIN_NAME || "HiPRO Master Admin",
+            name: process.env.ADMIN_NAME || "Master Admin",
             role: "admin",
             permissions: "[]",
           },
