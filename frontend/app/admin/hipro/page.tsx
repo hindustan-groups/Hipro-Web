@@ -119,7 +119,7 @@ export default function HiproControlCenterPage() {
 
           <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
             <button
-              onClick={loadData}
+              onClick={() => loadData(true)}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs transition-all cursor-pointer"
             >
