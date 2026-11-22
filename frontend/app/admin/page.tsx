@@ -242,39 +242,49 @@ export default function MasterCompanyDashboard() {
             </div>
           </div>
 
-          {/* Right: Live Digital Clock & Actions */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            {/* Live Digital Clock Capsule */}
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-slate-900 text-white shadow-sm ring-1 ring-white/10">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-              <div className="text-left font-mono leading-tight">
-                <p className="text-[11px] font-bold tracking-tight text-emerald-300">
-                  {formattedTime || "00:00:00"} <span className="text-[9px] text-slate-400">IST</span>
-                </p>
-                <p className="text-[9px] text-slate-400 tracking-wide uppercase">
+          {/* Right: Unified Apple Glass Clock & Sync Widget */}
+          <div className="inline-flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all shrink-0">
+            {/* Clock Icon & Live Indicator */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 ring-1 ring-blue-100/60">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="text-left leading-tight font-mono">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <p className="text-xs font-bold text-slate-900 tracking-tight">
+                    {formattedTime || "00:00:00"} <span className="text-[10px] text-slate-400 font-normal">IST</span>
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-500 font-sans font-medium mt-0.5">
                   {formattedDate || "Today"}
                 </p>
               </div>
             </div>
 
-            {/* Sync Button */}
+            {/* Vertical Divider */}
+            <div className="h-7 w-px bg-slate-200/80" />
+
+            {/* Sync Action Button */}
             <button
               onClick={() => fetchData(true)}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold text-slate-700 bg-white/95 hover:bg-white border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all cursor-pointer"
-              title="Refresh Real-time Metrics"
+              className="inline-flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl text-xs font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-50 transition-all cursor-pointer group"
+              title="Refresh Live Metrics"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
-              <div className="text-left">
-                <span className="block leading-tight">{loading ? "Syncing..." : "Sync Metrics"}</span>
-                {lastSyncedTime && (
-                  <span className="block text-[9px] text-slate-400 font-mono font-normal">
-                    {lastSyncedTime}
-                  </span>
-                )}
+              <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-blue-50 flex items-center justify-center transition-colors">
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500 group-hover:text-blue-600"}`} />
+              </div>
+              <div className="text-left hidden sm:block">
+                <span className="block text-[11px] font-bold leading-tight text-slate-800">
+                  {loading ? "Syncing..." : "Sync"}
+                </span>
+                <span className="block text-[9px] text-slate-400 font-mono">
+                  {lastSyncedTime ? `Synced ${lastSyncedTime}` : "Real-time"}
+                </span>
               </div>
             </button>
           </div>
