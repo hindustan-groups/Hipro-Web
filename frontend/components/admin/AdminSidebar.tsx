@@ -37,6 +37,8 @@ import {
   ArrowLeft,
   Building2,
   Compass,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 
 export interface SubNavItem {
@@ -84,6 +86,7 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
       { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Global", sectionKey: "automail" },
       { href: "/admin/security", label: "Security & 2FA Vault", icon: KeyRound, badge: "2FA", sectionKey: "security" },
       { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, badge: "RBAC", sectionKey: "users" },
+      { href: "/admin/hq-settings", label: "Master HQ Settings", icon: Settings, badge: "HQ", sectionKey: "hq-settings" },
     ],
   },
 ];
@@ -209,7 +212,19 @@ export default function AdminSidebar({ user }: { user: any }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("admin_sidebar_collapsed");
+      if (saved === "true") {
+        setIsDesktopCollapsed(true);
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
 
   const userPermissions = useMemo<string[]>(() => {
     if (Array.isArray(user?.permissions)) {
@@ -240,9 +255,34 @@ export default function AdminSidebar({ user }: { user: any }) {
   );
 
   useEffect(() => {
-    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleToggle = () => {
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setIsOpen((prev) => !prev);
+      } else {
+        setIsDesktopCollapsed((prev) => {
+          const next = !prev;
+          try {
+            localStorage.setItem("admin_sidebar_collapsed", String(next));
+          } catch {
+            // Ignore
+          }
+          return next;
+        });
+      }
+    };
     window.addEventListener("toggle-admin-sidebar", handleToggle);
     return () => window.removeEventListener("toggle-admin-sidebar", handleToggle);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        window.dispatchEvent(new Event("toggle-admin-sidebar"));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -327,21 +367,34 @@ export default function AdminSidebar({ user }: { user: any }) {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-72 shrink-0 bg-white/80 backdrop-blur-2xl border-r border-slate-200/70 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 bg-white/80 backdrop-blur-2xl border-r border-slate-200/70 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-all duration-300 ease-in-out ${
+          isOpen ? "translate-x-0 w-72" : "-translate-x-full md:translate-x-0 "
+        } ${
+          isDesktopCollapsed
+            ? "md:w-0 md:opacity-0 md:pointer-events-none md:border-r-0 overflow-hidden"
+            : "md:w-72 md:opacity-100 shrink-0"
         }`}
       >
         {/* ── HEADER ACCORDING TO ACTIVE MODE (Apple Squircle Aesthetics) ── */}
         {isEmpanelment ? (
           // Mode: Empanelment Hub
           <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-amber-50/60 to-transparent">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-amber-200/80 text-[11px] font-bold text-amber-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              <span>← Back to Master HQ</span>
-            </Link>
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-amber-200/80 text-[11px] font-bold text-amber-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>← Back to Master HQ</span>
+              </Link>
+              <button
+                onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
+                className="p-1 rounded-lg text-amber-700 hover:bg-amber-100/60 transition-colors cursor-pointer"
+                title="Collapse Sidebar (Ctrl + B)"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-amber-600/20">
                 <ShieldCheck className="w-5 h-5 text-white" />
@@ -355,13 +408,22 @@ export default function AdminSidebar({ user }: { user: any }) {
         ) : isHbs ? (
           // Mode: Hind Building Solutions
           <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-orange-50/60 to-transparent">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-orange-200/80 text-[11px] font-bold text-orange-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              <span>← Back to Master HQ</span>
-            </Link>
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-orange-200/80 text-[11px] font-bold text-orange-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>← Back to Master HQ</span>
+              </Link>
+              <button
+                onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
+                className="p-1 rounded-lg text-orange-700 hover:bg-orange-100/60 transition-colors cursor-pointer"
+                title="Collapse Sidebar (Ctrl + B)"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm ring-1 ring-orange-500/20">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -376,13 +438,22 @@ export default function AdminSidebar({ user }: { user: any }) {
         ) : isHipro ? (
           // Mode: HiPRO Corporate Site Manager
           <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-blue-50/60 to-transparent">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-              <span>← Back to Master HQ</span>
-            </Link>
+            <div className="flex items-center justify-between mb-3">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>← Back to Master HQ</span>
+              </Link>
+              <button
+                onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
+                className="p-1 rounded-lg text-blue-700 hover:bg-blue-100/60 transition-colors cursor-pointer"
+                title="Collapse Sidebar (Ctrl + B)"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+            </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0F2C59] to-[#0B2545] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-blue-900/20">
                 <Building2 className="w-5 h-5 text-white" />
@@ -395,25 +466,34 @@ export default function AdminSidebar({ user }: { user: any }) {
           </div>
         ) : (
           // Mode: Master Company Headquarters (Login Default)
-          <div className="h-[72px] px-4 border-b border-slate-200/60 flex items-center gap-3 bg-white/40">
-            <div className="h-10 w-10 rounded-2xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-200/80">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.jpg" alt="HiPRO" className="h-full w-full object-contain" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-slate-900 font-black text-xs uppercase tracking-wider font-display truncate">
-                Hindustan Group
-              </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-construction-navy font-black text-[10px] uppercase tracking-widest font-mono">
-                  HQ Cockpit
-                </span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-bold uppercase font-mono rounded-full border border-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  3 Portals
-                </span>
+          <div className="h-[72px] px-4 border-b border-slate-200/60 flex items-center justify-between bg-white/40">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="h-10 w-10 rounded-2xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-200/80">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.jpg" alt="HiPRO" className="h-full w-full object-contain" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-slate-900 font-black text-xs uppercase tracking-wider font-display truncate">
+                  Hindustan Group
+                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-construction-navy font-black text-[10px] uppercase tracking-widest font-mono">
+                    HQ Cockpit
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-bold uppercase font-mono rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    3 Portals
+                  </span>
+                </div>
               </div>
             </div>
+            <button
+              onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+              title="Collapse Sidebar (Ctrl + B)"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
           </div>
         )}
 
@@ -459,7 +539,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                     <Link
                       key={href}
                       href={href}
-                      prefetch={true}
+                      prefetch={false}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] group ${
                         active
                           ? "bg-slate-900 text-white font-semibold shadow-xs"

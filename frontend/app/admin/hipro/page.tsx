@@ -27,14 +27,15 @@ import {
   Inbox,
   BarChart2,
 } from "lucide-react";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export default function HiproControlCenterPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/dashboard", {
@@ -44,6 +45,7 @@ export default function HiproControlCenterPage() {
       const json = await res.json();
       if (json.success && json.data) {
         setData(json.data);
+        setAdminCache("admin:master_dashboard", json.data);
       } else {
         setError(json.error || "Failed to load HiPRO metrics");
       }
@@ -55,7 +57,14 @@ export default function HiproControlCenterPage() {
   };
 
   useEffect(() => {
-    loadData();
+    const cached = getAdminCache<any>("admin:master_dashboard");
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      loadData(false);
+    } else {
+      loadData(true);
+    }
   }, []);
 
   const hiproMetrics = data?.hipro || {
