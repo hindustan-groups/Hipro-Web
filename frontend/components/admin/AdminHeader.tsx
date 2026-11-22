@@ -8,8 +8,8 @@ import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
 
 const titles: Record<string, string> = {
-  "/admin":             "Company Headquarters Cockpit",
-  "/admin/stats":       "Site Stats & Analytics",
+  "/admin":             "Company Headquarters",
+  "/admin/stats":       "Global Site Analytics",
   "/admin/leads":       "Leads Hub",
   "/admin/automail":    "AutoMail Studio",
   "/admin/quotes":      "Quote Requests",
@@ -206,16 +206,14 @@ export default function AdminHeader({ user }: { user: any }) {
           </>
         ) : (
           <>
-            <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-2 border border-slate-200 w-64 focus-within:border-construction-navy transition-all">
-              <Search className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="hidden xl:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-1.5 border border-slate-200 w-48 focus-within:border-construction-navy transition-all">
+              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <input
                 type="text"
                 placeholder="Search..."
                 className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
               />
             </div>
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
 
             <button className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-construction-navy transition-colors text-slate-500">
               <Bell className="w-4 h-4" />

@@ -250,12 +250,12 @@ export default function MasterCompanyDashboard() {
       <div className="bg-white border border-slate-200 shadow-xs p-6 md:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 bg-construction-navy p-2.5 rounded-none flex items-center justify-center shrink-0 shadow-xs border border-construction-red/40">
+            <div className="w-14 h-14 bg-white p-2 rounded-none flex items-center justify-center shrink-0 shadow-xs border border-slate-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.jpg"
                 alt="HiPRO Corporate"
-                className="w-full h-full object-contain mix-blend-multiply bg-white"
+                className="w-full h-full object-contain"
               />
             </div>
             <div>
