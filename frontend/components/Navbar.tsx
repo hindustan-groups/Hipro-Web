@@ -398,7 +398,7 @@ export default function Navbar({
         }`
       }
     >
-      <nav className="w-full max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-5 xl:px-8 2xl:px-8" suppressHydrationWarning>
+      <nav className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1560px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 2xl:px-10" suppressHydrationWarning>
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link 
@@ -421,82 +421,84 @@ export default function Navbar({
             </div>
           </Link>
 
-          {/* Desktop links */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-4.5 2xl:gap-7 h-full shrink-0">
-            {navLinks.filter(Boolean).map((link) => {
-              const isCurrentActive = pathname
-                ? (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")))
-                : false;
+          {/* Desktop links and primary action */}
+          <div className="hidden lg:flex items-center h-full shrink-0">
+            {/* Desktop Navigation Links List */}
+            <div className="flex items-center gap-1 xl:gap-2.5 2xl:gap-4 h-full">
+              {navLinks.filter(Boolean).map((link) => {
+                const isCurrentActive = pathname
+                  ? (pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href + "/")))
+                  : false;
 
-              const hasMega = link.isMegaMenu && ((link.megaMenuCategories && link.megaMenuCategories.length > 0) || Boolean(link.megaMenuImage));
-              const hasDropdown = (link.subLinks && link.subLinks.length > 0) || hasMega;
+                const hasMega = link.isMegaMenu && ((link.megaMenuCategories && link.megaMenuCategories.length > 0) || Boolean(link.megaMenuImage));
+                const hasDropdown = (link.subLinks && link.subLinks.length > 0) || hasMega;
 
-              const isOpenDesktop = activeDesktopDropdown === link.href;
+                const isOpenDesktop = activeDesktopDropdown === link.href;
 
-              return (
-              <div 
-                key={link.href} 
-                className={`${link.isMegaMenu ? "" : "relative"} group h-full flex items-center`}
-                onMouseEnter={() => {
-                  if (hasDropdown) {
-                    handleMouseEnterDropdown(link.href);
-                  } else {
-                    closeAllDropdowns();
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (hasDropdown) handleMouseLeaveDropdown();
-                }}
-              >
-                <div className="flex items-center h-full">
-                  <Link
-                    href={link.href}
-                    target={link.isExternal ? "_blank" : undefined}
-                    rel={link.isExternal ? "noopener noreferrer" : undefined}
-                    onClick={(e) => {
-                      if (hasMega && activeDesktopDropdown !== link.href) {
-                        e.preventDefault();
-                        handleMouseEnterDropdown(link.href);
-                      } else {
-                        closeAllDropdowns();
-                      }
-                    }}
-                    className={`relative flex items-center gap-1 xl:gap-1.5 text-[13px] xl:text-[14px] 2xl:text-[15px] font-semibold uppercase tracking-wider transition-colors duration-200 py-3 whitespace-nowrap ${
-                      isCurrentActive
-                        ? (isDarkNavbar 
-                            ? "text-white font-bold" 
-                            : "text-construction-red font-bold")
-                        : (isDarkNavbar 
-                            ? "text-slate-200 hover:text-white" 
-                            : "text-slate-700 hover:text-construction-red")
-                    }`}
-                  >
-                    <span>{link.label}</span>
-                    {link.isExternal && (
-                      <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-construction-red shrink-0" />
-                    )}
-                    {/* Animated Bottom Border with Smooth Transition */}
-                    <span 
-                      className={`absolute bottom-0 left-0 h-[2.5px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                return (
+                <div 
+                  key={link.href} 
+                  className={`${link.isMegaMenu ? "" : "relative"} group h-full flex items-center`}
+                  onMouseEnter={() => {
+                    if (hasDropdown) {
+                      handleMouseEnterDropdown(link.href);
+                    } else {
+                      closeAllDropdowns();
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (hasDropdown) handleMouseLeaveDropdown();
+                  }}
+                >
+                  <div className="flex items-center h-full">
+                    <Link
+                      href={link.href}
+                      target={link.isExternal ? "_blank" : undefined}
+                      rel={link.isExternal ? "noopener noreferrer" : undefined}
+                      onClick={(e) => {
+                        if (hasMega && activeDesktopDropdown !== link.href) {
+                          e.preventDefault();
+                          handleMouseEnterDropdown(link.href);
+                        } else {
+                          closeAllDropdowns();
+                        }
+                      }}
+                      className={`relative flex items-center gap-1 xl:gap-1.5 px-2 xl:px-2.5 2xl:px-3 py-2 text-[12.5px] xl:text-[13.5px] 2xl:text-[14.5px] font-semibold uppercase tracking-[0.05em] transition-colors duration-200 whitespace-nowrap ${
                         isCurrentActive
-                          ? `w-full ${isDarkNavbar ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]" : "bg-construction-red shadow-[0_0_8px_rgba(220,38,38,0.4)]"}`
-                          : `w-0 group-hover:w-full ${isDarkNavbar ? "bg-white/80" : "bg-construction-red"}`
-                      }`} 
-                    />
-                  </Link>
-                  {hasDropdown && (
-                    <button
-                      type="button"
-                      aria-label={`Toggle ${link.label} menu`}
-                      aria-expanded={isOpenDesktop}
-                      aria-haspopup="true"
-                      onClick={(e) => handleToggleDesktopDropdown(link.href, e)}
-                      className="p-1.5 -mr-1 focus:outline-none cursor-pointer shrink-0"
+                          ? (isDarkNavbar 
+                              ? "text-white font-bold" 
+                              : "text-construction-red font-bold")
+                          : (isDarkNavbar 
+                              ? "text-slate-200 hover:text-white" 
+                              : "text-slate-700 hover:text-construction-red")
+                      }`}
                     >
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : ""} ${isDarkNavbar ? "text-slate-300" : "text-slate-500"}`} />
-                    </button>
-                  )}
-                </div>
+                      <span>{link.label}</span>
+                      {link.isExternal && (
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-construction-red shrink-0 transition-colors duration-200" />
+                      )}
+                      {/* Animated Bottom Indicator with Smooth Centered Expansion */}
+                      <span 
+                        className={`absolute bottom-0 inset-x-2 xl:inset-x-2.5 h-[2px] rounded-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+                          isCurrentActive
+                            ? `scale-x-100 ${isDarkNavbar ? "bg-white shadow-[0_0_8px_rgba(255,255,255,0.7)]" : "bg-construction-red shadow-[0_0_6px_rgba(217,35,42,0.35)]"}`
+                            : `scale-x-0 group-hover:scale-x-100 ${isDarkNavbar ? "bg-white/80" : "bg-construction-red"}`
+                        }`} 
+                      />
+                    </Link>
+                    {hasDropdown && (
+                      <button
+                        type="button"
+                        aria-label={`Toggle ${link.label} menu`}
+                        aria-expanded={isOpenDesktop}
+                        aria-haspopup="true"
+                        onClick={(e) => handleToggleDesktopDropdown(link.href, e)}
+                        className="p-1 -ml-1 focus:outline-none cursor-pointer shrink-0 transition-colors"
+                      >
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ease-out ${isOpenDesktop ? "rotate-180 text-construction-red" : ""} ${isDarkNavbar ? "text-slate-300 group-hover:text-white" : "text-slate-500 group-hover:text-construction-red"}`} />
+                      </button>
+                    )}
+                  </div>
                 
                 {/* Standard Dropdown Menu Desktop */}
                 {link.subLinks && !link.isMegaMenu && (
@@ -711,11 +713,17 @@ export default function Navbar({
               </div>
             );
           })}
+            </div>
+
+            {/* Subtle architectural vertical divider */}
+            <div className="h-5 w-px bg-slate-200/80 dark:bg-white/15 mx-2.5 xl:mx-3.5 2xl:mx-4 shrink-0" aria-hidden="true" />
+
+            {/* Desktop Primary CTA Button */}
             <Link 
               href={navbarCta?.enabled !== false ? (navbarCta ? resolveCTAHref(navbarCta) : "/contact") : "/contact"}
               onClick={closeAllDropdowns}
               onMouseEnter={closeAllDropdowns}
-              className={`relative overflow-hidden group ml-1.5 xl:ml-3 2xl:ml-4 px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 rounded-none font-semibold uppercase tracking-wider text-xs xl:text-sm transition-all duration-300 flex items-center gap-1.5 xl:gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
+              className={`relative overflow-hidden group px-4 xl:px-5 2xl:px-6 py-2 xl:py-2.5 rounded-none font-semibold uppercase tracking-wider text-xs xl:text-sm transition-all duration-300 flex items-center gap-1.5 xl:gap-2 backdrop-blur-xl whitespace-nowrap shrink-0 ${
                 isDarkNavbar
                   ? "bg-white/10 hover:bg-white/20 text-white border border-white/30 hover:border-white/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:shadow-[0_8px_32px_0_rgba(255,255,255,0.15)]"
                   : "bg-construction-navy/95 hover:bg-construction-navy text-white border border-blue-900/40 shadow-md shadow-blue-900/20"
@@ -724,7 +732,7 @@ export default function Navbar({
               {/* Glass subtle shimmer highlight on hover */}
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
               
-              <span className="relative z-10">{navbarCta?.label ?? "Get a Quote"}</span>
+              <span className="relative z-10">{navbarCta?.label ?? "Get In Touch"}</span>
               <ArrowRight className="w-3.5 xl:w-4 h-3.5 xl:h-4 relative z-10 text-construction-red transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
