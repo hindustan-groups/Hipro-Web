@@ -88,7 +88,7 @@ export default function AdminHeader({ user }: { user: any }) {
   const title = getTitle();
 
   return (
-    <header className="h-[70px] shrink-0 bg-white/85 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-40 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
+    <header className="h-16 shrink-0 bg-white/75 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 shadow-[0_2px_16px_rgba(15,23,42,0.02)]">
       <div className="flex items-center gap-3 min-w-0">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
@@ -96,7 +96,7 @@ export default function AdminHeader({ user }: { user: any }) {
           title={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
           className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 focus:outline-none shrink-0"
         >
-          {isDrawerOpen ? <X className="w-6 h-6 text-slate-800" /> : <Menu className="w-6 h-6" />}
+          {isDrawerOpen ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5" />}
         </button>
         <div className="flex items-center gap-2.5 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -105,7 +105,7 @@ export default function AdminHeader({ user }: { user: any }) {
             alt="Brand Logo"
             className="h-7 w-auto object-contain md:hidden mix-blend-multiply shrink-0"
           />
-          <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight whitespace-nowrap">
+          <h1 className="text-slate-900 font-bold text-base md:text-lg tracking-tight whitespace-nowrap">
             {pathname?.startsWith("/admin/hbs") ? (
               <>
                 <span className="md:hidden">Hind Build Admin</span>
@@ -125,21 +125,17 @@ export default function AdminHeader({ user }: { user: any }) {
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
         {pathname?.startsWith("/admin/empanelment") ? (
           <>
-
             {/* Public Portal Link */}
             <a
               href="https://empanelment.hindustanprojects.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 text-amber-900 border border-amber-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50/80 hover:bg-amber-100/90 text-amber-900 border border-amber-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
               title="Open Public Empanelment Portal (New Tab)"
             >
               <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               <span>Public Portal ↗</span>
             </a>
-
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
 
             <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
               <Bell className="w-4 h-4" />
@@ -176,9 +172,6 @@ export default function AdminHeader({ user }: { user: any }) {
               />
             </div>
 
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
-
             <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
               <Bell className="w-4 h-4" />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
@@ -206,24 +199,39 @@ export default function AdminHeader({ user }: { user: any }) {
           </>
         ) : (
           <>
-            <div className="hidden xl:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-1.5 border border-slate-200 w-48 focus-within:border-construction-navy transition-all">
+            {/* Apple Spotlight Capsule Search */}
+            <div className="hidden md:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-48 lg:w-56 focus-within:w-64 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all duration-200 backdrop-blur-md">
               <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <input
                 type="text"
                 placeholder="Search..."
                 className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
               />
+              <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs">⌘K</kbd>
             </div>
 
-            <button className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-construction-navy transition-colors text-slate-500">
+            {/* Live Operational Status Capsule */}
+            <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-semibold border border-emerald-500/20 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>3 Portals Online</span>
+            </div>
+
+            <button 
+              className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs"
+              title="Notifications"
+            >
               <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-construction-red rounded-full" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-construction-red rounded-full ring-2 ring-white" />
             </button>
-            <button onClick={handleLogout} title="Logout" className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-red-50 hover:text-construction-red transition-colors text-slate-500">
+            <button 
+              onClick={handleLogout} 
+              title="Logout" 
+              className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-red-50 border border-slate-200/70 hover:border-red-200 flex items-center justify-center hover:text-red-600 transition-all text-slate-500 shadow-2xs"
+            >
               <LogOut className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200">
-              <div className="w-9 h-9 rounded-none bg-construction-navy text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider">
+            <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200/60">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-construction-navy to-blue-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
                 {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
               </div>
               <div className="hidden md:block">

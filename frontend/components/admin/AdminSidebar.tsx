@@ -312,93 +312,94 @@ export default function AdminSidebar({ user }: { user: any }) {
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.02)] transform transition-transform duration-200 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-64 shrink-0 bg-white/80 backdrop-blur-2xl border-r border-slate-200/70 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
-        {/* ── HEADER ACCORDING TO ACTIVE MODE ──────────────────── */}
+        {/* ── HEADER ACCORDING TO ACTIVE MODE (Apple Squircle Aesthetics) ── */}
         {isEmpanelment ? (
           // Mode: Empanelment Hub
-          <div className="p-4 border-b border-slate-100 bg-amber-50/40">
+          <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-amber-50/60 to-transparent">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-800 hover:text-amber-950 transition-colors mb-2 group"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-amber-200/80 text-[11px] font-bold text-amber-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
               <span>← Back to Master HQ</span>
             </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-none bg-amber-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-amber-600/20">
+                <ShieldCheck className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display">Vendor Procurement</p>
-                <p className="text-[10px] text-amber-700 font-semibold font-mono">KYC & Tenders Hub</p>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display truncate">Vendor Procurement</p>
+                <p className="text-[10px] text-amber-700 font-bold font-mono">KYC & Tenders Hub</p>
               </div>
             </div>
           </div>
         ) : isHbs ? (
           // Mode: Hind Building Solutions
-          <div className="p-4 border-b border-slate-100 bg-orange-50/40">
+          <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-orange-50/60 to-transparent">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-orange-800 hover:text-orange-950 transition-colors mb-2 group"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-orange-200/80 text-[11px] font-bold text-orange-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
               <span>← Back to Master HQ</span>
             </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-none bg-orange-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                <Flame className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-orange-600/20">
+                <Flame className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display">Hind Building (HBS)</p>
-                <p className="text-[10px] text-orange-700 font-semibold font-mono">Repair & BOQ Studio</p>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display truncate">Hind Building (HBS)</p>
+                <p className="text-[10px] text-orange-700 font-bold font-mono">Repair & BOQ Studio</p>
               </div>
             </div>
           </div>
         ) : isHipro ? (
           // Mode: HiPRO Corporate Site Manager
-          <div className="p-4 border-b border-slate-100 bg-blue-50/40">
+          <div className="p-4 border-b border-slate-200/60 bg-gradient-to-b from-blue-50/60 to-transparent">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-800 hover:text-blue-950 transition-colors mb-2 group"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 hover:bg-white hover:shadow-2xs transition-all mb-3 group shadow-2xs"
             >
               <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
               <span>← Back to Master HQ</span>
             </Link>
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-none bg-construction-navy text-white flex items-center justify-center font-bold text-xs shadow-xs border border-construction-red/40">
-                <Building2 className="w-4 h-4 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0F2C59] to-[#0B2545] text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-blue-900/20">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display">HiPRO Corporate</p>
-                <p className="text-[10px] text-blue-700 font-semibold font-mono">Site & CMS Studio</p>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display truncate">HiPRO Corporate</p>
+                <p className="text-[10px] text-blue-700 font-bold font-mono">Site & CMS Studio</p>
               </div>
             </div>
           </div>
         ) : (
           // Mode: Master Company Headquarters (Login Default)
-          <div className="h-16 px-4 border-b border-slate-100 flex items-center gap-3 bg-white">
-            <div className="h-9 w-9 bg-construction-navy p-1 flex items-center justify-center shrink-0 border border-construction-red/40">
+          <div className="h-[72px] px-4 border-b border-slate-200/60 flex items-center gap-3 bg-white/40">
+            <div className="h-10 w-10 rounded-2xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-200/80">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.jpg" alt="HiPRO" className="h-full w-full object-contain mix-blend-multiply bg-white" />
+              <img src="/logo.jpg" alt="HiPRO" className="h-full w-full object-contain" />
             </div>
             <div className="min-w-0">
               <p className="text-slate-900 font-black text-xs uppercase tracking-wider font-display truncate">
                 Hindustan Group
               </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-construction-navy font-extrabold text-[10px] uppercase tracking-widest font-mono">
-                  Master HQ
+                <span className="text-construction-navy font-black text-[10px] uppercase tracking-widest font-mono">
+                  HQ Cockpit
                 </span>
-                <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 text-[8px] font-bold uppercase font-mono border border-emerald-200">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-bold uppercase font-mono rounded-full border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   3 Portals
                 </span>
               </div>
@@ -406,22 +407,22 @@ export default function AdminSidebar({ user }: { user: any }) {
           </div>
         )}
 
-        {/* Search Filter */}
-        <div className="px-3 py-2 border-b border-slate-100 bg-slate-50/50">
-          <div className="relative flex items-center">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 text-slate-400 pointer-events-none" />
+        {/* Apple Spotlight Search Filter */}
+        <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50/40">
+          <div className="relative flex items-center bg-slate-100/80 hover:bg-slate-100 rounded-full px-3 py-1.5 border border-slate-200/60 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all duration-200">
+            <Search className="w-3.5 h-3.5 text-slate-400 pointer-events-none shrink-0" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search sections..."
-              className="w-full bg-white text-[11px] font-medium text-slate-800 placeholder-slate-400 pl-8 pr-7 py-1.5 border border-slate-200 rounded-none focus:outline-none focus:border-construction-navy transition-colors"
+              placeholder="Quick search..."
+              className="w-full bg-transparent text-[11px] font-medium text-slate-800 placeholder-slate-400 pl-2 pr-4 outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 text-slate-400 hover:text-slate-600 p-0.5"
-                title="Clear filter"
+                className="text-slate-400 hover:text-slate-600 p-0.5"
+                title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -429,11 +430,11 @@ export default function AdminSidebar({ user }: { user: any }) {
           </div>
         </div>
 
-        {/* ── NAVIGATION LIST ─────────────────────────────────── */}
+        {/* ── NAVIGATION LIST (Apple iPadOS Sidebar Pill Items) ── */}
         <nav className="flex-1 px-3 py-3 space-y-5 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
           {filteredSections.map((section) => (
             <div key={section.title} className="space-y-1">
-              <p className="px-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 font-mono select-none">
+              <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono select-none">
                 {section.title}
               </p>
               <div className="space-y-0.5">
@@ -449,10 +450,10 @@ export default function AdminSidebar({ user }: { user: any }) {
                       key={href}
                       href={href}
                       prefetch={true}
-                      className={`flex items-center justify-between px-3 py-2 rounded-none text-xs transition-colors min-h-[36px] ${
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] group ${
                         active
-                          ? "bg-construction-navy text-white font-bold shadow-xs"
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium"
+                          ? "bg-slate-900 text-white font-semibold shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium"
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -465,10 +466,10 @@ export default function AdminSidebar({ user }: { user: any }) {
                       </div>
                       {badge && (
                         <span
-                          className={`text-[9px] font-mono font-bold px-1.5 py-0.5 ${
+                          className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full transition-colors ${
                             active
                               ? "bg-white/20 text-white"
-                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                              : "bg-slate-200/60 text-slate-600 border border-slate-200/80 group-hover:bg-slate-200"
                           }`}
                         >
                           {badge}
@@ -482,15 +483,17 @@ export default function AdminSidebar({ user }: { user: any }) {
           ))}
         </nav>
 
-        {/* ── FOOTER: LOGOUT ──────────────────────────────────── */}
-        <div className="p-3 border-t border-slate-200 bg-slate-50/60 shrink-0">
+        {/* ── FOOTER: APPLE PROFILE / SIGNOUT CHIP ────────────── */}
+        <div className="p-3 border-t border-slate-200/70 bg-slate-50/50 shrink-0">
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50/80 transition-colors text-left cursor-pointer"
+            className="w-full flex items-center justify-between p-2 rounded-xl bg-white/80 hover:bg-rose-50/80 border border-slate-200/70 hover:border-rose-200 transition-all text-xs font-semibold text-slate-600 hover:text-rose-700 shadow-2xs group cursor-pointer"
           >
-            <div className="flex items-center gap-2">
-              <LogOut className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-lg bg-slate-100 group-hover:bg-rose-100 flex items-center justify-center transition-colors">
+                <LogOut className="w-3.5 h-3.5 text-slate-500 group-hover:text-rose-600" />
+              </div>
               <span>Sign Out</span>
             </div>
             <span className="text-[10px] text-slate-400 font-mono font-normal">v2.0</span>
