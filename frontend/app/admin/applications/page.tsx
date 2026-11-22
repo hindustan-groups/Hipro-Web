@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import type { JobApplication } from "@/lib/types";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export default function AdminApplicationsPage() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -15,14 +16,15 @@ export default function AdminApplicationsPage() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  const fetchApplications = async () => {
-    setLoading(true);
+  const fetchApplications = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/applications", { credentials: "include" });
       const json = await res.json();
       if (json.success) {
         setApplications(json.data || []);
+        setAdminCache("admin:applications_list", json.data || []);
       } else {
         setError(json.error || "Failed to load applications");
       }
@@ -34,7 +36,12 @@ export default function AdminApplicationsPage() {
   };
 
   useEffect(() => {
-    fetchApplications();
+    const cached = getAdminCache<JobApplication[]>("admin:applications_list");
+    if (cached) {
+      setApplications(cached);
+      setLoading(false);
+    }
+    fetchApplications(!cached);
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
@@ -106,7 +113,7 @@ export default function AdminApplicationsPage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchApplications}
+            onClick={() => fetchApplications(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow-sm"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />

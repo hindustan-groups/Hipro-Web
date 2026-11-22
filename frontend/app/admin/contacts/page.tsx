@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RefreshCw, CheckCircle, Clock, Eye, Trash2, Inbox } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface Contact {
   id: string; name: string; email: string; phone: string;
@@ -16,18 +17,33 @@ export default function AdminContacts() {
   const [error, setError]       = useState("");
   const [filter, setFilter]     = useState("all");
 
-  const fetchContacts = async () => {
-    setLoading(true); setError("");
+  const fetchContacts = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setError("");
     try {
       const res  = await fetch("/api/contact");
       const json = await res.json();
-      if (json.success) setContacts(json.data);
-      else setError(json.error || "Failed to load contacts");
-    } catch { setError("Network error"); }
-    setLoading(false);
+      if (json.success) {
+        setContacts(json.data);
+        setAdminCache("admin:contacts_list", json.data);
+      } else {
+        setError(json.error || "Failed to load contacts");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchContacts(); }, []);
+  useEffect(() => {
+    const cached = getAdminCache<Contact[]>("admin:contacts_list");
+    if (cached) {
+      setContacts(cached);
+      setLoading(false);
+    }
+    fetchContacts(!cached);
+  }, []);
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -75,7 +91,7 @@ export default function AdminContacts() {
             </button>
           ))}
         </div>
-        <button onClick={fetchContacts} disabled={loading}
+        <button onClick={() => fetchContacts(true)} disabled={loading}
           className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none-none text-xs font-medium transition-colors disabled:opacity-50 shadow-sm">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
         </button>

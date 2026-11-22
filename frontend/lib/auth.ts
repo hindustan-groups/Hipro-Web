@@ -6,8 +6,14 @@ interface CachedSession {
   user: any;
   timestamp: number;
 }
-const sessionCache = new Map<string, CachedSession>();
-const SESSION_TTL_MS = 60 * 1000; // 60 seconds
+const globalForSession = globalThis as unknown as {
+  __hpSessionCache?: Map<string, CachedSession>;
+};
+const sessionCache = globalForSession.__hpSessionCache || new Map<string, CachedSession>();
+if (!globalForSession.__hpSessionCache) {
+  globalForSession.__hpSessionCache = sessionCache;
+}
+const SESSION_TTL_MS = 120 * 1000; // 120 seconds
 
 export async function createSession(userId: string) {
   // Unused in frontend after Express migration, stub for compiling

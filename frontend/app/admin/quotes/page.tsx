@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RefreshCw, CheckCircle, XCircle, Eye, Inbox } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface Quote {
   id: string; name: string; email: string; phone: string;
@@ -18,18 +19,33 @@ export default function AdminQuotes() {
   const [filter, setFilter]   = useState("all");
   const [selected, setSelected] = useState<Quote | null>(null);
 
-  const fetchQuotes = async () => {
-    setLoading(true); setError("");
+  const fetchQuotes = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    setError("");
     try {
       const res  = await fetch("/api/quote");
       const json = await res.json();
-      if (json.success) setQuotes(json.data);
-      else setError(json.error || "Failed to load quotes");
-    } catch { setError("Network error"); }
-    setLoading(false);
+      if (json.success) {
+        setQuotes(json.data);
+        setAdminCache("admin:quotes_list", json.data);
+      } else {
+        setError(json.error || "Failed to load quotes");
+      }
+    } catch {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { fetchQuotes(); }, []);
+  useEffect(() => {
+    const cached = getAdminCache<Quote[]>("admin:quotes_list");
+    if (cached) {
+      setQuotes(cached);
+      setLoading(false);
+    }
+    fetchQuotes(!cached);
+  }, []);
 
   const updateStatus = async (id: string, status: string) => {
     try {
@@ -78,7 +94,7 @@ export default function AdminQuotes() {
             </button>
           ))}
         </div>
-        <button onClick={fetchQuotes} disabled={loading}
+        <button onClick={() => fetchQuotes(true)} disabled={loading}
           className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
         </button>

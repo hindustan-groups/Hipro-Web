@@ -28,6 +28,7 @@ import ApplicationReviewDrawer, {
   VendorApplicationDetail,
 } from "@/components/admin/empanelment/ApplicationReviewDrawer";
 import TenderCreateModal from "@/components/admin/empanelment/TenderCreateModal";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export default function EmpanelmentAdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -41,8 +42,8 @@ export default function EmpanelmentAdminDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isTenderModalOpen, setIsTenderModalOpen] = useState(false);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  const fetchDashboardData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
 
     try {
@@ -71,6 +72,14 @@ export default function EmpanelmentAdminDashboard() {
       if (statsJson?.success) setStats(statsJson.stats);
       if (appsJson?.success) setRecentApplications(appsJson.applications || []);
       if (tendersJson?.success) setActiveTenders(tendersJson.tenders || []);
+
+      if (statsJson?.success) {
+        setAdminCache("admin:empanelment_dashboard", {
+          stats: statsJson.stats,
+          recentApplications: appsJson?.applications || [],
+          activeTenders: tendersJson?.tenders || [],
+        });
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load empanelment metrics");
     } finally {
@@ -79,7 +88,16 @@ export default function EmpanelmentAdminDashboard() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const cached = getAdminCache<{ stats: any; recentApplications: any[]; activeTenders: any[] }>(
+      "admin:empanelment_dashboard"
+    );
+    if (cached) {
+      setStats(cached.stats);
+      setRecentApplications(cached.recentApplications);
+      setActiveTenders(cached.activeTenders);
+      setLoading(false);
+    }
+    fetchDashboardData(!cached);
   }, []);
 
   const handleOpenReview = (app: VendorApplicationDetail) => {
