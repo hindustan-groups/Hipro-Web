@@ -153,7 +153,13 @@ export default function MasterCompanyDashboard() {
       fetchData(true);
     }
 
+    // 30s background real-time telemetry auto-polling
+    const autoSyncTimer = setInterval(() => {
+      fetchData(false);
+    }, 30000);
+
     return () => {
+      clearInterval(autoSyncTimer);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -454,21 +460,24 @@ export default function MasterCompanyDashboard() {
           <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group relative">
             <div className="h-1.5 bg-gradient-to-r from-[#0F2C59] via-blue-600 to-indigo-500" />
             <div className="p-6 md:p-7">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-11 h-11 rounded-2xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-200/80">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/logo.jpg" alt="HiPRO" className="w-full h-full object-contain" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
-                      HiPRO Corporate
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-mono">hindustanprojects.in</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight font-display truncate">
+                        HiPRO Corporate
+                      </h3>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Portal Online" />
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-mono truncate">hindustanprojects.in</p>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 rounded-full border border-blue-200/80">
-                  Flagship Civil
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 rounded-full border border-blue-200/80 shrink-0 whitespace-nowrap shadow-3xs">
+                  Civil Flagship
                 </span>
               </div>
 
@@ -525,21 +534,24 @@ export default function MasterCompanyDashboard() {
           <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group relative">
             <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400" />
             <div className="p-6 md:p-7">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-11 h-11 rounded-2xl bg-white p-1 flex items-center justify-center shrink-0 shadow-xs ring-1 ring-slate-200/80">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/hibuild-logo.png" alt="Hind Building Solutions" className="w-full h-full object-contain" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
-                      Hind Building (HBS)
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-mono">hindbuilding.hindustanprojects.in</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight font-display truncate">
+                        Hind Building (HBS)
+                      </h3>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Portal Online" />
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-mono truncate">hindbuilding.hindustanprojects.in</p>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 rounded-full border border-orange-200/80">
-                  Waterproofing
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-orange-50 text-orange-700 rounded-full border border-orange-200/80 shrink-0 whitespace-nowrap shadow-3xs">
+                  Repair BOQ
                 </span>
               </div>
 
@@ -596,19 +608,22 @@ export default function MasterCompanyDashboard() {
           <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group relative">
             <div className="h-1.5 bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-400" />
             <div className="p-6 md:p-7">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-11 h-11 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0 ring-1 ring-amber-500/20">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 uppercase tracking-tight font-display">
-                      Vendor Procurement Hub
-                    </h3>
-                    <p className="text-[11px] text-slate-400 font-mono">empanelment.hindustanprojects.in</p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-tight font-display truncate">
+                        Vendor Hub
+                      </h3>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Portal Online" />
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-mono truncate">empanelment.hindustanprojects.in</p>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 rounded-full border border-amber-200/80">
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 rounded-full border border-amber-200/80 shrink-0 whitespace-nowrap shadow-3xs">
                   Procurement
                 </span>
               </div>

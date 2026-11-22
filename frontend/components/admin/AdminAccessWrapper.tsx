@@ -8,12 +8,23 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
   const pathname = usePathname();
 
   useEffect(() => {
+    // Prevent browser from restoring scrolled-down position on refresh
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
     // Lock outer browser window scroll so admin header and sidebar never scroll off-screen
     window.scrollTo(0, 0);
     const origBodyOverflow = document.body.style.overflow;
     const origHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
+
+    // Reset main viewport scroll to top
+    const mainViewport = document.getElementById("admin-main-viewport");
+    if (mainViewport) {
+      mainViewport.scrollTop = 0;
+    }
 
     // Guard: ensure admin content column holding AdminHeader can NEVER be scrolled off
     const contentCol = document.getElementById("admin-content-column");
