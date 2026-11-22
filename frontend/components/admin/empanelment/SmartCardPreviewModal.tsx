@@ -1145,7 +1145,7 @@ export default function SmartCardPreviewModal({
 
               <p className="text-[11px] text-slate-500 mt-3 text-center flex items-center gap-1.5">
                 <RotateCw className="w-3.5 h-3.5 text-[#D9232A] animate-spin-slow" />
-                <span>Card par click karein ya 'Flip' dabayein (Front aur Back dekhne ke liye).</span>
+                <span>Card par click karein ya &quot;Flip&quot; dabayein (Front aur Back dekhne ke liye).</span>
               </p>
             </div>
           ) : (
