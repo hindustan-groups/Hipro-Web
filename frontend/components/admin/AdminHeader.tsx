@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
-  Search,
   PanelLeft,
   LogOut,
   ExternalLink,
@@ -201,25 +200,8 @@ export default function AdminHeader({ user }: { user: any }) {
         </div>
       </div>
 
-      {/* ── Right: Spotlight Search, Live Status, Interactive Notification Center & Profile ── */}
+      {/* ── Right: Live Status, Interactive Notification Center & Profile ── */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        {/* Apple Spotlight Capsule Search Trigger */}
-        <button
-          onClick={() => setIsSpotlightOpen(true)}
-          type="button"
-          aria-label="Open Spotlight Search"
-          title="Search pages and portals (Ctrl + K)"
-          className="hidden lg:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-44 xl:w-56 transition-all duration-200 backdrop-blur-md cursor-pointer text-left group"
-        >
-          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 transition-colors" />
-          <span className="text-xs text-slate-400 group-hover:text-slate-600 truncate flex-1">
-            Search command...
-          </span>
-          <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs shrink-0">
-            ⌘K
-          </kbd>
-        </button>
-
         {/* Live Operational Status Capsule */}
         {isHipro ? (
           <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/80 shadow-2xs">
