@@ -976,9 +976,41 @@ export default function AutoMailCompose() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                From Email (Hostinger Mailbox)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  From Mailbox *
+                </label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSenderEmail("info@hindustanprojects.in");
+                      setSenderName("Hindustan Projects");
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+                      senderEmail === "info@hindustanprojects.in"
+                        ? "bg-blue-600 text-white shadow-3xs"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    info@
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSenderEmail("hbs@hindustanprojects.in");
+                      setSenderName("Hind Building Solutions");
+                    }}
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+                      senderEmail === "hbs@hindustanprojects.in"
+                        ? "bg-orange-600 text-white shadow-3xs"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    hbs@
+                  </button>
+                </div>
+              </div>
               <input
                 type="email"
                 value={senderEmail}
