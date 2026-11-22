@@ -8,13 +8,8 @@ import {
   ShieldCheck,
   RotateCw,
   Check,
-  Award,
-  Layers,
   ChevronDown,
-  Globe,
-  MapPin,
-  Phone,
-  Mail,
+  Layers,
 } from "lucide-react";
 
 export interface SmartCardVendor {
@@ -38,14 +33,287 @@ interface SmartCardPreviewModalProps {
   onClose: () => void;
 }
 
+// =========================================================================
+// CARD SHARED PROPS INTERFACE
+// =========================================================================
+interface CardRenderProps {
+  companyName: string;
+  contactName: string;
+  trackingId: string;
+  category: string;
+  city: string;
+  state: string;
+  currentTier: { label: string; code: string; bg: string; text: string; border: string };
+  issueDate: string;
+  validThru: string;
+  qrUrl: string;
+  officialWebsite: string;
+  officialPortal: string;
+  officialAddress: string;
+  officialHelpline: string;
+  officialEmail: string;
+  isPrint?: boolean;
+}
+
+// =========================================================================
+// UNIFIED FRONT CARD COMPONENT (Used on Screen, Both-Sides & Print)
+// =========================================================================
+function UnifiedCardFront({
+  companyName,
+  contactName,
+  trackingId,
+  category,
+  city,
+  state,
+  currentTier,
+  issueDate,
+  validThru,
+  qrUrl,
+  officialWebsite,
+  isPrint = false,
+}: CardRenderProps) {
+  return (
+    <div
+      className={`w-full h-full rounded-2xl bg-white text-slate-900 border border-slate-300 shadow-xl overflow-hidden flex flex-col justify-between select-none relative ${
+        isPrint ? "print-exact-front" : ""
+      }`}
+      style={{ aspectRatio: "85.6 / 53.98" }}
+    >
+      {/* Top Header Banner */}
+      <div className="bg-[#0F2C59] px-3.5 py-2 sm:px-4 sm:py-2.5 border-b-[3px] border-[#D9232A] flex items-center justify-between text-white shrink-0 relative z-10">
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Official HiPRO Logo */}
+          <div className="h-7 sm:h-8 px-1.5 py-0.5 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-xs shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hipro-logo.jpg"
+              alt="HiPRO Official Logo"
+              className="h-full w-auto object-contain"
+            />
+          </div>
+          <div>
+            <div className="text-[11px] sm:text-[13px] font-black tracking-wider leading-none">
+              HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
+            </div>
+            <p className="text-[6.5px] sm:text-[7.5px] tracking-wide text-sky-200 uppercase font-semibold mt-0.5 leading-none">
+              EPC &amp; INFRASTRUCTURE • VERIFIED CREDENTIAL
+            </p>
+          </div>
+        </div>
+
+        {/* Gold Chip & NFC Symbol */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="text-amber-400 font-mono text-[8px] sm:text-[9px] tracking-tighter rotate-90 opacity-90 leading-none">
+            )))
+          </div>
+          <div className="w-8 h-6 sm:w-9 sm:h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 shadow-xs flex items-center justify-center relative overflow-hidden">
+            <div className="w-full h-[1px] bg-amber-800/40 absolute top-2" />
+            <div className="w-full h-[1px] bg-amber-800/40 absolute bottom-2" />
+            <div className="h-full w-[1px] bg-amber-800/40 absolute left-2.5" />
+            <div className="h-full w-[1px] bg-amber-800/40 absolute right-2.5" />
+          </div>
+        </div>
+      </div>
+
+      {/* Middle Identity Section */}
+      <div className="px-3.5 py-1 sm:px-4 sm:py-2 my-auto flex-1 flex flex-col justify-center relative z-10">
+        {/* Security HiPRO Logo Watermark */}
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 w-28 h-28 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hipro-logo.jpg"
+            alt="HiPRO Watermark"
+            className="w-18 sm:w-24 h-auto object-contain opacity-15 mix-blend-multiply select-none"
+          />
+        </div>
+
+        {/* Tier Pill */}
+        <div>
+          <span
+            className={`text-[7.5px] sm:text-[8.5px] font-mono font-black tracking-wider px-2 py-0.5 rounded-full uppercase inline-block shadow-2xs ${
+              currentTier.code === "CLASS-C"
+                ? "bg-[#D9232A] text-white border border-red-700"
+                : "bg-[#0F2C59] text-amber-300 border border-amber-400"
+            }`}
+          >
+            {currentTier.label}
+          </span>
+        </div>
+
+        {/* Company Name */}
+        <h3 className="text-xs sm:text-base font-black tracking-tight text-[#0F2C59] line-clamp-1 mt-1 leading-snug">
+          {companyName}
+        </h3>
+
+        {/* Contact & Category */}
+        <p className="text-[9px] sm:text-[10.5px] font-bold text-[#D9232A] mt-0.5 leading-snug">
+          {contactName} • {category}
+        </p>
+
+        <p className="text-[7.5px] sm:text-[8.5px] font-medium text-slate-500 mt-0.5 leading-snug">
+          📍 {city}, {state} • Approved Trade Partner
+        </p>
+
+        {/* Website line */}
+        <p className="text-[7.5px] sm:text-[8.5px] font-mono font-bold text-[#0F2C59] mt-0.5 leading-snug">
+          🌐 {officialWebsite}
+        </p>
+      </div>
+
+      {/* Bottom Security & Verification Bar */}
+      <div className="px-3.5 py-1.5 sm:px-4 sm:py-2 border-t border-slate-200/90 bg-slate-50/95 flex items-center justify-between gap-2 shrink-0 relative z-10">
+        {/* Empanelment ID Block */}
+        <div className="bg-[#0F2C59] text-white px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-xl shadow-xs border border-[#0B2545]">
+          <p className="text-[5.5px] sm:text-[6.5px] text-sky-200 font-mono tracking-widest uppercase font-bold leading-none">
+            EMPANELMENT ID
+          </p>
+          <p className="text-[10.5px] sm:text-[13px] font-mono font-black text-amber-300 tracking-wider leading-tight">
+            {trackingId}
+          </p>
+          <p className="text-[5.5px] sm:text-[6.5px] text-slate-300 font-mono leading-none">
+            ISSUED: {issueDate} • VALID: {validThru}
+          </p>
+        </div>
+
+        {/* Holographic Seal & Verification QR */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Circular Holographic Security Seal with HiPRO Logo */}
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
+            <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-4 sm:w-5 h-auto object-contain" />
+              <span className="text-[3.5px] sm:text-[4px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">
+                VERIFIED
+              </span>
+            </div>
+          </div>
+
+          {/* Live Verification QR */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrUrl}
+            alt="Verification QR"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white p-0.5 shadow-xs shrink-0 border border-slate-300"
+          />
+        </div>
+      </div>
+
+      {/* Dual Color Edge Ribbon */}
+      <div className="flex h-1.5 w-full shrink-0">
+        <div className="bg-[#0F2C59] flex-1" />
+        <div className="bg-[#D9232A] w-1/3" />
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// UNIFIED BACK CARD COMPONENT (Used on Screen, Both-Sides & Print)
+// =========================================================================
+function UnifiedCardBack({
+  trackingId,
+  officialWebsite,
+  officialAddress,
+  officialHelpline,
+  officialEmail,
+  isPrint = false,
+}: CardRenderProps) {
+  return (
+    <div
+      className={`w-full h-full rounded-2xl bg-white text-slate-900 border border-slate-300 shadow-xl overflow-hidden flex flex-col justify-between select-none relative ${
+        isPrint ? "print-exact-back" : ""
+      }`}
+      style={{ aspectRatio: "85.6 / 53.98" }}
+    >
+      {/* Top Navy Trim */}
+      <div className="bg-[#0F2C59] h-2.5 w-full shrink-0 border-b border-[#D9232A]" />
+
+      {/* HiCo Magnetic Stripe */}
+      <div className="h-7 sm:h-8 bg-[#1E293B] w-full shrink-0 flex items-center px-4">
+        <div className="h-1.5 sm:h-2 w-full bg-slate-700/50 rounded-xs" />
+      </div>
+
+      <div className="px-3.5 sm:px-4 pt-1">
+        <p className="text-[6.5px] sm:text-[7px] text-slate-500 leading-tight">
+          Official property of Hindustan Projects. If found, please return to any Procurement Directorate office.
+        </p>
+      </div>
+
+      {/* Signature Strip & Officer Seal */}
+      <div className="px-3.5 sm:px-4 my-auto py-0.5">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 bg-slate-100 rounded-md h-6 sm:h-7 px-2.5 sm:px-3 flex items-center justify-between border border-slate-300 shadow-inner">
+            <span className="font-serif italic text-[11px] sm:text-xs font-bold text-[#0F2C59]">
+              R. K. Sharma
+            </span>
+            <span className="text-[6px] sm:text-[6.5px] font-mono text-slate-500 uppercase font-bold">
+              Authorized Officer
+            </span>
+          </div>
+          <div className="px-2 py-0.5 sm:py-1 rounded bg-[#0F2C59] text-white text-[6.5px] sm:text-[7px] font-mono font-bold border border-[#D9232A]">
+            VALIDATED
+          </div>
+        </div>
+
+        {/* Official Terms */}
+        <div className="mt-1 sm:mt-1.5 text-[6px] sm:text-[6.8px] text-slate-600 space-y-0.5 leading-relaxed">
+          <p>• Mandatory for commercial tender bidding, site access &amp; 24-hr daily gate pass issuance.</p>
+          <p>• Misuse or unauthorized duplication will lead to immediate de-listing &amp; legal proceedings.</p>
+        </div>
+      </div>
+
+      {/* Official HQ Address, Website & Barcode Section */}
+      <div className="px-3.5 sm:px-4 py-1.5 sm:py-2 border-t border-slate-200 bg-slate-50 flex items-end justify-between shrink-0">
+        <div className="space-y-0.5">
+          <div className="bg-white rounded px-2 py-0.5 w-32 sm:w-40 flex flex-col items-center border border-slate-300">
+            <div className="h-3 sm:h-4 w-full flex items-center justify-between overflow-hidden">
+              {Array.from({ length: 36 }).map((_, idx) => (
+                <span
+                  key={idx}
+                  className="h-full bg-black"
+                  style={{
+                    width: idx % 3 === 0 ? "2.5px" : idx % 5 === 0 ? "3.5px" : "1.2px",
+                    marginRight: "1px",
+                  }}
+                />
+              ))}
+            </div>
+            <span className="text-[5.5px] sm:text-[6.5px] font-mono font-bold text-black tracking-widest mt-0.5 leading-none">
+              *{trackingId}*
+            </span>
+          </div>
+          <p className="text-[5.5px] sm:text-[6px] text-slate-500 font-mono leading-none">
+            ISO 7810 ID-1 CR-80 COMPLIANT • 85.6 × 53.98 MM
+          </p>
+        </div>
+
+        <div className="text-right text-[6px] sm:text-[6.5px] text-slate-600 space-y-0.5 max-w-[210px] sm:max-w-[240px]">
+          <p className="font-black text-[#0F2C59] text-[7px] sm:text-[7.5px] leading-tight">HINDUSTAN PROJECTS</p>
+          <p className="line-clamp-1 leading-tight">📍 {officialAddress}</p>
+          <p className="font-mono font-bold text-[#D9232A] leading-tight">🌐 {officialWebsite}</p>
+          <p className="leading-tight">📞 {officialHelpline} • ✉️ {officialEmail}</p>
+        </div>
+      </div>
+
+      {/* Dual Color Edge Ribbon */}
+      <div className="flex h-1.5 w-full shrink-0">
+        <div className="bg-[#0F2C59] flex-1" />
+        <div className="bg-[#D9232A] w-1/3" />
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// MAIN MODAL COMPONENT
+// =========================================================================
 export default function SmartCardPreviewModal({
   vendor,
   isOpen,
   onClose,
 }: SmartCardPreviewModalProps) {
-  const [viewMode, setViewMode] = useState<"3d" | "dual" | "front" | "back">("3d");
-  const [cardTheme, setCardTheme] = useState<"official-white" | "royal-navy">("official-white");
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [activeSide, setActiveSide] = useState<"front" | "back">("front");
+  const [showBothSides, setShowBothSides] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadMenuOpen, setDownloadMenuOpen] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState("");
@@ -64,9 +332,8 @@ export default function SmartCardPreviewModal({
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setIsFlipped(false);
-      setViewMode("3d");
-      setCardTheme("official-white");
+      setActiveSide("front");
+      setShowBothSides(false);
       setDownloadSuccess("");
     }
   }, [isOpen]);
@@ -79,7 +346,6 @@ export default function SmartCardPreviewModal({
   const category = vendor.category || "Civil Construction";
   const city = vendor.city || "Bhilwara";
   const state = vendor.state || "Rajasthan";
-  const phone = vendor.phone || "+91 75970 00601";
 
   // Official Company Meta
   const officialWebsite = "www.hindustanprojects.in";
@@ -91,7 +357,7 @@ export default function SmartCardPreviewModal({
   const tierKey = (vendor.tier || "TIER_C").toUpperCase();
   const tierConfig: Record<
     string,
-    { label: string; code: string; bg: string; text: string; border: string; accent: string }
+    { label: string; code: string; bg: string; text: string; border: string }
   > = {
     TIER_A: {
       label: "CLASS A • MEGA INFRASTRUCTURE",
@@ -99,7 +365,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#0F2C59]",
       text: "text-amber-300",
       border: "border-amber-400",
-      accent: "#f59e0b",
     },
     CLASS_A: {
       label: "CLASS A • MEGA INFRASTRUCTURE",
@@ -107,7 +372,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#0F2C59]",
       text: "text-amber-300",
       border: "border-amber-400",
-      accent: "#f59e0b",
     },
     TIER_B: {
       label: "CLASS B • CORE CIVIL & MEP",
@@ -115,7 +379,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#0F2C59]",
       text: "text-sky-200",
       border: "border-sky-300",
-      accent: "#38bdf8",
     },
     CLASS_B: {
       label: "CLASS B • CORE CIVIL & MEP",
@@ -123,7 +386,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#0F2C59]",
       text: "text-sky-200",
       border: "border-sky-300",
-      accent: "#38bdf8",
     },
     TIER_C: {
       label: "CLASS C • SPECIALIZED TRADE",
@@ -131,7 +393,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#D9232A]",
       text: "text-white",
       border: "border-red-600",
-      accent: "#D9232A",
     },
     CLASS_C: {
       label: "CLASS C • SPECIALIZED TRADE",
@@ -139,7 +400,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-[#D9232A]",
       text: "text-white",
       border: "border-red-600",
-      accent: "#D9232A",
     },
     TIER_D: {
       label: "CLASS D • REGISTERED SUPPLIER",
@@ -147,7 +407,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-slate-800",
       text: "text-slate-100",
       border: "border-slate-600",
-      accent: "#64748b",
     },
     CLASS_D: {
       label: "CLASS D • REGISTERED SUPPLIER",
@@ -155,7 +414,6 @@ export default function SmartCardPreviewModal({
       bg: "bg-slate-800",
       text: "text-slate-100",
       border: "border-slate-600",
-      accent: "#64748b",
     },
   };
 
@@ -172,11 +430,29 @@ export default function SmartCardPreviewModal({
     `https://hindustanprojects.in/empanelment/verify-partner?id=${encodeURIComponent(trackingId)}`
   )}`;
 
+  const cardProps: CardRenderProps = {
+    companyName,
+    contactName,
+    trackingId,
+    category,
+    city,
+    state,
+    currentTier,
+    issueDate,
+    validThru,
+    qrUrl,
+    officialWebsite,
+    officialPortal,
+    officialAddress,
+    officialHelpline,
+    officialEmail,
+  };
+
   const handlePrint = () => {
     window.print();
   };
 
-  // Helper to load image for canvas
+  // Helper to load image for high-res canvas
   const loadImg = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -202,50 +478,18 @@ export default function SmartCardPreviewModal({
         loadImg(qrUrl).catch(() => null),
       ]);
 
-      // Draw FRONT side
+      // Draw FRONT side matching the exact HTML card
       const drawFront = (ctx: CanvasRenderingContext2D, dx: number, dy: number) => {
-        const isNavyTheme = cardTheme === "royal-navy";
-
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(dx, dy, cardWidth, cardHeight, 36);
         ctx.clip();
 
         // Card Base
-        if (isNavyTheme) {
-          const bgGrad = ctx.createLinearGradient(dx, dy, dx + cardWidth, dy + cardHeight);
-          bgGrad.addColorStop(0, "#0F2C59");
-          bgGrad.addColorStop(0.6, "#0B2545");
-          bgGrad.addColorStop(1, "#07172B");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(dx, dy, cardWidth, cardHeight);
-        } else {
-          const bgGrad = ctx.createLinearGradient(dx, dy, dx, dy + cardHeight);
-          bgGrad.addColorStop(0, "#FFFFFF");
-          bgGrad.addColorStop(0.5, "#F8FAFC");
-          bgGrad.addColorStop(1, "#F1F5F9");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(dx, dy, cardWidth, cardHeight);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(dx, dy, cardWidth, cardHeight);
 
-          // Subtle security guilloche pattern
-          ctx.strokeStyle = "rgba(15, 44, 89, 0.04)";
-          ctx.lineWidth = 1;
-          for (let y = 140; y < cardHeight; y += 14) {
-            ctx.beginPath();
-            ctx.moveTo(dx, dy + y);
-            ctx.bezierCurveTo(
-              dx + cardWidth * 0.25,
-              dy + y + 8,
-              dx + cardWidth * 0.75,
-              dy + y - 8,
-              dx + cardWidth,
-              dy + y
-            );
-            ctx.stroke();
-          }
-        }
-
-        // --- TOP BRAND HEADER BANNER ---
+        // Top Header Banner
         const bannerHeight = 126;
         const bannerGrad = ctx.createLinearGradient(dx, dy, dx + cardWidth, dy + bannerHeight);
         bannerGrad.addColorStop(0, "#0F2C59");
@@ -254,18 +498,17 @@ export default function SmartCardPreviewModal({
         ctx.fillStyle = bannerGrad;
         ctx.fillRect(dx, dy, cardWidth, bannerHeight);
 
-        // Hindustan Projects Crimson Red Accent Strip
+        // Crimson Red Accent Line
         ctx.fillStyle = "#D9232A";
         ctx.fillRect(dx, dy + bannerHeight - 6, cardWidth, 6);
 
-        // Official HiPRO Brand Logo
+        // HiPRO Brand Logo
         const logoX = dx + 44;
         const logoY = dy + 22;
         const logoW = 86;
         const logoH = 82;
 
         if (logoImg) {
-          // White rounded backdrop for logo
           ctx.fillStyle = "#FFFFFF";
           ctx.beginPath();
           ctx.roundRect(logoX, logoY, logoW, logoH, 12);
@@ -273,20 +516,7 @@ export default function SmartCardPreviewModal({
           ctx.strokeStyle = "#E2E8F0";
           ctx.lineWidth = 1.5;
           ctx.stroke();
-
           ctx.drawImage(logoImg, logoX + 6, logoY + 6, logoW - 12, logoH - 12);
-        } else {
-          // Fallback vector shield
-          ctx.fillStyle = "#D9232A";
-          ctx.beginPath();
-          ctx.roundRect(logoX, logoY + 14, 46, 52, 8);
-          ctx.fill();
-          ctx.strokeStyle = "#F59E0B";
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "900 24px -apple-system, sans-serif";
-          ctx.fillText("H", logoX + 14, logoY + 50);
         }
 
         // Header Title: HINDUSTAN PROJECTS
@@ -299,11 +529,11 @@ export default function SmartCardPreviewModal({
         ctx.fillStyle = "#D9232A";
         ctx.fillText("PROJECTS", textOffsetX + 172, dy + 56);
 
-        // Subtitle & Website
+        // Subtitle
         ctx.fillStyle = "#93C5FD";
         ctx.font = "700 12px -apple-system, monospace";
         ctx.letterSpacing = "1.5px";
-        ctx.fillText("GOVERNMENT & INFRASTRUCTURE EPC • ISO 7810 ID-1", textOffsetX, dy + 82);
+        ctx.fillText("EPC & INFRASTRUCTURE • VERIFIED CREDENTIAL", textOffsetX, dy + 82);
 
         // Gold Smart Microchip (Right Header)
         const chipX = dx + cardWidth - 146;
@@ -345,6 +575,27 @@ export default function SmartCardPreviewModal({
         ctx.stroke();
 
         // --- MIDDLE IDENTITY SECTION ---
+        // Watermark HiPRO Logo in Background (Center-Right)
+        const wmX = dx + cardWidth - 230;
+        const wmY = dy + 290;
+        const wmRadius = 110;
+        ctx.save();
+        ctx.strokeStyle = "rgba(15, 44, 89, 0.10)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.arc(wmX, wmY, wmRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (logoImg) {
+          ctx.globalAlpha = 0.12;
+          const logoWmW = 140;
+          const logoWmH = 140;
+          ctx.drawImage(logoImg, wmX - logoWmW / 2, wmY - logoWmH / 2, logoWmW, logoWmH);
+        }
+        ctx.restore();
+
+        // Tier Pill Badge
         const tierBadgeY = dy + 158;
         ctx.fillStyle = currentTier.code === "CLASS-C" ? "#D9232A" : "#0F2C59";
         ctx.beginPath();
@@ -360,49 +611,29 @@ export default function SmartCardPreviewModal({
         ctx.fillText(currentTier.label, dx + 64, tierBadgeY + 23);
 
         // Company Name
-        ctx.fillStyle = isNavyTheme ? "#FFFFFF" : "#0F2C59";
+        ctx.fillStyle = "#0F2C59";
         ctx.font = "900 34px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         ctx.letterSpacing = "0.5px";
         const displayComp = companyName.length > 28 ? companyName.substring(0, 26) + "..." : companyName;
         ctx.fillText(displayComp, dx + 44, dy + 240);
 
         // Authorized Contact & Category
-        ctx.fillStyle = isNavyTheme ? "#93C5FD" : "#D9232A";
+        ctx.fillStyle = "#D9232A";
         ctx.font = "700 20px -apple-system, sans-serif";
         ctx.fillText(`${contactName} • ${category}`, dx + 44, dy + 278);
 
         // Location & Accreditation
-        ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#475569";
+        ctx.fillStyle = "#475569";
         ctx.font = "600 16px -apple-system, sans-serif";
         ctx.fillText(`📍 ${city}, ${state} • Approved Trade Partner`, dx + 44, dy + 312);
 
         // Website line on front
-        ctx.fillStyle = isNavyTheme ? "#FDE68A" : "#0F2C59";
+        ctx.fillStyle = "#0F2C59";
         ctx.font = "700 14px -apple-system, monospace";
-        ctx.fillText(`🌐 ${officialWebsite}  •  ${officialPortal}`, dx + 44, dy + 342);
-
-        // Watermark HiPRO Logo in Background (Center-Right)
-        const wmX = dx + cardWidth - 230;
-        const wmY = dy + 290;
-        const wmRadius = 110;
-        ctx.save();
-        ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.08)" : "rgba(15, 44, 89, 0.10)";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 6]);
-        ctx.beginPath();
-        ctx.arc(wmX, wmY, wmRadius, 0, Math.PI * 2);
-        ctx.stroke();
-
-        if (logoImg) {
-          ctx.globalAlpha = isNavyTheme ? 0.08 : 0.12;
-          const logoWmW = 140;
-          const logoWmH = 140;
-          ctx.drawImage(logoImg, wmX - logoWmW / 2, wmY - logoWmH / 2, logoWmW, logoWmH);
-        }
-        ctx.restore();
+        ctx.fillText(`🌐 ${officialWebsite}`, dx + 44, dy + 342);
 
         // Divider
-        ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0";
+        ctx.strokeStyle = "#E2E8F0";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(dx + 44, dy + 450);
@@ -416,7 +647,7 @@ export default function SmartCardPreviewModal({
         const idBoxX = dx + 44;
         const idBoxY = dy + 474;
 
-        ctx.fillStyle = isNavyTheme ? "rgba(255, 255, 255, 0.08)" : "#0F2C59";
+        ctx.fillStyle = "#0F2C59";
         ctx.beginPath();
         ctx.roundRect(idBoxX, idBoxY, idBoxW, idBoxH, 16);
         ctx.fill();
@@ -425,7 +656,7 @@ export default function SmartCardPreviewModal({
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = isNavyTheme ? "#93C5FD" : "#FBBF24";
+        ctx.fillStyle = "#FBBF24";
         ctx.font = "700 12px -apple-system, monospace";
         ctx.letterSpacing = "2px";
         ctx.fillText("EMPANELMENT CREDENTIAL ID", idBoxX + 22, idBoxY + 30);
@@ -466,13 +697,6 @@ export default function SmartCardPreviewModal({
           ctx.font = "900 8px -apple-system, sans-serif";
           ctx.textAlign = "center";
           ctx.fillText("VERIFIED", sealX, sealY + 18);
-        } else {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "900 9px -apple-system, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("★ HI-PRO ★", sealX, sealY - 6);
-          ctx.font = "800 8px -apple-system, sans-serif";
-          ctx.fillText("VERIFIED SEAL", sealX, sealY + 8);
         }
         ctx.restore();
 
@@ -491,7 +715,7 @@ export default function SmartCardPreviewModal({
           ctx.drawImage(qrImg, qrX + 4, qrY + 4, qrSize - 8, qrSize - 8);
         }
 
-        // Bottom Edge Official Dual Color Band
+        // Bottom Edge Dual Color Band
         ctx.fillStyle = "#0F2C59";
         ctx.fillRect(dx, dy + cardHeight - 8, cardWidth * 0.7, 8);
         ctx.fillStyle = "#D9232A";
@@ -500,27 +724,16 @@ export default function SmartCardPreviewModal({
         ctx.restore();
       };
 
-      // Draw BACK side
+      // Draw BACK side matching the exact HTML card
       const drawBack = (ctx: CanvasRenderingContext2D, dx: number, dy: number) => {
-        const isNavyTheme = cardTheme === "royal-navy";
-
         ctx.save();
         ctx.beginPath();
         ctx.roundRect(dx, dy, cardWidth, cardHeight, 36);
         ctx.clip();
 
         // Card Base
-        if (isNavyTheme) {
-          const bgGrad = ctx.createLinearGradient(dx, dy, dx + cardWidth, dy + cardHeight);
-          bgGrad.addColorStop(0, "#0F2C59");
-          bgGrad.addColorStop(0.6, "#0B2545");
-          bgGrad.addColorStop(1, "#07172B");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(dx, dy, cardWidth, cardHeight);
-        } else {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(dx, dy, cardWidth, cardHeight);
-        }
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(dx, dy, cardWidth, cardHeight);
 
         // Top Brand Navy Trim
         ctx.fillStyle = "#0F2C59";
@@ -535,7 +748,7 @@ export default function SmartCardPreviewModal({
         ctx.fillRect(dx, dy + 66, cardWidth, 16);
 
         // Notice text
-        ctx.fillStyle = isNavyTheme ? "#94A3B8" : "#64748B";
+        ctx.fillStyle = "#64748B";
         ctx.font = "600 12px -apple-system, sans-serif";
         ctx.fillText(
           "Official property of Hindustan Projects. If found, please return to any Procurement Directorate office.",
@@ -587,11 +800,11 @@ export default function SmartCardPreviewModal({
         ctx.fillText(trackingId, dx + 626, dy + 216);
 
         // Terms of Empanelment
-        ctx.fillStyle = isNavyTheme ? "#FFFFFF" : "#0F2C59";
+        ctx.fillStyle = "#0F2C59";
         ctx.font = "900 13px -apple-system, sans-serif";
         ctx.fillText("TERMS & CONDITIONS OF VENDOR EMPANELMENT:", dx + 44, dy + 278);
 
-        ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#334155";
+        ctx.fillStyle = "#334155";
         ctx.font = "500 12px -apple-system, sans-serif";
         const terms = [
           "1. This card certifies authorized contractor status for commercial bidding and turnkey civil execution.",
@@ -604,7 +817,7 @@ export default function SmartCardPreviewModal({
         });
 
         // Corporate Footer
-        ctx.fillStyle = isNavyTheme ? "rgba(255, 255, 255, 0.1)" : "#E2E8F0";
+        ctx.fillStyle = "#E2E8F0";
         ctx.fillRect(dx + 44, dy + 392, cardWidth - 88, 1);
 
         ctx.fillStyle = "#0F2C59";
@@ -612,7 +825,7 @@ export default function SmartCardPreviewModal({
         ctx.fillText("HINDUSTAN PROJECTS PROCUREMENT & CONTRACTS DIRECTORATE", dx + 44, dy + 418);
 
         // Address & Official Coordinates
-        ctx.fillStyle = isNavyTheme ? "#CBD5E1" : "#334155";
+        ctx.fillStyle = "#334155";
         ctx.font = "600 12.5px -apple-system, sans-serif";
         ctx.fillText(`📍 Corporate HQ: ${officialAddress}`, dx + 44, dy + 442);
         ctx.fillText(`🌐 Official Website: ${officialWebsite}   •   Portal: ${officialPortal}`, dx + 44, dy + 464);
@@ -643,7 +856,7 @@ export default function SmartCardPreviewModal({
         ctx.fillText(`*${trackingId}*`, barX + 240, barY + 52);
         ctx.textAlign = "left";
 
-        ctx.fillStyle = isNavyTheme ? "#93C5FD" : "#0F2C59";
+        ctx.fillStyle = "#0F2C59";
         ctx.font = "700 11px -apple-system, monospace";
         ctx.fillText("ISO 7810 ID-1 CR-80 COMPLIANT • 85.60 × 53.98 MM", dx + 540, barY + 52);
 
@@ -686,7 +899,7 @@ export default function SmartCardPreviewModal({
 
         ctx.fillStyle = "#D9232A";
         ctx.font = "700 13px -apple-system, monospace";
-        ctx.fillText(`CR-80 ISO 7810 COMPLIANT • ${officialWebsite} • ${officialPortal}`, sheetPadding, 74);
+        ctx.fillText(`CR-80 ISO 7810 COMPLIANT (85.60 × 53.98 MM) • ${officialWebsite}`, sheetPadding, 74);
 
         // Front Card
         drawFront(ctx, sheetPadding, 100);
@@ -698,7 +911,7 @@ export default function SmartCardPreviewModal({
         ctx.fillStyle = "#64748B";
         ctx.font = "500 13px -apple-system, sans-serif";
         ctx.fillText(
-          `Official Address: ${officialAddress} | Support: ${officialHelpline}`,
+          `Official Corporate Address: ${officialAddress} | Support: ${officialHelpline}`,
           sheetPadding,
           canvas.height - 30
         );
@@ -732,12 +945,11 @@ export default function SmartCardPreviewModal({
     }
   };
 
-  const isNavy = cardTheme === "royal-navy";
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
       {/* ============================================================ */}
       {/* PRINTABLE SHEET (Shown ONLY during @media print)            */}
+      {/* Exact ISO 7810 ID-1 standard dimensions (85.60 × 53.98 mm)   */}
       {/* ============================================================ */}
       <div className="hidden print:block fixed inset-0 bg-white p-8 text-black z-100">
         <div className="max-w-[190mm] mx-auto text-center space-y-4">
@@ -759,95 +971,27 @@ export default function SmartCardPreviewModal({
             </div>
           </div>
 
-          <div className="flex flex-row items-center justify-center gap-6 pt-4">
-            {/* Print Front Side */}
-            <div className="w-[85.6mm] h-[53.98mm] rounded-2xl p-4 bg-white text-slate-900 flex flex-col justify-between border-2 border-dashed border-[#0F2C59] relative overflow-hidden shadow-sm">
-              <div className="bg-[#0F2C59] -mx-4 -mt-4 p-2.5 flex items-center justify-between text-white border-b-2 border-[#D9232A]">
-                <div className="flex items-center gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/hipro-logo.jpg" alt="Logo" className="h-6 w-auto object-contain bg-white rounded p-0.5" />
-                  <div>
-                    <p className="text-[9px] font-black tracking-wider leading-none">
-                      HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                    </p>
-                    <p className="text-[5.5px] text-sky-200 uppercase tracking-tight mt-0.5">
-                      {officialWebsite}
-                    </p>
-                  </div>
-                </div>
-                <div className="w-7 h-5 rounded bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-600 flex items-center justify-center">
-                  <div className="w-3 h-2 border border-amber-800/40" />
-                </div>
-              </div>
-
-              <div className="my-auto py-1 relative">
-                {/* Security HiPRO Logo Watermark */}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full border border-dashed border-[#0F2C59]/10 pointer-events-none flex items-center justify-center p-2 select-none">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/hipro-logo.jpg"
-                    alt="HiPRO Watermark"
-                    className="w-16 h-auto object-contain opacity-15 mix-blend-multiply select-none"
-                  />
-                </div>
-
-                <span className="text-[7px] font-mono px-2 py-0.5 rounded-full bg-[#D9232A] text-white font-black inline-block">
-                  {currentTier.label}
-                </span>
-                <p className="text-[12px] font-black mt-1 text-[#0F2C59] truncate leading-tight">
-                  {companyName}
-                </p>
-                <p className="text-[8px] text-slate-700 font-semibold">
-                  {contactName} • {category}
-                </p>
-                <p className="text-[7px] text-slate-500">
-                  📍 {city}, {state} • Approved Contractor
-                </p>
-              </div>
-
-              <div className="flex items-end justify-between border-t border-slate-200 pt-1.5 -mb-1">
-                <div className="bg-[#0F2C59] text-white rounded-md px-2 py-1">
-                  <p className="text-[6px] text-sky-200 font-mono">EMPANELMENT ID</p>
-                  <p className="text-[10px] font-mono font-black text-amber-300 tracking-wider">
-                    {trackingId}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-7 h-7 rounded-full border border-amber-500 bg-white flex flex-col items-center justify-center p-0.5 shadow-xs shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-4.5 h-auto object-contain" />
-                    <span className="text-[3.5px] font-black text-[#D9232A] leading-none uppercase mt-0.5">VERIFIED</span>
-                  </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrUrl} alt="QR" className="w-8 h-8 rounded bg-white p-0.5 border border-slate-300" />
-                </div>
-              </div>
+          {/* Exact 85.6mm × 53.98mm Print Cards */}
+          <div className="flex flex-row items-center justify-center gap-8 pt-4">
+            {/* Front Card Print */}
+            <div className="w-[85.6mm] h-[53.98mm] shrink-0 border-2 border-dashed border-[#0F2C59] rounded-2xl relative shadow-sm">
+              <UnifiedCardFront {...cardProps} isPrint />
             </div>
 
-            {/* Print Back Side */}
-            <div className="w-[85.6mm] h-[53.98mm] rounded-2xl p-4 bg-white text-slate-900 flex flex-col justify-between border-2 border-dashed border-[#0F2C59] relative overflow-hidden shadow-sm">
-              <div className="bg-[#1E293B] -mx-4 -mt-4 h-6 mb-1" />
-              <div className="space-y-1">
-                <p className="text-[6.5px] text-slate-600 leading-tight">
-                  Official property of Hindustan Projects. Valid for 24 months from issuance.
-                </p>
-                <div className="h-6 bg-slate-100 rounded px-2 flex items-center justify-between text-slate-900 border border-slate-300">
-                  <span className="text-[9px] font-serif italic font-black text-[#0F2C59]">R. K. Sharma</span>
-                  <span className="text-[6px] font-mono text-slate-500 font-bold uppercase">Authorized Officer</span>
-                </div>
-              </div>
-              <div className="border-t border-slate-200 pt-1 text-[6px] text-slate-600 space-y-0.5">
-                <p className="font-bold text-[#0F2C59]">HINDUSTAN PROJECTS PROCUREMENT DIRECTORATE</p>
-                <p>📍 {officialAddress}</p>
-                <p>🌐 {officialWebsite} • 📞 {officialHelpline}</p>
-                <p className="font-mono font-bold text-slate-800 pt-0.5">*{trackingId}* • ISO 7810 ID-1</p>
-              </div>
+            {/* Back Card Print */}
+            <div className="w-[85.6mm] h-[53.98mm] shrink-0 border-2 border-dashed border-[#0F2C59] rounded-2xl relative shadow-sm">
+              <UnifiedCardBack {...cardProps} isPrint />
             </div>
           </div>
 
-          <p className="text-[10px] text-slate-500 pt-6">
-            Print at 100% scale (no scaling / actual size). Cut along dashed lines for exact CR-80 PVC wallet dimensions.
-          </p>
+          <div className="pt-6 space-y-1">
+            <p className="text-[11px] font-bold text-slate-800 font-mono">
+              ★ PRINTING INSTRUCTIONS: PRINT AT 100% SCALE (NO SCALING / ACTUAL SIZE).
+            </p>
+            <p className="text-[9.5px] text-slate-500">
+              Dimensions: 85.60 mm × 53.98 mm (CR-80). Cut along the outer dashed lines for exact thermal card tray or pouch lamination fit.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -860,9 +1004,9 @@ export default function SmartCardPreviewModal({
       {/* ============================================================ */}
       {/* MAIN MODAL CONTAINER                                         */}
       {/* ============================================================ */}
-      <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-xs flex flex-col max-h-[94vh]">
+      <div className="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-xs flex flex-col max-h-[94vh]">
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 bg-white flex items-center justify-between shrink-0">
+        <div className="px-5 sm:px-6 py-3.5 border-b border-slate-100 bg-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#0F2C59] p-1 flex items-center justify-center shadow-md border border-[#0B2545]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -873,12 +1017,12 @@ export default function SmartCardPreviewModal({
                 <h2 className="text-sm sm:text-base font-black text-[#0F2C59] tracking-tight">
                   Official PVC Smart Partner Card
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-50 text-[#D9232A] border border-red-200">
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-red-50 text-[#D9232A] border border-red-200">
                   Verified
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                Dual-sided ISO 7810 ID-1 card with HiPRO logo &amp; official address
+                Standard CR-80 (85.60 × 53.98 mm) contractor smart identity
               </p>
             </div>
           </div>
@@ -892,96 +1036,59 @@ export default function SmartCardPreviewModal({
           </button>
         </div>
 
-        {/* Toolbar: View Modes & Brand Theme Toggle */}
-        <div className="px-5 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2 shrink-0">
-          {/* View Modes */}
+        {/* Toolbar: Clean Single Side Controller (NO duplicate rows) */}
+        <div className="px-5 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
             <button
-              onClick={() => setViewMode("3d")}
-              className={`px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === "3d"
+              onClick={() => {
+                setActiveSide("front");
+                setShowBothSides(false);
+              }}
+              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                activeSide === "front" && !showBothSides
                   ? "bg-[#0F2C59] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <RotateCw className="w-3.5 h-3.5" />
-              <span>3D Flip View</span>
-            </button>
-            <button
-              onClick={() => setViewMode("dual")}
-              className={`px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === "dual"
-                  ? "bg-[#0F2C59] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Both Sides</span>
+              Front Side
             </button>
             <button
               onClick={() => {
-                setViewMode("front");
-                setIsFlipped(false);
+                setActiveSide("back");
+                setShowBothSides(false);
               }}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                viewMode === "front"
+              className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                activeSide === "back" && !showBothSides
                   ? "bg-[#0F2C59] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              Front
-            </button>
-            <button
-              onClick={() => {
-                setViewMode("back");
-                setIsFlipped(true);
-              }}
-              className={`px-2.5 py-1.5 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
-                viewMode === "back"
-                  ? "bg-[#0F2C59] text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Back
+              Back Side
             </button>
           </div>
 
-          {/* Theme & Flip Actions */}
           <div className="flex items-center gap-2">
-            {/* Theme Toggle (Official Pearl White vs Royal Navy) */}
-            <div className="flex items-center bg-white p-0.5 rounded-xl border border-slate-200">
-              <button
-                onClick={() => setCardTheme("official-white")}
-                className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition-all cursor-pointer ${
-                  cardTheme === "official-white"
-                    ? "bg-[#D9232A] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Hindustan Projects Official White Card"
-              >
-                Pearl White
-              </button>
-              <button
-                onClick={() => setCardTheme("royal-navy")}
-                className={`px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition-all cursor-pointer ${
-                  cardTheme === "royal-navy"
-                    ? "bg-[#0F2C59] text-white shadow-2xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-                title="Hindustan Projects Royal Navy Blue Card"
-              >
-                Royal Navy
-              </button>
-            </div>
+            {/* Both Sides Toggle */}
+            <button
+              onClick={() => setShowBothSides(!showBothSides)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                showBothSides
+                  ? "bg-[#0F2C59] text-white border-[#0F2C59]"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border-slate-200"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>{showBothSides ? "Single Card" : "Both Sides"}</span>
+            </button>
 
-            {/* Quick Flip Button for 3D Mode */}
-            {viewMode === "3d" && (
+            {/* Quick Flip Button */}
+            {!showBothSides && (
               <button
-                onClick={() => setIsFlipped(!isFlipped)}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F2C59] font-bold text-[11px] border border-slate-300 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                onClick={() => setActiveSide(activeSide === "front" ? "back" : "front")}
+                className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-[#D9232A] font-bold text-xs border border-red-200 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
               >
-                <RotateCw className={`w-3.5 h-3.5 text-[#D9232A] transition-transform duration-300 ${isFlipped ? "rotate-180" : ""}`} />
-                <span>{isFlipped ? "Show Front" : "Flip to Back ↷"}</span>
+                <RotateCw className="w-3.5 h-3.5" />
+                <span>Flip ↷</span>
               </button>
             )}
           </div>
@@ -990,7 +1097,7 @@ export default function SmartCardPreviewModal({
         {/* ============================================================ */}
         {/* CARD VIEWING STAGE                                           */}
         {/* ============================================================ */}
-        <div className="p-4 sm:p-6 bg-slate-100/70 flex-1 overflow-y-auto flex flex-col items-center justify-center min-h-[320px]">
+        <div className="p-4 sm:p-6 bg-slate-100/70 flex-1 overflow-y-auto flex flex-col items-center justify-center min-h-[300px]">
           {/* Download Success Banner */}
           {downloadSuccess && (
             <div className="mb-4 w-full p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-2 animate-in fade-in">
@@ -999,517 +1106,62 @@ export default function SmartCardPreviewModal({
             </div>
           )}
 
-          {/* ============================================================ */}
-          {/* MODE 1: 3D Flip Interactive Card                             */}
-          {/* ============================================================ */}
-          {viewMode === "3d" && (
-            <div className="w-full max-w-[460px] flex flex-col items-center">
+          {!showBothSides ? (
+            /* Single Interactive 3D Card */
+            <div className="w-full max-w-[450px] flex flex-col items-center">
               <div
-                className="w-full aspect-[1.586] cursor-pointer relative"
+                className="w-full aspect-[85.6/53.98] cursor-pointer relative"
                 style={{ perspective: "1400px" }}
-                onClick={() => setIsFlipped(!isFlipped)}
-                title="Click anywhere on the card to flip 360°"
+                onClick={() => setActiveSide(activeSide === "front" ? "back" : "front")}
+                title="Click card to flip 360°"
               >
                 <div
                   className="w-full h-full relative transition-transform duration-700 rounded-2xl"
                   style={{
                     transformStyle: "preserve-3d",
-                    transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                    transform: activeSide === "back" ? "rotateY(180deg)" : "rotateY(0deg)",
                   }}
                 >
-                  {/* FRONT SIDE (3D) */}
+                  {/* Front Side */}
                   <div
-                    className={`absolute inset-0 w-full h-full rounded-2xl shadow-xl overflow-hidden flex flex-col justify-between border select-none group ${
-                      isNavy
-                        ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                        : "bg-white text-slate-900 border-slate-300 shadow-2xl"
-                    }`}
+                    className="absolute inset-0 w-full h-full"
                     style={{ backfaceVisibility: "hidden" }}
                   >
-                    {/* Top Header Banner with HiPRO Logo */}
-                    <div className="bg-[#0F2C59] px-4 py-2.5 border-b-4 border-[#D9232A] flex items-center justify-between text-white shrink-0 relative">
-                      <div className="flex items-center gap-2.5">
-                        {/* Real HiPRO Logo */}
-                        <div className="h-8 sm:h-9 px-1.5 py-0.5 rounded-lg bg-white border border-slate-200 flex items-center justify-center shadow-xs shrink-0">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src="/hipro-logo.jpg"
-                            alt="HiPRO Official Logo"
-                            className="h-full w-auto object-contain"
-                          />
-                        </div>
-                        <div>
-                          <div className="text-[12px] sm:text-[13px] font-black tracking-wider leading-none">
-                            HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                          </div>
-                          <p className="text-[7px] sm:text-[7.5px] tracking-wide text-sky-200 uppercase font-semibold mt-0.5">
-                            EPC &amp; INFRASTRUCTURE • VERIFIED CREDENTIAL
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Gold Chip & NFC Symbol */}
-                      <div className="flex items-center gap-2">
-                        <div className="text-amber-400 font-mono text-[9px] tracking-tighter rotate-90 opacity-90">
-                          )))
-                        </div>
-                        <div className="w-9 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 shadow-xs flex items-center justify-center relative overflow-hidden">
-                          <div className="w-full h-[1px] bg-amber-800/40 absolute top-2" />
-                          <div className="w-full h-[1px] bg-amber-800/40 absolute bottom-2" />
-                          <div className="h-full w-[1px] bg-amber-800/40 absolute left-3" />
-                          <div className="h-full w-[1px] bg-amber-800/40 absolute right-3" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Middle Identity Section */}
-                    <div className="px-4 py-2 my-auto flex-1 flex flex-col justify-center relative">
-                      {/* Security HiPRO Logo Watermark */}
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-32 h-32 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src="/hipro-logo.jpg"
-                          alt="HiPRO Watermark"
-                          className="w-20 sm:w-24 h-auto object-contain opacity-15 mix-blend-multiply select-none"
-                        />
-                      </div>
-
-                      {/* Tier Pill */}
-                      <div>
-                        <span
-                          className={`text-[8px] sm:text-[8.5px] font-mono font-black tracking-wider px-2.5 py-0.5 rounded-full uppercase inline-block shadow-2xs ${
-                            currentTier.code === "CLASS-C"
-                              ? "bg-[#D9232A] text-white border border-red-700"
-                              : "bg-[#0F2C59] text-amber-300 border border-amber-400"
-                          }`}
-                        >
-                          {currentTier.label}
-                        </span>
-                      </div>
-
-                      {/* Company Name */}
-                      <h3
-                        className={`text-sm sm:text-base font-black tracking-tight line-clamp-1 mt-1.5 ${
-                          isNavy ? "text-white" : "text-[#0F2C59]"
-                        }`}
-                      >
-                        {companyName}
-                      </h3>
-
-                      {/* Contact & Category */}
-                      <p
-                        className={`text-[10px] sm:text-[10.5px] font-bold mt-0.5 ${
-                          isNavy ? "text-sky-300" : "text-[#D9232A]"
-                        }`}
-                      >
-                        {contactName} • {category}
-                      </p>
-
-                      <p className={`text-[8.5px] font-medium mt-0.5 ${isNavy ? "text-slate-300" : "text-slate-500"}`}>
-                        📍 {city}, {state} • Approved Trade Partner
-                      </p>
-
-                      {/* Website line */}
-                      <p className={`text-[8px] font-mono font-bold mt-1 ${isNavy ? "text-amber-300" : "text-[#0F2C59]"}`}>
-                        🌐 {officialWebsite} • {officialPortal}
-                      </p>
-                    </div>
-
-                    {/* Bottom Security & Verification Bar */}
-                    <div className="px-4 py-2 border-t border-slate-200/80 bg-slate-50/90 flex items-center justify-between gap-2 shrink-0">
-                      {/* Empanelment ID Block */}
-                      <div className="bg-[#0F2C59] text-white px-2.5 py-1 rounded-xl shadow-xs border border-[#0B2545]">
-                        <p className="text-[6.5px] text-sky-200 font-mono tracking-widest uppercase font-bold">
-                          EMPANELMENT ID
-                        </p>
-                        <p className="text-xs sm:text-[13px] font-mono font-black text-amber-300 tracking-wider leading-tight">
-                          {trackingId}
-                        </p>
-                        <p className="text-[6.5px] text-slate-300 font-mono">
-                          ISSUED: {issueDate} • VALID: {validThru}
-                        </p>
-                      </div>
-
-                      {/* Holographic Seal & Verification QR */}
-                      <div className="flex items-center gap-2">
-                        {/* Circular Holographic Security Seal with HiPRO Logo */}
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
-                          <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-5 h-auto object-contain" />
-                            <span className="text-[4px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
-                          </div>
-                        </div>
-
-                        {/* Live Verification QR */}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={qrUrl}
-                          alt="Verification QR"
-                          className="w-10 h-10 rounded-lg bg-white p-0.5 shadow-xs shrink-0 border border-slate-300"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Dual Color Edge Ribbon */}
-                    <div className="flex h-1.5 w-full shrink-0">
-                      <div className="bg-[#0F2C59] flex-1" />
-                      <div className="bg-[#D9232A] w-1/3" />
-                    </div>
+                    <UnifiedCardFront {...cardProps} />
                   </div>
 
-                  {/* BACK SIDE (3D) */}
+                  {/* Back Side */}
                   <div
-                    className={`absolute inset-0 w-full h-full rounded-2xl shadow-xl overflow-hidden flex flex-col justify-between border select-none ${
-                      isNavy
-                        ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                        : "bg-white text-slate-900 border-slate-300 shadow-2xl"
-                    }`}
+                    className="absolute inset-0 w-full h-full"
                     style={{
                       backfaceVisibility: "hidden",
                       transform: "rotateY(180deg)",
                     }}
                   >
-                    {/* Top Navy Band */}
-                    <div className="bg-[#0F2C59] h-2.5 w-full shrink-0 border-b border-[#D9232A]" />
-
-                    {/* Magnetic Stripe across top */}
-                    <div className="h-8 bg-[#1E293B] w-full shrink-0 flex items-center px-4">
-                      <div className="h-2 w-full bg-slate-700/50 rounded-xs" />
-                    </div>
-
-                    <div className="px-4 pt-1">
-                      <p className={`text-[7px] leading-tight ${isNavy ? "text-slate-300" : "text-slate-500"}`}>
-                        Official property of Hindustan Projects. If found, please return to any Procurement Directorate office.
-                      </p>
-                    </div>
-
-                    {/* Signature Strip & Officer Seal */}
-                    <div className="px-4 my-auto py-1">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-slate-100 rounded-md h-7 px-3 flex items-center justify-between border border-slate-300 shadow-inner">
-                          <span className="font-serif italic text-xs font-bold text-[#0F2C59]">
-                            R. K. Sharma
-                          </span>
-                          <span className="text-[6.5px] font-mono text-slate-500 uppercase font-bold">
-                            Authorized Officer
-                          </span>
-                        </div>
-                        <div className="px-2 py-1 rounded bg-[#0F2C59] text-white text-[7px] font-mono font-bold border border-[#D9232A]">
-                          VALIDATED
-                        </div>
-                      </div>
-
-                      {/* Official Terms */}
-                      <div className={`mt-1.5 text-[6.8px] space-y-0.5 leading-relaxed ${isNavy ? "text-slate-300" : "text-slate-600"}`}>
-                        <p>• Mandatory for commercial tender bidding, site access &amp; 24-hr daily gate pass issuance.</p>
-                        <p>• Misuse or unauthorized duplication will lead to immediate de-listing &amp; legal proceedings.</p>
-                      </div>
-                    </div>
-
-                    {/* Official HQ Address & Website Section */}
-                    <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 flex items-end justify-between shrink-0">
-                      <div className="space-y-0.5">
-                        <div className="bg-white rounded px-2 py-0.5 w-36 sm:w-40 flex flex-col items-center border border-slate-300">
-                          <div className="h-3.5 w-full flex items-center justify-between overflow-hidden">
-                            {Array.from({ length: 36 }).map((_, idx) => (
-                              <span
-                                key={idx}
-                                className="h-full bg-black"
-                                style={{
-                                  width: idx % 3 === 0 ? "3px" : idx % 5 === 0 ? "4px" : "1.5px",
-                                  marginRight: "1px",
-                                }}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[6.5px] font-mono font-bold text-black tracking-widest mt-0.5">
-                            *{trackingId}*
-                          </span>
-                        </div>
-                        <p className="text-[6px] text-slate-500 font-mono">
-                          ISO 7810 ID-1 CR-80 COMPLIANT • 85.6 × 53.98 MM
-                        </p>
-                      </div>
-
-                      <div className="text-right text-[6.5px] text-slate-600 space-y-0.5 max-w-[240px]">
-                        <p className="font-black text-[#0F2C59] text-[7.5px]">HINDUSTAN PROJECTS</p>
-                        <p className="line-clamp-1">📍 {officialAddress}</p>
-                        <p className="font-mono font-bold text-[#D9232A]">🌐 {officialWebsite}</p>
-                        <p>📞 {officialHelpline} • ✉️ {officialEmail}</p>
-                      </div>
-                    </div>
-
-                    {/* Dual Color Edge Ribbon */}
-                    <div className="flex h-1.5 w-full shrink-0">
-                      <div className="bg-[#0F2C59] flex-1" />
-                      <div className="bg-[#D9232A] w-1/3" />
-                    </div>
+                    <UnifiedCardBack {...cardProps} />
                   </div>
                 </div>
               </div>
 
               <p className="text-[11px] text-slate-500 mt-3 text-center flex items-center gap-1.5">
                 <RotateCw className="w-3.5 h-3.5 text-[#D9232A] animate-spin-slow" />
-                <span>Card par click karein to 360° flip hoga (Front aur Back dono side dekhne ke liye).</span>
+                <span>Card par click karein ya 'Flip' dabayein (Front aur Back dekhne ke liye).</span>
               </p>
             </div>
-          )}
-
-          {/* ============================================================ */}
-          {/* MODE 2: Dual View (Both Sides Side-by-Side)                  */}
-          {/* ============================================================ */}
-          {viewMode === "dual" && (
-            <div className="w-full space-y-5 animate-in fade-in">
-              {/* Front Card Container */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
-                  <span className="flex items-center gap-1 text-[#0F2C59]">
-                    <Award className="w-3.5 h-3.5 text-[#D9232A]" />
-                    <span>Card Front Side (Obverse)</span>
-                  </span>
-                  <span className="text-slate-400 font-mono">85.60 × 53.98 mm</span>
-                </div>
-
-                <div
-                  className={`w-full aspect-[1.586] rounded-2xl shadow-xl flex flex-col justify-between border overflow-hidden select-none ${
-                    isNavy
-                      ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                      : "bg-white text-slate-900 border-slate-300"
-                  }`}
-                >
-                  <div className="bg-[#0F2C59] px-4 py-2 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-auto p-0.5 bg-white rounded flex items-center justify-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/hipro-logo.jpg" alt="Logo" className="h-full w-auto object-contain" />
-                      </div>
-                      <div>
-                        <p className="text-[11px] tracking-wider uppercase font-black">
-                          HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                        </p>
-                        <p className="text-[6.5px] tracking-wider text-sky-200 uppercase font-semibold">
-                          EMPANELLED PARTNER CREDENTIAL
-                        </p>
-                      </div>
-                    </div>
-                    <div className="w-8 h-6 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 flex items-center justify-center">
-                      <div className="w-3 h-2 border border-amber-800/40" />
-                    </div>
-                  </div>
-
-                  <div className="px-4 py-2 my-auto relative">
-                    {/* Security HiPRO Logo Watermark */}
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-28 h-28 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-2 select-none">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/hipro-logo.jpg"
-                        alt="HiPRO Watermark"
-                        className="w-16 h-auto object-contain opacity-15 mix-blend-multiply select-none"
-                      />
-                    </div>
-
-                    <span
-                      className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase ${
-                        currentTier.code === "CLASS-C" ? "bg-[#D9232A] text-white" : "bg-[#0F2C59] text-amber-300"
-                      }`}
-                    >
-                      {currentTier.label}
-                    </span>
-                    <h3 className={`text-sm sm:text-base font-black mt-1 truncate ${isNavy ? "text-white" : "text-[#0F2C59]"}`}>
-                      {companyName}
-                    </h3>
-                    <p className={`text-[10px] font-bold ${isNavy ? "text-sky-300" : "text-[#D9232A]"}`}>
-                      {contactName} • {category}
-                    </p>
-                    <p className="text-[8px] font-mono text-slate-500 mt-0.5">
-                      🌐 {officialWebsite}
-                    </p>
-                  </div>
-
-                  <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-                    <div className="bg-[#0F2C59] text-white px-2 py-0.5 rounded-lg">
-                      <p className="text-[6px] text-sky-200 font-mono">EMPANELMENT ID</p>
-                      <p className="text-xs font-mono font-black text-amber-300">{trackingId}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
-                        <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-4.5 h-auto object-contain" />
-                          <span className="text-[3.5px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
-                        </div>
-                      </div>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={qrUrl} alt="QR" className="w-9 h-9 rounded bg-white p-0.5 border border-slate-300" />
-                    </div>
-                  </div>
+          ) : (
+            /* Both Sides View (Clean Stacked) */
+            <div className="w-full max-w-[450px] space-y-4 animate-in fade-in">
+              <div className="space-y-1">
+                <p className="text-[10.5px] font-bold text-slate-700">Front Side (Obverse)</p>
+                <div className="w-full aspect-[85.6/53.98]">
+                  <UnifiedCardFront {...cardProps} />
                 </div>
               </div>
 
-              {/* Back Card Container */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
-                  <span className="flex items-center gap-1 text-[#0F2C59]">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#0F2C59]" />
-                    <span>Card Back Side (Reverse)</span>
-                  </span>
-                  <span className="text-slate-400 font-mono">HiCo Magnetic Stripe</span>
-                </div>
-
-                <div
-                  className={`w-full aspect-[1.586] rounded-2xl shadow-xl flex flex-col justify-between border overflow-hidden select-none ${
-                    isNavy
-                      ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                      : "bg-white text-slate-900 border-slate-300"
-                  }`}
-                >
-                  <div className="h-7 bg-[#1E293B] w-full" />
-                  <div className="px-4 pt-1">
-                    <p className="text-[7px] text-slate-500">Official property of Hindustan Projects.</p>
-                  </div>
-                  <div className="px-4 my-auto py-1">
-                    <div className="bg-slate-100 rounded h-6 px-3 flex items-center justify-between border border-slate-300">
-                      <span className="font-serif italic text-xs font-bold text-[#0F2C59]">R. K. Sharma</span>
-                      <span className="text-[6.5px] font-mono text-slate-500 uppercase">Authorized Officer</span>
-                    </div>
-                  </div>
-                  <div className="px-4 py-2 border-t border-slate-200 bg-slate-50 flex items-end justify-between text-[6.5px] text-slate-600">
-                    <div>
-                      <span className="font-mono text-slate-800 font-bold">*{trackingId}*</span>
-                      <p className="text-[6px]">ISO 7810 ID-1 CR-80 STANDARD</p>
-                    </div>
-                    <div className="text-right max-w-[240px]">
-                      <p className="text-[#0F2C59] font-bold">HINDUSTAN PROJECTS</p>
-                      <p className="line-clamp-1">📍 {officialAddress}</p>
-                      <p className="font-mono text-[#D9232A]">🌐 {officialWebsite}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ============================================================ */}
-          {/* MODE 3: Front Only                                           */}
-          {/* ============================================================ */}
-          {viewMode === "front" && (
-            <div className="w-full max-w-[460px] animate-in fade-in">
-              <div
-                className={`w-full aspect-[1.586] rounded-2xl shadow-2xl flex flex-col justify-between border overflow-hidden select-none ${
-                  isNavy
-                    ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                    : "bg-white text-slate-900 border-slate-300"
-                }`}
-              >
-                <div className="bg-[#0F2C59] px-4 py-2.5 border-b-4 border-[#D9232A] flex items-center justify-between text-white">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-auto p-0.5 bg-white rounded flex items-center justify-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/hipro-logo.jpg" alt="Logo" className="h-full w-auto object-contain" />
-                    </div>
-                    <div>
-                      <p className="text-xs tracking-wider uppercase font-black">
-                        HINDUSTAN <span className="text-[#D9232A]">PROJECTS</span>
-                      </p>
-                      <p className="text-[7.5px] tracking-wider text-sky-200 uppercase font-semibold">
-                        EMPANELLED PARTNER CREDENTIAL
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-9 h-7 rounded-md bg-gradient-to-tr from-amber-300 via-amber-400 to-amber-200 border border-amber-100 flex items-center justify-center">
-                    <div className="w-4 h-3 border border-amber-800/40" />
-                  </div>
-                </div>
-
-                <div className="px-4 py-2 my-auto relative">
-                  {/* Security HiPRO Logo Watermark */}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-32 h-32 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/hipro-logo.jpg"
-                      alt="HiPRO Watermark"
-                      className="w-20 sm:w-24 h-auto object-contain opacity-15 mix-blend-multiply select-none"
-                    />
-                  </div>
-
-                  <span
-                    className={`text-[8.5px] font-mono font-black px-2.5 py-0.5 rounded-full uppercase ${
-                      currentTier.code === "CLASS-C" ? "bg-[#D9232A] text-white" : "bg-[#0F2C59] text-amber-300"
-                    }`}
-                  >
-                    {currentTier.label}
-                  </span>
-                  <h3 className={`text-base font-black mt-1.5 truncate ${isNavy ? "text-white" : "text-[#0F2C59]"}`}>
-                    {companyName}
-                  </h3>
-                  <p className={`text-[11px] font-bold ${isNavy ? "text-sky-300" : "text-[#D9232A]"}`}>
-                    {contactName} • {category}
-                  </p>
-                  <p className={`text-[9px] font-medium mt-0.5 ${isNavy ? "text-slate-300" : "text-slate-500"}`}>
-                    📍 {city}, {state} • Approved Trade Partner
-                  </p>
-                  <p className="text-[8.5px] font-mono font-bold text-[#0F2C59] mt-1">
-                    🌐 {officialWebsite}
-                  </p>
-                </div>
-
-                <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
-                  <div className="bg-[#0F2C59] text-white px-2.5 py-1 rounded-xl">
-                    <p className="text-[6.5px] text-sky-200 font-mono">EMPANELMENT ID</p>
-                    <p className="text-xs font-mono font-black text-amber-300">{trackingId}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
-                      <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-5 h-auto object-contain" />
-                        <span className="text-[4px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
-                      </div>
-                    </div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrUrl} alt="QR" className="w-10 h-10 rounded-lg bg-white p-0.5 border border-slate-300" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ============================================================ */}
-          {/* MODE 4: Back Only                                            */}
-          {/* ============================================================ */}
-          {viewMode === "back" && (
-            <div className="w-full max-w-[460px] animate-in fade-in">
-              <div
-                className={`w-full aspect-[1.586] rounded-2xl shadow-2xl flex flex-col justify-between border overflow-hidden select-none ${
-                  isNavy
-                    ? "bg-gradient-to-br from-[#0F2C59] via-[#0B2545] to-[#07172B] text-white border-amber-400/40"
-                    : "bg-white text-slate-900 border-slate-300"
-                }`}
-              >
-                <div className="h-8 bg-[#1E293B] w-full" />
-                <div className="px-4 pt-1">
-                  <p className="text-[7.5px] text-slate-500">
-                    Official property of Hindustan Projects. Non-transferable contractor identity token.
-                  </p>
-                </div>
-                <div className="px-4 my-auto py-1">
-                  <div className="bg-slate-100 rounded h-7 px-3 flex items-center justify-between border border-slate-300">
-                    <span className="font-serif italic text-xs font-bold text-[#0F2C59]">R. K. Sharma</span>
-                    <span className="text-[7px] font-mono text-slate-500 uppercase">Authorized Officer</span>
-                  </div>
-                </div>
-                <div className="px-4 py-2.5 border-t border-slate-200 bg-slate-50 flex items-end justify-between text-[7px] text-slate-600">
-                  <div>
-                    <span className="font-mono text-slate-800 font-bold">*{trackingId}*</span>
-                    <p className="text-[6.5px]">ISO 7810 ID-1 CR-80 STANDARD</p>
-                  </div>
-                  <div className="text-right max-w-[240px]">
-                    <p className="text-[#0F2C59] font-bold">HINDUSTAN PROJECTS</p>
-                    <p className="line-clamp-1">📍 {officialAddress}</p>
-                    <p className="font-mono text-[#D9232A]">🌐 {officialWebsite}</p>
-                    <p>📞 {officialHelpline}</p>
-                  </div>
+              <div className="space-y-1">
+                <p className="text-[10.5px] font-bold text-slate-700">Back Side (Reverse)</p>
+                <div className="w-full aspect-[85.6/53.98]">
+                  <UnifiedCardBack {...cardProps} />
                 </div>
               </div>
             </div>
