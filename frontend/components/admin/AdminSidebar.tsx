@@ -67,16 +67,15 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
   {
     title: "COMPANY HEADQUARTERS",
     items: [
-      { href: "/admin", label: "Master Dashboard", icon: LayoutDashboard, badge: "HQ", sectionKey: "dashboard" },
-      { href: "/admin/stats", label: "Global Analytics", icon: BarChart2, sectionKey: "stats" },
+      { href: "/admin", label: "Master Cockpit", icon: LayoutDashboard, badge: "HQ", sectionKey: "dashboard" },
     ],
   },
   {
-    title: "DIGITAL WEB ASSETS (SELECT TO MANAGE)",
+    title: "DIGITAL WEB ASSETS",
     items: [
-      { href: "/admin/hipro", label: "1. HiPRO Corporate Web", icon: Building2, badge: "Civil", sectionKey: "hipro" },
-      { href: "/admin/hbs", label: "2. Hind Building (HBS)", icon: Flame, badge: "Repair", sectionKey: "hbs" },
-      { href: "/admin/empanelment", label: "3. Vendor Procurement Hub", icon: ShieldCheck, badge: "KYC", sectionKey: "empanelment" },
+      { href: "/admin/hipro", label: "HiPRO Corporate", icon: Building2, badge: "Web 1", sectionKey: "hipro" },
+      { href: "/admin/hbs", label: "Hind Building (HBS)", icon: Flame, badge: "Web 2", sectionKey: "hbs" },
+      { href: "/admin/empanelment", label: "Vendor Procurement", icon: ShieldCheck, badge: "Web 3", sectionKey: "empanelment" },
     ],
   },
   {
@@ -84,7 +83,7 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Global", sectionKey: "automail" },
       { href: "/admin/security", label: "Security & 2FA Vault", icon: KeyRound, badge: "2FA", sectionKey: "security" },
-      { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, sectionKey: "users" },
+      { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, badge: "RBAC", sectionKey: "users" },
     ],
   },
 ];
@@ -122,6 +121,7 @@ export const HIPRO_NAV_SECTIONS: NavSection[] = [
     title: "PAGE BUILDER & CMS",
     items: [
       { href: "/admin/hero", label: "Hero Banner", icon: LayoutTemplate, sectionKey: "hero" },
+      { href: "/admin/stats", label: "Homepage KPI Counters", icon: BarChart2, sectionKey: "stats" },
       { href: "/admin/about", label: "About Page", icon: Info, sectionKey: "about" },
       { href: "/admin/cost-estimator", label: "Cost Estimator CMS", icon: Calculator, sectionKey: "cost-estimator" },
       { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
@@ -282,6 +282,7 @@ export default function AdminSidebar({ user }: { user: any }) {
       pathname === "/admin/team" ||
       pathname === "/admin/newsletter" ||
       pathname === "/admin/leads" ||
+      pathname === "/admin/stats" ||
       pathname === "/admin/settings");
 
   // Select the appropriate navigation structure
@@ -289,7 +290,7 @@ export default function AdminSidebar({ user }: { user: any }) {
     if (isEmpanelment) return EMPANELMENT_NAV_SECTIONS;
     if (isHbs) return HBS_NAV_SECTIONS;
     if (isHipro) return HIPRO_NAV_SECTIONS;
-    return MASTER_HQ_NAV_SECTIONS; // Default for /admin, /admin/stats, /admin/automail, /admin/users, /admin/security
+    return MASTER_HQ_NAV_SECTIONS; // Default for /admin, /admin/automail, /admin/users, /admin/security
   }, [isEmpanelment, isHbs, isHipro]);
 
   // Filter items by search query and permissions
@@ -326,7 +327,7 @@ export default function AdminSidebar({ user }: { user: any }) {
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-64 shrink-0 bg-white/80 backdrop-blur-2xl border-r border-slate-200/70 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-40 md:z-20 w-72 shrink-0 bg-white/80 backdrop-blur-2xl border-r border-slate-200/70 flex flex-col h-full shadow-[4px_0_24px_rgba(15,23,42,0.03)] transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >

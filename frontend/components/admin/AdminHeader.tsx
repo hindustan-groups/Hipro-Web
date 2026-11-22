@@ -11,7 +11,7 @@ const titles: Record<string, string> = {
   "/admin":             "Company Headquarters",
   "/admin/hipro":       "HiPRO Corporate Web Studio",
   "/admin/security":    "Security & 2FA Vault",
-  "/admin/stats":       "Global Site Analytics",
+  "/admin/stats":       "HiPRO · Homepage Counters CMS",
   "/admin/leads":       "Leads Hub",
   "/admin/automail":    "AutoMail Studio",
   "/admin/quotes":      "Quote Requests",

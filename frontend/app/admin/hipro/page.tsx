@@ -25,6 +25,7 @@ import {
   Clock,
   Sparkles,
   Inbox,
+  BarChart2,
 } from "lucide-react";
 
 export default function HiproControlCenterPage() {
@@ -243,6 +244,7 @@ export default function HiproControlCenterPage() {
             { title: "Quotes Pipeline", desc: "Client estimates, budget breakdowns & inquiries", href: "/admin/quotes", icon: FileText, color: "text-emerald-600 bg-emerald-50" },
             { title: "Blog Insights", desc: "Articles, technical journals & site updates", href: "/admin/blogs", icon: BookOpen, color: "text-purple-600 bg-purple-50" },
             { title: "Hero Banner CMS", desc: "Main headline, typography & background media", href: "/admin/hero", icon: LayoutTemplate, color: "text-rose-600 bg-rose-50" },
+            { title: "Homepage KPI Counters", desc: "Live experience years, projects delivered & satisfaction numbers", href: "/admin/stats", icon: BarChart2, color: "text-emerald-600 bg-emerald-50" },
             { title: "Cost Estimator CMS", desc: "Square-foot construction rate calculator engine", href: "/admin/cost-estimator", icon: Calculator, color: "text-indigo-600 bg-indigo-50" },
             { title: "About Page CMS", desc: "Founding story, vision, leadership & heritage", href: "/admin/about", icon: Info, color: "text-teal-600 bg-teal-50" },
             { title: "Contact Page CMS", desc: "Headquarters location, maps & inquiry desks", href: "/admin/contact-page", icon: MapPin, color: "text-orange-600 bg-orange-50" },

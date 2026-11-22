@@ -348,11 +348,10 @@ export default function MasterCompanyDashboard() {
             <p className="text-3xl font-black text-slate-900 font-display">
               {loading && !data ? "..." : data?.vendorHub.applications.total ?? 0}
             </p>
-            <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
-              <span className="font-bold text-emerald-600">{data?.vendorHub.applications.approved ?? 0}</span>
-              <span>verified partners ·</span>
-              <span className="font-bold text-blue-600">{data?.vendorHub.tenders.active ?? 0}</span>
-              <span>live tenders</span>
+            <p className="text-xs text-slate-500 mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="font-bold text-emerald-600">{data?.vendorHub.applications.approved ?? 0} verified</span>
+              <span className="text-slate-300">·</span>
+              <span className="font-bold text-blue-600">{data?.vendorHub.tenders.active ?? 0} live tenders</span>
             </p>
           </div>
         </div>
@@ -369,9 +368,10 @@ export default function MasterCompanyDashboard() {
             <p className="text-3xl font-black text-slate-900 font-display">
               {loading && !data ? "..." : (data?.hipro.projects.total ?? 0) + (data?.hbs.projects.total ?? 0)}
             </p>
-            <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
-              <span>{data?.hipro.services.active ?? 0} HiPRO services ·</span>
-              <span>{data?.hbs.services.total ?? 0} HBS repair specs</span>
+            <p className="text-xs text-slate-500 mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span>{data?.hipro.services.active ?? 0} HiPRO services</span>
+              <span className="text-slate-300">·</span>
+              <span>{data?.hbs.services.total ?? 0} HBS specs</span>
             </p>
           </div>
         </div>
