@@ -381,6 +381,26 @@ export default function SmartCardPreviewModal({
         ctx.font = "700 14px -apple-system, monospace";
         ctx.fillText(`🌐 ${officialWebsite}  •  ${officialPortal}`, dx + 44, dy + 342);
 
+        // Watermark HiPRO Logo in Background (Center-Right)
+        const wmX = dx + cardWidth - 230;
+        const wmY = dy + 290;
+        const wmRadius = 110;
+        ctx.save();
+        ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.08)" : "rgba(15, 44, 89, 0.10)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        ctx.arc(wmX, wmY, wmRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (logoImg) {
+          ctx.globalAlpha = isNavyTheme ? 0.08 : 0.12;
+          const logoWmW = 140;
+          const logoWmH = 140;
+          ctx.drawImage(logoImg, wmX - logoWmW / 2, wmY - logoWmH / 2, logoWmW, logoWmH);
+        }
+        ctx.restore();
+
         // Divider
         ctx.strokeStyle = isNavyTheme ? "rgba(255, 255, 255, 0.15)" : "#E2E8F0";
         ctx.lineWidth = 2;
@@ -419,7 +439,7 @@ export default function SmartCardPreviewModal({
         ctx.font = "700 12px -apple-system, monospace";
         ctx.fillText(`ISSUED: ${issueDate}  •  VALID: ${validThru}`, idBoxX + 22, idBoxY + 88);
 
-        // Circular Holographic Seal (Right bottom)
+        // Circular Holographic Seal (Right bottom) with HiPRO Logo
         const sealX = dx + cardWidth - 210;
         const sealY = dy + 524;
         ctx.save();
@@ -436,12 +456,24 @@ export default function SmartCardPreviewModal({
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "900 9px -apple-system, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("★ HI-PRO ★", sealX, sealY - 6);
-        ctx.font = "800 8px -apple-system, sans-serif";
-        ctx.fillText("VERIFIED SEAL", sealX, sealY + 8);
+        if (logoImg) {
+          ctx.beginPath();
+          ctx.arc(sealX, sealY, 38, 0, Math.PI * 2);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fill();
+          ctx.drawImage(logoImg, sealX - 22, sealY - 24, 44, 32);
+          ctx.fillStyle = "#D9232A";
+          ctx.font = "900 8px -apple-system, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("VERIFIED", sealX, sealY + 18);
+        } else {
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "900 9px -apple-system, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("★ HI-PRO ★", sealX, sealY - 6);
+          ctx.font = "800 8px -apple-system, sans-serif";
+          ctx.fillText("VERIFIED SEAL", sealX, sealY + 8);
+        }
         ctx.restore();
 
         // QR Code
@@ -748,7 +780,17 @@ export default function SmartCardPreviewModal({
                 </div>
               </div>
 
-              <div className="my-auto py-1">
+              <div className="my-auto py-1 relative">
+                {/* Security HiPRO Logo Watermark */}
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 w-24 h-24 rounded-full border border-dashed border-[#0F2C59]/10 pointer-events-none flex items-center justify-center p-2 select-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/hipro-logo.jpg"
+                    alt="HiPRO Watermark"
+                    className="w-16 h-auto object-contain opacity-15 mix-blend-multiply select-none"
+                  />
+                </div>
+
                 <span className="text-[7px] font-mono px-2 py-0.5 rounded-full bg-[#D9232A] text-white font-black inline-block">
                   {currentTier.label}
                 </span>
@@ -771,8 +813,10 @@ export default function SmartCardPreviewModal({
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-7 h-7 rounded-full border border-amber-500 bg-amber-50 flex items-center justify-center text-[5px] font-black text-amber-800 text-center leading-none">
-                    HI-PRO<br />SEAL
+                  <div className="w-7 h-7 rounded-full border border-amber-500 bg-white flex flex-col items-center justify-center p-0.5 shadow-xs shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-4.5 h-auto object-contain" />
+                    <span className="text-[3.5px] font-black text-[#D9232A] leading-none uppercase mt-0.5">VERIFIED</span>
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={qrUrl} alt="QR" className="w-8 h-8 rounded bg-white p-0.5 border border-slate-300" />
@@ -1020,9 +1064,14 @@ export default function SmartCardPreviewModal({
 
                     {/* Middle Identity Section */}
                     <div className="px-4 py-2 my-auto flex-1 flex flex-col justify-center relative">
-                      {/* Watermark in background */}
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full border-4 border-[#0F2C59]/5 pointer-events-none flex items-center justify-center">
-                        <span className="text-[44px] font-black text-[#0F2C59]/5 select-none">HP</span>
+                      {/* Security HiPRO Logo Watermark */}
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-32 h-32 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/hipro-logo.jpg"
+                          alt="HiPRO Watermark"
+                          className="w-20 sm:w-24 h-auto object-contain opacity-15 mix-blend-multiply select-none"
+                        />
                       </div>
 
                       {/* Tier Pill */}
@@ -1083,11 +1132,12 @@ export default function SmartCardPreviewModal({
 
                       {/* Holographic Seal & Verification QR */}
                       <div className="flex items-center gap-2">
-                        {/* Circular Holographic Security Seal */}
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs">
-                          <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center text-[5px] font-black text-[#0F2C59] leading-none text-center">
-                            <span>★ HI-PRO ★</span>
-                            <span className="text-[4.5px] text-[#D9232A] font-extrabold mt-0.5">VERIFIED</span>
+                        {/* Circular Holographic Security Seal with HiPRO Logo */}
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
+                          <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-5 h-auto object-contain" />
+                            <span className="text-[4px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
                           </div>
                         </div>
 
@@ -1248,7 +1298,17 @@ export default function SmartCardPreviewModal({
                     </div>
                   </div>
 
-                  <div className="px-4 py-2 my-auto">
+                  <div className="px-4 py-2 my-auto relative">
+                    {/* Security HiPRO Logo Watermark */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-28 h-28 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-2 select-none">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/hipro-logo.jpg"
+                        alt="HiPRO Watermark"
+                        className="w-16 h-auto object-contain opacity-15 mix-blend-multiply select-none"
+                      />
+                    </div>
+
                     <span
                       className={`text-[8px] font-mono font-black px-2 py-0.5 rounded-full uppercase ${
                         currentTier.code === "CLASS-C" ? "bg-[#D9232A] text-white" : "bg-[#0F2C59] text-amber-300"
@@ -1272,8 +1332,17 @@ export default function SmartCardPreviewModal({
                       <p className="text-[6px] text-sky-200 font-mono">EMPANELMENT ID</p>
                       <p className="text-xs font-mono font-black text-amber-300">{trackingId}</p>
                     </div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrUrl} alt="QR" className="w-9 h-9 rounded bg-white p-0.5 border border-slate-300" />
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
+                        <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-4.5 h-auto object-contain" />
+                          <span className="text-[3.5px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
+                        </div>
+                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={qrUrl} alt="QR" className="w-9 h-9 rounded bg-white p-0.5 border border-slate-300" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1353,7 +1422,17 @@ export default function SmartCardPreviewModal({
                   </div>
                 </div>
 
-                <div className="px-4 py-2 my-auto">
+                <div className="px-4 py-2 my-auto relative">
+                  {/* Security HiPRO Logo Watermark */}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 w-32 h-32 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/hipro-logo.jpg"
+                      alt="HiPRO Watermark"
+                      className="w-20 sm:w-24 h-auto object-contain opacity-15 mix-blend-multiply select-none"
+                    />
+                  </div>
+
                   <span
                     className={`text-[8.5px] font-mono font-black px-2.5 py-0.5 rounded-full uppercase ${
                       currentTier.code === "CLASS-C" ? "bg-[#D9232A] text-white" : "bg-[#0F2C59] text-amber-300"
@@ -1380,8 +1459,17 @@ export default function SmartCardPreviewModal({
                     <p className="text-[6.5px] text-sky-200 font-mono">EMPANELMENT ID</p>
                     <p className="text-xs font-mono font-black text-amber-300">{trackingId}</p>
                   </div>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrUrl} alt="QR" className="w-10 h-10 rounded-lg bg-white p-0.5 border border-slate-300" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 via-[#D9232A] to-[#0F2C59] p-0.5 shadow-xs shrink-0">
+                      <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center p-0.5 leading-none text-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/hipro-logo.jpg" alt="HiPRO Seal" className="w-5 h-auto object-contain" />
+                        <span className="text-[4px] font-black text-[#D9232A] tracking-tighter uppercase mt-0.5">VERIFIED</span>
+                      </div>
+                    </div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrUrl} alt="QR" className="w-10 h-10 rounded-lg bg-white p-0.5 border border-slate-300" />
+                  </div>
                 </div>
               </div>
             </div>
