@@ -145,7 +145,60 @@ export default function HiproControlCenterPage() {
         </div>
       )}
 
-      {/* ── 2. Top 4 Core Metrics (Apple Bento Cards) ─────────── */}
+      {/* ── 2. Quick Civil Operations Deck ───────────────────── */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Link
+          href="/admin/projects"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 hover:border-blue-300 text-xs font-semibold text-slate-800 shadow-2xs hover:shadow-xs transition-all group"
+        >
+          <div className="w-5 h-5 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Plus className="w-3.5 h-3.5" />
+          </div>
+          <span>New Civil Project</span>
+        </Link>
+
+        <Link
+          href="/admin/services"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 hover:border-amber-300 text-xs font-semibold text-slate-800 shadow-2xs hover:shadow-xs transition-all group"
+        >
+          <div className="w-5 h-5 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <HardHat className="w-3.5 h-3.5" />
+          </div>
+          <span>Add Civil Service</span>
+        </Link>
+
+        <Link
+          href="/admin/cost-estimator"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 hover:border-indigo-300 text-xs font-semibold text-slate-800 shadow-2xs hover:shadow-xs transition-all group"
+        >
+          <div className="w-5 h-5 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Calculator className="w-3.5 h-3.5" />
+          </div>
+          <span>Cost Estimator Rates</span>
+        </Link>
+
+        <Link
+          href="/admin/quotes"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 hover:border-emerald-300 text-xs font-semibold text-slate-800 shadow-2xs hover:shadow-xs transition-all group"
+        >
+          <div className="w-5 h-5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <FileText className="w-3.5 h-3.5" />
+          </div>
+          <span>Review Turnkey Quotes</span>
+        </Link>
+
+        <Link
+          href="/admin/automail?brand=hipro"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-slate-200/80 hover:border-purple-300 text-xs font-semibold text-slate-800 shadow-2xs hover:shadow-xs transition-all group"
+        >
+          <div className="w-5 h-5 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Mail className="w-3.5 h-3.5" />
+          </div>
+          <span>HiPRO AutoMail Studio</span>
+        </Link>
+      </div>
+
+      {/* ── 3. Top 4 Core Metrics (Apple Bento Cards) ─────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {/* Projects */}
         <Link

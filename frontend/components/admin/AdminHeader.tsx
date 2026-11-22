@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import AdminSpotlightModal from "@/components/admin/AdminSpotlightModal";
+import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
 const titles: Record<string, string> = {
   "/admin":             "Company Headquarters",
@@ -122,6 +123,41 @@ export default function AdminHeader({ user }: { user: any }) {
   };
   const title = getTitle();
 
+  const isEmpanelment = pathname?.startsWith("/admin/empanelment");
+  const isHbs = pathname?.startsWith("/admin/hbs");
+  const isHipro =
+    !isEmpanelment &&
+    !isHbs &&
+    (pathname?.startsWith("/admin/hipro") ||
+      pathname === "/admin/projects" ||
+      pathname?.startsWith("/admin/projects/") ||
+      pathname === "/admin/services" ||
+      pathname?.startsWith("/admin/services/") ||
+      pathname === "/admin/quotes" ||
+      pathname?.startsWith("/admin/quotes/") ||
+      pathname === "/admin/contacts" ||
+      pathname?.startsWith("/admin/contacts/") ||
+      pathname === "/admin/applications" ||
+      pathname?.startsWith("/admin/applications/") ||
+      pathname === "/admin/blogs" ||
+      pathname?.startsWith("/admin/blogs/") ||
+      pathname === "/admin/hero" ||
+      pathname === "/admin/about" ||
+      pathname === "/admin/contact-page" ||
+      pathname === "/admin/cost-estimator" ||
+      pathname === "/admin/image-showcase" ||
+      pathname === "/admin/projects-hero" ||
+      pathname === "/admin/blogs-hero" ||
+      pathname === "/admin/jobs" ||
+      pathname === "/admin/cta-management" ||
+      pathname === "/admin/navigation" ||
+      pathname === "/admin/testimonials" ||
+      pathname === "/admin/team" ||
+      pathname === "/admin/newsletter" ||
+      pathname === "/admin/leads" ||
+      pathname === "/admin/stats" ||
+      pathname === "/admin/settings");
+
   return (
     <header className="h-16 shrink-0 bg-white/80 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 z-30 sticky top-0 shadow-[0_2px_16px_rgba(15,23,42,0.02)]">
       {/* ── Left: Sidebar Collapse Toggle & Page Title ── */}
@@ -158,6 +194,11 @@ export default function AdminHeader({ user }: { user: any }) {
             )}
           </h1>
         </div>
+
+        {/* Portal Switcher Dropdown (Fast Ecosystem Access) */}
+        <div className="hidden sm:block ml-2">
+          <PortalSwitcherDropdown variant="header" />
+        </div>
       </div>
 
       {/* ── Right: Spotlight Search, Live Status, Interactive Notification Center & Profile ── */}
@@ -180,10 +221,27 @@ export default function AdminHeader({ user }: { user: any }) {
         </button>
 
         {/* Live Operational Status Capsule */}
-        <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-semibold border border-emerald-500/20 shadow-2xs">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>3 Portals Online</span>
-        </div>
+        {isHipro ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+            <span>HiPRO Civil Live</span>
+          </div>
+        ) : isHbs ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[11px] font-semibold border border-orange-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-pulse" />
+            <span>HBS Studio Live</span>
+          </div>
+        ) : isEmpanelment ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+            <span>Procurement Hub</span>
+          </div>
+        ) : (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-semibold border border-emerald-500/20 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Holding HQ Online</span>
+          </div>
+        )}
 
         {/* ── Interactive Notification Center Popover ── */}
         <div className="relative" ref={notifRef}>
@@ -313,13 +371,47 @@ export default function AdminHeader({ user }: { user: any }) {
 
         {/* Profile Pill */}
         <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200/60">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 to-indigo-950 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
-            M
-          </div>
-          <div className="hidden md:block">
-            <p className="text-xs font-bold text-slate-900 leading-tight">Master Admin</p>
-            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">HOLDING HQ</p>
-          </div>
+          {isHipro ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0F2C59] to-blue-700 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-blue-900/20">
+                H
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">HiPRO Admin</p>
+                <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-widest font-mono">CIVIL PORTAL</p>
+              </div>
+            </>
+          ) : isHbs ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-orange-900/20">
+                B
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Hind Build</p>
+                <p className="text-[10px] font-semibold text-orange-700 uppercase tracking-widest font-mono">WATERPROOFING</p>
+              </div>
+            </>
+          ) : isEmpanelment ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-amber-900/20">
+                V
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Vendor Desk</p>
+                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-widest font-mono">PROCUREMENT</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 to-indigo-950 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
+                M
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Master Admin</p>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">HOLDING HQ</p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
