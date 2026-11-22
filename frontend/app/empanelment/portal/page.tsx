@@ -343,40 +343,47 @@ export default function VendorDashboardPage() {
 
         {/* Right Column: PVC Smart Card & Activity Stream */}
         <div className="space-y-6">
-          {/* Official PVC Smart Card Card */}
+          {/* Official PVC Smart Card Widget (Official Hindustan Projects Colors) */}
           {isApproved ? (
-            <div className="bg-gradient-to-br from-slate-900 via-slate-950 to-black text-white rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 border border-slate-800">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-md space-y-4 border border-slate-200 relative overflow-hidden">
+              {/* Top Accent Strip */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 flex">
+                <div className="bg-[#0F2C59] flex-1" />
+                <div className="bg-[#D9232A] w-1/3" />
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-red-500" />
-                  <span className="font-mono text-xs font-bold text-amber-300">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/hipro-logo.jpg" alt="HiPRO" className="h-6 w-auto object-contain rounded bg-white p-0.5 border border-slate-200" />
+                  <span className="font-mono text-xs font-black text-[#0F2C59]">
                     PVC SMART CARD
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold">
-                  VALIDATED
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-black uppercase">
+                  Active
                 </span>
               </div>
 
               <div>
-                <p className="text-[10px] text-slate-400 uppercase font-mono">Empanelled Partner</p>
-                <h3 className="font-black text-sm text-white mt-0.5">{app?.companyName}</h3>
-                <p className="text-xs text-amber-400 font-bold mt-1">
+                <p className="text-[10px] text-slate-500 uppercase font-mono font-semibold">Empanelled Partner</p>
+                <h3 className="font-black text-sm text-[#0F2C59] mt-0.5">{app?.companyName}</h3>
+                <p className="text-xs text-[#D9232A] font-bold mt-1">
                   {app?.tier?.replace("_", " ")} • {app?.category}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-mono">
-                <span>ID: {app?.trackingId}</span>
-                <span>STATE: {app?.state || "Rajasthan"}</span>
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <span className="font-bold text-slate-800">ID: {app?.trackingId}</span>
+                <span>ISO 7810 ID-1 CR-80</span>
               </div>
 
               <button
                 onClick={() => setSmartCardOpen(true)}
-                className="w-full py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-xs"
+                className="w-full py-2.5 rounded-xl bg-[#0F2C59] hover:bg-[#0B2545] text-white text-xs font-black flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer active:scale-98"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>View & Print PVC Card</span>
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                <span>View &amp; Print PVC Card</span>
               </button>
             </div>
           ) : (
