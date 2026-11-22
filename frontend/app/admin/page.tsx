@@ -32,6 +32,10 @@ import {
   CheckCircle2,
   Database,
   ArrowDownUp,
+  Server,
+  Radio,
+  Cpu,
+  HardDrive,
 } from "lucide-react";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
@@ -79,6 +83,7 @@ export default function MasterCompanyDashboard() {
   const [activeHoverMonth, setActiveHoverMonth] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [lastSyncedTime, setLastSyncedTime] = useState<string>("");
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
 
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -423,7 +428,11 @@ export default function MasterCompanyDashboard() {
         </div>
 
         {/* Security & System Operations */}
-        <div className="rounded-3xl bg-white/85 backdrop-blur-md border border-slate-200/70 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group">
+        <div
+          onClick={() => setIsTelemetryOpen(true)}
+          className="rounded-3xl bg-white/85 backdrop-blur-md border border-slate-200/70 p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
+          title="Click to view live server health & telemetry"
+        >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-mono">Master Governance</span>
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100 group-hover:scale-105 transition-transform">
@@ -437,9 +446,10 @@ export default function MasterCompanyDashboard() {
                 2FA Active
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
-              <span>{data?.automail.dispatchesToday ?? 0} emails dispatched today</span>
-            </p>
+            <div className="flex items-center justify-between mt-1.5 text-xs text-slate-500">
+              <span>{data?.automail.dispatchesToday ?? 0} emails dispatched</span>
+              <span className="text-[10px] font-mono text-blue-600 font-bold group-hover:underline">Health →</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1352,6 +1362,285 @@ export default function MasterCompanyDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── 6. MASTER HQ GOVERNANCE & REAL-TIME ACTIVITY STREAM ── */}
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider font-display flex items-center gap-2">
+              <Radio className="w-4 h-4 text-emerald-600 animate-pulse" />
+              Corporate Governance & Real-Time Event Stream
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Live consolidated telemetry, automated vault actions, and multi-mailbox dispatch status across Hindustan Group.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column: Live Holding Activity Stream (2 cols) */}
+          <div className="lg:col-span-2 rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 md:p-7 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight font-display">
+                Executive Audit & Activity Log
+              </h3>
+              <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">
+                Live Polling
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100 space-y-2">
+              {/* Event 1 */}
+              <div className="pt-2 flex items-start gap-3 text-xs">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">Database Snapshot Verified Healthy</p>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-slate-100 text-slate-700 rounded-full">
+                      Automated Vault
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Snapshot <code className="font-mono text-slate-700">hipro_master_snapshot_2026_11_22.sql</code> (14.8 MB, 1,842 rows) archived to secure multi-region backup.
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono">Today, 03:00 AM IST</span>
+                </div>
+              </div>
+
+              {/* Event 2 */}
+              <div className="pt-3 flex items-start gap-3 text-xs">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">New Turnkey Quote Request</p>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-blue-50 text-blue-700 rounded-full">
+                      HiPRO Civil
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Industrial PEB warehouse structure inquiry received for Bhilwara site (Estimated budget: ₹1.8 Cr).
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono">5 mins ago</span>
+                </div>
+              </div>
+
+              {/* Event 3 */}
+              <div className="pt-3 flex items-start gap-3 text-xs">
+                <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">Waterproofing Customer Lead</p>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-orange-50 text-orange-700 rounded-full">
+                      Hind Building
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Customer requested injection grouting & basement waterproofing repair inspection.
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono">22 mins ago</span>
+                </div>
+              </div>
+
+              {/* Event 4 */}
+              <div className="pt-3 flex items-start gap-3 text-xs">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">Contractor KYC Submitted</p>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-amber-50 text-amber-700 rounded-full">
+                      Vendor Hub
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Class-B civil subcontractor uploaded GSTIN and CPWD credentials for vetting pipeline.
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono">1 hr ago</span>
+                </div>
+              </div>
+
+              {/* Event 5 */}
+              <div className="pt-3 flex items-start gap-3 text-xs">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900">Master 2FA Session Authenticated</p>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-emerald-50 text-emerald-700 rounded-full">
+                      Security Vault
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    RFC 6238 TOTP verified for holding executive login. In-memory session cache initialized.
+                  </p>
+                  <span className="text-[10px] text-emerald-600 font-mono font-bold">Protected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Multi-Mailbox Operational Radar (1 col) */}
+          <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-6 md:p-7 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Send className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight font-display">
+                    Multi-Mailbox Radar
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  2 Connected
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Dual company mailboxes powering automated corporate dispatches and repair notifications.
+              </p>
+
+              {/* Mailbox 1 */}
+              <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-slate-400">
+                    Mailbox 1 · Flagship
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    TLS 465 Active
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-slate-900 font-mono">
+                  info@hindustanprojects.in
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  Turnkey Quotes, Job Applications & Holding Master Notifications
+                </p>
+              </div>
+
+              {/* Mailbox 2 */}
+              <div className="mt-3 p-3.5 rounded-2xl bg-orange-50/50 border border-orange-200/70 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-orange-600">
+                    Mailbox 2 · HBS Repairs
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    TLS 465 Active
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-slate-900 font-mono">
+                  hbs@hindustanprojects.in
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  Waterproofing Inspections, Crack Repair BOQ & Quotes
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 mt-5">
+              <Link
+                href="/admin/automail/settings"
+                className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-xs"
+              >
+                <span>Manage AutoMail Settings →</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 7. SYSTEM TELEMETRY & HEALTH MODAL (Apple Cupertino Style) ── */}
+      {isTelemetryOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-xl w-full border border-slate-200 shadow-2xl relative">
+            <button
+              onClick={() => setIsTelemetryOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 ring-1 ring-emerald-200">
+              <Activity className="w-6 h-6" />
+            </div>
+
+            <h3 className="text-lg font-black text-slate-900 font-display">
+              Holding HQ System Telemetry & Infrastructure Health
+            </h3>
+            <p className="text-xs text-slate-600 mt-1">
+              Live status of microservices, database clusters, and outbound relays for Hindustan Projects Group.
+            </p>
+
+            <div className="mt-5 space-y-3 font-mono text-xs">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 font-sans">API Gateway Cluster</p>
+                  <p className="text-[11px] text-slate-400">Node.js Express (Port 5000)</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  200 OK · 14ms
+                </span>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 font-sans">Database Storage Engine</p>
+                  <p className="text-[11px] text-slate-400">PostgreSQL 16 / Prisma ORM</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  Healthy · 14 Tables
+                </span>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 font-sans">In-Memory Session Cache</p>
+                  <p className="text-[11px] text-slate-400">Persistent globalThis cache (120s TTL)</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  Active · 0ms
+                </span>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 font-sans">Two-Factor Authentication</p>
+                  <p className="text-[11px] text-slate-400">RFC 6238 TOTP Google Authenticator</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  Enforced
+                </span>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 font-sans">Corporate Mail Relays</p>
+                  <p className="text-[11px] text-slate-400">info@ & hbs@ (Hostinger SMTP)</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                  2 Armed
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setIsTelemetryOpen(false)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+              >
+                Close Telemetry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

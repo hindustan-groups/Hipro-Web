@@ -16,6 +16,7 @@ import {
   Clock,
   X,
 } from "lucide-react";
+import AdminSpotlightModal from "@/components/admin/AdminSpotlightModal";
 
 const titles: Record<string, string> = {
   "/admin":             "Company Headquarters",
@@ -77,8 +78,21 @@ const titles: Record<string, string> = {
 export default function AdminHeader({ user }: { user: any }) {
   const pathname = usePathname();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(3);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Global Ctrl + K / Cmd + K spotlight shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSpotlightOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Close notifications on click outside
   useEffect(() => {
@@ -148,16 +162,22 @@ export default function AdminHeader({ user }: { user: any }) {
 
       {/* ── Right: Spotlight Search, Live Status, Interactive Notification Center & Profile ── */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        {/* Apple Spotlight Capsule Search */}
-        <div className="hidden lg:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-44 xl:w-56 focus-within:w-60 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all duration-200 backdrop-blur-md">
-          <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
-          />
-          <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs">⌘K</kbd>
-        </div>
+        {/* Apple Spotlight Capsule Search Trigger */}
+        <button
+          onClick={() => setIsSpotlightOpen(true)}
+          type="button"
+          aria-label="Open Spotlight Search"
+          title="Search pages and portals (Ctrl + K)"
+          className="hidden lg:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-44 xl:w-56 transition-all duration-200 backdrop-blur-md cursor-pointer text-left group"
+        >
+          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 transition-colors" />
+          <span className="text-xs text-slate-400 group-hover:text-slate-600 truncate flex-1">
+            Search command...
+          </span>
+          <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs shrink-0">
+            ⌘K
+          </kbd>
+        </button>
 
         {/* Live Operational Status Capsule */}
         <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-semibold border border-emerald-500/20 shadow-2xs">
@@ -302,6 +322,11 @@ export default function AdminHeader({ user }: { user: any }) {
           </div>
         </div>
       </div>
+
+      <AdminSpotlightModal
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
+      />
     </header>
   );
 }
