@@ -90,8 +90,8 @@ export default function AdminHeader({ user }: { user: any }) {
   const title = getTitle();
 
   return (
-    <header className="h-16 shrink-0 bg-white/75 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-30 sticky top-0 shadow-[0_2px_16px_rgba(15,23,42,0.02)]">
-      <div className="flex items-center gap-3 min-w-0">
+    <header className="h-16 shrink-0 bg-white/80 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 z-30 sticky top-0 shadow-[0_2px_16px_rgba(15,23,42,0.02)]">
+      <div className="flex items-center gap-3 shrink-0">
         <button 
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
           aria-label={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
@@ -100,7 +100,7 @@ export default function AdminHeader({ user }: { user: any }) {
         >
           {isDrawerOpen ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5" />}
         </button>
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={pathname?.startsWith("/admin/hbs") ? "/hibuild-brand-logo.png" : "/logo.jpg"}
@@ -202,14 +202,14 @@ export default function AdminHeader({ user }: { user: any }) {
         ) : (
           <>
             {/* Apple Spotlight Capsule Search */}
-            <div className="hidden md:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-48 lg:w-56 focus-within:w-64 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all duration-200 backdrop-blur-md">
+            <div className="hidden lg:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-44 xl:w-56 focus-within:w-60 focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all duration-200 backdrop-blur-md">
               <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <input
                 type="text"
                 placeholder="Search..."
                 className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
               />
-              <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs">⌘K</kbd>
+              <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-white border border-slate-200/80 rounded shadow-3xs">⌘K</kbd>
             </div>
 
             {/* Live Operational Status Capsule */}
