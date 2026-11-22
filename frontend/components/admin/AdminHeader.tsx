@@ -21,6 +21,9 @@ const titles: Record<string, string> = {
   "/admin":             "Company Headquarters",
   "/admin/hipro":       "HiPRO Corporate Web Studio",
   "/admin/security":    "Security & 2FA Vault",
+  "/admin/backup":      "Database Backup Vault",
+  "/admin/data-tools":  "Universal Data Import & Export",
+  "/admin/api-keys":    "API Keys & Secrets Vault",
   "/admin/hq-settings": "Master HQ Settings",
   "/admin/stats":       "HiPRO · Homepage Counters CMS",
   "/admin/leads":       "Leads Hub",
@@ -290,12 +293,12 @@ export default function AdminHeader({ user }: { user: any }) {
 
         {/* Profile Pill */}
         <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200/60">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-construction-navy to-blue-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
-            {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 to-indigo-950 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
+            M
           </div>
           <div className="hidden md:block">
-            <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
-            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">{user?.role || "admin"}</p>
+            <p className="text-xs font-bold text-slate-900 leading-tight">Master Admin</p>
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">HOLDING HQ</p>
           </div>
         </div>
       </div>

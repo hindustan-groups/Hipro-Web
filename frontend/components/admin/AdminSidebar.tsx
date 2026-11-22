@@ -39,6 +39,8 @@ import {
   Compass,
   PanelLeftClose,
   PanelLeft,
+  Database,
+  ArrowDownUp,
 } from "lucide-react";
 
 export interface SubNavItem {
@@ -81,10 +83,18 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "HOLDING TOOLS & DATA",
+    items: [
+      { href: "/admin/backup", label: "Database Backup Vault", icon: Database, badge: "Snapshots", sectionKey: "backup" },
+      { href: "/admin/data-tools", label: "Data Import & Export", icon: ArrowDownUp, badge: "Universal", sectionKey: "data-tools" },
+      { href: "/admin/api-keys", label: "API Keys & Secrets", icon: KeyRound, badge: "Vault", sectionKey: "api-keys" },
+    ],
+  },
+  {
     title: "GLOBAL OPERATIONS",
     items: [
       { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Global", sectionKey: "automail" },
-      { href: "/admin/security", label: "Security & 2FA Vault", icon: KeyRound, badge: "2FA", sectionKey: "security" },
+      { href: "/admin/security", label: "Security & 2FA Vault", icon: ShieldCheck, badge: "2FA", sectionKey: "security" },
       { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, badge: "RBAC", sectionKey: "users" },
       { href: "/admin/hq-settings", label: "Master HQ Settings", icon: Settings, badge: "HQ", sectionKey: "hq-settings" },
     ],

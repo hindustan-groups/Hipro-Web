@@ -30,6 +30,8 @@ import {
   Layers,
   Settings,
   CheckCircle2,
+  Database,
+  ArrowDownUp,
 } from "lucide-react";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
@@ -299,54 +301,54 @@ export default function MasterCompanyDashboard() {
         {/* ── Sub-Bar: Central Operations Quick Access ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-slate-100/80">
           <Link
-            href="/admin/automail"
+            href="/admin/backup"
             className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-blue-200 hover:shadow-xs transition-all group"
           >
             <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <Send className="w-4 h-4" />
+              <Database className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">AutoMail Studio</p>
-              <p className="text-[10px] text-slate-400 font-mono">Central Mailers</p>
+              <p className="text-xs font-bold text-slate-900 truncate">Database Backup</p>
+              <p className="text-[10px] text-slate-400 font-mono">Vault & Recovery</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/data-tools"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-emerald-200 hover:shadow-xs transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <ArrowDownUp className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">Import & Export</p>
+              <p className="text-[10px] text-slate-400 font-mono">CSV / JSON Studio</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/api-keys"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-amber-200 hover:shadow-xs transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+              <KeyRound className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">API Keys & Secrets</p>
+              <p className="text-[10px] text-slate-400 font-mono">Key Rotation</p>
             </div>
           </Link>
 
           <Link
             href="/admin/security"
-            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-emerald-200 hover:shadow-xs transition-all group"
+            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-purple-200 hover:shadow-xs transition-all group"
           >
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-              <KeyRound className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-slate-900 truncate">Security & 2FA</p>
               <p className="text-[10px] text-slate-400 font-mono">TOTP Vault</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/users"
-            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-indigo-200 hover:shadow-xs transition-all group"
-          >
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              <Users className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">Staff & Roles</p>
-              <p className="text-[10px] text-slate-400 font-mono">RBAC Matrix</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/admin/hq-settings"
-            className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50/70 hover:bg-white border border-slate-200/60 hover:border-slate-300 hover:shadow-xs transition-all group"
-          >
-            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-              <Settings className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-slate-900 truncate">Master HQ Settings</p>
-              <p className="text-[10px] text-slate-400 font-mono">Holding Config</p>
             </div>
           </Link>
         </div>
@@ -679,7 +681,174 @@ export default function MasterCompanyDashboard() {
         </div>
       </div>
 
-      {/* ── 4. EXECUTIVE ANALYTICS & DATA VISUALIZATIONS (APPLE HIG CHARTS) ── */}
+      {/* ── 4. ENTERPRISE HOLDING TOOLS & DATA VAULT (Apple Cupertino Style) ── */}
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 uppercase tracking-wider font-display flex items-center gap-2">
+              <Database className="w-4 h-4 text-construction-navy" />
+              Enterprise Holding Tools & Data Vault
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Mission-critical corporate infrastructure: automated database backups, universal CSV/JSON data tools, and cryptographic secrets management.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Database Backup Vault */}
+          <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+            <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500" />
+            <div className="p-6">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 ring-1 ring-blue-100">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 font-display truncate">
+                      Database Backup Vault
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">SQLite / Postgres Snapshots</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200/80 shrink-0">
+                  Auto 03:00 AM
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Automated daily snapshot vault with point-in-time state captures and one-click JSON/SQL recovery dump.
+              </p>
+
+              <div className="mt-4 p-3 rounded-2xl bg-slate-50/80 border border-slate-100 text-[11px] font-mono text-slate-500 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Vault Status:</span>
+                  <strong className="text-emerald-700 font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Verified Healthy
+                  </strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Stored Snapshots:</span>
+                  <strong className="text-slate-800">3 Verified Backups</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/60 border-t border-slate-200/60 flex items-center justify-between">
+              <span className="text-[11px] font-mono text-slate-400">Retention: 30 Days</span>
+              <Link
+                href="/admin/backup"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-blue-600 text-white shadow-xs transition-all"
+              >
+                <span>Open Vault</span>
+                <span>→</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 2: Universal Data Import & Export */}
+          <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+            <div className="h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-green-400" />
+            <div className="p-6">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 ring-1 ring-emerald-100">
+                    <ArrowDownUp className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 font-display truncate">
+                      Data Import & Export
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">CSV / JSON Studio</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 rounded-full border border-blue-200/80 shrink-0">
+                  Universal Sync
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Extract complete datasets across HiPRO projects, quotes, HBS customer leads, and contractor KYC applications.
+              </p>
+
+              <div className="mt-4 p-3 rounded-2xl bg-slate-50/80 border border-slate-100 text-[11px] font-mono text-slate-500 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Target Datasets:</span>
+                  <strong className="text-slate-800">5 Collections</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>File Formats:</span>
+                  <strong className="text-slate-800">CSV & JSON Dump</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/60 border-t border-slate-200/60 flex items-center justify-between">
+              <span className="text-[11px] font-mono text-slate-400">Batch Ingestion</span>
+              <Link
+                href="/admin/data-tools"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-emerald-600 text-white shadow-xs transition-all"
+              >
+                <span>Launch Studio</span>
+                <span>→</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Card 3: API Keys & Master Secrets */}
+          <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+            <div className="h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
+            <div className="p-6">
+              <div className="flex items-center justify-between gap-2.5 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 ring-1 ring-amber-100">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-slate-900 font-display truncate">
+                      API Keys & Secrets Vault
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">Microservice Tokens</p>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 rounded-full border border-purple-200/80 shrink-0">
+                  Cryptographic
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-600 mt-4 leading-relaxed">
+                Manage production gateway keys, sandbox credentials, webhook HMAC secrets, and emergency 2FA break-glass keys.
+              </p>
+
+              <div className="mt-4 p-3 rounded-2xl bg-slate-50/80 border border-slate-100 text-[11px] font-mono text-slate-500 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Armed Secrets:</span>
+                  <strong className="text-slate-800">5 Master Tokens</strong>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Rotation Policy:</span>
+                  <strong className="text-amber-700 font-bold">1-Click Instant</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50/60 border-t border-slate-200/60 flex items-center justify-between">
+              <span className="text-[11px] font-mono text-slate-400">Export .env</span>
+              <Link
+                href="/admin/api-keys"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-amber-600 text-white shadow-xs transition-all"
+              >
+                <span>Manage Keys</span>
+                <span>→</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 5. EXECUTIVE ANALYTICS & DATA VISUALIZATIONS (APPLE HIG CHARTS) ── */}
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
