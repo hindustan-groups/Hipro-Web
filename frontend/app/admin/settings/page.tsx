@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink, Plus, Trash2, ChevronUp, ChevronDown, ShieldCheck } from "lucide-react";
 import type { Settings } from "@/lib/types";
+import SecuritySettingsCard from "@/components/admin/SecuritySettingsCard";
 
 interface GroupCompanyConfig {
   name: string;
@@ -272,11 +273,14 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6 pb-12">
+    <div className="max-w-4xl space-y-8 pb-12">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Global Settings</h1>
-        <p className="text-slate-500 text-sm">Manage site-wide contact info, homepage dynamic sections, group companies, and Cloudinary keys.</p>
+        <h1 className="text-2xl font-bold text-slate-900 mb-1">Global Settings & Security</h1>
+        <p className="text-slate-500 text-sm">Manage Master Admin two-factor authentication, passwords, site-wide contact info, homepage dynamic sections, and cloud storage.</p>
       </div>
+
+      {/* ── 0. Master Security & Google Authenticator (2FA) ────── */}
+      <SecuritySettingsCard />
 
       <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-none shadow-sm overflow-hidden space-y-0">
         

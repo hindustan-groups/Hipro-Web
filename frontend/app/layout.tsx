@@ -52,6 +52,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "HiPRO HQ",
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
