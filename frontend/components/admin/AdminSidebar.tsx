@@ -226,23 +226,6 @@ export default function AdminSidebar({ user }: { user: any }) {
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Proactively warm up primary hubs for 0ms instantaneous tab switching
-  useEffect(() => {
-    try {
-      router.prefetch("/admin");
-      router.prefetch("/admin/hipro");
-      router.prefetch("/admin/hbs");
-      router.prefetch("/admin/empanelment");
-      router.prefetch("/admin/backup");
-      router.prefetch("/admin/data-tools");
-      router.prefetch("/admin/api-keys");
-      router.prefetch("/admin/security");
-      router.prefetch("/admin/automail");
-    } catch {
-      // Ignore
-    }
-  }, [router]);
-
   useEffect(() => {
     try {
       const saved = localStorage.getItem("admin_sidebar_collapsed");
@@ -567,16 +550,6 @@ export default function AdminSidebar({ user }: { user: any }) {
                     <Link
                       key={href}
                       href={href}
-                      onMouseEnter={() => {
-                        try {
-                          router.prefetch(href);
-                        } catch {}
-                      }}
-                      onTouchStart={() => {
-                        try {
-                          router.prefetch(href);
-                        } catch {}
-                      }}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] group ${
                         active
                           ? "bg-slate-900 text-white font-semibold shadow-xs"
