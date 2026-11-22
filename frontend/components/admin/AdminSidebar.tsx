@@ -36,6 +36,8 @@ import {
   LogOut,
   Phone,
   Globe,
+  Flame,
+  KeyRound,
 } from "lucide-react";
 import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
