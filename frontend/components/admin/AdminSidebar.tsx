@@ -74,7 +74,7 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
   {
     title: "DIGITAL WEB ASSETS (SELECT TO MANAGE)",
     items: [
-      { href: "/admin/projects", label: "1. HiPRO Corporate Web", icon: Building2, badge: "Civil", sectionKey: "projects" },
+      { href: "/admin/hipro", label: "1. HiPRO Corporate Web", icon: Building2, badge: "Civil", sectionKey: "hipro" },
       { href: "/admin/hbs", label: "2. Hind Building (HBS)", icon: Flame, badge: "Repair", sectionKey: "hbs" },
       { href: "/admin/empanelment", label: "3. Vendor Procurement Hub", icon: ShieldCheck, badge: "KYC", sectionKey: "empanelment" },
     ],
@@ -83,9 +83,8 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
     title: "GLOBAL OPERATIONS",
     items: [
       { href: "/admin/automail", label: "AutoMail Studio", icon: Send, badge: "Global", sectionKey: "automail" },
-      { href: "/admin/settings", label: "Security & 2FA", icon: KeyRound, badge: "2FA", sectionKey: "settings" },
+      { href: "/admin/security", label: "Security & 2FA Vault", icon: KeyRound, badge: "2FA", sectionKey: "security" },
       { href: "/admin/users", label: "Staff & Roles (RBAC)", icon: Users, sectionKey: "users" },
-      { href: "/admin/settings?tab=contact", label: "Company Profile", icon: Settings, sectionKey: "settings" },
     ],
   },
 ];
@@ -94,6 +93,12 @@ export const MASTER_HQ_NAV_SECTIONS: NavSection[] = [
 // 2. HiPRO CORPORATE WEB NAVIGATION (Isolated Civil & Mega Infrastructure)
 // =========================================================================
 export const HIPRO_NAV_SECTIONS: NavSection[] = [
+  {
+    title: "HIPRO OVERVIEW",
+    items: [
+      { href: "/admin/hipro", label: "HiPRO Control Center", icon: LayoutDashboard, badge: "HiPRO", sectionKey: "hipro" },
+    ],
+  },
   {
     title: "PORTFOLIO & CONTENT",
     items: [
@@ -122,6 +127,7 @@ export const HIPRO_NAV_SECTIONS: NavSection[] = [
       { href: "/admin/contact-page", label: "Contact Page CMS", icon: MapPin, sectionKey: "contact-page" },
       { href: "/admin/image-showcase", label: "Image Showcase", icon: Sparkles, sectionKey: "image-showcase" },
       { href: "/admin/navigation", label: "Navigation Menus", icon: Compass, sectionKey: "navigation" },
+      { href: "/admin/settings", label: "Site Settings CMS", icon: Settings, sectionKey: "settings" },
     ],
   },
 ];
@@ -249,7 +255,8 @@ export default function AdminSidebar({ user }: { user: any }) {
   const isHipro =
     !isEmpanelment &&
     !isHbs &&
-    (pathname === "/admin/projects" ||
+    (pathname?.startsWith("/admin/hipro") ||
+      pathname === "/admin/projects" ||
       pathname?.startsWith("/admin/projects/") ||
       pathname === "/admin/services" ||
       pathname?.startsWith("/admin/services/") ||
@@ -274,14 +281,15 @@ export default function AdminSidebar({ user }: { user: any }) {
       pathname === "/admin/testimonials" ||
       pathname === "/admin/team" ||
       pathname === "/admin/newsletter" ||
-      pathname === "/admin/leads");
+      pathname === "/admin/leads" ||
+      pathname === "/admin/settings");
 
   // Select the appropriate navigation structure
   const activeSections = useMemo(() => {
     if (isEmpanelment) return EMPANELMENT_NAV_SECTIONS;
     if (isHbs) return HBS_NAV_SECTIONS;
     if (isHipro) return HIPRO_NAV_SECTIONS;
-    return MASTER_HQ_NAV_SECTIONS; // Default for /admin, /admin/stats, /admin/automail, /admin/users, /admin/settings
+    return MASTER_HQ_NAV_SECTIONS; // Default for /admin, /admin/stats, /admin/automail, /admin/users, /admin/security
   }, [isEmpanelment, isHbs, isHipro]);
 
   // Filter items by search query and permissions
@@ -354,8 +362,9 @@ export default function AdminSidebar({ user }: { user: any }) {
               <span>← Back to Master HQ</span>
             </Link>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-700 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-orange-600/20">
-                <Flame className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shrink-0 shadow-sm ring-1 ring-orange-500/20">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/hibuild-logo.png" alt="Hind Building" className="w-full h-full object-contain" />
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase tracking-tight text-slate-900 font-display truncate">Hind Building (HBS)</p>
