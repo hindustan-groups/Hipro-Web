@@ -393,6 +393,7 @@ export default function AdminSidebar({ user }: { user: any }) {
             <div className="flex items-center justify-between mb-3">
               <Link
                 href="/admin"
+                scroll={false}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-amber-200/80 text-[11px] font-bold text-amber-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -422,6 +423,7 @@ export default function AdminSidebar({ user }: { user: any }) {
             <div className="flex items-center justify-between mb-3">
               <Link
                 href="/admin"
+                scroll={false}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-orange-200/80 text-[11px] font-bold text-orange-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -452,6 +454,7 @@ export default function AdminSidebar({ user }: { user: any }) {
             <div className="flex items-center justify-between mb-3">
               <Link
                 href="/admin"
+                scroll={false}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-blue-200/80 text-[11px] font-bold text-blue-900 hover:bg-white hover:shadow-2xs transition-all group shadow-2xs"
               >
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
@@ -550,6 +553,7 @@ export default function AdminSidebar({ user }: { user: any }) {
                     <Link
                       key={href}
                       href={href}
+                      scroll={false}
                       className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 min-h-[38px] group ${
                         active
                           ? "bg-slate-900 text-white font-semibold shadow-xs"
