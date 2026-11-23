@@ -213,7 +213,6 @@ export const EMPANELMENT_NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/admin/empanelment/content", label: "Portal CMS", icon: LayoutTemplate, sectionKey: "empanelment" },
       { href: "/admin/empanelment/tickets", label: "Support Desk", icon: Mail, sectionKey: "empanelment" },
-      { href: "/admin/automail?brand=empanelment", label: "AutoMail Studio", icon: Send, badge: "Auto", sectionKey: "automail" },
     ],
   },
 ];

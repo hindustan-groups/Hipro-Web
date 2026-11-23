@@ -887,7 +887,13 @@ router.get("/admin/applications", async (req: Request, res: Response) => {
     const where: any = {};
 
     if (status && status !== "ALL") {
-      where.status = String(status);
+      if (status === "PENDING") {
+        where.status = {
+          in: ["SUBMITTED", "UNDER_VERIFICATION", "TECHNICAL_AUDIT", "FINANCIAL_REVIEW", "DOCS_REQUESTED"],
+        };
+      } else {
+        where.status = String(status);
+      }
     }
     if (category && category !== "ALL") {
       where.category = String(category);

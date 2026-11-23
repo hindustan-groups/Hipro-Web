@@ -504,7 +504,7 @@ export default function EmpanelmentContentCmsPage() {
             <span className="text-slate-300">•</span>
 
             <nav className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <Link href="/admin/empanelment" className="hover:text-amber-800 transition-colors">
+              <Link href="/admin/empanelment" scroll={false} className="hover:text-amber-800 transition-colors">
                 Empanelment
               </Link>
               <span className="text-slate-300">/</span>
