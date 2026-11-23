@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import EmpanelmentAdminPageHeader from "@/components/admin/empanelment/EmpanelmentAdminPageHeader";
 import {
   Save,
   RefreshCw,
@@ -277,6 +278,29 @@ function StudioImagePicker({
   );
 }
 
+const MAIN_GROUPS = [
+  { key: "landing", label: "Landing CMS", icon: LayoutTemplate, badge: "10 Sections" },
+  { key: "guidelines", label: "Tiers & Standards", icon: FileText, badge: "CPWD Tiers" },
+  { key: "tenders", label: "Tenders Notice", icon: Briefcase, badge: "Public RFQs" },
+  { key: "gatepass", label: "Gate Pass Policy", icon: QrCode, badge: "Security" },
+  { key: "branding", label: "Branding & Nav", icon: Globe, badge: "Logos & Menus" },
+  { key: "seo", label: "SEO & Social", icon: Search, badge: "Meta & OG" },
+  { key: "visibility", label: "Section Switches", icon: SlidersHorizontal, badge: "Switches" },
+] as const;
+
+const LANDING_SECTIONS = [
+  { key: "hero", label: "Hero Banner", icon: LayoutTemplate, num: "01" },
+  { key: "hero_pills", label: "Key Pills", icon: Sparkles, num: "02" },
+  { key: "stats", label: "Counter Stats", icon: Award, num: "03" },
+  { key: "categories", label: "Trade Categories", icon: Layers, num: "04" },
+  { key: "process", label: "4-Step Pipeline", icon: CheckCircle2, num: "05" },
+  { key: "benefits", label: "Growth Benefits", icon: ShieldCheck, num: "06" },
+  { key: "impact", label: "Impact Story", icon: Building2, num: "07" },
+  { key: "docs", label: "Statutory Docs", icon: FileText, num: "08" },
+  { key: "faqs", label: "FAQs Accordion", icon: HelpCircle, num: "09" },
+  { key: "cta", label: "Bottom CTA", icon: ArrowRight, num: "10" },
+] as const;
+
 export default function EmpanelmentContentCmsPage() {
   // Navigation & Page Selector
   const [selectedGroup, setSelectedGroup] = useState<
@@ -284,11 +308,6 @@ export default function EmpanelmentContentCmsPage() {
   >("landing");
 
   const [activeSubTab, setActiveSubTab] = useState<string>("hero");
-
-  // View Mode: 'edit' (standard), 'split' (side-by-side preview), 'preview' (full live preview)
-  const [viewMode, setViewMode] = useState<"edit" | "split" | "preview">("edit");
-  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
-  const [previewPage, setPreviewPage] = useState<"home" | "guidelines" | "tenders" | "gatepass" | "track">("home");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -489,122 +508,55 @@ export default function EmpanelmentContentCmsPage() {
   };
 
   return (
-    <div className="space-y-4 font-sans max-w-7xl mx-auto">
-      {/* ================================================================ */}
-      {/* 1. TOP COMMAND BAR (Apple Translucent Studio Bar) */}
-      {/* ================================================================ */}
-      <div className="bg-white/80 backdrop-blur-2xl rounded-3xl border border-slate-200/70 p-4 sm:px-6 sm:py-4 shadow-[0_2px_16px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center justify-between gap-4 sticky top-[75px] z-20">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-800 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 inline-flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-amber-600" />
-              <span>Portal Studio CMS</span>
-            </span>
-
-            <span className="text-slate-300">•</span>
-
-            <nav className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
-              <Link href="/admin/empanelment" scroll={false} className="hover:text-amber-800 transition-colors">
-                Empanelment
-              </Link>
-              <span className="text-slate-300">/</span>
-              <span className="text-slate-800 font-semibold">Portal Studio</span>
-            </nav>
-
-            <span className="text-slate-300">•</span>
-
-            {hasUnsavedChanges ? (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-900 border border-amber-300 inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Unsaved Changes
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100/90 text-slate-600 border border-slate-200/80 inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Published &amp; Synced
-              </span>
-            )}
-          </div>
-
-          <h1 className="text-base sm:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            Public Empanelment Portal Studio
-          </h1>
-          <p className="text-[11.5px] text-slate-500 mt-0.5">
-            Real-time live CMS for public landing page, vendor guidelines, commercial tenders &amp; security pass policy.
-          </p>
-        </div>
-
-        {/* View Switchers & Save Actions */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Apple Segmented View Mode Toggle */}
-          <div className="bg-slate-200/60 p-0.5 rounded-full flex items-center text-xs font-medium">
-            <button
-              onClick={() => setViewMode("edit")}
-              className={`px-3 py-1 rounded-full transition-all ${
-                viewMode === "edit" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Editor
-            </button>
-            <button
-              onClick={() => setViewMode("split")}
-              className={`px-3 py-1 rounded-full transition-all flex items-center gap-1.5 ${
-                viewMode === "split" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Eye className="w-3 h-3 text-amber-600" />
-              <span>Split</span>
-            </button>
-            <button
-              onClick={() => setViewMode("preview")}
-              className={`px-3 py-1 rounded-full transition-all ${
-                viewMode === "preview" ? "bg-white text-slate-900 font-bold shadow-2xs" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Preview
-            </button>
-          </div>
-
-          {/* External Public Link */}
+    <div className="space-y-6 font-sans max-w-7xl mx-auto pb-16">
+      {/* ── 1. APPLE GLASS HEADER ── */}
+      <EmpanelmentAdminPageHeader
+        breadcrumbs={[{ label: "Portal Studio CMS" }]}
+        title="Vendor Portal CMS & Content Studio"
+        description="Unified Content Studio for public contractor onboarding pages, CPWD trade capacity standards, commercial tender bulletins, and gate pass security rules."
+        badge={hasUnsavedChanges ? "Unsaved Changes" : "Published & Synced"}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
           <Link
             href="/empanelment"
             target="_blank"
-            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 text-xs font-semibold inline-flex items-center gap-1.5 transition-all shadow-2xs"
-            title="Open portal in new window"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 backdrop-blur-md bg-white/80 border border-slate-200/80 hover:bg-white hover:text-slate-900 transition-all rounded-xl shadow-2xs"
+            title="Open live portal in new window"
           >
-            <span>Visit Live</span>
-            <ExternalLink className="w-3 h-3 text-slate-400" />
+            <span>Visit Live Portal</span>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </Link>
 
-          {/* Reset Defaults */}
           <button
+            type="button"
             onClick={handleResetDefaults}
-            className="px-3 py-1.5 rounded-full bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 text-xs font-semibold transition-all shadow-2xs"
-            title="Reset all sections to verified reference standards"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 backdrop-blur-md bg-white/80 border border-slate-200/80 hover:bg-white hover:text-slate-900 transition-all rounded-xl shadow-2xs cursor-pointer"
+            title="Reset to certified reference standards"
           >
-            Reset
+            <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+            <span>Reset Standards</span>
           </button>
 
-          {/* Publish Live Button */}
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-1.5 rounded-full bg-slate-900 hover:bg-black text-white text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-60"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 rounded-xl transition-all shadow-[0_4px_14px_rgba(245,158,11,0.35)] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             {saving ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-white" />
             ) : (
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
             )}
-            <span>{saving ? "Publishing..." : "Publish Live"}</span>
+            <span>{saving ? "Publishing..." : "Publish Live Changes"}</span>
           </button>
         </div>
-      </div>
+      </EmpanelmentAdminPageHeader>
 
       {/* Notification Toast */}
       {notification && (
         <div
-          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in duration-200 ${
+          className={`p-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-xs animate-in fade-in duration-200 ${
             notification.type === "success"
               ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
               : "bg-rose-50 text-rose-800 border border-rose-200"
@@ -620,148 +572,130 @@ export default function EmpanelmentContentCmsPage() {
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="underline opacity-70 hover:opacity-100 text-[11px]"
+            className="underline opacity-70 hover:opacity-100 text-[11px] cursor-pointer"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* ================================================================ */}
-      {/* 2. STUDIO NAVIGATION & SCOPE CONTROLLER (Apple Pro Dropdown Suite) */}
-      {/* ================================================================ */}
-      <div className="bg-white/85 backdrop-blur-2xl p-2.5 rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-3">
-        {/* Dropdowns Group */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Target Page Selector Dropdown */}
-          <div className="flex items-center gap-2 bg-slate-100/90 hover:bg-slate-200/60 transition-colors px-3 py-1.5 rounded-xl border border-slate-200/80">
-            <LayoutTemplate className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Page:</span>
-            <select
-              value={selectedGroup}
-              onChange={(e) => {
-                const val = e.target.value as any;
-                setSelectedGroup(val);
-                if (val === "landing") {
-                  setActiveSubTab("hero");
-                  setPreviewPage("home");
-                } else if (val === "guidelines") {
-                  setActiveSubTab("tiers");
-                  setPreviewPage("guidelines");
-                } else if (val === "tenders") {
-                  setActiveSubTab("notice");
-                  setPreviewPage("tenders");
-                } else if (val === "gatepass") {
-                  setActiveSubTab("policy");
-                  setPreviewPage("gatepass");
-                } else if (val === "branding") {
-                  setActiveSubTab("branding");
-                  setPreviewPage("home");
-                } else if (val === "seo") {
-                  setActiveSubTab("meta");
-                  setPreviewPage("home");
-                } else if (val === "visibility") {
-                  setActiveSubTab("switches");
-                  setPreviewPage("home");
-                }
+      {/* ── 2. PRIMARY NAVIGATION TABS (Horizontal Apple Cupertino Glass) ── */}
+      <div className="p-1.5 bg-slate-200/50 backdrop-blur-2xl rounded-2xl border border-white/80 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-inner">
+        {MAIN_GROUPS.map((grp) => {
+          const Icon = grp.icon;
+          const isActive = selectedGroup === grp.key;
+          return (
+            <button
+              key={grp.key}
+              type="button"
+              onClick={() => {
+                setSelectedGroup(grp.key as any);
+                if (grp.key === "landing") setActiveSubTab("hero");
+                else if (grp.key === "guidelines") setActiveSubTab("tiers");
+                else if (grp.key === "tenders") setActiveSubTab("notice");
+                else if (grp.key === "gatepass") setActiveSubTab("policy");
+                else if (grp.key === "branding") setActiveSubTab("branding");
+                else if (grp.key === "seo") setActiveSubTab("meta");
+                else if (grp.key === "visibility") setActiveSubTab("switches");
               }}
-              className="bg-transparent font-bold text-xs text-slate-900 pr-1 py-0.5 focus:outline-none cursor-pointer"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                isActive
+                  ? "bg-white text-slate-900 font-bold shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-slate-200/80"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-white/60"
+              }`}
             >
-              <option value="landing">🏠 Landing / Home Page (10 Dynamic Sections)</option>
-              <option value="guidelines">📜 Capacity Standards & Tiers (/empanelment/guidelines)</option>
-              <option value="tenders">📢 Tenders Radar Notice & Bulletin (/empanelment/tenders)</option>
-              <option value="gatepass">🎫 Daily Site Pass Policy & Instructions (/empanelment/gate-pass)</option>
-              <option value="branding">🌐 Global Branding, Navbar & Footer Desk</option>
-              <option value="seo">🔍 Search Engine SEO & OpenGraph Social Meta</option>
-              <option value="visibility">⚙️ Section Visibility & Feature Switches</option>
-            </select>
-          </div>
-
-          {/* Section Dropdown (When on Landing Page) */}
-          {selectedGroup === "landing" && (
-            <div className="flex items-center gap-2 bg-amber-50/80 hover:bg-amber-100/60 transition-colors px-3 py-1.5 rounded-xl border border-amber-200/80">
-              <Sliders className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Section:</span>
-              <select
-                value={activeSubTab}
-                onChange={(e) => setActiveSubTab(e.target.value)}
-                className="bg-transparent font-bold text-xs text-slate-900 pr-1 py-0.5 focus:outline-none cursor-pointer"
+              <Icon className={`w-4 h-4 ${isActive ? "text-amber-600" : "text-slate-400"}`} />
+              <span>{grp.label}</span>
+              <span
+                className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
+                  isActive
+                    ? "bg-amber-50 text-amber-800 border border-amber-200"
+                    : "text-slate-400 bg-slate-100"
+                }`}
               >
-                <option value="hero">01. Hero Banner, Headline & Graphic</option>
-                <option value="hero_pills">02. 4 Feature Check Pills</option>
-                <option value="stats">03. Live Counter Stats Bar (4 Metrics)</option>
-                <option value="categories">04. Supply Categories List (6 Domains)</option>
-                <option value="process">05. 4-Step Registration Process</option>
-                <option value="benefits">06. Vendor Growth Benefits (6 Pillars)</option>
-                <option value="impact">07. Dark Impact Section, Image & Pillars</option>
-                <option value="docs">08. Required Documents Checklist</option>
-                <option value="faqs">09. Frequently Asked Questions (Accordion)</option>
-                <option value="cta">10. Bottom Red CTA Banner</option>
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* Section Quick Step Buttons (Prev / Next) */}
-        {selectedGroup === "landing" && (
-          <div className="flex items-center gap-1.5 text-xs">
-            <button
-              type="button"
-              onClick={() => {
-                const tabs = ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"];
-                const idx = tabs.indexOf(activeSubTab);
-                if (idx > 0) setActiveSubTab(tabs[idx - 1]);
-              }}
-              disabled={activeSubTab === "hero"}
-              className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100/80 text-slate-700 font-semibold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-              title="Previous Section"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span className="text-[11px] hidden sm:inline">Prev</span>
+                {grp.badge}
+              </span>
             </button>
-
-            <span className="text-[11px] font-mono text-slate-500 px-1 font-bold">
-              {Math.max(1, ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"].indexOf(activeSubTab) + 1)} / 10
-            </span>
-
-            <button
-              type="button"
-              onClick={() => {
-                const tabs = ["hero", "hero_pills", "stats", "categories", "process", "benefits", "impact", "docs", "faqs", "cta"];
-                const idx = tabs.indexOf(activeSubTab);
-                if (idx < tabs.length - 1) setActiveSubTab(tabs[idx + 1]);
-              }}
-              disabled={activeSubTab === "cta"}
-              className="px-2.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100/80 text-slate-700 font-semibold flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-              title="Next Section"
-            >
-              <span className="text-[11px] hidden sm:inline">Next</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
+          );
+        })}
       </div>
 
-      {/* ================================================================ */}
-      {/* 3. MAIN WORKSPACE (Form Editor + Split / Full Live Preview) */}
-      {/* ================================================================ */}
-      <div
-        className={`grid gap-5 ${
-          viewMode === "split"
-            ? "grid-cols-1 xl:grid-cols-12"
-            : viewMode === "preview"
-            ? "grid-cols-1"
-            : "grid-cols-1"
-        }`}
-      >
-        {/* LEFT PANE: Form Editors (Visible in 'edit' and 'split' modes) */}
-        {viewMode !== "preview" && (
-          <div className={`${viewMode === "split" ? "xl:col-span-7" : "w-full"} space-y-4`}>
-            {/* FORM CARD CONTAINER */}
-            <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/70 p-5 sm:p-7 shadow-[0_2px_12px_rgba(15,23,42,0.02)] space-y-5">
-              {/* ================================================================ */}
-              {/* SECTION: HERO BANNER */}
-              {/* ================================================================ */}
+      {/* ── 3. SECONDARY SUB-SECTION PILLS (When Landing CMS is active) ── */}
+      {selectedGroup === "landing" && (
+        <div className="p-3.5 bg-white/80 backdrop-blur-2xl border border-white/90 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.02)] space-y-2.5">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider font-mono text-slate-500">
+              Landing Page Sections (10 Modules):
+            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const tabs = LANDING_SECTIONS.map((s) => s.key);
+                  const idx = tabs.indexOf(activeSubTab as any);
+                  if (idx > 0) setActiveSubTab(tabs[idx - 1]);
+                }}
+                disabled={activeSubTab === "hero"}
+                className="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                title="Previous section"
+              >
+                ← Prev
+              </button>
+              <span className="text-[11px] font-mono font-bold text-slate-500 px-1">
+                {LANDING_SECTIONS.findIndex((s) => s.key === activeSubTab) + 1} / 10
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  const tabs = LANDING_SECTIONS.map((s) => s.key);
+                  const idx = tabs.indexOf(activeSubTab as any);
+                  if (idx < tabs.length - 1) setActiveSubTab(tabs[idx + 1]);
+                }}
+                disabled={activeSubTab === "cta"}
+                className="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                title="Next section"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            {LANDING_SECTIONS.map((sec) => {
+              const Icon = sec.icon;
+              const isCurrent = activeSubTab === sec.key;
+              return (
+                <button
+                  key={sec.key}
+                  type="button"
+                  onClick={() => setActiveSubTab(sec.key)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs whitespace-nowrap transition-all cursor-pointer ${
+                    isCurrent
+                      ? "bg-slate-900 text-white font-bold shadow-xs scale-[1.02]"
+                      : "bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60 font-medium"
+                  }`}
+                >
+                  <span
+                    className={`font-mono text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                      isCurrent
+                        ? "bg-amber-400 text-slate-950"
+                        : "bg-white text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    {sec.num}
+                  </span>
+                  <Icon className={`w-3.5 h-3.5 ${isCurrent ? "text-amber-400" : "text-slate-500"}`} />
+                  <span>{sec.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── 4. MAIN FORM WORKSPACE (Full-Width Luxurious Apple Glass Card) ── */}
+      <div className="relative bg-white/85 backdrop-blur-2xl border border-white/90 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6 overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent" />
               {selectedGroup === "landing" && activeSubTab === "hero" && (
                 <div className="space-y-6">
                   <div className="border-b border-slate-100 pb-4 flex items-center justify-between">
@@ -2507,401 +2441,31 @@ export default function EmpanelmentContentCmsPage() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================ */}
-        {/* RIGHT PANE: LIVE INTERACTIVE PREVIEW (In Split or Full mode) */}
-        {/* ================================================================ */}
-        {viewMode !== "edit" && (
-          <div
-            className={`${
-              viewMode === "split" ? "xl:col-span-5" : "w-full max-w-5xl mx-auto"
-            } space-y-4 sticky top-28`}
-          >
-            {/* Preview Toolbar (macOS Studio Display Control Bar) */}
-            <div className="bg-white/80 backdrop-blur-xl border border-slate-200/70 p-2.5 rounded-2xl flex items-center justify-between gap-3 shadow-[0_2px_12px_rgba(15,23,42,0.02)]">
-              <div className="flex items-center gap-2 pl-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-xs font-bold text-slate-800 tracking-tight">Studio Viewport</span>
-              </div>
-
-              {/* Page Selector & Device Toggle */}
-              <div className="flex items-center gap-2">
-                <select
-                  value={previewPage}
-                  onChange={(e) => setPreviewPage(e.target.value as any)}
-                  className="bg-slate-100/90 hover:bg-slate-200/70 text-slate-800 border border-slate-200/80 rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
-                >
-                  <option value="home">Landing (Home)</option>
-                  <option value="guidelines">Guidelines Standards</option>
-                  <option value="tenders">Tenders Notice</option>
-                  <option value="gatepass">Gate Pass Preview</option>
-                </select>
-
-                {/* Device Selector (Apple Segmented Pill) */}
-                <div className="bg-slate-100/90 p-0.5 rounded-xl flex items-center border border-slate-200/70 text-xs">
-                  <button
-                    onClick={() => setPreviewDevice("desktop")}
-                    className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
-                      previewDevice === "desktop"
-                        ? "bg-white text-slate-900 font-semibold shadow-2xs"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                    title="Desktop Viewport"
-                  >
-                    <Monitor className="w-3.5 h-3.5" />
-                    <span className="text-[10px] hidden sm:inline">Desktop</span>
-                  </button>
-                  <button
-                    onClick={() => setPreviewDevice("mobile")}
-                    className={`px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
-                      previewDevice === "mobile"
-                        ? "bg-white text-slate-900 font-semibold shadow-2xs"
-                        : "text-slate-500 hover:text-slate-900"
-                    }`}
-                    title="Mobile Viewport (iPhone 16 Pro)"
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span className="text-[10px] hidden sm:inline">Mobile</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Simulated Live Viewport Container */}
-            <div
-              className={`mx-auto transition-all duration-300 ${
-                previewDevice === "mobile"
-                  ? "w-[385px] bg-slate-950 p-2.5 rounded-[46px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.35)] ring-1 ring-slate-800/90"
-                  : "w-full bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-              }`}
-            >
-              <div
-                className={`flex flex-col min-h-[700px] max-h-[820px] ${
-                  previewDevice === "mobile"
-                    ? "bg-white rounded-[38px] overflow-hidden border border-slate-800/40"
-                    : "bg-white"
-                }`}
-              >
-                {/* Simulated Header: Safari bar for desktop, Dynamic Island for mobile */}
-                {previewDevice === "mobile" ? (
-                  <div className="bg-slate-900 text-white text-[10px] pt-2 pb-1.5 px-6 flex items-center justify-between font-mono shrink-0 select-none">
-                    <span className="font-semibold text-[11px]">9:41</span>
-                    <div className="w-20 h-4 bg-black rounded-full flex items-center justify-center ring-1 ring-white/10">
-                      <div className="w-2 h-2 rounded-full bg-slate-900" />
-                    </div>
-                    <span className="text-[10.5px] font-medium tracking-tight">5G 100%</span>
-                  </div>
-                ) : (
-                  <div className="bg-slate-100/90 backdrop-blur border-b border-slate-200/70 px-3.5 py-2 flex items-center justify-between gap-3 text-xs shrink-0 select-none">
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]/90 border border-black/5" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#febc2e]/90 border border-black/5" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]/90 border border-black/5" />
-                    </div>
-                    <div className="flex-1 max-w-sm mx-auto bg-white border border-slate-200/80 rounded-lg px-2.5 py-1 flex items-center justify-center gap-1.5 text-[11px] text-slate-600 shadow-2xs font-mono">
-                      <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
-                      <span className="truncate">
-                        https://empanelment.hindustanprojects.in
-                        {previewPage === "guidelines"
-                          ? "/guidelines"
-                          : previewPage === "tenders"
-                          ? "/tenders"
-                          : previewPage === "gatepass"
-                          ? "/gate-pass"
-                          : ""}
-                      </span>
-                    </div>
-                    <div className="text-[10px] font-mono text-slate-400 font-medium">100%</div>
-                  </div>
-                )}
-
-                {/* Viewport Scrollable Area */}
-                <div className="flex-1 overflow-y-auto">
-
-              {/* RENDER SELECTED PREVIEW PAGE */}
-              {previewPage === "home" && (
-                <div className="bg-white text-slate-900 font-sans text-xs">
-                  {/* Announcement Bar */}
-                  {formData.noticeAlertActive && formData.noticeAlertBanner && (
-                    <div className="bg-amber-500 text-slate-950 px-3 py-1.5 text-center text-[10px] font-bold">
-                      {formData.noticeAlertBanner}
-                    </div>
-                  )}
-
-                  {/* Header Mockup */}
-                  <div className="border-b border-slate-100 p-3 flex items-center justify-between">
-                    <div>
-                      <span className="font-black text-xs text-slate-950">HINDUSTAN </span>
-                      <span className="font-black text-xs text-[#dc2626]">PROJECTS</span>
-                      <p className="text-[8px] text-slate-400">{formData.tagline}</p>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-red-50 text-[#dc2626] font-bold text-[9px]">
-                      PORTAL
-                    </span>
-                  </div>
-
-                  {/* Hero Section Live */}
-                  <div className="p-4 sm:p-6 space-y-3 bg-gradient-to-b from-white via-white to-slate-50">
-                    <span className="text-[10px] font-bold text-[#dc2626] uppercase tracking-wider block">
-                      — {formData.heroBadge}
-                    </span>
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-950 leading-tight">
-                      <span>{formData.heroTitlePrefix} </span>
-                      <span className="text-[#dc2626]">{formData.heroTitleHighlight}</span>
-                    </h2>
-                    <p className="text-slate-600 text-[11px] leading-relaxed">
-                      {formData.heroSubtitle}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                      <button className="px-4 py-2.5 rounded-xl bg-[#dc2626] text-white font-bold text-center">
-                        {formData.heroRegisterBtnText}
-                      </button>
-                      <button className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 font-bold text-center">
-                        {formData.heroLoginBtnText}
-                      </button>
-                    </div>
-
-                    {/* Feature Pills */}
-                    {visibility.showHeroPills !== false && (
-                      <div className="pt-3 grid grid-cols-2 gap-2 border-t border-slate-100">
-                        {heroPills.slice(0, 4).map((p) => (
-                          <div key={p.id} className="flex items-start gap-1.5">
-                            <span className="text-[#dc2626] font-bold">✓</span>
-                            <span className="text-[10px] font-bold text-slate-800 leading-tight">{p.title}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Stats Bar Live */}
-                  {visibility.showStats !== false && (
-                    <div className="m-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-sm grid grid-cols-2 gap-2">
-                      {stats.slice(0, 4).map((s) => (
-                        <div key={s.id} className="p-1.5 text-center">
-                          <p className="text-base font-black text-slate-950">{s.value}</p>
-                          <p className="text-[9px] text-slate-500 font-semibold">{s.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Supply Categories */}
-                  {visibility.showCategories !== false && (
-                    <div className="p-3 space-y-2 bg-slate-50/70">
-                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.categoriesBadge}</p>
-                      <h3 className="font-black text-sm text-slate-900">{formData.categoriesTitle}</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {categories.slice(0, 4).map((c) => (
-                          <div key={c.id} className="p-2.5 rounded-xl bg-white border border-slate-200 space-y-1">
-                            <p className="font-bold text-[11px] text-slate-900">{c.title}</p>
-                            <p className="text-[10px] text-slate-500 line-clamp-1">{c.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 4-Step Process Live */}
-                  {visibility.showProcess !== false && (
-                    <div className="p-3 space-y-2 bg-white">
-                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.processBadge}</p>
-                      <h3 className="font-black text-sm text-slate-900">{formData.processTitle}</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {steps.slice(0, 4).map((st) => (
-                          <div key={st.step} className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-                            <span className="text-[9px] font-black text-[#dc2626]">STEP {st.step}</span>
-                            <p className="font-bold text-[10px] text-slate-900 mt-0.5">{st.title}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Vendor Benefits Live */}
-                  {visibility.showBenefits !== false && (
-                    <div className="p-3 space-y-2 bg-slate-50/70">
-                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.benefitsBadge}</p>
-                      <h3 className="font-black text-sm text-slate-900">{formData.benefitsTitle}</h3>
-                      <div className="grid grid-cols-2 gap-2">
-                        {benefits.slice(0, 4).map((b) => (
-                          <div key={b.id} className="p-2 rounded-xl bg-white border border-slate-200">
-                            <p className="font-bold text-[10px] text-slate-900">{b.title}</p>
-                            <p className="text-[9px] text-slate-500 line-clamp-1">{b.description}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Dark Impact Section Live */}
-                  {visibility.showImpact !== false && (
-                    <div className="p-4 bg-slate-950 text-white space-y-2.5 rounded-xl m-2">
-                      <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider block">
-                        — {formData.impactBadge}
-                      </span>
-                      <h3 className="font-black text-sm text-white leading-tight">{formData.impactTitle}</h3>
-                      <p className="text-[10px] text-slate-300 line-clamp-2">{formData.impactSubtitle}</p>
-                      <div className="grid grid-cols-2 gap-1.5 pt-1">
-                        {impactPillars.slice(0, 4).map((p) => (
-                          <div key={p.id} className="p-1.5 rounded-lg bg-white/10 text-[9px] font-semibold text-slate-200">
-                            ✓ {p.title}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Required Documents Checklist Live */}
-                  {visibility.showDocs !== false && (
-                    <div className="p-3 space-y-2 bg-white">
-                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.docsBadge}</p>
-                      <h3 className="font-black text-sm text-slate-900">{formData.docsTitle}</h3>
-                      <div className="space-y-1.5">
-                        {docsList.slice(0, 3).map((d) => (
-                          <div key={d.id} className="p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                            <div>
-                              <p className="font-bold text-[10.5px] text-slate-900">{d.title}</p>
-                              <p className="text-[9px] text-slate-500 line-clamp-1">{d.description}</p>
-                            </div>
-                            <span className="text-[9px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">REQUIRED</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* FAQs */}
-                  {visibility.showFaqs !== false && (
-                    <div className="p-3 space-y-2 bg-slate-50/70">
-                      <p className="text-[10px] font-bold text-[#dc2626] uppercase">— {formData.faqBadge}</p>
-                      <div className="space-y-1.5">
-                        {faqsList.slice(0, 3).map((f) => (
-                          <div key={f.id} className="p-2 rounded-xl bg-white border border-slate-200">
-                            <p className="font-bold text-[11px] text-slate-900">{f.question}</p>
-                            <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-2">{f.answer}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bottom Red CTA Live */}
-                  {visibility.showCta !== false && (
-                    <div className="p-4 bg-gradient-to-br from-[#dc2626] to-red-800 text-white text-center space-y-2 rounded-xl m-2">
-                      <span className="text-[9px] font-bold tracking-wider uppercase opacity-90 block">
-                        {formData.ctaBadge}
-                      </span>
-                      <h3 className="font-black text-sm leading-tight">{formData.ctaTitle}</h3>
-                      <p className="text-[10px] text-white/80 line-clamp-2">{formData.ctaSubtitle}</p>
-                      <button className="mt-1 px-4 py-1.5 rounded-lg bg-white text-[#dc2626] font-bold text-xs shadow-xs">
-                        {formData.ctaBtnText}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Footer Mockup */}
-                  <div className="bg-[#0b101b] text-slate-400 p-3 space-y-2 text-[10px] border-t border-slate-800">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-xs">{formData.portalName}</span>
-                      <span className="text-[9px] text-slate-500">{formData.phone}</span>
-                    </div>
-                    <p className="text-[9px] text-slate-500">{formData.address}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* RENDER GUIDELINES PREVIEW */}
-              {previewPage === "guidelines" && (
-                <div className="p-4 space-y-4 bg-slate-50 text-xs">
-                  <div className="text-center space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#dc2626]">
-                      {formData.guidelinesBadge}
-                    </span>
-                    <h2 className="text-base font-black text-slate-900">{formData.guidelinesTitle}</h2>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {guidelinesTiers.map((t) => (
-                      <div key={t.code} className="p-3 rounded-2xl bg-white border border-slate-200 space-y-1.5 shadow-2xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-black text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                            {t.code}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-bold">Validity: {t.validity}</span>
-                        </div>
-                        <h4 className="font-bold text-xs text-slate-900">{t.title}</h4>
-                        <div className="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 p-2 rounded-xl">
-                          <div>
-                            <span className="text-slate-400 block">Turnover:</span>
-                            <span className="font-bold text-slate-800">{t.turnover}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 block">Capability:</span>
-                            <span className="font-bold text-[#dc2626]">{t.capacity}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* RENDER TENDERS PREVIEW */}
-              {previewPage === "tenders" && (
-                <div className="p-4 space-y-4 text-xs">
-                  {formData.tendersNoticeText && (
-                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
-                      <span className="px-2 py-0.5 rounded bg-amber-500 text-white text-[9px] font-bold uppercase">
-                        {formData.tendersNoticeBadge || "NOTICE"}
-                      </span>
-                      <h4 className="font-bold text-xs text-slate-900">{formData.tendersNoticeTitle}</h4>
-                      <p className="text-[10px] text-slate-600 leading-relaxed">{formData.tendersNoticeText}</p>
-                    </div>
-                  )}
-                  <p className="text-center text-slate-400 text-[11px] pt-4">
-                    Active tenders from database rendered below this bulletin.
-                  </p>
-                </div>
-              )}
-
-              {/* RENDER GATE PASS PREVIEW */}
-              {previewPage === "gatepass" && (
-                <div className="p-4 space-y-4 text-xs">
-                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 space-y-1">
-                    <p className="font-bold text-[11px] text-rose-900">Security Checkpoint Notice</p>
-                    <p className="text-[10px] text-rose-700 leading-relaxed">
-                      {formData.gatePassInstructions}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-2">
-                    <div className="w-24 h-24 mx-auto bg-white border border-slate-300 rounded-xl flex items-center justify-center font-mono font-bold text-slate-400 text-xs">
-                      [QR SCAN]
-                    </div>
-                    <p className="text-[10px] text-slate-500">{formData.gatePassTerms}</p>
-                  </div>
-                </div>
-              )}
-                </div>
-
-                {/* Mobile Bottom Home Bar */}
-                {previewDevice === "mobile" && (
-                  <div className="bg-white py-1.5 shrink-0 flex justify-center border-t border-slate-100/60">
-                    <div className="w-28 h-1 bg-slate-300 rounded-full" />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* ── 5. FLOATING SAVE BAR (Shows when changes are unsaved) ── */}
+      {hasUnsavedChanges && (
+        <div className="fixed bottom-6 inset-x-4 sm:inset-x-auto sm:right-8 z-40 max-w-lg bg-slate-900/95 backdrop-blur-2xl text-white p-3.5 sm:px-5 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-between gap-4 animate-in slide-in-from-bottom-5 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+            <div>
+              <p className="text-xs font-bold text-white leading-tight">Unsaved Content Changes</p>
+              <p className="text-[10px] text-slate-300">Publish to push updates to live portal</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/25 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+            >
+              {saving ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-950" /> : <Sparkles className="w-3.5 h-3.5 text-slate-950" />}
+              <span>{saving ? "Publishing..." : "Publish Live"}</span>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
