@@ -159,7 +159,6 @@ export const HBS_NAV_SECTIONS: NavSection[] = [
     title: "INQUIRIES & LEADS",
     items: [
       { href: "/admin/hbs/leads", label: "Customer Leads", icon: Inbox, badge: "Live", sectionKey: "hbs" },
-      { href: "/admin/automail?brand=hbs", label: "AutoMail Studio", icon: Send, badge: "HBS", sectionKey: "automail" },
     ],
   },
   {
@@ -177,7 +176,8 @@ export const HBS_NAV_SECTIONS: NavSection[] = [
       { href: "/admin/hbs/about", label: "About Page", icon: Info, sectionKey: "hbs" },
       { href: "/admin/hbs/why-choose-us", label: "Why Choose Us & FAQs", icon: ShieldCheck, sectionKey: "hbs" },
       { href: "/admin/hbs/branding", label: "Brand & Logos", icon: Palette, sectionKey: "hbs" },
-      { href: "/admin/hbs/settings?tab=contact", label: "Hotlines & WhatsApp", icon: Phone, sectionKey: "hbs" },
+      { href: "/admin/hbs/seo", label: "SEO & Metadata", icon: Compass, sectionKey: "hbs" },
+      { href: "/admin/hbs/settings", label: "Settings & Hotlines", icon: Settings, sectionKey: "hbs" },
     ],
   },
 ];
