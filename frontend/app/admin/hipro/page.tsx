@@ -556,26 +556,6 @@ export default function HiproControlCenterPage() {
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
               </Link>
-
-              <Link
-                href="/admin/automail?brand=hipro"
-                className="p-3 rounded-2xl bg-slate-50/60 hover:bg-white border border-slate-200/70 hover:border-purple-300 shadow-2xs hover:shadow-xs transition-all flex items-center justify-between gap-3 group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
-                    <Send className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 group-hover:text-purple-600 transition-colors">
-                      HiPRO AutoMail Studio
-                    </p>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.2">
-                      Quote responses, newsletter blasts & automated follow-ups
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all shrink-0" />
-              </Link>
             </div>
           </div>
         </div>
