@@ -68,6 +68,8 @@ router.get("/", async (req: Request, res: Response) => {
       // 8. Recent Feeds across all 3 portals
       recentQuotes,
       recentContacts,
+      recentProjects,
+      recentServices,
       recentHbsLeads,
       recentVendorApps,
       recentApplications,
@@ -134,6 +136,20 @@ router.get("/", async (req: Request, res: Response) => {
         take: 5,
         orderBy: { createdAt: "desc" },
         select: { id: true, name: true, email: true, phone: true, message: true, status: true, createdAt: true },
+      }),
+
+      // Recent 6 Projects (HiPRO)
+      prisma.project.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, title: true, category: true, location: true, client: true, featured: true, status: true, createdAt: true },
+      }),
+
+      // Recent 6 Services (HiPRO)
+      prisma.service.findMany({
+        take: 6,
+        orderBy: { order: "asc" },
+        select: { id: true, title: true, category: true, active: true, order: true },
       }),
 
       // Recent 5 HBS Leads
@@ -210,6 +226,8 @@ router.get("/", async (req: Request, res: Response) => {
       // Cross-Portal Recent Feed
       recentQuotes,
       recentContacts,
+      recentProjects,
+      recentServices,
       recentHbsLeads,
       recentVendorApps,
       recentApplications,
