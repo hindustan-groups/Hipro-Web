@@ -292,9 +292,8 @@ function projectToFormState(p: Project): FormState {
 }
 
 export default function AdminProjects() {
-  const cached = getAdminCache<Project[]>("admin:projects");
-  const [projects, setProjects] = useState<Project[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -355,7 +354,12 @@ export default function AdminProjects() {
   };
 
   useEffect(() => {
-    fetchProjects();
+    const cached = getAdminCache<Project[]>("admin:projects");
+    if (cached) {
+      setProjects(cached);
+      setLoading(false);
+    }
+    fetchProjects(!cached);
   }, []);
 
   // Update form state helper

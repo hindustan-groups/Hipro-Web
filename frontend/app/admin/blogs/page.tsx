@@ -137,9 +137,8 @@ const EMPTY_FORM: BlogFormData = {
 type TabKey = "content" | "seo" | "faq" | "links" | "publishing";
 
 export default function AdminBlogs() {
-  const cachedBlogs = getAdminCache<BlogPost[]>("admin:blogs");
-  const [blogs, setBlogs] = useState<BlogPost[]>(() => cachedBlogs || []);
-  const [loading, setLoading] = useState(!cachedBlogs);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -155,7 +154,7 @@ export default function AdminBlogs() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchBlogs = async (force = false) => {
-    if (force || !blogs.length) {
+    if (force) {
       setLoading(true);
     }
     setError("");
@@ -173,12 +172,18 @@ export default function AdminBlogs() {
       }
     } catch {
       setError("Network error while connecting to backend");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchBlogs();
+    const cached = getAdminCache<BlogPost[]>("admin:blogs");
+    if (cached) {
+      setBlogs(cached);
+      setLoading(false);
+    }
+    fetchBlogs(!cached);
   }, []);
 
   const insertMarkdown = (prefix: string, suffix: string = "") => {

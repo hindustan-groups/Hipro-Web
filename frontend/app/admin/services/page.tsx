@@ -153,14 +153,12 @@ const CATEGORY_OPTIONS = [
 ];
 
 export default function AdminServices() {
-  const cachedServices = getAdminCache<Service[]>("admin:services");
-  const cachedGuarantees = getAdminCache<Guarantee[]>("admin:guarantees");
   const [activeTab, setActiveTab] = useState<"services" | "guarantees">("services");
-  const [services, setServices] = useState<Service[]>(cachedServices || []);
-  const [guarantees, setGuarantees] = useState<Guarantee[]>(cachedGuarantees || []);
+  const [services, setServices] = useState<Service[]>([]);
+  const [guarantees, setGuarantees] = useState<Guarantee[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [loading, setLoading] = useState(!cachedServices);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -177,7 +175,7 @@ export default function AdminServices() {
   const [guaranteeForm, setGuaranteeForm] = useState(EMPTY_GUARANTEE);
 
   const fetchData = async (force = false) => {
-    if (force || !services.length) {
+    if (force) {
       setLoading(true);
     }
     setError("");
@@ -204,7 +202,12 @@ export default function AdminServices() {
   };
 
   useEffect(() => {
-    fetchData();
+    const cachedServices = getAdminCache<Service[]>("admin:services");
+    const cachedGuarantees = getAdminCache<Guarantee[]>("admin:guarantees");
+    if (cachedServices) setServices(cachedServices);
+    if (cachedGuarantees) setGuarantees(cachedGuarantees);
+    if (cachedServices && cachedGuarantees) setLoading(false);
+    fetchData(!cachedServices);
   }, []);
 
   const filteredServices = useMemo(() => {
