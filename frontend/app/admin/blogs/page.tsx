@@ -612,37 +612,44 @@ export default function AdminBlogs() {
   return (
     <div className="space-y-6">
       {/* Top Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-[0_4px_30px_rgba(15,23,42,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 font-display uppercase tracking-tight">
-            Blog CMS V2 &amp; SEO Center
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <div className="flex items-center gap-2 text-[11px] font-mono tracking-wider text-slate-500 uppercase mb-1">
+            <span>EDITORIAL INSIGHTS</span>
+            <span className="text-slate-400">/</span>
+            <span className="text-blue-600 font-bold">BLOG CMS</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-slate-900">
+            HiPRO Engineering Blogs &amp; SEO Center
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">
             Production content management system with structured FAQs, local SEO targeting, and publishing workflows.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <Link
             href="/admin/blogs-hero"
-            className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-construction-navy hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-semibold transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-blue-900 hover:bg-slate-50 px-4 py-2.5 rounded-2xl text-xs font-semibold transition-all shadow-2xs"
             title="Configure the blogs listing page hero banner, image, and copywriting"
           >
-            <Layers className="w-3.5 h-3.5 text-construction-red" />
-            <span>Customize Hero Banner</span>
+            <Layers className="w-3.5 h-3.5 text-blue-600" />
+            <span>Customize Hero</span>
           </Link>
           <button
             onClick={() => fetchBlogs(true)}
             disabled={loading}
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 px-3 py-1.5 rounded-none text-xs font-medium disabled:opacity-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-4 py-2.5 rounded-2xl text-xs font-semibold disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
+            <span>Refresh</span>
           </button>
           {!showForm && (
             <button
               onClick={startCreate}
-              className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-4 py-2 rounded-none text-sm font-semibold transition-colors shadow-md shadow-blue-900/20"
+              className="flex items-center gap-2 bg-[#0F2C59] hover:bg-blue-900 text-white px-5 py-2.5 rounded-2xl text-xs font-semibold transition-all shadow-sm cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Create Blog Post
+              <Plus className="w-4 h-4 text-blue-300" />
+              <span>Create Article</span>
             </button>
           )}
         </div>
@@ -650,21 +657,21 @@ export default function AdminBlogs() {
 
       {/* Alerts */}
       {error && (
-        <div className="p-4 rounded-none bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
+        <div className="p-4 rounded-2xl bg-red-50/90 border border-red-200 text-red-700 text-sm flex items-start gap-3 shadow-2xs">
           <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
           <div className="flex-1 font-medium">{error}</div>
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-none bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between gap-3">
+        <div className="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-2.5 font-medium">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             {success}
           </div>
           <button
             onClick={() => setSuccess("")}
-            className="text-xs uppercase font-bold text-emerald-700 hover:text-emerald-900"
+            className="text-xs uppercase font-bold text-emerald-700 hover:text-emerald-900 cursor-pointer"
           >
             Dismiss
           </button>
@@ -674,25 +681,25 @@ export default function AdminBlogs() {
       {/* Create / Edit Form Modal or Container */}
       {showForm && (
         <div
-          className={`bg-white border border-slate-200 shadow-xl rounded-none p-6 md:p-8 space-y-6 transition-all ${
+          className={`bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-2xl rounded-3xl p-6 md:p-8 space-y-6 transition-all ${
             isFullscreen
               ? "fixed inset-0 z-50 overflow-y-auto bg-white p-6 md:p-10"
               : "relative"
           }`}
         >
           {/* Form Header Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/70 pb-4">
             <div className="flex items-center gap-3">
-              <span className="p-2 bg-construction-red/10 text-construction-red">
+              <span className="p-2.5 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
                 <FileText className="w-5 h-5" />
               </span>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h3 className="text-slate-900 font-bold text-lg font-display uppercase tracking-tight">
+                  <h3 className="text-slate-900 font-bold text-lg font-display tracking-tight">
                     {editingId ? "Edit Article" : "Create New Article"}
                   </h3>
                   <span
-                    className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border ${
+                    className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
                       form.status === "published"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                         : form.status === "draft"
@@ -703,7 +710,7 @@ export default function AdminBlogs() {
                     {form.status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 mt-0.5">
                   {editingId
                     ? `Slug: /blogs/${form.slug || "slug-here"}`
                     : "Draft and publish an SEO-optimized engineering or construction guide."}
@@ -717,7 +724,7 @@ export default function AdminBlogs() {
                 <Link
                   href={`/blogs/${form.slug}`}
                   target="_blank"
-                  className="px-3 py-1.5 text-xs font-semibold text-construction-navy hover:text-construction-red border border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
+                  className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:text-blue-900 border border-slate-200 bg-white hover:bg-slate-50 rounded-xl flex items-center gap-1.5 transition-all shadow-2xs"
                   title="Preview live or draft article (Admin authenticated)"
                 >
                   <ExternalLink className="w-3.5 h-3.5" /> Preview Page
@@ -728,7 +735,7 @@ export default function AdminBlogs() {
                 type="button"
                 onClick={() => executeSave("draft")}
                 disabled={saving}
-                className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-sm"
+                className="px-4 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" /> Save Draft
               </button>
@@ -737,7 +744,7 @@ export default function AdminBlogs() {
                 type="button"
                 onClick={() => executeSave("published")}
                 disabled={saving}
-                className="px-4 py-1.5 bg-construction-navy hover:bg-blue-800 text-white text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-md shadow-blue-900/20"
+                className="px-4 py-1.5 bg-[#0F2C59] hover:bg-blue-900 text-white rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <Globe className="w-3.5 h-3.5" /> Publish Now
               </button>
@@ -745,7 +752,7 @@ export default function AdminBlogs() {
               <button
                 type="button"
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 text-xs"
+                className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs transition-all cursor-pointer shadow-2xs"
                 title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Editor"}
               >
                 {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -754,7 +761,7 @@ export default function AdminBlogs() {
               <button
                 type="button"
                 onClick={handleCloseForm}
-                className="px-3 py-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 text-xs font-semibold uppercase tracking-wider"
+                className="px-3.5 py-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
               >
                 Close
               </button>
@@ -762,35 +769,35 @@ export default function AdminBlogs() {
           </div>
 
           {/* CMS V2 Navigation Tabs */}
-          <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50 text-xs font-bold uppercase tracking-wider">
+          <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/70 p-1 rounded-2xl text-xs font-bold tracking-wider gap-1">
             <button
               type="button"
               onClick={() => setActiveTab("content")}
-              className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "content"
-                  ? "border-construction-navy text-construction-navy bg-white font-bold"
-                  : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-white text-blue-950 font-bold shadow-xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
-              <FileText className="w-4 h-4" /> 1. Content &amp; Media
+              <FileText className="w-4 h-4 text-blue-600" /> 1. Content &amp; Media
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("seo")}
-              className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "seo"
-                  ? "border-construction-navy text-construction-navy bg-white font-bold"
-                  : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-white text-blue-950 font-bold shadow-xs border border-slate-200/80"
+                  : "text-slate-500 hover:text-slate-900 hover:bg-white/50"
               }`}
             >
-              <Compass className="w-4 h-4" /> 2. SEO &amp; GEO
+              <Compass className="w-4 h-4 text-indigo-600" /> 2. SEO &amp; GEO
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("faq")}
-              className={`px-5 py-3 border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === "faq"
-                  ? "border-construction-navy text-construction-navy bg-white font-bold"
+                  ? "bg-white text-blue-950 font-bold shadow-xs border border-slate-200/80"
                   : "border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
@@ -1948,59 +1955,59 @@ export default function AdminBlogs() {
       )}
 
       {/* Blogs Table with Filters */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 shadow-[0_4px_30px_rgba(15,23,42,0.03)] overflow-hidden">
         {/* Table Filters & Search */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
+        <div className="p-4 sm:p-5 border-b border-slate-200/70 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/80 border border-slate-200/60 overflow-x-auto">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                 statusFilter === "all"
-                  ? "bg-construction-navy text-white border-construction-navy"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               All ({blogs.length})
             </button>
             <button
               onClick={() => setStatusFilter("published")}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                 statusFilter === "published"
-                  ? "bg-emerald-700 text-white border-emerald-700"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                  ? "bg-white text-emerald-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Published ({blogs.filter((b) => (b.status || (b.active !== false ? "published" : "draft")) === "published").length})
             </button>
             <button
               onClick={() => setStatusFilter("draft")}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                 statusFilter === "draft"
-                  ? "bg-amber-600 text-white border-amber-600"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                  ? "bg-white text-amber-700 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Drafts ({blogs.filter((b) => (b.status || (b.active !== false ? "published" : "draft")) === "draft").length})
             </button>
             <button
               onClick={() => setStatusFilter("unpublished")}
-              className={`px-3 py-1.5 border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer ${
                 statusFilter === "unpublished"
-                  ? "bg-slate-700 text-white border-slate-700"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               Unpublished ({blogs.filter((b) => b.status === "unpublished").length})
             </button>
           </div>
 
-          <div className="relative w-full md:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full md:w-72">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search articles..."
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 text-xs text-slate-900 rounded-none focus:outline-none focus:border-construction-navy"
+              placeholder="Search articles by title or keyword..."
+              className="w-full pl-9 pr-3.5 py-2 bg-white/90 border border-slate-200/80 text-xs text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 shadow-2xs"
             />
           </div>
         </div>
@@ -2008,13 +2015,13 @@ export default function AdminBlogs() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                <th className="px-5 py-3.5 font-semibold w-16">Cover</th>
-                <th className="px-5 py-3.5 font-semibold">Article &amp; SEO Target</th>
-                <th className="px-5 py-3.5 font-semibold">Category</th>
-                <th className="px-5 py-3.5 font-semibold">Date</th>
-                <th className="px-5 py-3.5 font-semibold text-center">Status</th>
-                <th className="px-5 py-3.5 font-semibold text-center">Actions</th>
+              <tr className="border-b border-slate-200/70 bg-slate-50/70 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
+                <th className="px-5 py-3.5 font-bold w-16">Cover</th>
+                <th className="px-5 py-3.5 font-bold">Article &amp; SEO Target</th>
+                <th className="px-5 py-3.5 font-bold">Category</th>
+                <th className="px-5 py-3.5 font-bold">Date</th>
+                <th className="px-5 py-3.5 font-bold text-center">Status</th>
+                <th className="px-5 py-3.5 font-bold text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -2023,7 +2030,7 @@ export default function AdminBlogs() {
                   <tr key={i} className="animate-pulse">
                     {[...Array(6)].map((_, j) => (
                       <td key={j} className="px-5 py-4">
-                        <div className="h-4 bg-slate-100 rounded-none w-24" />
+                        <div className="h-4 bg-slate-100 rounded-xl w-24" />
                       </td>
                     ))}
                   </tr>
@@ -2033,7 +2040,7 @@ export default function AdminBlogs() {
                   <td colSpan={6} className="text-center text-slate-500 py-16">
                     {searchQuery || statusFilter !== "all"
                       ? "No articles matching the selected filters."
-                      : "No blog posts found. Click \"Create Blog Post\" to write your first article."}
+                      : "No blog posts found. Click \"Create Article\" to write your first post."}
                   </td>
                 </tr>
               ) : (
@@ -2043,7 +2050,7 @@ export default function AdminBlogs() {
                     <tr
                       key={b.id}
                       className={`transition-colors ${
-                        postStatus !== "published" ? "bg-slate-50/50" : "hover:bg-slate-50"
+                        postStatus !== "published" ? "bg-slate-50/40" : "hover:bg-slate-50/70"
                       }`}
                     >
                       <td className="px-5 py-4">
@@ -2052,10 +2059,10 @@ export default function AdminBlogs() {
                           <img
                             src={b.image}
                             alt={b.imageAlt || b.title}
-                            className="w-12 h-12 object-cover rounded-none border border-slate-200"
+                            className="w-12 h-12 object-cover rounded-xl border border-slate-200/80 shadow-2xs"
                           />
                         ) : (
-                          <div className="w-12 h-12 bg-slate-200 rounded-none" />
+                          <div className="w-12 h-12 bg-slate-100 rounded-xl border border-slate-200/60" />
                         )}
                       </td>
                       <td className="px-5 py-4">
@@ -2063,28 +2070,28 @@ export default function AdminBlogs() {
                         <div className="text-xs text-slate-500 flex flex-wrap items-center gap-2 mt-0.5">
                           <span className="font-mono text-[11px] text-slate-400">/{b.slug}</span>
                           {b.primaryKeyword && (
-                            <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.2 border border-blue-200">
+                            <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-200/80 font-medium">
                               KW: {b.primaryKeyword}
                             </span>
                           )}
                           {b.targetLocation && (
-                            <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2">
+                            <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200/60 font-medium">
                               {b.targetLocation}
                             </span>
                           )}
                         </div>
                       </td>
                       <td className="px-5 py-4 text-slate-600">
-                        <span className="px-2.5 py-1 bg-slate-100 rounded-none text-xs font-medium">
+                        <span className="px-3 py-1 bg-slate-100/80 rounded-full text-xs font-semibold text-slate-700 border border-slate-200/60">
                           {b.category}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap text-xs">
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap text-xs font-mono">
                         {b.date}
                       </td>
                       <td className="px-5 py-4 text-center">
                         <span
-                          className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border ${
+                          className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border shadow-2xs ${
                             postStatus === "published"
                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                               : postStatus === "draft"
@@ -2101,7 +2108,7 @@ export default function AdminBlogs() {
                             href={`/blogs/${b.slug}`}
                             target="_blank"
                             title="Preview article"
-                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-all shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-all shadow-2xs"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
@@ -2109,7 +2116,7 @@ export default function AdminBlogs() {
                             onClick={() => startEdit(b)}
                             disabled={loadingEditId === (b.id || b.slug)}
                             title="Edit article"
-                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 flex items-center justify-center transition-all shadow-sm disabled:opacity-50"
+                            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-slate-600 flex items-center justify-center transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
                           >
                             {loadingEditId === (b.id || b.slug) ? (
                               <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
@@ -2120,7 +2127,7 @@ export default function AdminBlogs() {
                           <button
                             onClick={() => deleteBlog(b.id, b.title)}
                             title="Delete article"
-                            className="w-8 h-8 rounded-none bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-400 flex items-center justify-center transition-all shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-400 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -2133,9 +2140,9 @@ export default function AdminBlogs() {
             </tbody>
           </table>
         </div>
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-slate-500 text-xs font-medium flex items-center justify-between">
-          <span>{filteredBlogs.length} articles shown</span>
-          <span className="text-[11px] text-slate-400">
+        <div className="px-5 py-3.5 border-t border-slate-200/70 bg-slate-50/50 text-slate-500 text-xs font-medium flex items-center justify-between">
+          <span className="font-mono text-[11px]">{filteredBlogs.length} articles shown</span>
+          <span className="text-[11px] text-slate-400 font-mono">
             {blogs.filter((b) => (b.status || (b.active !== false ? "published" : "draft")) === "published").length} published •{" "}
             {blogs.filter((b) => (b.status || (b.active !== false ? "published" : "draft")) === "draft").length} drafts •{" "}
             {blogs.filter((b) => b.status === "unpublished").length} unpublished
