@@ -32,11 +32,18 @@ router.get("/", async (req: Request, res: Response) => {
       servicesTotal,
       servicesActive,
 
-      // 4. HiPRO: Blogs & Careers
+      // 4. HiPRO: Blogs, Careers, Testimonials, Team, Hero, Stats & Guarantees
       blogsTotal,
       blogsPublished,
       applicationsTotal,
       applicationsNew,
+      jobPostingsTotal,
+      testimonialsTotal,
+      teamTotal,
+      heroSlidesTotal,
+      statsTotal,
+      guaranteesTotal,
+      subscribersTotal,
 
       // 5. HBS: Leads & Services
       hbsLeadsTotal,
@@ -82,11 +89,18 @@ router.get("/", async (req: Request, res: Response) => {
       prisma.service.count(),
       prisma.service.count({ where: { active: true } }),
 
-      // HiPRO Blogs & Careers
+      // HiPRO Blogs, Careers, Testimonials, Team, Hero, Stats & Guarantees
       prisma.blogPost.count(),
       prisma.blogPost.count({ where: { status: "published", active: true } }),
       prisma.jobApplication.count(),
       prisma.jobApplication.count({ where: { status: "new" } }),
+      prisma.jobPosting.count(),
+      prisma.testimonial.count(),
+      prisma.teamMember.count(),
+      prisma.heroSlide.count(),
+      prisma.stats.count(),
+      prisma.guarantee.count(),
+      prisma.newsletterSubscriber.count(),
 
       // HBS (Hind Building Solutions)
       prisma.hbsLead.count(),
@@ -164,7 +178,13 @@ router.get("/", async (req: Request, res: Response) => {
         quotes: { total: quotesTotal, pending: quotesPending, approved: quotesApproved },
         contacts: { total: contactsTotal, new: contactsNew, replied: contactsReplied },
         blogs: { total: blogsTotal, published: blogsPublished },
-        careers: { total: applicationsTotal, new: applicationsNew },
+        careers: { total: applicationsTotal, new: applicationsNew, openJobs: jobPostingsTotal },
+        testimonials: { total: testimonialsTotal },
+        team: { total: teamTotal },
+        hero: { total: heroSlidesTotal },
+        stats: { total: statsTotal },
+        guarantees: { total: guaranteesTotal },
+        subscribers: { total: subscribersTotal },
       },
 
       // 🏢 Portal 2: Hind Building Solutions (HBS)
