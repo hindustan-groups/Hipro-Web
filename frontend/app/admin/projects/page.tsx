@@ -1401,6 +1401,7 @@ export default function AdminProjects() {
               <button
                 onClick={() => fetchProjects(true)}
                 disabled={loading}
+                suppressHydrationWarning
                 className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-4 py-2.5 text-xs font-semibold rounded-2xl disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
