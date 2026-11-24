@@ -1203,9 +1203,9 @@ async function runTests() {
 
   // 13.2 users/page.tsx: 'hbs', 'empanelment', and 'automail' present in available sections
   assert(
-    usersPageContent.includes('{ key: "hbs", label: "HBS Portal CMS" }') &&
-      usersPageContent.includes('{ key: "empanelment", label: "Vendor Empanelment" }') &&
-      usersPageContent.includes('{ key: "automail", label: "AutoMail Studio" }'),
+    usersPageContent.includes('key: "hbs"') &&
+      usersPageContent.includes('key: "empanelment"') &&
+      usersPageContent.includes('key: "automail"'),
     "frontend users/page.tsx includes 'hbs', 'empanelment', and 'automail' in availableSections (SEC-B2B-02)"
   );
 

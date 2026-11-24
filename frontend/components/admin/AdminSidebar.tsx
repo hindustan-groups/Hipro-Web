@@ -256,6 +256,8 @@ export default function AdminSidebar({ user }: { user: any }) {
       if (isAdmin) return true;
       const key = sectionKey || href.split("/")[2] || "dashboard";
       if (key === "dashboard") return true;
+      if (key === "leads") return userPermissions.includes("leads");
+      if (key === "automail") return userPermissions.includes("automail");
       if (key.startsWith("hbs") && (userPermissions.includes("hbs") || userPermissions.includes(key))) return true;
       if (key.startsWith("empanelment") && (userPermissions.includes("empanelment") || userPermissions.includes(key))) return true;
       if (userPermissions.includes(key)) return true;
