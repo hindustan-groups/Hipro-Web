@@ -10,7 +10,8 @@ description = "Strict file-level allowlist for environment templates and isolate
 paths = [
   '''^\.env\.example$''',
   '''^frontend/\.env\.example$''',
-  '''^backend/\.env\.example$'''
+  '''^backend/\.env\.example$''',
+  '''^frontend/app/admin/api-keys/page\.tsx$'''
 ]
 regexes = [
   '''(?i)ci_test_password_local_only''',

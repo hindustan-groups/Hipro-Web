@@ -789,7 +789,7 @@ export default function AutoMailSettingsPage() {
                 <div>
                   <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                     <Shuffle className="w-4 h-4 text-blue-600" />
-                    <span>Automated Dispatch Routing Matrix ("Kisko kis mail se jayega")</span>
+                    <span>Automated Dispatch Routing Matrix (&quot;Kisko kis mail se jayega&quot;)</span>
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Map each automated website trigger, quotation request, and lead notification to your designated corporate mailbox.
