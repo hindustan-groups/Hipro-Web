@@ -11,7 +11,8 @@ paths = [
   '''^\.env\.example$''',
   '''^frontend/\.env\.example$''',
   '''^backend/\.env\.example$''',
-  '''^frontend/app/admin/api-keys/page\.tsx$'''
+  '''^frontend/app/admin/api-keys/page\.tsx$''',
+  '''^backend/src/scripts/test_admin_url_security\.ts$'''
 ]
 regexes = [
   '''(?i)ci_test_password_local_only''',

@@ -501,11 +501,11 @@ runTest("Middleware unlocks portal access when valid secret key is in path (/adm
   assert.strictEqual(res.setCookie?.name, "admin_portal_access");
 });
 
-runTest("Middleware rejects invalid secret key (?key=wrong_token) -> redirects to / (307)", () => {
+runTest("Middleware rejects invalid secret key (?key=hipro_ci_test_invalid_token) -> redirects to / (307)", () => {
   const res = simulateMiddleware({
     host: "www.hindustanprojects.in",
     pathname: "/admin-login",
-    search: "?key=wrong_intruder_key_999",
+    search: "?key=hipro_ci_test_invalid_token",
     cookies: {},
   });
   assert.strictEqual(res.type, "redirect");
