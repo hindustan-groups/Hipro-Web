@@ -37,6 +37,7 @@ export default function AutoMailDashboard() {
   // Sync state
   const [syncingCrm, setSyncingCrm] = useState(false);
   const [syncToast, setSyncToast] = useState<string | null>(null);
+  const [logStatusFilter, setLogStatusFilter] = useState<"all" | "sent" | "failed">("all");
 
   const fetchStats = async () => {
     try {
@@ -196,7 +197,13 @@ export default function AutoMailDashboard() {
             <span>Universal Mail Pipeline Active</span>
             <span className="h-2.5 w-px bg-white/20" />
             <span className="text-white/80 font-sans normal-case text-[10px]">
-              {selectedBrand === "hipro" ? "HiPRO Scope" : selectedBrand === "hbs" ? "Hind Build Scope" : "All Brands"}
+              {selectedBrand === "hipro"
+                ? "HiPRO Scope"
+                : selectedBrand === "hbs"
+                ? "Hind Build Scope"
+                : selectedBrand === "empanelment"
+                ? "Empanelment Scope"
+                : "All Brands"}
             </span>
           </div>
 
@@ -206,6 +213,8 @@ export default function AutoMailDashboard() {
                 ? "HiPRO Construction Mail Suite"
                 : selectedBrand === "hbs"
                 ? "Hind Build Solutions Mail Suite"
+                : selectedBrand === "empanelment"
+                ? "Vendor Empanelment Mail Suite"
                 : "Global Multi-Brand AutoMail Hub"}
             </h2>
             <p className="mt-1.5 text-slate-300 text-xs sm:text-sm leading-relaxed">
@@ -274,9 +283,16 @@ export default function AutoMailDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
-              1
+          <div className="group p-4 rounded-2xl bg-slate-50/80 hover:bg-blue-50/40 border border-slate-200 hover:border-blue-200 transition-all space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                1
+              </div>
+              {stats?.settings?.smtpConfigured && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {stats?.settings?.activeMailboxesCount ?? 1} Active
+                </span>
+              )}
             </div>
             <h4 className="text-xs font-bold text-slate-900">Mailboxes &amp; Routing Setup</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -284,16 +300,21 @@ export default function AutoMailDashboard() {
             </p>
             <Link
               href="/admin/automail/settings"
-              className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1"
+              className="text-[11px] font-bold text-blue-600 hover:underline inline-flex items-center gap-1"
             >
               <span>Mailboxes &amp; Control Kholo</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-600 text-white font-bold text-xs flex items-center justify-center">
-              2
+          <div className="group p-4 rounded-2xl bg-slate-50/80 hover:bg-amber-50/40 border border-slate-200 hover:border-amber-200 transition-all space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-lg bg-amber-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                2
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                15+ Suites
+              </span>
             </div>
             <h4 className="text-xs font-bold text-slate-900">3-Portal Template Choose</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -301,16 +322,21 @@ export default function AutoMailDashboard() {
             </p>
             <Link
               href="/admin/automail/templates"
-              className="text-[11px] font-bold text-amber-600 hover:underline flex items-center gap-1"
+              className="text-[11px] font-bold text-amber-600 hover:underline inline-flex items-center gap-1"
             >
               <span>3-Portal Templates Dekho</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
-              3
+          <div className="group p-4 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/40 border border-slate-200 hover:border-emerald-200 transition-all space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+                3
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-mono">
+                {totalContacts} Leads
+              </span>
             </div>
             <h4 className="text-xs font-bold text-slate-900">&ldquo;Send Email Now&rdquo; Dabao</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
@@ -318,10 +344,10 @@ export default function AutoMailDashboard() {
             </p>
             <Link
               href="/admin/automail/compose"
-              className="text-[11px] font-bold text-emerald-600 hover:underline flex items-center gap-1"
+              className="text-[11px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-1"
             >
               <span>Compose Kholo</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
         </div>
@@ -549,7 +575,23 @@ export default function AutoMailDashboard() {
               Unified live delivery audit covering CRM Quick Mail, Empanelment, AutoMail Direct &amp; Campaigns
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-[11px] font-bold">
+              {(["all", "sent", "failed"] as const).map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setLogStatusFilter(st)}
+                  className={`px-2.5 py-1 rounded-lg transition-all capitalize ${
+                    logStatusFilter === st
+                      ? "bg-white text-slate-900 shadow-2xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {st === "all" ? "All" : st === "sent" ? "Delivered" : "Failed"}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               onClick={fetchStats}
@@ -581,14 +623,33 @@ export default function AutoMailDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {recentLogs.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-10 text-center text-slate-400">
-                    No recent email dispatches recorded yet for this filter.
-                  </td>
-                </tr>
-              ) : (
-                recentLogs.map((log: any) => {
+              {(() => {
+                const visibleLogs = recentLogs.filter((l: any) =>
+                  logStatusFilter === "all"
+                    ? true
+                    : logStatusFilter === "sent"
+                    ? l.status === "sent"
+                    : l.status !== "sent"
+                );
+                if (visibleLogs.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={5} className="py-12 text-center text-slate-400">
+                        <p className="text-xs font-semibold text-slate-500">
+                          No recent email dispatches recorded yet for this filter.
+                        </p>
+                        <Link
+                          href="/admin/automail/compose"
+                          className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Compose First Email</span>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                }
+                return visibleLogs.map((log: any) => {
                   const isDirect = log.campaign?.template === "direct_crm";
                   return (
                     <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
@@ -649,8 +710,8 @@ export default function AutoMailDashboard() {
                       </td>
                     </tr>
                   );
-                })
-              )}
+                });
+              })()}
             </tbody>
           </table>
         </div>

@@ -31,6 +31,8 @@ import {
   ChevronDown,
   Wand2,
   ShieldCheck,
+  Monitor,
+  Smartphone,
 } from "lucide-react";
 
 const SMART_WORKFLOWS = [
@@ -138,6 +140,8 @@ export default function AutoMailCompose() {
   const [selectedMailboxId, setSelectedMailboxId] = useState<string>("");
   const [htmlBody, setHtmlBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+  const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
 
   // Dynamic Personalization Preview State
   const [previewPersonalized, setPreviewPersonalized] = useState(true);
@@ -430,6 +434,7 @@ export default function AutoMailCompose() {
   // 1-Click Smart Workflow Applicator
   const applySmartWorkflow = (wf: (typeof SMART_WORKFLOWS)[0]) => {
     const found = BUSINESS_TEMPLATES.find((t) => t.id === wf.templateId) || BUSINESS_TEMPLATES[0];
+    setActiveWorkflowId(wf.id);
     setHtmlBody(found.html);
     setSubject(wf.subject);
     setName(wf.title);
@@ -453,9 +458,19 @@ export default function AutoMailCompose() {
     const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
     const pFirstName = pName.split(" ")[0] || "Ramesh";
     const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
-    const pWebsite = brand === "hbs" ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in";
-    const pPhone = brand === "hbs" ? "+91 75970 00601" : "+91 75970 00601";
+    const pBrand =
+      brand === "hbs"
+        ? "Hind Building Solutions"
+        : brand === "empanelment"
+        ? "HiPRO Empanelment Desk"
+        : "Hindustan Projects";
+    const pWebsite =
+      brand === "hbs"
+        ? "https://hindbuilding.hindustanprojects.in"
+        : brand === "empanelment"
+        ? "https://www.hindustanprojects.in/empanelment"
+        : "https://www.hindustanprojects.in";
+    const pPhone = "+91 75970 00601";
     const pDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
     const pYear = String(new Date().getFullYear());
 
@@ -479,7 +494,12 @@ export default function AutoMailCompose() {
     const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
     const pFirstName = pName.split(" ")[0] || "Ramesh";
     const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
+    const pBrand =
+      brand === "hbs"
+        ? "Hind Building Solutions"
+        : brand === "empanelment"
+        ? "HiPRO Empanelment Desk"
+        : "Hindustan Projects";
 
     return subject
       .replace(/\{\{name\}\}/gi, pName)
@@ -865,30 +885,43 @@ export default function AutoMailCompose() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-            {SMART_WORKFLOWS.map((wf) => (
-              <button
-                key={wf.id}
-                type="button"
-                onClick={() => applySmartWorkflow(wf)}
-                className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 bg-slate-50/70 hover:bg-blue-50/60 text-left transition-all group flex flex-col justify-between shadow-2xs hover:shadow-xs active:scale-[0.98]"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <span className="text-base">{wf.icon}</span>
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
-                      {wf.badge}
-                    </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            {SMART_WORKFLOWS.map((wf) => {
+              const isSelectedWf = activeWorkflowId === wf.id;
+              return (
+                <button
+                  key={wf.id}
+                  type="button"
+                  onClick={() => applySmartWorkflow(wf)}
+                  className={`p-3 rounded-xl border text-left transition-all group flex flex-col justify-between shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+                    isSelectedWf
+                      ? "border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/15"
+                      : "border-slate-200 hover:border-blue-400 bg-slate-50/70 hover:bg-blue-50/40"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="text-base">{wf.icon}</span>
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                          isSelectedWf
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-slate-700 border-slate-200"
+                        }`}
+                      >
+                        {isSelectedWf ? "Active" : wf.badge}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug">
+                      {wf.title}
+                    </h4>
                   </div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug">
-                    {wf.title}
-                  </h4>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
-                  {wf.desc}
-                </p>
-              </button>
-            ))}
+                  <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                    {wf.desc}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -1339,6 +1372,29 @@ export default function AutoMailCompose() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice("desktop")}
+                      className={`p-1.5 rounded-md transition-all ${
+                        previewDevice === "desktop" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-400 hover:text-slate-700"
+                      }`}
+                      title="Desktop Width Preview"
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice("mobile")}
+                      className={`p-1.5 rounded-md transition-all ${
+                        previewDevice === "mobile" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-400 hover:text-slate-700"
+                      }`}
+                      title="Mobile Width (375px) Preview"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <span>Sample Name:</span>
                     <input
@@ -1363,7 +1419,11 @@ export default function AutoMailCompose() {
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+              <div
+                className={`bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3 mx-auto transition-all duration-200 ${
+                  previewDevice === "mobile" ? "max-w-[395px]" : "w-full"
+                }`}
+              >
                 <div className="pb-3 border-b border-slate-100 text-xs text-slate-600 space-y-1">
                   <p><strong>From:</strong> <span className="font-medium text-slate-900">{senderName} &lt;{senderEmail}&gt;</span></p>
                   <p><strong>To:</strong> <span className="font-medium text-slate-900">{previewPersonalized ? `${previewTestName || "Ramesh Sharma"} <${customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com"}>` : (customTo || "{{email}}")}</span></p>
@@ -1436,8 +1496,8 @@ export default function AutoMailCompose() {
               <Send className="w-4 h-4" />
               <span>
                 {recipientMode === "custom"
-                  ? `🚀 SEND EMAIL NOW (${customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0} RECIPIENT)`
-                  : `🚀 SEND BROADCAST NOW (${currentAudienceCount} CONTACTS)`}
+                  ? `Send Email Now (${customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0})`
+                  : `Send Broadcast Now (${currentAudienceCount})`}
               </span>
             </button>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import AutoMailNav from "@/components/admin/automail/AutoMailNav";
+import AutoMailConfirmModal from "@/components/admin/automail/AutoMailConfirmModal";
 import {
   Rocket,
   Plus,
@@ -39,6 +40,12 @@ export default function AutoMailCampaigns() {
 
   // Toast alert
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  // Filter & Cupertino Delete State
+  const [statusFilter, setStatusFilter] = useState<"all" | "sending" | "completed" | "draft">("all");
+  const [campaignSearch, setCampaignSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deletingCampaign, setDeletingCampaign] = useState(false);
 
   const fetchCampaigns = async () => {
     try {
@@ -125,17 +132,23 @@ export default function AutoMailCampaigns() {
     }
   };
 
-  const deleteCampaign = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete campaign "${name}"?`)) return;
+  const confirmDeleteCampaign = async () => {
+    if (!deleteTarget) return;
+    setDeletingCampaign(true);
     try {
-      const res = await fetch(`/api/automail/campaigns/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/automail/campaigns/${deleteTarget.id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setToast({ message: `Campaign "${name}" deleted.`, type: "success" });
+        setToast({ message: `Campaign "${deleteTarget.name}" deleted.`, type: "success" });
+        setDeleteTarget(null);
         fetchCampaigns();
+      } else {
+        setToast({ message: data.error || "Failed to delete campaign", type: "error" });
       }
     } catch {
       setToast({ message: "Failed to delete campaign", type: "error" });
+    } finally {
+      setDeletingCampaign(false);
     }
   };
 
@@ -148,6 +161,23 @@ export default function AutoMailCampaigns() {
     if (!contactSearch) return true;
     const q = contactSearch.toLowerCase();
     return c.email.toLowerCase().includes(q) || (c.name && c.name.toLowerCase().includes(q));
+  });
+
+  const visibleCampaigns = campaigns.filter((c) => {
+    const matchesStatus =
+      statusFilter === "all"
+        ? true
+        : statusFilter === "sending"
+        ? c.status === "sending"
+        : statusFilter === "completed"
+        ? c.status === "completed"
+        : c.status !== "sending" && c.status !== "completed";
+    const q = campaignSearch.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      (c.name || "").toLowerCase().includes(q) ||
+      (c.subject || "").toLowerCase().includes(q);
+    return matchesStatus && matchesSearch;
   });
 
   return (
@@ -181,12 +211,44 @@ export default function AutoMailCampaigns() {
 
         <Link
           href={selectedBrand !== "all" ? `/admin/automail/compose?brand=${selectedBrand}` : "/admin/automail/compose"}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow-md transition-all self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-blue-600 text-white font-bold rounded-xl text-xs shadow-sm transition-all self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>New Campaign</span>
         </Link>
       </div>
+
+      {/* Filter & Search Bar */}
+      {campaigns.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search campaigns by title or subject..."
+              value={campaignSearch}
+              onChange={(e) => setCampaignSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500 focus:bg-white font-medium"
+            />
+          </div>
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-[11px] font-bold self-start sm:self-auto">
+            {(["all", "sending", "completed", "draft"] as const).map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setStatusFilter(st)}
+                className={`px-3 py-1 rounded-lg transition-all capitalize ${
+                  statusFilter === st
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {st === "all" ? `All (${campaigns.length})` : st === "sending" ? "Transmitting" : st}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Campaign List */}
       {loading ? (
@@ -194,7 +256,7 @@ export default function AutoMailCampaigns() {
           <Loader2 className="w-8 h-8 animate-spin mb-2" />
           <p className="text-xs">Loading campaign transmissions...</p>
         </div>
-      ) : campaigns.length === 0 ? (
+      ) : visibleCampaigns.length === 0 ? (
         <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
             <Rocket className="w-6 h-6" />
@@ -214,7 +276,7 @@ export default function AutoMailCampaigns() {
         </div>
       ) : (
         <div className="space-y-4">
-          {campaigns.map((c) => {
+          {visibleCampaigns.map((c) => {
             const isSendingThis = c.status === "sending";
             const isCompleted = c.status === "completed";
             const isPaused = c.status === "paused";
@@ -351,7 +413,7 @@ export default function AutoMailCampaigns() {
                     {!isSendingThis && (
                       <button
                         type="button"
-                        onClick={() => deleteCampaign(c.id, c.name)}
+                        onClick={() => setDeleteTarget({ id: c.id, name: c.name })}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                         title="Delete campaign"
                       >
@@ -480,6 +542,16 @@ export default function AutoMailCampaigns() {
           </div>
         </div>
       )}
+      <AutoMailConfirmModal
+        open={Boolean(deleteTarget)}
+        title="Delete Campaign?"
+        description={`"${deleteTarget?.name || ""}" aur uski campaign entry permanently delete ho jayegi.`}
+        confirmLabel="Delete Campaign"
+        tone="danger"
+        loading={deletingCampaign}
+        onConfirm={confirmDeleteCampaign}
+        onCancel={() => !deletingCampaign && setDeleteTarget(null)}
+      />
     </div>
   );
 }
