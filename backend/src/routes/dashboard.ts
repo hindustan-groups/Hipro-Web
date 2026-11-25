@@ -182,7 +182,7 @@ router.get("/", async (req: Request, res: Response) => {
 
       // 9. All Quotes and Contacts for Real Velocity & Pipeline Analytics
       prisma.quoteRequest.findMany({
-        select: { id: true, budget: true, location: true, status: true, createdAt: true },
+        select: { id: true, budget: true, location: true, status: true, createdAt: true, description: true, projectType: true },
       }),
       prisma.contactMessage.findMany({
         select: { id: true, createdAt: true },
@@ -306,6 +306,9 @@ router.get("/", async (req: Request, res: Response) => {
 
     // Leading Territories from Real Quote Request Locations
     const locMap: Record<string, number> = {};
+    let totalSqFt = 0;
+    let sqFtCount = 0;
+
     for (const q of allQuotesForStats) {
       const loc = (q.location || "").trim();
       if (loc) {
@@ -315,7 +318,26 @@ router.get("/", async (req: Request, res: Response) => {
           locMap[name] = (locMap[name] || 0) + 1;
         }
       }
+
+      // Extract Scope Area if mentioned in quote description or type
+      const text = `${q.description || ""} ${q.projectType || ""}`;
+      const sqftMatch = text.match(/([0-9,]+)\s*(?:sq\.?\s*ft|sqft|square\s*feet)/i);
+      if (sqftMatch) {
+        const parsed = parseInt(sqftMatch[1].replace(/,/g, ""), 10);
+        if (parsed > 100 && parsed < 200000) {
+          totalSqFt += parsed;
+          sqFtCount++;
+        }
+      }
     }
+
+    const avgScope =
+      sqFtCount > 0
+        ? `${Math.round(totalSqFt / sqFtCount).toLocaleString("en-IN")} sq.ft`
+        : allQuotesForStats.length > 0
+        ? "Turnkey Civil Specs"
+        : "Turnkey Scope";
+
     const topLocations = Object.entries(locMap)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 2)
@@ -364,7 +386,7 @@ router.get("/", async (req: Request, res: Response) => {
         velocity: {
           months: velocityMonths,
           pipelineBudget,
-          avgScope: "Turnkey Civil Specs",
+          avgScope,
           leadingTerritories,
           portalConversion,
         },
@@ -392,29 +414,43 @@ router.get("/", async (req: Request, res: Response) => {
             ? automailConfig.mailboxes
             : getDefaultMailboxes();
 
-        const activeMailboxes = rawMailboxes.filter((m) => m.status === "active");
+        const mailboxesWithConfig = rawMailboxes.map((mb, idx) => {
+          const isConfigured = Boolean(
+            mb.smtpPassConfigured ||
+            (mb.smtpPass && mb.smtpPass.length > 0) ||
+            Boolean(process.env.SMTP_PASS) ||
+            (mb.deliveryMethod === "hostinger_api" && automailConfig?.hostingerApiToken)
+          );
+          const isLive = mb.status === "active" && isConfigured;
 
-        return {
-          campaigns: automailCampaignsTotal,
-          dispatchesToday: automailLogsToday,
-          connectedCount: activeMailboxes.length,
-          mailboxes: rawMailboxes.map((mb, idx) => ({
+          return {
             id: mb.id || `mb_${idx}`,
             name: mb.name,
             email: mb.email,
             brand: mb.brand,
-            brandName: mb.brandName || (mb.brand === "hbs" ? "HBS Repairs" : "Flagship"),
+            brandName: mb.brandName || (mb.brand === "hbs" ? "HBS Repairs" : "Flagship Civil"),
             deliveryMethod: mb.deliveryMethod || "smtp",
             smtpPort: mb.smtpPort || 465,
             smtpHost: mb.smtpHost || "smtp.hostinger.com",
-            status: mb.status || "active",
+            status: isLive ? "active" : "needs_setup",
+            isConfigured,
             description:
               mb.description ||
               (mb.brand === "hbs"
                 ? "Waterproofing Inspections, Crack Repair BOQ & Quotes"
                 : "Turnkey Quotes, Job Applications & Holding Master Notifications"),
             isDefault: mb.isDefault ?? (idx === 0),
-          })),
+          };
+        });
+
+        const activeMailboxes = mailboxesWithConfig.filter((m) => m.status === "active");
+
+        return {
+          campaigns: automailCampaignsTotal,
+          dispatchesToday: automailLogsToday,
+          connectedCount: activeMailboxes.length,
+          totalCount: mailboxesWithConfig.length,
+          mailboxes: mailboxesWithConfig,
         };
       })(),
 

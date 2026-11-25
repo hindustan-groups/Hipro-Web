@@ -19,9 +19,11 @@ import {
   Check,
   X,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 interface Quote {
   id: string;
@@ -44,6 +46,10 @@ export default function AdminQuotes() {
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Quote | null>(null);
+  const [quoteToDelete, setQuoteToDelete] = useState<Quote | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successBanner, setSuccessBanner] = useState("");
 
   const fetchQuotes = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -86,6 +92,34 @@ export default function AdminQuotes() {
       }
     } catch {
       /* silent */
+    }
+  };
+
+  const handleDeleteQuote = async () => {
+    if (!quoteToDelete) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/quote/${quoteToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setQuotes((prev) => prev.filter((q) => q.id !== quoteToDelete.id));
+        setSuccessBanner(`Quote request from "${quoteToDelete.name}" permanently deleted.`);
+        setTimeout(() => setSuccessBanner(""), 3500);
+        if (selected?.id === quoteToDelete.id) {
+          setSelected(null);
+        }
+        setQuoteToDelete(null);
+      } else {
+        setDeleteError(data.error || "Failed to delete quote record");
+      }
+    } catch {
+      setDeleteError("Network error occurred while connecting to server");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -227,6 +261,13 @@ export default function AdminQuotes() {
         </div>
       </div>
 
+      {successBanner && (
+        <div className="p-4 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-2 shadow-2xs animate-in fade-in">
+          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{successBanner}</span>
+        </div>
+      )}
+
       {error && (
         <div className="p-4 rounded-2xl bg-red-50 text-red-600 text-xs font-semibold border border-red-200">
           {error}
@@ -321,6 +362,13 @@ export default function AdminQuotes() {
                               className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center transition-colors cursor-pointer border border-rose-200"
                             >
                               <XCircle className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setQuoteToDelete(q)}
+                              title="Delete Quote Permanently"
+                              className="w-7 h-7 rounded-lg bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer border border-slate-200 hover:border-rose-200"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </td>
@@ -432,6 +480,17 @@ export default function AdminQuotes() {
                   Reject
                 </button>
               </div>
+
+              {/* Permanent Deletion Button */}
+              <div className="pt-3 border-t border-slate-100">
+                <button
+                  onClick={() => setQuoteToDelete(selected)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-700 border border-slate-200/80 hover:border-rose-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Quote Request</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="py-20 text-center text-slate-400 space-y-2">
@@ -446,6 +505,33 @@ export default function AdminQuotes() {
           )}
         </div>
       </div>
+
+      {/* Modern Apple Glass Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(quoteToDelete)}
+        title="Delete Construction Quote Request?"
+        description="Are you sure you want to permanently delete this quote request? This record will be purged from the live database."
+        itemName={quoteToDelete?.name}
+        itemDetails={
+          quoteToDelete
+            ? [
+                { label: "Project Type", value: quoteToDelete.projectType },
+                { label: "Budget", value: quoteToDelete.budget || "Custom" },
+                { label: "Phone", value: quoteToDelete.phone || "—" },
+                { label: "Email", value: quoteToDelete.email || "—" },
+                { label: "Quote ID", value: quoteToDelete.id },
+              ]
+            : []
+        }
+        isDeleting={isDeleting}
+        errorMessage={deleteError}
+        confirmButtonText="Delete Quote"
+        onConfirm={handleDeleteQuote}
+        onClose={() => {
+          setQuoteToDelete(null);
+          setDeleteError("");
+        }}
+      />
     </div>
   );
 }

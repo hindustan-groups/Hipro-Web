@@ -15,8 +15,10 @@ import {
   Building2,
   X,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface Contact {
@@ -38,11 +40,20 @@ export default function AdminContacts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Contact | null>(null);
 
+  // Deletion state
+  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successBanner, setSuccessBanner] = useState("");
+
   const fetchContacts = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/contact");
+      const res = await fetch("/api/contact", {
+        credentials: "include",
+        cache: "no-store",
+      });
       const json = await res.json();
       if (json.success) {
         setContacts(json.data);
@@ -71,6 +82,7 @@ export default function AdminContacts() {
       await fetch("/api/contact", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ id, status }),
       });
       setContacts((prev) =>
@@ -81,6 +93,34 @@ export default function AdminContacts() {
       }
     } catch {
       /* silent */
+    }
+  };
+
+  const handleDeleteContact = async () => {
+    if (!contactToDelete) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/contact/${contactToDelete.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setContacts((prev) => prev.filter((c) => c.id !== contactToDelete.id));
+        if (selected && selected.id === contactToDelete.id) {
+          setSelected(null);
+        }
+        setSuccessBanner(`Inquiry from "${contactToDelete.name || "Client"}" has been permanently deleted.`);
+        setContactToDelete(null);
+        setTimeout(() => setSuccessBanner(""), 4500);
+      } else {
+        setDeleteError(data.error || "Failed to delete message");
+      }
+    } catch (err: any) {
+      setDeleteError(err.message || "Network error while deleting message");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -224,6 +264,18 @@ export default function AdminContacts() {
         </div>
       </div>
 
+      {successBanner && (
+        <div className="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between shadow-2xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{successBanner}</span>
+          </div>
+          <button onClick={() => setSuccessBanner("")} className="text-xs uppercase font-bold text-emerald-700 hover:underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="p-4 rounded-2xl bg-red-50/90 border border-red-200 text-red-700 text-sm flex items-center justify-between shadow-2xs">
           <span>{error}</span>
@@ -328,6 +380,16 @@ export default function AdminContacts() {
                               <CheckCircle className="w-3.5 h-3.5" />
                             </button>
                           )}
+                          <button
+                            onClick={() => {
+                              setDeleteError("");
+                              setContactToDelete(c);
+                            }}
+                            title="Delete Inquiry"
+                            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 text-slate-400 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -421,6 +483,16 @@ export default function AdminContacts() {
                   </button>
                 )}
                 <button
+                  onClick={() => {
+                    setDeleteError("");
+                    setContactToDelete(selected);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+                <button
                   onClick={() => setSelected(null)}
                   className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all cursor-pointer"
                 >
@@ -431,6 +503,32 @@ export default function AdminContacts() {
           </div>
         </div>
       )}
+
+      {/* Modern Apple Cupertino Glassmorphic Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!contactToDelete}
+        title="Delete Contact Inquiry?"
+        description="Are you sure you want to permanently delete this client inquiry? This record will be erased from PostgreSQL database and cannot be recovered."
+        recordDetail={
+          contactToDelete
+            ? {
+                title: contactToDelete.name || "Anonymous Client",
+                subtitle: contactToDelete.email || contactToDelete.phone || "No contact info",
+                tag: contactToDelete.service || "General Inquiry",
+                date: contactToDelete.createdAt ? new Date(contactToDelete.createdAt).toLocaleDateString("en-IN") : undefined,
+              }
+            : undefined
+        }
+        isDeleting={isDeleting}
+        error={deleteError}
+        onConfirm={handleDeleteContact}
+        onCancel={() => {
+          if (!isDeleting) {
+            setContactToDelete(null);
+            setDeleteError("");
+          }
+        }}
+      />
     </div>
   );
 }

@@ -335,8 +335,51 @@ router.patch("/:id", async (req: Request, res: Response) => {
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
+    const type = req.query.type ? String(req.query.type).toLowerCase() : "";
     if (!id) return res.status(400).json({ success: false, error: "Lead ID is required" });
 
+    // 1. Direct type-targeted deletion if type is provided
+    if (type === "quote" || type === "estimator") {
+      const quote = await prisma.quoteRequest.findUnique({ where: { id } }).catch(() => null);
+      if (quote) {
+        await prisma.quoteRequest.delete({ where: { id } });
+        return res.json({ success: true, message: "Quote lead deleted successfully", deletedId: id });
+      }
+    }
+
+    if (type === "contact" || type === "project" || type === "service") {
+      const contact = await prisma.contactMessage.findUnique({ where: { id } }).catch(() => null);
+      if (contact) {
+        await prisma.contactMessage.delete({ where: { id } });
+        return res.json({ success: true, message: "Contact message deleted successfully", deletedId: id });
+      }
+    }
+
+    if (type === "application" || type === "job") {
+      const app = await prisma.jobApplication.findUnique({ where: { id } }).catch(() => null);
+      if (app) {
+        await prisma.jobApplication.delete({ where: { id } });
+        return res.json({ success: true, message: "Job application deleted successfully", deletedId: id });
+      }
+    }
+
+    if (type === "hbs" || type === "hbs_lead") {
+      const hbs = await prisma.hbsLead.findUnique({ where: { id } }).catch(() => null);
+      if (hbs) {
+        await prisma.hbsLead.delete({ where: { id } });
+        return res.json({ success: true, message: "HBS lead deleted successfully", deletedId: id });
+      }
+    }
+
+    if (type === "vendor" || type === "vendor_application") {
+      const vendor = await prisma.vendorApplication.findUnique({ where: { id } }).catch(() => null);
+      if (vendor) {
+        await prisma.vendorApplication.delete({ where: { id } });
+        return res.json({ success: true, message: "Vendor application deleted successfully", deletedId: id });
+      }
+    }
+
+    // 2. Comprehensive fallback across all lead models
     // Try deleting from ContactMessage
     const contact = await prisma.contactMessage.findUnique({ where: { id } }).catch(() => null);
     if (contact) {
@@ -349,6 +392,20 @@ router.delete("/:id", async (req: Request, res: Response) => {
     if (quote) {
       await prisma.quoteRequest.delete({ where: { id } });
       return res.json({ success: true, message: "Quote lead deleted successfully", deletedId: id });
+    }
+
+    // Try deleting from HbsLead
+    const hbs = await prisma.hbsLead.findUnique({ where: { id } }).catch(() => null);
+    if (hbs) {
+      await prisma.hbsLead.delete({ where: { id } });
+      return res.json({ success: true, message: "HBS lead deleted successfully", deletedId: id });
+    }
+
+    // Try deleting from VendorApplication
+    const vendor = await prisma.vendorApplication.findUnique({ where: { id } }).catch(() => null);
+    if (vendor) {
+      await prisma.vendorApplication.delete({ where: { id } });
+      return res.json({ success: true, message: "Vendor application deleted successfully", deletedId: id });
     }
 
     // Try deleting from JobApplication

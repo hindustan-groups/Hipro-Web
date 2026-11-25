@@ -1602,12 +1602,20 @@ export default function MasterCompanyDashboard() {
                     Multi-Mailbox Radar
                   </h3>
                 </div>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  {data?.automail?.connectedCount ?? (data?.automail?.mailboxes?.length || 2)} Connected
+                <span
+                  className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                    (data?.automail?.connectedCount || 0) > 0
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                  }`}
+                >
+                  {data?.automail?.connectedCount !== undefined
+                    ? `${data.automail.connectedCount} Active · ${data?.automail?.mailboxes?.length || 2} Configured`
+                    : "Mailbox Radar"}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                Dual company mailboxes powering automated corporate dispatches and repair notifications.
+                Automated corporate dispatches, repair notifications, and multi-brand dispatch routing.
               </p>
 
               {/* Dynamic Connected Mailboxes */}
@@ -1624,6 +1632,7 @@ export default function MasterCompanyDashboard() {
                         status: "active",
                         smtpPort: 465,
                         description: "Turnkey Quotes, Job Applications & Holding Master Notifications",
+                        isConfigured: true,
                       },
                       {
                         id: "mb_hbs_waterproofing",
@@ -1631,15 +1640,16 @@ export default function MasterCompanyDashboard() {
                         email: "hbs@hindustanprojects.in",
                         brand: "hbs",
                         brandName: "HBS Repairs",
-                        status: "active",
+                        status: "needs_setup",
                         smtpPort: 465,
                         description: "Waterproofing Inspections, Crack Repair BOQ & Quotes",
+                        isConfigured: false,
                       },
                     ]
-                ).map((mb, idx) => {
+                ).map((mb: any, idx: number) => {
                   const isHbs = mb.brand === "hbs";
                   const isEmpanelment = mb.brand === "empanelment";
-                  const isActive = mb.status === "active";
+                  const isLive = mb.status === "active" && mb.isConfigured !== false;
 
                   return (
                     <div
@@ -1664,15 +1674,15 @@ export default function MasterCompanyDashboard() {
                         >
                           Mailbox {idx + 1} · {mb.brandName || (isHbs ? "HBS Repairs" : isEmpanelment ? "Procurement" : "Flagship")}
                         </span>
-                        {isActive ? (
+                        {isLive ? (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             TLS {mb.smtpPort || 465} Active
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 font-mono">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                            Standby
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 font-mono bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            Setup Required
                           </span>
                         )}
                       </div>

@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import type { HbsLead, HbsInternalNote } from "@/lib/types";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 const LEAD_STATUSES = [
   "NEW",
@@ -179,6 +180,11 @@ export default function HbsAdminLeads() {
   const [newNote, setNewNote] = useState("");
   const [addingNote, setAddingNote] = useState(false);
   const [savingDetails, setSavingDetails] = useState(false);
+
+  // Modern Cupertino Deletion state
+  const [leadToDelete, setLeadToDelete] = useState<HbsLead | null>(null);
+  const [isDeletingLead, setIsDeletingLead] = useState(false);
+  const [leadDeleteError, setLeadDeleteError] = useState("");
 
   // Edit fields
   const [editStatus, setEditStatus] = useState("NEW");
@@ -549,24 +555,29 @@ export default function HbsAdminLeads() {
     }
   };
 
-  // Delete Lead
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to permanently delete lead from "${name}"?`)) return;
+  // Delete Lead Handler
+  const confirmDeleteLead = async () => {
+    if (!leadToDelete?.id) return;
+    setIsDeletingLead(true);
+    setLeadDeleteError("");
     try {
-      const res = await fetch(`/api/hbs/leads/${id}`, {
+      const res = await fetch(`/api/hbs/leads/${leadToDelete.id}`, {
         method: "DELETE",
         credentials: "include",
       });
       const json = await res.json();
       if (json.success) {
-        setLeads((prev) => prev.filter((l) => l.id !== id));
-        if (viewingLead?.id === id) setViewingLead(null);
-        setMessage({ text: `Lead from "${name}" permanently deleted.`, type: "success" });
+        setLeads((prev) => prev.filter((l) => l.id !== leadToDelete.id));
+        if (viewingLead?.id === leadToDelete.id) setViewingLead(null);
+        setMessage({ text: `Lead from "${leadToDelete.name}" permanently deleted.`, type: "success" });
+        setLeadToDelete(null);
       } else {
-        setMessage({ text: json.error || "Failed to delete lead", type: "error" });
+        setLeadDeleteError(json.error || "Failed to delete lead");
       }
     } catch {
-      setMessage({ text: "Network error occurred.", type: "error" });
+      setLeadDeleteError("Network error occurred while deleting lead.");
+    } finally {
+      setIsDeletingLead(false);
     }
   };
 
@@ -1535,7 +1546,10 @@ export default function HbsAdminLeads() {
 
                             <button
                               type="button"
-                              onClick={() => handleDelete(lead.id || "", lead.name)}
+                              onClick={() => {
+                                setLeadDeleteError("");
+                                setLeadToDelete(lead);
+                              }}
                               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                               title="Delete Lead"
                             >
@@ -2228,7 +2242,10 @@ export default function HbsAdminLeads() {
             <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
               <button
                 type="button"
-                onClick={() => handleDelete(viewingLead.id || "", viewingLead.name)}
+                onClick={() => {
+                  setLeadDeleteError("");
+                  setLeadToDelete(viewingLead);
+                }}
                 className="text-xs text-red-600 hover:text-red-700 font-bold flex items-center gap-1 hover:underline cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -2247,6 +2264,32 @@ export default function HbsAdminLeads() {
           </div>
         </div>
       )}
+
+      {/* Modern Apple Cupertino Glassmorphic Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!leadToDelete}
+        title="Delete HBS Waterproofing Lead?"
+        description="Are you sure you want to permanently erase this inbound lead? All site inspection notes, quotation drafts, and follow-up history will be removed from PostgreSQL."
+        recordDetail={
+          leadToDelete
+            ? {
+                title: leadToDelete.name || "Client Lead",
+                subtitle: leadToDelete.phone || leadToDelete.email || "No contact info",
+                tag: leadToDelete.selectedService || leadToDelete.status || "HBS Lead",
+                date: leadToDelete.createdAt ? new Date(leadToDelete.createdAt).toLocaleDateString("en-IN") : undefined,
+              }
+            : undefined
+        }
+        isDeleting={isDeletingLead}
+        error={leadDeleteError}
+        onConfirm={confirmDeleteLead}
+        onCancel={() => {
+          if (!isDeletingLead) {
+            setLeadToDelete(null);
+            setLeadDeleteError("");
+          }
+        }}
+      />
     </div>
   );
 }

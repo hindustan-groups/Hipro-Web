@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 
 export interface UnifiedLead {
   id: string;
@@ -122,6 +123,7 @@ export default function AdminLeadsPage() {
   // Safe Delete Modal
   const [deleteModalLead, setDeleteModalLead] = useState<UnifiedLead | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Status updating indicator
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -240,24 +242,26 @@ export default function AdminLeadsPage() {
   const confirmDelete = async () => {
     if (!deleteModalLead) return;
     setDeleting(true);
+    setDeleteError("");
     try {
       const res = await fetch(`/api/leads/${deleteModalLead.id}?type=${deleteModalLead.type}`, {
         method: "DELETE",
+        credentials: "include",
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setSuccessBanner("Lead safely deleted");
-        setTimeout(() => setSuccessBanner(""), 3000);
+        setSuccessBanner("Lead record permanently deleted");
+        setTimeout(() => setSuccessBanner(""), 3500);
         if (selectedLead?.id === deleteModalLead.id) {
           setSelectedLead(null);
         }
         setDeleteModalLead(null);
         fetchLeads();
       } else {
-        alert(data.error || "Failed to delete lead");
+        setDeleteError(data.error || "Failed to delete lead record");
       }
     } catch {
-      alert("Network error while deleting lead");
+      setDeleteError("Network error occurred while communicating with database");
     } finally {
       setDeleting(false);
     }
@@ -989,76 +993,31 @@ export default function AdminLeadsPage() {
         </div>
       )}
 
-      {/* SAFE DELETION CONFIRMATION DIALOG (PHASE 15 & 16) */}
-      {deleteModalLead && (
-        <div className="fixed inset-0 z-60 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border-2 border-red-500 max-w-md w-full p-6 shadow-2xl space-y-4 animate-scaleUp">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-slate-900 tracking-tight">Confirm Lead Deletion</h3>
-                <p className="text-xs text-slate-500">This action cannot be undone.</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-4 border border-slate-200 text-xs space-y-1.5">
-              <p>
-                <strong className="text-slate-900">Name:</strong> {deleteModalLead.name}
-              </p>
-              {deleteModalLead.email && (
-                <p>
-                  <strong className="text-slate-900">Email:</strong> {deleteModalLead.email}
-                </p>
-              )}
-              {deleteModalLead.phone && (
-                <p>
-                  <strong className="text-slate-900">Phone:</strong> {deleteModalLead.phone}
-                </p>
-              )}
-              <p>
-                <strong className="text-slate-900">Type:</strong>{" "}
-                <span className="font-mono uppercase font-bold">{deleteModalLead.type}</span>
-              </p>
-              <p className="text-slate-400 font-mono text-[10px]">ID: {deleteModalLead.id}</p>
-            </div>
-
-            <p className="text-xs text-slate-600">
-              Are you sure you want to permanently delete this lead record from the database?
-            </p>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                disabled={deleting}
-                onClick={() => setDeleteModalLead(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={deleting}
-                onClick={confirmDelete}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 shadow-sm transition-colors disabled:opacity-50"
-              >
-                {deleting ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Confirm Delete</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* SAFE DELETION CONFIRMATION DIALOG (Apple Glass Aesthetic) */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteModalLead)}
+        title="Confirm Lead Deletion"
+        description="Are you sure you want to permanently delete this lead record? This action cannot be undone."
+        itemName={deleteModalLead?.name}
+        itemDetails={
+          deleteModalLead
+            ? [
+                { label: "Type", value: deleteModalLead.type.toUpperCase() },
+                { label: "Email", value: deleteModalLead.email || "—" },
+                { label: "Phone", value: deleteModalLead.phone || "—" },
+                { label: "Lead ID", value: deleteModalLead.id },
+              ]
+            : []
+        }
+        isDeleting={deleting}
+        errorMessage={deleteError}
+        confirmButtonText="Confirm Delete"
+        onConfirm={confirmDelete}
+        onClose={() => {
+          setDeleteModalLead(null);
+          setDeleteError("");
+        }}
+      />
     </div>
   );
 }

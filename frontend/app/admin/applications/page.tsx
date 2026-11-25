@@ -19,6 +19,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
+import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
 import type { JobApplication } from "@/lib/types";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
@@ -28,6 +29,12 @@ export default function AdminApplicationsPage() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+
+  // Deletion modal state
+  const [appToDelete, setAppToDelete] = useState<JobApplication | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [successBanner, setSuccessBanner] = useState("");
 
   const fetchApplications = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -76,19 +83,28 @@ export default function AdminApplicationsPage() {
     }
   };
 
-  const deleteApplication = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this job application?")) return;
+  const handleDeleteApplication = async () => {
+    if (!appToDelete?.id) return;
+    setIsDeleting(true);
+    setDeleteError("");
     try {
-      const res = await fetch(`/api/applications/${id}`, {
+      const res = await fetch(`/api/applications/${appToDelete.id}`, {
         method: "DELETE",
         credentials: "include",
       });
       const json = await res.json();
       if (json.success) {
-        setApplications((prev) => prev.filter((app) => app.id !== id));
+        setApplications((prev) => prev.filter((app) => app.id !== appToDelete.id));
+        setSuccessBanner(`Candidate application for "${appToDelete.name}" deleted.`);
+        setAppToDelete(null);
+        setTimeout(() => setSuccessBanner(""), 4500);
+      } else {
+        setDeleteError(json.error || "Failed to delete application");
       }
-    } catch (err) {
-      console.error("Error deleting application:", err);
+    } catch (err: any) {
+      setDeleteError(err.message || "Network error deleting application");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -233,6 +249,18 @@ export default function AdminApplicationsPage() {
         </div>
       </div>
 
+      {successBanner && (
+        <div className="p-4 rounded-2xl bg-emerald-50/90 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between shadow-2xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{successBanner}</span>
+          </div>
+          <button onClick={() => setSuccessBanner("")} className="text-xs uppercase font-bold text-emerald-700 hover:underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {error && (
         <div className="p-4 rounded-2xl bg-red-50/90 border border-red-200 text-red-700 text-sm flex items-center justify-between shadow-2xs">
           <span>{error}</span>
@@ -362,7 +390,10 @@ export default function AdminApplicationsPage() {
                     {/* Delete Action */}
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => deleteApplication(app.id!)}
+                        onClick={() => {
+                          setDeleteError("");
+                          setAppToDelete(app);
+                        }}
                         className="text-slate-400 hover:text-red-600 p-2 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Application"
                       >
@@ -383,6 +414,32 @@ export default function AdminApplicationsPage() {
           </span>
         </div>
       </div>
+
+      {/* Modern Apple Cupertino Glassmorphic Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!appToDelete}
+        title="Delete Job Application?"
+        description="Are you sure you want to permanently delete this candidate's application? The uploaded resume reference and contact history will be permanently removed."
+        recordDetail={
+          appToDelete
+            ? {
+                title: appToDelete.name || "Candidate",
+                subtitle: appToDelete.email || appToDelete.phone || "No contact info",
+                tag: appToDelete.role || "Job Application",
+                date: appToDelete.createdAt ? new Date(appToDelete.createdAt).toLocaleDateString("en-IN") : undefined,
+              }
+            : undefined
+        }
+        isDeleting={isDeleting}
+        error={deleteError}
+        onConfirm={handleDeleteApplication}
+        onCancel={() => {
+          if (!isDeleting) {
+            setAppToDelete(null);
+            setDeleteError("");
+          }
+        }}
+      />
     </div>
   );
 }
