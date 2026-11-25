@@ -332,6 +332,14 @@ interface SimulatedResponse {
   type: "next" | "redirect" | "rewrite";
   destination?: string;
   status?: number;
+  setCookie?: { name: string; value: string };
+}
+
+const ADMIN_SECRET_KEY = (process.env.ADMIN_SECRET_KEY || "hp-admin-gateway-key-2026").trim();
+
+function isValidAdminSecretKey(candidate: string | null | undefined): boolean {
+  if (!candidate) return false;
+  return candidate.trim().toLowerCase() === ADMIN_SECRET_KEY.toLowerCase();
 }
 
 function simulateMiddleware(req: SimulatedRequest): SimulatedResponse {
@@ -361,11 +369,67 @@ function simulateMiddleware(req: SimulatedRequest): SimulatedResponse {
     }
   }
 
-  // 2. Edge Authentication Guard: Enforce session cookie presence for /admin and /admin/*
+  // 2. Stealth Admin Gateway Secret Key Verification:
+  const searchParams = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  const querySecretKey =
+    searchParams.get("key") ||
+    searchParams.get("secret") ||
+    searchParams.get("gateway_key") ||
+    searchParams.get("token");
+
+  const isKeyInQuery = isValidAdminSecretKey(querySecretKey);
+
+  let isKeyInPath = false;
+  if (pathname.startsWith("/admin-login/")) {
+    const slug = pathname.replace(/^\/admin-login\//, "").split("/")[0];
+    if (isValidAdminSecretKey(slug)) isKeyInPath = true;
+  } else if (pathname.startsWith("/admin/")) {
+    const slug = pathname.replace(/^\/admin\//, "").split("/")[0];
+    if (isValidAdminSecretKey(slug)) isKeyInPath = true;
+  }
+
+  // If valid secret key is provided (query or path), grant persistent access cookie and redirect to clean /admin-login
+  if (isKeyInQuery || isKeyInPath) {
+    const returnTo = searchParams.get("returnTo");
+    const dest = returnTo ? `/admin-login?returnTo=${encodeURIComponent(returnTo)}` : "/admin-login";
+    return {
+      type: "redirect",
+      destination: dest,
+      status: 307,
+      setCookie: { name: "admin_portal_access", value: "granted" },
+    };
+  }
+
+  // 3. Admin Access Authorization State:
+  const hasPortalAccessCookie = req.cookies["admin_portal_access"] === "granted";
+  const hasAdminSession = Boolean(req.cookies["admin_session"]?.trim());
+  const isAuthorizedAdminVisitor = hasPortalAccessCookie || hasAdminSession;
+
+  // 4. Guard /admin-login:
+  const isAdminLoginRoute = pathname === "/admin-login" || pathname.startsWith("/admin-login/");
+  if (isAdminLoginRoute) {
+    if (!isAuthorizedAdminVisitor) {
+      return {
+        type: "redirect",
+        destination: "/",
+        status: 307,
+      };
+    }
+    return { type: "next" };
+  }
+
+  // 5. Guard /admin and /admin/*:
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   if (isAdminRoute) {
-    const adminSession = req.cookies["admin_session"];
-    if (!adminSession || adminSession.trim() === "") {
+    if (!isAuthorizedAdminVisitor) {
+      return {
+        type: "redirect",
+        destination: "/",
+        status: 307,
+      };
+    }
+
+    if (!hasAdminSession) {
       const returnTo = `${pathname}${search}`;
       const searchParam = returnTo !== "/admin" ? `?returnTo=${encodeURIComponent(returnTo)}` : "";
       return {
@@ -374,6 +438,7 @@ function simulateMiddleware(req: SimulatedRequest): SimulatedResponse {
         status: 307,
       };
     }
+
     return { type: "next" };
   }
 
@@ -385,7 +450,7 @@ function simulateMiddleware(req: SimulatedRequest): SimulatedResponse {
   return { type: "next" };
 }
 
-runTest("Middleware intercepts unauthenticated GET /admin -> redirects to /admin-login (307)", () => {
+runTest("Middleware stealth-hides /admin from unauthenticated unauthorized visitors -> redirects to / (307)", () => {
   const res = simulateMiddleware({
     host: "www.hindustanprojects.in",
     pathname: "/admin",
@@ -393,16 +458,77 @@ runTest("Middleware intercepts unauthenticated GET /admin -> redirects to /admin
     cookies: {},
   });
   assert.strictEqual(res.type, "redirect");
-  assert.strictEqual(res.destination, "/admin-login");
+  assert.strictEqual(res.destination, "/");
   assert.strictEqual(res.status, 307);
 });
 
-runTest("Middleware intercepts unauthenticated GET /admin/leads -> redirects to /admin-login?returnTo=... (307)", () => {
+runTest("Middleware stealth-hides /admin-login from unauthenticated unauthorized visitors -> redirects to / (307)", () => {
+  const res = simulateMiddleware({
+    host: "www.hindustanprojects.in",
+    pathname: "/admin-login",
+    search: "",
+    cookies: {},
+  });
+  assert.strictEqual(res.type, "redirect");
+  assert.strictEqual(res.destination, "/");
+  assert.strictEqual(res.status, 307);
+});
+
+runTest("Middleware unlocks portal access when valid secret key is in query -> redirects to clean /admin-login with cookie (307)", () => {
+  const res = simulateMiddleware({
+    host: "www.hindustanprojects.in",
+    pathname: "/admin-login",
+    search: `?key=${ADMIN_SECRET_KEY}`,
+    cookies: {},
+  });
+  assert.strictEqual(res.type, "redirect");
+  assert.strictEqual(res.destination, "/admin-login");
+  assert.strictEqual(res.status, 307);
+  assert.strictEqual(res.setCookie?.name, "admin_portal_access");
+  assert.strictEqual(res.setCookie?.value, "granted");
+});
+
+runTest("Middleware unlocks portal access when valid secret key is in path (/admin-login/KEY) -> redirects to clean /admin-login (307)", () => {
+  const res = simulateMiddleware({
+    host: "www.hindustanprojects.in",
+    pathname: `/admin-login/${ADMIN_SECRET_KEY}`,
+    search: "",
+    cookies: {},
+  });
+  assert.strictEqual(res.type, "redirect");
+  assert.strictEqual(res.destination, "/admin-login");
+  assert.strictEqual(res.status, 307);
+  assert.strictEqual(res.setCookie?.name, "admin_portal_access");
+});
+
+runTest("Middleware rejects invalid secret key (?key=wrong_token) -> redirects to / (307)", () => {
+  const res = simulateMiddleware({
+    host: "www.hindustanprojects.in",
+    pathname: "/admin-login",
+    search: "?key=wrong_intruder_key_999",
+    cookies: {},
+  });
+  assert.strictEqual(res.type, "redirect");
+  assert.strictEqual(res.destination, "/");
+  assert.strictEqual(res.status, 307);
+});
+
+runTest("Middleware allows unlocked visitor (admin_portal_access cookie) to view /admin-login -> next()", () => {
+  const res = simulateMiddleware({
+    host: "www.hindustanprojects.in",
+    pathname: "/admin-login",
+    search: "",
+    cookies: { admin_portal_access: "granted" },
+  });
+  assert.strictEqual(res.type, "next");
+});
+
+runTest("Middleware redirects unlocked visitor accessing /admin/leads to /admin-login?returnTo=... (307)", () => {
   const res = simulateMiddleware({
     host: "www.hindustanprojects.in",
     pathname: "/admin/leads",
     search: "?filter=unread",
-    cookies: {},
+    cookies: { admin_portal_access: "granted" },
   });
   assert.strictEqual(res.type, "redirect");
   assert.strictEqual(res.destination, "/admin-login?returnTo=%2Fadmin%2Fleads%3Ffilter%3Dunread");
@@ -415,16 +541,6 @@ runTest("Middleware allows authenticated GET /admin with admin_session cookie ->
     pathname: "/admin",
     search: "",
     cookies: { admin_session: "c12345678abcdef" },
-  });
-  assert.strictEqual(res.type, "next");
-});
-
-runTest("Middleware allows unauthenticated GET /admin-login -> next()", () => {
-  const res = simulateMiddleware({
-    host: "www.hindustanprojects.in",
-    pathname: "/admin-login",
-    search: "",
-    cookies: {},
   });
   assert.strictEqual(res.type, "next");
 });

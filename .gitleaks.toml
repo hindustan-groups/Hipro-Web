@@ -15,5 +15,6 @@ paths = [
 ]
 regexes = [
   '''(?i)ci_test_password_local_only''',
-  '''(?i)hipro_ci_test'''
+  '''(?i)hipro_ci_test''',
+  '''(?i)hp-admin-gateway'''
 ]
