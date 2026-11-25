@@ -139,23 +139,30 @@ export default function HiproControlCenterPage() {
   const recentProjects = useMemo(() => data?.recentProjects || [], [data]);
   const recentServices = useMemo(() => data?.recentServices || [], [data]);
 
-  // Monthly Velocity Data for Civil Pipeline
+  // Monthly Velocity Data for Civil Pipeline (Dynamically Grounded in PostgreSQL)
   const monthlyData = useMemo(() => {
-    const quoteBase = hiproMetrics.quotes.total || 5;
-    const contactBase = hiproMetrics.contacts.total || 2;
-
-    return [
-      { month: "Jun", quotes: Math.max(1, Math.round(quoteBase * 0.4)), contacts: Math.max(1, Math.round(contactBase * 0.3)), label: "June 2026" },
-      { month: "Jul", quotes: Math.max(2, Math.round(quoteBase * 0.6)), contacts: Math.max(1, Math.round(contactBase * 0.5)), label: "July 2026" },
-      { month: "Aug", quotes: Math.max(3, Math.round(quoteBase * 0.7)), contacts: Math.max(2, Math.round(contactBase * 0.7)), label: "August 2026" },
-      { month: "Sep", quotes: Math.max(4, Math.round(quoteBase * 0.85)), contacts: Math.max(2, Math.round(contactBase * 0.85)), label: "September 2026" },
-      { month: "Oct", quotes: Math.max(4, Math.round(quoteBase * 0.95)), contacts: Math.max(2, Math.round(contactBase * 0.95)), label: "October 2026" },
-      { month: "Nov", quotes: quoteBase, contacts: contactBase, label: "Current Month (Nov)" },
-    ];
-  }, [hiproMetrics.quotes.total, hiproMetrics.contacts.total]);
+    if (hiproMetrics.velocity?.months && Array.isArray(hiproMetrics.velocity.months)) {
+      return hiproMetrics.velocity.months;
+    }
+    // Fallback: Generate empty 6-month calendar baseline with 0 values
+    const now = new Date();
+    const fallbackMonths = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      fallbackMonths.push({
+        month: d.toLocaleString("en-US", { month: "short" }),
+        year: d.getFullYear(),
+        quotes: 0,
+        contacts: 0,
+        label: `${d.toLocaleString("en-US", { month: "long" })} ${d.getFullYear()}${i === 0 ? " (Current)" : ""}`,
+      });
+    }
+    return fallbackMonths;
+  }, [hiproMetrics.velocity?.months]);
 
   const maxVal = useMemo(() => {
-    return Math.max(...monthlyData.map((d) => d.quotes + d.contacts), 10);
+    const highest = Math.max(...monthlyData.map((d: any) => (d.quotes || 0) + (d.contacts || 0)), 0);
+    return highest > 0 ? highest : 5;
   }, [monthlyData]);
 
   return (
@@ -437,11 +444,15 @@ export default function HiproControlCenterPage() {
       <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-600" />
               <h2 className="text-base font-bold text-slate-900 font-display uppercase tracking-wider">
                 Civil Inbound & Quotation Velocity
               </h2>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold font-mono border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live PostgreSQL Telemetry
+              </span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
               Monthly estimate inquiries and direct homeowner consultations submitted on hindustanprojects.in
@@ -465,15 +476,17 @@ export default function HiproControlCenterPage() {
           {/* Main SVG Bar Chart */}
           <div className="lg:col-span-3">
             <div className="h-56 flex items-end justify-between gap-3 sm:gap-6 pt-4 px-2">
-              {monthlyData.map((d, idx) => {
-                const totalH = Math.min(100, Math.round(((d.quotes + d.contacts) / maxVal) * 100));
-                const quotesH = Math.round((d.quotes / (d.quotes + d.contacts || 1)) * totalH);
-                const contactsH = totalH - quotesH;
+              {monthlyData.map((d: any, idx: number) => {
+                const totalActivity = (d.quotes || 0) + (d.contacts || 0);
+                const hasActivity = totalActivity > 0;
+                const totalH = hasActivity ? Math.min(100, Math.max(16, Math.round((totalActivity / maxVal) * 100))) : 0;
+                const quotesH = hasActivity ? Math.round(((d.quotes || 0) / totalActivity) * totalH) : 0;
+                const contactsH = hasActivity ? totalH - quotesH : 0;
                 const isHovered = activeHoverMonth === idx;
 
                 return (
                   <div
-                    key={d.month}
+                    key={`${d.month}-${d.year || idx}`}
                     onMouseEnter={() => setActiveHoverMonth(idx)}
                     onMouseLeave={() => setActiveHoverMonth(null)}
                     className="flex-1 flex flex-col items-center h-full justify-end group cursor-pointer relative"
@@ -483,27 +496,37 @@ export default function HiproControlCenterPage() {
                       <div className="absolute -top-12 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[10px] font-mono shadow-xl whitespace-nowrap z-20 pointer-events-none animate-in fade-in zoom-in-95">
                         <p className="font-bold">{d.label}</p>
                         <p className="text-slate-300">
-                          {d.quotes} quotes · {d.contacts} inquiries
+                          {d.quotes || 0} quotes · {d.contacts || 0} inquiries
                         </p>
                       </div>
                     )}
 
                     {/* Bars */}
                     <div className="w-full max-w-[48px] flex flex-col justify-end h-full">
-                      <div
-                        style={{ height: `${contactsH}%` }}
-                        className="w-full bg-emerald-500 rounded-t-lg transition-all duration-300 group-hover:brightness-110"
-                      />
-                      <div
-                        style={{ height: `${quotesH}%` }}
-                        className="w-full bg-blue-600 rounded-b-lg transition-all duration-300 group-hover:brightness-110"
-                      />
+                      {hasActivity ? (
+                        <>
+                          {contactsH > 0 && (
+                            <div
+                              style={{ height: `${contactsH}%` }}
+                              className="w-full bg-emerald-500 rounded-t-lg transition-all duration-300 group-hover:brightness-110"
+                            />
+                          )}
+                          {quotesH > 0 && (
+                            <div
+                              style={{ height: `${quotesH}%` }}
+                              className={`w-full bg-blue-600 ${contactsH === 0 ? "rounded-t-lg" : ""} rounded-b-lg transition-all duration-300 group-hover:brightness-110`}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <div className="w-full h-1.5 bg-slate-200/80 rounded-full group-hover:bg-slate-300 transition-colors" />
+                      )}
                     </div>
 
                     {/* Month Label */}
                     <span
                       className={`text-xs font-mono font-bold mt-3 transition-colors ${
-                        isHovered ? "text-blue-600" : "text-slate-500"
+                        isHovered ? "text-blue-600" : hasActivity ? "text-slate-800" : "text-slate-400"
                       }`}
                     >
                       {d.month}
@@ -518,19 +541,30 @@ export default function HiproControlCenterPage() {
           <div className="lg:col-span-1 space-y-3 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/70 text-xs">
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Pipeline Budget</span>
-              <span className="font-bold text-slate-900 font-mono">₹1.01+ Cr</span>
+              <span className="font-bold text-slate-900 font-mono">
+                {hiproMetrics.velocity?.pipelineBudget || "₹0"}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Avg. Construction Scope</span>
-              <span className="font-bold text-slate-900 font-mono">2,400 sq.ft</span>
+              <span className="font-bold text-slate-900 font-mono">
+                {hiproMetrics.velocity?.avgScope || "Turnkey Civil Specs"}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-500">Leading Territories</span>
-              <span className="font-bold text-slate-900 font-mono">Bhilwara / Jaipur</span>
+              <span
+                className="font-bold text-slate-900 font-mono truncate max-w-[140px] text-right"
+                title={hiproMetrics.velocity?.leadingTerritories || "Bhilwara, RJ"}
+              >
+                {hiproMetrics.velocity?.leadingTerritories || "Bhilwara, RJ"}
+              </span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
               <span className="text-slate-500">Portal Conversion</span>
-              <span className="font-bold text-emerald-600 font-mono">Verified Healthy</span>
+              <span className="font-bold text-emerald-600 font-mono">
+                {hiproMetrics.velocity?.portalConversion || "Verified Operational"}
+              </span>
             </div>
           </div>
         </div>

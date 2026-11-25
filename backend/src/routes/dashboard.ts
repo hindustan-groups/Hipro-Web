@@ -73,6 +73,12 @@ router.get("/", async (req: Request, res: Response) => {
       recentHbsLeads,
       recentVendorApps,
       recentApplications,
+
+      // 9. All Quotes, Contacts, Leads & Applications for Real Velocity & Pipeline Analytics
+      allQuotesForStats,
+      allContactsForStats,
+      allHbsLeadsForStats,
+      allVendorAppsForStats,
     ] = await Promise.all([
       // HiPRO Contacts
       prisma.contactMessage.count(),
@@ -172,7 +178,159 @@ router.get("/", async (req: Request, res: Response) => {
         orderBy: { createdAt: "desc" },
         select: { id: true, name: true, email: true, role: true, experience: true, cvUrl: true, status: true, createdAt: true },
       }),
+
+      // 9. All Quotes and Contacts for Real Velocity & Pipeline Analytics
+      prisma.quoteRequest.findMany({
+        select: { id: true, budget: true, location: true, status: true, createdAt: true },
+      }),
+      prisma.contactMessage.findMany({
+        select: { id: true, createdAt: true },
+      }),
+      prisma.hbsLead.findMany({
+        select: { id: true, status: true, createdAt: true },
+      }),
+      prisma.vendorApplication.findMany({
+        select: { id: true, status: true, submittedAt: true },
+      }),
     ]);
+
+    // Calculate Real Monthly Velocity (Past 6 Calendar Months)
+    const now = new Date();
+    const velocityMonths: Array<{ month: string; year: number; quotes: number; contacts: number; label: string }> = [];
+    const multiPortalMonths: Array<{
+      month: string;
+      year: number;
+      hipro: number;
+      hbs: number;
+      vendor: number;
+      totalInbound: number;
+      converted: number;
+      label: string;
+    }> = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mIdx = d.getMonth();
+      const y = d.getFullYear();
+      const monthShort = d.toLocaleString("en-US", { month: "short" });
+      const monthFull = d.toLocaleString("en-US", { month: "long" });
+
+      const qCount = allQuotesForStats.filter((q) => {
+        const qd = new Date(q.createdAt);
+        return qd.getMonth() === mIdx && qd.getFullYear() === y;
+      }).length;
+
+      const cCount = allContactsForStats.filter((c) => {
+        const cd = new Date(c.createdAt);
+        return cd.getMonth() === mIdx && cd.getFullYear() === y;
+      }).length;
+
+      const hbsCount = allHbsLeadsForStats.filter((h) => {
+        const hd = new Date(h.createdAt);
+        return hd.getMonth() === mIdx && hd.getFullYear() === y;
+      }).length;
+
+      const vendorCount = allVendorAppsForStats.filter((v) => {
+        const vd = new Date(v.submittedAt);
+        return vd.getMonth() === mIdx && vd.getFullYear() === y;
+      }).length;
+
+      const approvedQuotes = allQuotesForStats.filter((q) => {
+        const qd = new Date(q.createdAt);
+        return qd.getMonth() === mIdx && qd.getFullYear() === y && q.status === "approved";
+      }).length;
+
+      const convertedHbs = allHbsLeadsForStats.filter((h) => {
+        const hd = new Date(h.createdAt);
+        return hd.getMonth() === mIdx && hd.getFullYear() === y && h.status === "CONVERTED";
+      }).length;
+
+      const approvedVendors = allVendorAppsForStats.filter((v) => {
+        const vd = new Date(v.submittedAt);
+        return vd.getMonth() === mIdx && vd.getFullYear() === y && v.status === "APPROVED";
+      }).length;
+
+      const hiproCount = qCount + cCount;
+      const totalInbound = hiproCount + hbsCount + vendorCount;
+      const converted = approvedQuotes + convertedHbs + approvedVendors;
+
+      velocityMonths.push({
+        month: monthShort,
+        year: y,
+        quotes: qCount,
+        contacts: cCount,
+        label: i === 0 ? `${monthFull} ${y} (Current)` : `${monthFull} ${y}`,
+      });
+
+      multiPortalMonths.push({
+        month: monthShort,
+        year: y,
+        hipro: hiproCount,
+        hbs: hbsCount,
+        vendor: vendorCount,
+        totalInbound,
+        converted,
+        label: i === 0 ? `${monthFull} ${y} (Current)` : `${monthFull} ${y}`,
+      });
+    }
+
+    // Calculate Real Pipeline Budget Sum
+    let totalRupees = 0;
+    for (const q of allQuotesForStats) {
+      const b = q.budget || "";
+      const crMatch = b.match(/([0-9.]+)\s*Cr/i);
+      if (crMatch) {
+        totalRupees += parseFloat(crMatch[1]) * 10000000;
+        continue;
+      }
+      const lakhMatch = b.match(/([0-9.]+)\s*Lakh/i);
+      if (lakhMatch) {
+        totalRupees += parseFloat(lakhMatch[1]) * 100000;
+        continue;
+      }
+      const cleaned = b.replace(/[^0-9]/g, "");
+      if (cleaned.length >= 5) {
+        totalRupees += parseInt(cleaned, 10);
+      }
+    }
+
+    let pipelineBudget = "₹0";
+    if (totalRupees >= 10000000) {
+      pipelineBudget = `₹${(totalRupees / 10000000).toFixed(2)} Cr`;
+    } else if (totalRupees >= 100000) {
+      pipelineBudget = `₹${(totalRupees / 100000).toFixed(1)} Lakhs`;
+    } else if (allQuotesForStats.length > 0) {
+      pipelineBudget = `${allQuotesForStats.length} Inbound Requests`;
+    }
+
+    // Leading Territories from Real Quote Request Locations
+    const locMap: Record<string, number> = {};
+    for (const q of allQuotesForStats) {
+      const loc = (q.location || "").trim();
+      if (loc) {
+        const match = loc.match(/(Bhilwara|Jaipur|Udaipur|Ranchi|Jamshedpur|Delhi|Kota|Ajmer|Jodhpur)/i);
+        const name = match ? match[1] : loc.split(",")[0].trim();
+        if (name) {
+          locMap[name] = (locMap[name] || 0) + 1;
+        }
+      }
+    }
+    const topLocations = Object.entries(locMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([name]) => name);
+
+    const leadingTerritories = topLocations.length > 0 ? topLocations.join(" / ") : "Bhilwara (HQ)";
+
+    // Real Portal Conversion Status
+    let portalConversion = "Verified Healthy";
+    if (quotesTotal > 0) {
+      if (quotesApproved > 0) {
+        portalConversion = `${Math.round((quotesApproved / quotesTotal) * 100)}% Approved (${quotesApproved}/${quotesTotal})`;
+      } else {
+        portalConversion = `${quotesPending} Pending Review`;
+      }
+    }
 
     // High-Level Cross-Company Metrics
     const totalInquiries = quotesTotal + contactsTotal + hbsLeadsTotal + vendorAppsTotal;
@@ -185,6 +343,7 @@ router.get("/", async (req: Request, res: Response) => {
         pendingActions,
         activePortalsCount: 3,
         systemHealth: "100% Operational",
+        monthlyMetrics: multiPortalMonths,
       },
 
       // 🌐 Portal 1: HiPRO Corporate
@@ -201,6 +360,13 @@ router.get("/", async (req: Request, res: Response) => {
         stats: { total: statsTotal },
         guarantees: { total: guaranteesTotal },
         subscribers: { total: subscribersTotal },
+        velocity: {
+          months: velocityMonths,
+          pipelineBudget,
+          avgScope: "Turnkey Civil Specs",
+          leadingTerritories,
+          portalConversion,
+        },
       },
 
       // 🏢 Portal 2: Hind Building Solutions (HBS)

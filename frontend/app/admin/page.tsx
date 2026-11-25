@@ -45,6 +45,7 @@ interface ExecutiveData {
     pendingActions: number;
     activePortalsCount: number;
     systemHealth: string;
+    monthlyMetrics?: any[];
   };
   hipro: {
     projects: { total: number; active: number; featured: number };
@@ -53,6 +54,7 @@ interface ExecutiveData {
     contacts: { total: number; new: number; replied: number };
     blogs: { total: number; published: number };
     careers: { total: number; new: number };
+    velocity?: any;
   };
   hbs: {
     leads: { total: number; new: number; converted: number };
@@ -203,18 +205,199 @@ export default function MasterCompanyDashboard() {
 
   // Dynamic monthly velocity data based on real portal metrics
   const monthlyMetrics = useMemo(() => {
-    const hiproBase = data?.hipro.quotes.total || 14;
-    const hbsBase = data?.hbs.leads.total || 9;
-    const vendorBase = data?.vendorHub.applications.total || 7;
+    if (data?.executive?.monthlyMetrics && Array.isArray(data.executive.monthlyMetrics)) {
+      return data.executive.monthlyMetrics;
+    }
+    const now = new Date();
+    const fallback = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      fallback.push({
+        month: d.toLocaleString("en-US", { month: "short" }),
+        year: d.getFullYear(),
+        hipro: 0,
+        hbs: 0,
+        vendor: 0,
+        totalInbound: 0,
+        converted: 0,
+      });
+    }
+    return fallback;
+  }, [data?.executive?.monthlyMetrics]);
 
-    return [
-      { month: "Jun", hipro: Math.max(4, Math.round(hiproBase * 0.4)), hbs: Math.max(2, Math.round(hbsBase * 0.35)), vendor: Math.max(1, Math.round(vendorBase * 0.3)), totalInbound: 18, converted: 12 },
-      { month: "Jul", hipro: Math.max(6, Math.round(hiproBase * 0.55)), hbs: Math.max(4, Math.round(hbsBase * 0.5)), vendor: Math.max(2, Math.round(vendorBase * 0.45)), totalInbound: 24, converted: 16 },
-      { month: "Aug", hipro: Math.max(9, Math.round(hiproBase * 0.7)), hbs: Math.max(5, Math.round(hbsBase * 0.65)), vendor: Math.max(3, Math.round(vendorBase * 0.6)), totalInbound: 31, converted: 21 },
-      { month: "Sep", hipro: Math.max(12, Math.round(hiproBase * 0.85)), hbs: Math.max(7, Math.round(hbsBase * 0.8)), vendor: Math.max(5, Math.round(vendorBase * 0.75)), totalInbound: 38, converted: 26 },
-      { month: "Oct", hipro: Math.max(14, Math.round(hiproBase * 0.95)), hbs: Math.max(8, Math.round(hbsBase * 0.9)), vendor: Math.max(6, Math.round(vendorBase * 0.85)), totalInbound: 44, converted: 31 },
-      { month: "Nov", hipro: Math.max(16, hiproBase), hbs: Math.max(10, hbsBase), vendor: Math.max(8, vendorBase), totalInbound: 52, converted: 37 },
-    ];
+  // Real-time consolidated activity feed across all 3 group portals
+  const recentActivityFeed = useMemo(() => {
+    const list: Array<{
+      id: string;
+      title: string;
+      portal: string;
+      portalColor: string;
+      desc: string;
+      time: string;
+      dateObj: Date;
+      iconType: "quote" | "lead" | "vendor" | "contact" | "job";
+    }> = [];
+
+    // Real Quotes (HiPRO Civil)
+    (data?.recentQuotes || []).forEach((q: any) => {
+      list.push({
+        id: `quote-${q.id}`,
+        title: `Turnkey Quote: ${q.name || "Customer"}`,
+        portal: "HiPRO Civil",
+        portalColor: "bg-blue-50 text-blue-700",
+        desc: `${q.projectType || "Civil Works"}${q.budget ? ` · Budget: ${q.budget}` : ""}`,
+        time: q.createdAt ? new Date(q.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent",
+        dateObj: new Date(q.createdAt || 0),
+        iconType: "quote",
+      });
+    });
+
+    // Real HBS Leads (Hind Building Solutions)
+    (data?.recentHbsLeads || []).forEach((l: any) => {
+      list.push({
+        id: `hbs-${l.id}`,
+        title: `Waterproofing Lead: ${l.name || "Customer"}`,
+        portal: "Hind Building",
+        portalColor: "bg-orange-50 text-orange-700",
+        desc: `${l.selectedService || "Repair/Inspection"}${l.phone ? ` · Phone: ${l.phone}` : ""}`,
+        time: l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent",
+        dateObj: new Date(l.createdAt || 0),
+        iconType: "lead",
+      });
+    });
+
+    // Real Vendor Applications
+    (data?.recentVendorApps || []).forEach((v: any) => {
+      list.push({
+        id: `vendor-${v.id}`,
+        title: `Contractor KYC: ${v.companyName || "Vendor"}`,
+        portal: "Vendor Hub",
+        portalColor: "bg-amber-50 text-amber-700",
+        desc: `${v.category || "Civil Works"}${v.tier ? ` · Tier: ${v.tier}` : ""}`,
+        time: v.submittedAt ? new Date(v.submittedAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent",
+        dateObj: new Date(v.submittedAt || 0),
+        iconType: "vendor",
+      });
+    });
+
+    // Real Contact Inquiries
+    (data?.recentContacts || []).forEach((c: any) => {
+      list.push({
+        id: `contact-${c.id}`,
+        title: `Direct Inquiry: ${c.name || "Inquirer"}`,
+        portal: "HiPRO Civil",
+        portalColor: "bg-blue-50 text-blue-700",
+        desc: `${c.service || "Consultation"}${c.phone ? ` · Phone: ${c.phone}` : ""}`,
+        time: c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent",
+        dateObj: new Date(c.createdAt || 0),
+        iconType: "contact",
+      });
+    });
+
+    // Real Job Applications
+    (data?.recentApplications || []).forEach((a: any) => {
+      list.push({
+        id: `job-${a.id}`,
+        title: `Job Application: ${a.name || "Applicant"}`,
+        portal: "Careers",
+        portalColor: "bg-purple-50 text-purple-700",
+        desc: `Role: ${a.role || "Civil Engineer"}${a.experience ? ` · Exp: ${a.experience}` : ""}`,
+        time: a.createdAt ? new Date(a.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent",
+        dateObj: new Date(a.createdAt || 0),
+        iconType: "job",
+      });
+    });
+
+    return list.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime()).slice(0, 5);
+  }, [data]);
+
+  // Dynamic Chart Scale & Paths for Master HQ Area Chart
+  const maxInboundVal = useMemo(() => {
+    const highest = Math.max(
+      ...monthlyMetrics.map((m: any) => Math.max(m.hipro || 0, m.hbs || 0, m.vendor || 0)),
+      0
+    );
+    return highest > 0 ? highest : 5;
+  }, [monthlyMetrics]);
+
+  const hiproPoints = useMemo(() => {
+    return monthlyMetrics.map((m: any, i: number) => ({
+      x: 60 + i * 96,
+      y: 180 - Math.round(((m.hipro || 0) / maxInboundVal) * 140),
+    }));
+  }, [monthlyMetrics, maxInboundVal]);
+
+  const hbsPoints = useMemo(() => {
+    return monthlyMetrics.map((m: any, i: number) => ({
+      x: 60 + i * 96,
+      y: 180 - Math.round(((m.hbs || 0) / maxInboundVal) * 140),
+    }));
+  }, [monthlyMetrics, maxInboundVal]);
+
+  const vendorPoints = useMemo(() => {
+    return monthlyMetrics.map((m: any, i: number) => ({
+      x: 60 + i * 96,
+      y: 180 - Math.round(((m.vendor || 0) / maxInboundVal) * 140),
+    }));
+  }, [monthlyMetrics, maxInboundVal]);
+
+  const hiproPath = useMemo(() => {
+    const line = hiproPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const area = `${line} L ${hiproPoints[hiproPoints.length - 1]?.x || 540} 180 L 60 180 Z`;
+    return { line, area };
+  }, [hiproPoints]);
+
+  const hbsPath = useMemo(() => {
+    const line = hbsPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const area = `${line} L ${hbsPoints[hbsPoints.length - 1]?.x || 540} 180 L 60 180 Z`;
+    return { line, area };
+  }, [hbsPoints]);
+
+  const vendorPath = useMemo(() => {
+    const line = vendorPoints.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const area = `${line} L ${vendorPoints[vendorPoints.length - 1]?.x || 540} 180 L 60 180 Z`;
+    return { line, area };
+  }, [vendorPoints]);
+
+  // Donut Chart Distribution
+  const portalSplit = useMemo(() => {
+    const hiproCount = (data?.hipro?.quotes?.total || 0) + (data?.hipro?.contacts?.total || 0);
+    const hbsCount = data?.hbs?.leads?.total || 0;
+    const vendorCount = data?.vendorHub?.applications?.total || 0;
+    const total = hiproCount + hbsCount + vendorCount;
+
+    if (total === 0) {
+      return {
+        hiproPct: 100,
+        hbsPct: 0,
+        vendorPct: 0,
+        hiproLen: 376.99,
+        hbsLen: 0,
+        vendorLen: 0,
+        hbsOffset: 0,
+        vendorOffset: 0,
+      };
+    }
+
+    const hiproPct = Math.round((hiproCount / total) * 100);
+    const hbsPct = Math.round((hbsCount / total) * 100);
+    const vendorPct = Math.max(0, 100 - hiproPct - hbsPct);
+
+    const circumference = 376.99;
+    const hiproLen = (hiproPct / 100) * circumference;
+    const hbsLen = (hbsPct / 100) * circumference;
+    const vendorLen = (vendorPct / 100) * circumference;
+
+    return {
+      hiproPct,
+      hbsPct,
+      vendorPct,
+      hiproLen,
+      hbsLen,
+      vendorLen,
+      hbsOffset: -hiproLen,
+      vendorOffset: -(hiproLen + hbsLen),
+    };
   }, [data]);
 
   return (
@@ -960,60 +1143,33 @@ export default function MasterCompanyDashboard() {
 
                   {/* Horizontal Guide Gridlines */}
                   <line x1="40" y1="30" x2="580" y2="30" stroke="#E2E8F0" strokeDasharray="3 3" />
-                  <text x="25" y="34" fontSize="9" fill="#94A3B8" fontFamily="monospace">60</text>
+                  <text x="20" y="34" fontSize="9" fill="#94A3B8" fontFamily="monospace">{maxInboundVal}</text>
 
                   <line x1="40" y1="80" x2="580" y2="80" stroke="#E2E8F0" strokeDasharray="3 3" />
-                  <text x="25" y="84" fontSize="9" fill="#94A3B8" fontFamily="monospace">40</text>
+                  <text x="20" y="84" fontSize="9" fill="#94A3B8" fontFamily="monospace">{Math.round(maxInboundVal * 0.66)}</text>
 
                   <line x1="40" y1="130" x2="580" y2="130" stroke="#E2E8F0" strokeDasharray="3 3" />
-                  <text x="25" y="134" fontSize="9" fill="#94A3B8" fontFamily="monospace">20</text>
+                  <text x="20" y="134" fontSize="9" fill="#94A3B8" fontFamily="monospace">{Math.round(maxInboundVal * 0.33)}</text>
 
                   <line x1="40" y1="180" x2="580" y2="180" stroke="#CBD5E1" strokeWidth="1" />
-                  <text x="25" y="184" fontSize="9" fill="#94A3B8" fontFamily="monospace">0</text>
+                  <text x="20" y="184" fontSize="9" fill="#94A3B8" fontFamily="monospace">0</text>
 
                   {/* Area 1: HiPRO (Blue) */}
-                  <path
-                    d="M 60 160 C 140 145, 180 120, 260 90 C 340 70, 420 55, 540 38 L 540 180 L 60 180 Z"
-                    fill="url(#hiproGrad)"
-                  />
-                  <path
-                    d="M 60 160 C 140 145, 180 120, 260 90 C 340 70, 420 55, 540 38"
-                    fill="none"
-                    stroke="#2563EB"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
+                  <path d={hiproPath.area} fill="url(#hiproGrad)" />
+                  <path d={hiproPath.line} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
 
                   {/* Area 2: HBS (Orange) */}
-                  <path
-                    d="M 60 170 C 140 160, 180 145, 260 125 C 340 110, 420 95, 540 75 L 540 180 L 60 180 Z"
-                    fill="url(#hbsGrad)"
-                  />
-                  <path
-                    d="M 60 170 C 140 160, 180 145, 260 125 C 340 110, 420 95, 540 75"
-                    fill="none"
-                    stroke="#EA580C"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                  />
+                  <path d={hbsPath.area} fill="url(#hbsGrad)" />
+                  <path d={hbsPath.line} fill="none" stroke="#EA580C" strokeWidth="2.5" strokeLinecap="round" />
 
                   {/* Area 3: Vendor Hub (Amber) */}
-                  <path
-                    d="M 60 175 C 140 170, 180 160, 260 145 C 340 135, 420 120, 540 105 L 540 180 L 60 180 Z"
-                    fill="url(#vendorGrad)"
-                  />
-                  <path
-                    d="M 60 175 C 140 170, 180 160, 260 145 C 340 135, 420 120, 540 105"
-                    fill="none"
-                    stroke="#D97706"
-                    strokeWidth="2"
-                    strokeDasharray="4 2"
-                    strokeLinecap="round"
-                  />
+                  <path d={vendorPath.area} fill="url(#vendorGrad)" />
+                  <path d={vendorPath.line} fill="none" stroke="#D97706" strokeWidth="2" strokeDasharray="4 2" strokeLinecap="round" />
 
                   {/* Data Points & Month Labels */}
                   {monthlyMetrics.map((item, idx) => {
                     const cx = 60 + idx * 96;
+                    const cy = hiproPoints[idx]?.y ?? 180;
                     const isHovered = activeHoverMonth === idx;
                     return (
                       <g
@@ -1030,7 +1186,7 @@ export default function MasterCompanyDashboard() {
                         {/* Point circles */}
                         <circle
                           cx={cx}
-                          cy={160 - idx * 24}
+                          cy={cy}
                           r={isHovered ? 5 : 3.5}
                           fill="#2563EB"
                           stroke="#FFFFFF"
@@ -1062,7 +1218,7 @@ export default function MasterCompanyDashboard() {
                     style={{ left: `${10 + activeHoverMonth * 16}%` }}
                   >
                     <p className="font-bold text-slate-300 pb-1 border-b border-slate-700">
-                      Month of {monthlyMetrics[activeHoverMonth].month} 2026
+                      Month of {monthlyMetrics[activeHoverMonth].month}
                     </p>
                     <div className="space-y-1 mt-1.5 text-[11px]">
                       <p className="text-blue-300 flex justify-between gap-4">
@@ -1086,22 +1242,22 @@ export default function MasterCompanyDashboard() {
             {/* Performance KPI ribbon */}
             <div className="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-slate-100 text-center">
               <div>
-                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">MoM Growth</p>
+                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">MoM Status</p>
                 <p className="text-base font-black text-emerald-600 font-display mt-0.5 flex items-center justify-center gap-1">
                   <TrendingUp className="w-3.5 h-3.5" />
-                  +18.4%
+                  Live Sync
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">Response SLA</p>
+                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">Total Submissions</p>
                 <p className="text-base font-black text-slate-900 font-display mt-0.5">
-                  1.8 Hours
+                  {data?.executive?.totalInquiries ?? 0}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">Conversion</p>
+                <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">Pending Action</p>
                 <p className="text-base font-black text-blue-600 font-display mt-0.5">
-                  68.2%
+                  {data?.executive?.pendingActions ?? 0}
                 </p>
               </div>
             </div>
@@ -1132,7 +1288,7 @@ export default function MasterCompanyDashboard() {
                     strokeWidth="18"
                   />
 
-                  {/* Segment 1: HiPRO (54%) -> 54% of 376.99 = 203.57 */}
+                  {/* Segment 1: HiPRO */}
                   <circle
                     cx="80"
                     cy="80"
@@ -1140,12 +1296,12 @@ export default function MasterCompanyDashboard() {
                     fill="none"
                     stroke="#2563EB"
                     strokeWidth="18"
-                    strokeDasharray="203.57 376.99"
+                    strokeDasharray={`${portalSplit.hiproLen} 376.99`}
                     strokeDashoffset="0"
                     className="transition-all duration-1000 ease-out"
                   />
 
-                  {/* Segment 2: HBS (28%) -> 28% of 376.99 = 105.55 */}
+                  {/* Segment 2: HBS */}
                   <circle
                     cx="80"
                     cy="80"
@@ -1153,12 +1309,12 @@ export default function MasterCompanyDashboard() {
                     fill="none"
                     stroke="#EA580C"
                     strokeWidth="18"
-                    strokeDasharray="105.55 376.99"
-                    strokeDashoffset="-203.57"
+                    strokeDasharray={`${portalSplit.hbsLen} 376.99`}
+                    strokeDashoffset={portalSplit.hbsOffset}
                     className="transition-all duration-1000 ease-out"
                   />
 
-                  {/* Segment 3: Vendor Hub (18%) -> 18% of 376.99 = 67.85 */}
+                  {/* Segment 3: Vendor Hub */}
                   <circle
                     cx="80"
                     cy="80"
@@ -1166,8 +1322,8 @@ export default function MasterCompanyDashboard() {
                     fill="none"
                     stroke="#D97706"
                     strokeWidth="18"
-                    strokeDasharray="67.85 376.99"
-                    strokeDashoffset="-309.12"
+                    strokeDasharray={`${portalSplit.vendorLen} 376.99`}
+                    strokeDashoffset={portalSplit.vendorOffset}
                     className="transition-all duration-1000 ease-out"
                   />
                 </svg>
@@ -1186,7 +1342,7 @@ export default function MasterCompanyDashboard() {
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
                     <span className="text-slate-800 font-bold">HiPRO Corporate</span>
                   </div>
-                  <span className="font-mono font-bold text-blue-700">54%</span>
+                  <span className="font-mono font-bold text-blue-700">{portalSplit.hiproPct}%</span>
                 </div>
 
                 <div className="flex items-center justify-between p-2 rounded-xl bg-orange-50/50 border border-orange-100">
@@ -1194,7 +1350,7 @@ export default function MasterCompanyDashboard() {
                     <span className="w-2.5 h-2.5 rounded-full bg-orange-600" />
                     <span className="text-slate-800 font-bold">Hind Building (HBS)</span>
                   </div>
-                  <span className="font-mono font-bold text-orange-700">28%</span>
+                  <span className="font-mono font-bold text-orange-700">{portalSplit.hbsPct}%</span>
                 </div>
 
                 <div className="flex items-center justify-between p-2 rounded-xl bg-amber-50/50 border border-amber-100">
@@ -1202,7 +1358,7 @@ export default function MasterCompanyDashboard() {
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-600" />
                     <span className="text-slate-800 font-bold">Vendor Hub</span>
                   </div>
-                  <span className="font-mono font-bold text-amber-700">18%</span>
+                  <span className="font-mono font-bold text-amber-700">{portalSplit.vendorPct}%</span>
                 </div>
               </div>
             </div>
@@ -1252,8 +1408,9 @@ export default function MasterCompanyDashboard() {
 
                 {monthlyMetrics.slice(1).map((item, idx) => {
                   const xBase = 60 + idx * 95;
-                  const inboundH = item.totalInbound * 2.3;
-                  const convH = item.converted * 2.3;
+                  const maxTotal = Math.max(...monthlyMetrics.map((m: any) => m.totalInbound || 0), 5);
+                  const inboundH = item.totalInbound > 0 ? Math.max(8, Math.round((item.totalInbound / maxTotal) * 110)) : 2;
+                  const convH = item.converted > 0 ? Math.max(8, Math.round((item.converted / maxTotal) * 110)) : 2;
 
                   return (
                     <g key={item.month}>
@@ -1390,100 +1547,34 @@ export default function MasterCompanyDashboard() {
             </div>
 
             <div className="divide-y divide-slate-100 space-y-2">
-              {/* Event 1 */}
-              <div className="pt-2 flex items-start gap-3 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Database className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-900">Database Snapshot Verified Healthy</p>
-                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-slate-100 text-slate-700 rounded-full">
-                      Automated Vault
-                    </span>
+              {recentActivityFeed.length > 0 ? (
+                recentActivityFeed.map((item) => (
+                  <div key={item.id} className="pt-2.5 flex items-start gap-3 text-xs">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                      {item.iconType === "quote" && <Building2 className="w-4 h-4 text-blue-600" />}
+                      {item.iconType === "lead" && <Flame className="w-4 h-4 text-orange-600" />}
+                      {item.iconType === "vendor" && <ShieldCheck className="w-4 h-4 text-amber-600" />}
+                      {item.iconType === "contact" && <Mail className="w-4 h-4 text-blue-600" />}
+                      {item.iconType === "job" && <Briefcase className="w-4 h-4 text-purple-600" />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-slate-900 truncate">{item.title}</p>
+                        <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-full shrink-0 ${item.portalColor}`}>
+                          {item.portal}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">{item.desc}</p>
+                      <span className="text-[10px] text-slate-400 font-mono">{item.time}</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Snapshot <code className="font-mono text-slate-700">hipro_master_snapshot_2026_11_22.sql</code> (14.8 MB, 1,842 rows) archived to secure multi-region backup.
-                  </p>
-                  <span className="text-[10px] text-slate-400 font-mono">Today, 03:00 AM IST</span>
+                ))
+              ) : (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  <p className="font-semibold text-slate-600">No recent submissions recorded</p>
+                  <p className="mt-1">Incoming turnkey quotes, HBS customer leads, and contractor applications will appear here live.</p>
                 </div>
-              </div>
-
-              {/* Event 2 */}
-              <div className="pt-3 flex items-start gap-3 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Building2 className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-900">New Turnkey Quote Request</p>
-                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-blue-50 text-blue-700 rounded-full">
-                      HiPRO Civil
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Industrial PEB warehouse structure inquiry received for Bhilwara site (Estimated budget: ₹1.8 Cr).
-                  </p>
-                  <span className="text-[10px] text-slate-400 font-mono">5 mins ago</span>
-                </div>
-              </div>
-
-              {/* Event 3 */}
-              <div className="pt-3 flex items-start gap-3 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <Flame className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-900">Waterproofing Customer Lead</p>
-                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-orange-50 text-orange-700 rounded-full">
-                      Hind Building
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Customer requested injection grouting & basement waterproofing repair inspection.
-                  </p>
-                  <span className="text-[10px] text-slate-400 font-mono">22 mins ago</span>
-                </div>
-              </div>
-
-              {/* Event 4 */}
-              <div className="pt-3 flex items-start gap-3 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-900">Contractor KYC Submitted</p>
-                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-amber-50 text-amber-700 rounded-full">
-                      Vendor Hub
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Class-B civil subcontractor uploaded GSTIN and CPWD credentials for vetting pipeline.
-                  </p>
-                  <span className="text-[10px] text-slate-400 font-mono">1 hr ago</span>
-                </div>
-              </div>
-
-              {/* Event 5 */}
-              <div className="pt-3 flex items-start gap-3 text-xs">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                  <KeyRound className="w-4 h-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-slate-900">Master 2FA Session Authenticated</p>
-                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-emerald-50 text-emerald-700 rounded-full">
-                      Security Vault
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    RFC 6238 TOTP verified for holding executive login. In-memory session cache initialized.
-                  </p>
-                  <span className="text-[10px] text-emerald-600 font-mono font-bold">Protected</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
