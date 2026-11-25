@@ -82,6 +82,44 @@ export async function getEmpanelmentEmailLogs(applicationId: string): Promise<Em
   return allLogs.filter((l) => l.applicationId === applicationId);
 }
 
+async function dispatchRoutedEmpanelmentEmail(params: {
+  to: string;
+  recipientName?: string;
+  subject: string;
+  htmlBody: string;
+  triggerKey: string;
+  fallbackSenderName: string;
+}) {
+  const resolved = await resolveEffectiveMailboxConfig({
+    triggerKey: params.triggerKey,
+    brand: "empanelment",
+    senderName: params.fallbackSenderName,
+  });
+
+  const info = await sendOneEmail({
+    to: params.to,
+    subject: params.subject,
+    htmlBody: params.htmlBody,
+    brand: "empanelment",
+    senderName: resolved.senderName,
+    senderEmail: resolved.senderEmail,
+    customConfig: resolved.customConfig,
+  });
+
+  await recordDirectDispatch({
+    to: params.to,
+    name: params.recipientName || params.to,
+    subject: params.subject,
+    brand: "empanelment",
+    senderName: resolved.senderName,
+    senderEmail: resolved.senderEmail,
+    source: `empanelment_${params.triggerKey}`,
+    success: true,
+  }).catch(() => null);
+
+  return info;
+}
+
 export async function retryEmpanelmentEmail(logId: string): Promise<{ success: boolean; error?: string }> {
   const allLogs = loadEmailLogs();
   const index = allLogs.findIndex((l) => l.id === logId);
@@ -89,12 +127,13 @@ export async function retryEmpanelmentEmail(logId: string): Promise<{ success: b
 
   const log = allLogs[index];
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: log.recipientEmail,
+      recipientName: log.recipientName,
       subject: log.subject,
       htmlBody: log.htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Empanelment Desk",
+      triggerKey: log.templateKey === "gate_pass_issued" ? "site_gate_passes" : "vendor_kyc_approvals",
+      fallbackSenderName: "HiPRO Empanelment Desk",
     });
 
     log.status = "sent";
@@ -318,12 +357,13 @@ export async function sendApplicationReceivedEmail(params: ApplicationEmailParam
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: contactName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Empanelment Desk",
+      triggerKey: "vendor_kyc_approvals",
+      fallbackSenderName: "HiPRO Empanelment Desk",
     });
     success = true;
     console.log(`[EMPANELMENT MAILER] Acknowledgment email sent to ${email} for ${trackingId}`);
@@ -522,12 +562,13 @@ export async function sendApplicationStatusEmail(params: StatusEmailParams): Pro
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: contactName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Empanelment Desk",
+      triggerKey: "vendor_kyc_approvals",
+      fallbackSenderName: "HiPRO Empanelment Desk",
     });
     success = true;
     console.log(`[EMPANELMENT MAILER] Status update email sent to ${email} (${status})`);
@@ -655,12 +696,13 @@ export async function sendSiteGatePassEmail(params: GatePassEmailParams): Promis
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: visitorName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Site Security",
+      triggerKey: "site_gate_passes",
+      fallbackSenderName: "HiPRO Site Security",
     });
     success = true;
     console.log(`[EMPANELMENT MAILER] Gate pass email sent to ${email} (${passCode})`);
@@ -741,12 +783,13 @@ export async function sendVendorActivationEmail(params: {
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: contactName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Vendor Access Desk",
+      triggerKey: "vendor_kyc_approvals",
+      fallbackSenderName: "HiPRO Vendor Access Desk",
     });
     success = true;
   } catch (err: any) {
@@ -779,49 +822,32 @@ export async function sendPasswordResetEmail(params: {
   const subject = `Reset Your HiPRO Vendor Portal Password`;
 
   const htmlBody = `
-<!DOCTYPE html>
-<html lang="en" data-hipro-branded="true">
-<body style="margin: 0; padding: 20px; background: #0f172a; font-family: -apple-system, sans-serif; color: #f1f5f9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="580" style="background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 30px;">
-          <tr>
-            <td>
-              <div style="font-size: 18px; font-weight: 800; color: #f97316;">Hindustan Projects</div>
-              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Password Reset Request</h2>
-              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
-                Dear ${contactName},<br>
-                A password reset request was initiated for your Hindustan Projects Vendor Portal account.
-              </p>
-              <div style="text-align: center; margin: 26px 0;">
-                <a href="${resetUrl}" target="_blank" style="background: #2563eb; color: #fff; padding: 13px 30px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-block;">
-                  Reset Your Password &rarr;
-                </a>
-              </div>
-              <p style="color: #64748b; font-size: 11.5px;">
-                This link will expire in 2 hours. If you did not request a password reset, please ignore this email.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
+  <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: #b45309; margin-bottom: 8px;">Vendor Portal Account Security</div>
+  <h2 style="color: #0f172a; font-size: 20px; margin: 0 0 10px;">Password Reset Request</h2>
+  <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+    Dear <strong>${contactName}</strong>,<br>
+    A password reset request was initiated for your Hindustan Projects Vendor Portal account. Use the secure link below to set a new password:
+  </p>
+  <div style="text-align: center; margin: 24px 0;">
+    <a href="${resetUrl}" target="_blank" style="background: #0f172a; color: #ffffff; padding: 13px 30px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; display: inline-block;">
+      Reset Vendor Portal Password &rarr;
+    </a>
+  </div>
+  <p style="color: #64748b; font-size: 12px; line-height: 1.5; background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+    This verification link expires in 2 hours. If you did not request a password reset, please disregard this message safely.
+  </p>`;
 
   let success = false;
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: contactName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Vendor Security",
+      triggerKey: "vendor_kyc_approvals",
+      fallbackSenderName: "HiPRO Vendor Security",
     });
     success = true;
   } catch (err: any) {
@@ -857,49 +883,32 @@ export async function sendBidConfirmationEmail(params: {
   const subject = `Tender Bid Submitted [${tenderNo}] — ${tenderTitle}`;
 
   const htmlBody = `
-<!DOCTYPE html>
-<html lang="en" data-hipro-branded="true">
-<body style="margin: 0; padding: 20px; background: #0f172a; font-family: -apple-system, sans-serif; color: #f1f5f9;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="580" style="background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 30px;">
-          <tr>
-            <td>
-              <div style="font-size: 18px; font-weight: 800; color: #f97316;">Hindustan Projects Procurement</div>
-              <h2 style="color: #ffffff; font-size: 20px; margin: 12px 0 8px;">Commercial Bid Acknowledgment</h2>
-              <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
-                Dear ${contactName} (${companyName}),<br>
-                Your electronic commercial bid for tender <strong>${tenderNo}</strong> (${tenderTitle}) has been securely logged into the procurement evaluation registry.
-              </p>
-              <table style="width: 100%; background: #0f172a; border-radius: 8px; padding: 12px; margin: 16px 0; font-size: 13px; color: #e2e8f0;">
-                <tr><td style="color: #94a3b8; width: 40%;">Tender Package:</td><td style="font-weight: 700;">${tenderTitle}</td></tr>
-                <tr><td style="color: #94a3b8;">Commercial Quote:</td><td style="font-weight: 700; color: #34d399;">₹${bidAmount.toLocaleString("en-IN")}</td></tr>
-                ${proposedDays ? `<tr><td style="color: #94a3b8;">Completion Timeline:</td><td>${proposedDays} Working Days</td></tr>` : ""}
-              </table>
-              <p style="color: #94a3b8; font-size: 12px;">
-                The procurement evaluation committee will review all submitted bids post the tender closing deadline.
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+  <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800; color: #b45309; margin-bottom: 6px;">Tender Bid Confirmation</div>
+  <h2 style="color: #0f172a; font-size: 20px; margin: 0 0 10px;">Commercial Bid Acknowledgment</h2>
+  <p style="color: #334155; font-size: 13.5px; line-height: 1.6;">
+    Dear <strong>${contactName}</strong> (${companyName}),<br>
+    Your electronic commercial bid for tender <strong>${tenderNo}</strong> (${tenderTitle}) has been securely logged into the procurement evaluation registry.
+  </p>
+  <table role="presentation" style="width: 100%; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; margin: 16px 0; font-size: 13px; color: #0f172a;">
+    <tr><td style="padding: 10px 14px; color: #64748b; width: 40%; border-bottom: 1px solid #e2e8f0;">Tender Package:</td><td style="padding: 10px 14px; font-weight: 700; border-bottom: 1px solid #e2e8f0;">${tenderTitle}</td></tr>
+    <tr><td style="padding: 10px 14px; color: #64748b;">Commercial Quote:</td><td style="padding: 10px 14px; font-weight: 800; color: #059669;">₹${bidAmount.toLocaleString("en-IN")}</td></tr>
+    ${proposedDays ? `<tr><td style="padding: 10px 14px; color: #64748b; border-top: 1px solid #e2e8f0;">Completion Timeline:</td><td style="padding: 10px 14px; border-top: 1px solid #e2e8f0;">${proposedDays} Working Days</td></tr>` : ""}
   </table>
-</body>
-</html>
-  `;
+  <p style="color: #475569; font-size: 12.5px; margin-bottom: 0;">
+    The procurement evaluation committee will review all submitted bids post the tender closing deadline.
+  </p>`;
 
   let success = false;
   let errorMessage: string | undefined;
 
   try {
-    await sendOneEmail({
+    await dispatchRoutedEmpanelmentEmail({
       to: email,
+      recipientName: contactName,
       subject,
       htmlBody,
-      brand: "empanelment",
-      senderName: "HiPRO Procurement Directorate",
+      triggerKey: "tenders_support",
+      fallbackSenderName: "HiPRO Procurement Directorate",
     });
     success = true;
   } catch (err: any) {

@@ -124,7 +124,7 @@ export default function AutoMailDashboard() {
         </div>
       )}
 
-      {/* Missing SMTP Credentials Alert */}
+      {/* Missing Credentials Alert */}
       {stats?.settings && !stats.settings.smtpConfigured && !loading && (
         <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -132,9 +132,9 @@ export default function AutoMailDashboard() {
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-red-900">Hostinger Mailbox Password Missing!</h3>
+              <h3 className="text-sm font-bold text-red-900">Hostinger Mailbox Credentials Needed!</h3>
               <p className="text-xs text-red-700 mt-0.5">
-                Emails send karne ke liye pehle Hostinger email aur password Settings tab me configure karein taaki emails fail na ho.
+                Mail deliver karne ke liye pehle Settings &rarr; Hostinger Mailboxes me email password ya Hostinger Mail API token save karein.
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function AutoMailDashboard() {
             href="/admin/automail/settings"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs shadow-xs transition-all whitespace-nowrap self-start sm:self-auto"
           >
-            <span>Configure Hostinger SMTP →</span>
+            <span>Add Hostinger Mailbox →</span>
           </Link>
         </div>
       )}
@@ -225,8 +225,14 @@ export default function AutoMailDashboard() {
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-slate-300 font-medium backdrop-blur-md">
               <Globe2 className="w-3 h-3 text-blue-400" />
-              <span>DKIM &amp; SPF Optimized</span>
+              <span>{stats?.settings?.activeMailboxesCount ?? 1} Active Mailbox(es)</span>
             </div>
+            <Link
+              href="/admin/automail/settings"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-400/30 text-[10px] text-blue-200 font-semibold backdrop-blur-md transition-colors"
+            >
+              <span>Manage Mailboxes &amp; Control →</span>
+            </Link>
           </div>
         </div>
 
@@ -272,34 +278,32 @@ export default function AutoMailDashboard() {
             <div className="w-7 h-7 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
               1
             </div>
-            <h4 className="text-xs font-bold text-slate-900">Audience Check Karo</h4>
+            <h4 className="text-xs font-bold text-slate-900">Mailboxes &amp; Routing Setup</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Website ke leads ko yahan lane ke liye &ldquo;Sync Leads&rdquo; button dabayein ya Excel spreadsheet upload karein.
+              Hostinger ke mail IDs (`info@`, `hbs@`, `empanelment@`) add karein aur portal event mapping set karein.
             </p>
-            <button
-              type="button"
-              onClick={handleQuickSync}
-              disabled={syncingCrm}
+            <Link
+              href="/admin/automail/settings"
               className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1"
             >
-              <span>{syncingCrm ? "Syncing..." : "Sync Leads Abhi Karo"}</span>
+              <span>Mailboxes &amp; Control Kholo</span>
               <ArrowRight className="w-3 h-3" />
-            </button>
+            </Link>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div className="w-7 h-7 rounded-lg bg-amber-600 text-white font-bold text-xs flex items-center justify-center">
               2
             </div>
-            <h4 className="text-xs font-bold text-slate-900">Template Choose Karo</h4>
+            <h4 className="text-xs font-bold text-slate-900">3-Portal Template Choose</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Compose studio me jakar HiPRO ya Hind Build ka pre-made business template select karein.
+              HiPRO Civil, Hind Build (HBS) ya Empanelment Hub ka corporate template preview aur test karein.
             </p>
             <Link
-              href="/admin/automail/compose"
+              href="/admin/automail/templates"
               className="text-[11px] font-bold text-amber-600 hover:underline flex items-center gap-1"
             >
-              <span>Templates Dekho</span>
+              <span>3-Portal Templates Dekho</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -388,16 +392,16 @@ export default function AutoMailDashboard() {
         <div
           onClick={() => setSelectedBrand("all")}
           className={`cursor-pointer bg-white border p-4 rounded-xl transition-all shadow-2xs hover:shadow-xs flex items-center justify-between ${
-            selectedBrand === "all" ? "border-amber-500 ring-2 ring-amber-500/10 bg-amber-50/20" : "border-slate-200"
+            selectedBrand === "all" ? "border-indigo-500 ring-2 ring-indigo-500/10 bg-indigo-50/20" : "border-slate-200"
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
               <Globe2 className="w-5 h-5" />
             </div>
             <div>
               <p className="text-xs font-bold text-slate-800">Total Group Contacts</p>
-              <p className="text-[11px] text-slate-500">All brands + CSV uploads</p>
+              <p className="text-[11px] text-slate-500">All 3 portals + CSV uploads</p>
             </div>
           </div>
           <span className="text-base font-black text-slate-900 font-mono">

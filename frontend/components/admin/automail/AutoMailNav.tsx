@@ -46,11 +46,11 @@ export default function AutoMailNav({
 
   const navLinks = [
     { href: "/admin/automail", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/automail/campaigns", label: "Campaigns", icon: Send },
+    { href: "/admin/automail/settings", label: "Mailboxes & Control", icon: Settings },
+    { href: "/admin/automail/templates", label: "3-Portal Templates", icon: Layers },
     { href: "/admin/automail/compose", label: "Compose Studio", icon: PenSquare },
-    { href: "/admin/automail/templates", label: "Templates", icon: Layers },
     { href: "/admin/automail/contacts", label: "Audience & Leads", icon: Users },
-    { href: "/admin/automail/settings", label: "Settings & SMTP", icon: Settings },
+    { href: "/admin/automail/campaigns", label: "Campaigns", icon: Send },
   ];
 
   const brandOptions = [

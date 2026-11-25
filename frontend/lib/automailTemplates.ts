@@ -33,6 +33,17 @@ export function getCorporateEmailHeader(
   const isEmp = brand === "empanelment";
   const isAll = brand === "all";
 
+  const portalCode = isHbs
+    ? "HiBUILD HBS CARE"
+    : isEmp
+    ? "VENDOR EMPANELMENT HUB"
+    : isAll
+    ? "HINDUSTAN GROUP HQ"
+    : "HiPRO CIVIL PORTAL";
+
+  const monogram = isHbs ? "HB" : isEmp ? "EP" : isAll ? "HG" : "HP";
+  const monogramBg = isHbs ? "#b91c1c" : isEmp ? "#b45309" : isAll ? "#2563eb" : "#1d4ed8";
+
   const brandTitle = isHbs
     ? "HIND BUILDING SOLUTIONS"
     : isEmp
@@ -42,40 +53,40 @@ export function getCorporateEmailHeader(
     : "HINDUSTAN PROJECTS";
 
   const brandTagline = isHbs
-    ? "Structural Repair • 100% Guaranteed Waterproofing • PU Crack Injection • AMC"
+    ? "Structural Rehabilitation • Guaranteed Waterproofing • PU Crack Injection"
     : isEmp
-    ? "Procurement Directorate • Vendor & Contractor Empanelment Board"
+    ? "Procurement Directorate • Contractor Empanelment • Tenders & Gate Access"
     : isAll
-    ? "Civil Engineering • Building Care • Turnkey Construction • Procurement Hub"
-    : "Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design";
+    ? "Civil Engineering • Turnkey Construction • Building Care • Procurement Hub"
+    : "Civil Engineering • Turnkey EPC • Architectural Design • Infrastructure";
 
   const headerBg = isHbs
-    ? "linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #991b1b 100%)"
+    ? "linear-gradient(135deg, #3b0707 0%, #6b1111 55%, #991b1b 100%)"
     : isEmp
-    ? "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #78350f 100%)"
-    : "linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%)";
+    ? "linear-gradient(135deg, #0b1322 0%, #162235 55%, #451a03 100%)"
+    : "linear-gradient(135deg, #071124 0%, #0f1f3d 55%, #172e54 100%)";
 
-  const accentBorder = isHbs ? "#b91c1c" : isEmp ? "#d97706" : "#dc2626";
-  const badgeBg = isHbs ? "rgba(239, 68, 68, 0.25)" : isEmp ? "rgba(245, 158, 11, 0.25)" : "rgba(220, 38, 38, 0.25)";
-  const badgeColor = isHbs ? "#fecaca" : isEmp ? "#fef3c7" : "#fca5a5";
+  const accentBorder = isHbs ? "#d97706" : isEmp ? "#d97706" : isAll ? "#2563eb" : "#dc2626";
+  const badgeBg = isHbs ? "rgba(245, 158, 11, 0.22)" : isEmp ? "rgba(245, 158, 11, 0.22)" : isAll ? "rgba(37, 99, 235, 0.24)" : "rgba(220, 38, 38, 0.22)";
+  const badgeColor = isHbs ? "#fef3c7" : isEmp ? "#fde68a" : isAll ? "#bfdbfe" : "#fecaca";
 
-  const trust1 = isHbs ? "Documented Workmanship Warranties" : isEmp ? "Central Vendor Registry" : "Quality-First Execution";
-  const trust2 = isHbs ? "Thermal Moisture Audit" : isEmp ? "14-Day RA Bill Clearance" : "Turnkey EPC Contracting";
-  const trust3 = isHbs ? "German Polymer PU Tech" : isEmp ? "Active Commercial Tenders" : "Pan-Rajasthan Footprint";
+  const trust1 = isHbs ? "5–10 Yr Written Warranty" : isEmp ? "Verified Vendor Registry" : "Quality-First Execution";
+  const trust2 = isHbs ? "Thermal Moisture Audit" : isEmp ? "14-Day RA Bill Clearance" : "Transparent BOQ & Costing";
+  const trust3 = isHbs ? "German Polymer Tech" : isEmp ? "QR Digital Gate Pass" : "Pan-Rajasthan Footprint";
 
   return `<!-- Top Metadata Strip -->
 <tr>
-  <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+  <td style="background-color: #070d19; padding: 9px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
-          <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
-          <span>OFFICIAL TRANSMISSION</span>
-          <span style="color: #475569; margin: 0 6px;">•</span>
-          <span style="color: #cbd5e1;">{{date}}</span>
+        <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.9px;">
+          <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+          <span style="color: #e2e8f0;">${portalCode}</span>
+          <span style="color: #475569; margin: 0 6px;">&bull;</span>
+          <span style="color: #94a3b8;">{{date}}</span>
         </td>
         <td align="right" style="font-size: 10px; font-family: monospace; color: #94a3b8;">
-          REF: <strong style="color: #e2e8f0;">#HP-{{year}}-DISPATCH</strong>
+          REF <strong style="color: #e2e8f0;">#HP-{{year}}</strong>
         </td>
       </tr>
     </table>
@@ -84,45 +95,41 @@ export function getCorporateEmailHeader(
 
 <!-- Corporate Brand Header -->
 <tr>
-  <td style="background: ${headerBg}; padding: 28px 24px 22px; text-align: center; border-bottom: 4px solid ${accentBorder};">
+  <td style="background: ${headerBg}; padding: 28px 26px 24px; text-align: center; border-bottom: 4px solid ${accentBorder};">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td align="center">
-          
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 10px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 12px;">
             <tr>
-              <td align="center" style="background-color: ${badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 4px 14px;">
-                <span style="color: ${badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
+              <td align="center" valign="middle" style="width: 34px; height: 34px; background-color: ${monogramBg}; border-radius: 9px; color: #ffffff; font-size: 13px; font-weight: 900; border: 1px solid rgba(255,255,255,0.22);">
+                ${monogram}
+              </td>
+              <td style="width: 10px;"></td>
+              <td align="center" style="background-color: ${badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 5px 14px;">
+                <span style="color: ${badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;">
                   ${options.badge}
                 </span>
               </td>
             </tr>
           </table>
 
-          <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; line-height: 1.2;">
+          <h1 style="margin: 0; color: #ffffff; font-size: 23px; font-weight: 900; letter-spacing: 1.6px; text-transform: uppercase; line-height: 1.25;">
             ${brandTitle}
           </h1>
 
-          <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; line-height: 1.4;">
+          <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 11px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase; line-height: 1.45;">
             ${brandTagline}
           </p>
 
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px;">
             <tr>
               <td align="center">
-                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                  🏛️ ${trust1}
-                </span>
-                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                  🛡️ ${trust2}
-                </span>
-                <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                  ⚡ ${trust3}
-                </span>
+                <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${trust1}</span>
+                <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${trust2}</span>
+                <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${trust3}</span>
               </td>
             </tr>
           </table>
-
         </td>
       </tr>
     </table>
@@ -148,6 +155,8 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
     ? "empanelment.hindustanprojects.in"
     : "www.hindustanprojects.in";
 
+  const ctaBg = isHbs ? "#991b1b" : isEmp ? "#b45309" : "#0f1f3d";
+
   const contactEmail = isHbs
     ? "hbs@hindustanprojects.in"
     : isEmp
@@ -155,27 +164,27 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
     : "info@hindustanprojects.in";
 
   const divisionName = isHbs
-    ? "Hind Building Solutions (HiBUILD) • A Hindustan Projects Specialized Division"
+    ? "Hind Building Solutions (HiBUILD) • Specialized Structural Protection Division"
     : isEmp
     ? "Hindustan Projects Procurement & Vendor Empanelment Directorate"
-    : "Hindustan Projects Private Limited • Civil Infrastructure & Turnkey EPC Contractors";
+    : "Hindustan Projects Private Limited • Civil Infrastructure & Turnkey EPC";
 
   return `<!-- Quick Action & Verification Bar -->
 <tr>
-  <td style="background-color: #f8fafc; padding: 16px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+  <td style="background-color: #f8fafc; padding: 18px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td align="center">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0">
             <tr>
-              <td align="center" style="padding: 4px 8px;">
-                <a href="${websiteUrl}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
-                  🌐 Visit ${websiteDisplay}
+              <td align="center" style="padding: 4px 6px;">
+                <a href="${websiteUrl}" target="_blank" style="display: inline-block; background-color: ${ctaBg}; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 9px 18px; border-radius: 8px;">
+                  Visit ${websiteDisplay} &rarr;
                 </a>
               </td>
-              <td align="center" style="padding: 4px 8px;">
-                <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px;">
-                  💬 Direct Helpline: +91 75970 00601
+              <td align="center" style="padding: 4px 6px;">
+                <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 9px 18px; border-radius: 8px;">
+                  WhatsApp Desk: +91 75970 00601
                 </a>
               </td>
             </tr>
@@ -188,54 +197,47 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
 
 <!-- Official Corporate Headquarters & Credentials Footer -->
 <tr data-hipro-corporate-footer="true">
-  <td style="background-color: #0f172a; color: #cbd5e1; padding: 26px 24px 20px; font-size: 11px; line-height: 1.6;">
+  <td style="background-color: #090e1a; color: #cbd5e1; padding: 26px 24px 20px; font-size: 11px; line-height: 1.6;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-      
       <tr>
-        <td align="center" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <td align="center" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
             ${divisionName}
           </div>
         </td>
       </tr>
-
       <tr>
         <td align="center" style="padding: 12px 8px 8px;">
           <p style="margin: 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
-            📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+            <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan
           </p>
           <p style="margin: 6px 0 0; color: #94a3b8; font-size: 11px;">
-            📞 <strong>Helpline:</strong> <a href="tel:+917597000601" style="color: #38bdf8; text-decoration: none;">+91 75970 00601</a>
-            <span style="color: #475569; margin: 0 6px;">•</span>
-            ✉️ <strong>Official Email:</strong> <a href="mailto:${contactEmail}" style="color: #38bdf8; text-decoration: none;">${contactEmail}</a>
+            <strong>Site Helpline:</strong> <a href="tel:+917597000601" style="color: #60a5fa; text-decoration: none;">+91 75970 00601</a>
+            <span style="color: #475569; margin: 0 6px;">&bull;</span>
+            <strong>Official Desk:</strong> <a href="mailto:${contactEmail}" style="color: #60a5fa; text-decoration: none;">${contactEmail}</a>
           </p>
-          <p style="margin: 4px 0 0; color: #94a3b8; font-size: 10px;">
-            🏗️ Operational across Bhilwara, Jaipur, Udaipur, Jodhpur, Kota & Pan-Rajasthan
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 10px;">
+            Active Operations: Bhilwara &bull; Jaipur &bull; Udaipur &bull; Jodhpur &bull; Kota &bull; Pan-Rajasthan
           </p>
         </td>
       </tr>
-
-      <!-- Legal Confidentiality Notice -->
       <tr>
-        <td style="padding: 10px; background-color: rgba(0, 0, 0, 0.35); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
-          <p style="margin: 0; font-size: 9.5px; line-height: 1.45; color: #94a3b8; text-align: justify;">
-            <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic mail transmission, including any attachments, contains information which may be confidential, legally privileged, and protected from disclosure. It is intended solely for the use of the intended recipient ({{email}}). If you are not the intended recipient, any dissemination, copying, or action in reliance upon this transmission is strictly prohibited.
+        <td style="padding: 10px 12px; background-color: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.07);">
+          <p style="margin: 0; font-size: 9.5px; line-height: 1.5; color: #94a3b8; text-align: justify;">
+            <strong style="color: #cbd5e1;">CONFIDENTIALITY NOTICE:</strong> This electronic mail transmission is intended solely for {{email}}. Any unauthorized dissemination or copying is strictly prohibited.
           </p>
         </td>
       </tr>
-
-      <!-- System Attribution -->
       <tr>
         <td align="center" style="padding-top: 12px; font-size: 10px; color: #64748b;">
           <p style="margin: 0;">
-            ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • Recipient: <strong style="color: #94a3b8;">{{email}}</strong>
+            Dispatched via <strong style="color: #94a3b8;">Hindustan Projects AutoMail Engine</strong> &bull; Recipient: <strong style="color: #94a3b8;">{{email}}</strong>
           </p>
           <p style="margin: 4px 0 0;">
-            © {{year}} <strong>Hindustan Projects Group</strong>. All rights reserved.
+            &copy; {{year}} <strong>Hindustan Projects Group</strong>. All rights reserved.
           </p>
         </td>
       </tr>
-
     </table>
   </td>
 </tr>`;
@@ -281,23 +283,23 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
               </p>
 
               <!-- 3 Value Pillars -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
                 <tr>
-                  <td style="padding: 8px 12px; vertical-align: top;">
-                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">🏗️ Full Turnkey Execution</p>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.4;">From soil testing & RCC framing to premium plumbing, tiling & MEP finishing.</p>
+                  <td style="padding: 10px 12px; vertical-align: top;">
+                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;"><span style="color: #2563eb;">01.</span> Full Turnkey Civil Execution</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">From soil testing &amp; RCC framing to premium plumbing, tiling &amp; MEP finishing.</p>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 12px; vertical-align: top; border-top: 1px solid #e2e8f0;">
-                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">📐 3D Architectural & BIM Planning</p>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.4;">Accurate BOQ estimations, zero cost escalations & vastu-compliant floor plans.</p>
+                  <td style="padding: 10px 12px; vertical-align: top; border-top: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;"><span style="color: #2563eb;">02.</span> 3D Architectural &amp; BOQ Planning</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">Accurate itemized BOQ estimations, zero cost escalations &amp; vastu-compliant floor plans.</p>
                   </td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 12px; vertical-align: top; border-top: 1px solid #e2e8f0;">
-                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;">🛡️ Quality Assurance & Audits</p>
-                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.4;">Laboratory batch-tested concrete, Fe 550D TMT steel & strict site safety standards.</p>
+                  <td style="padding: 10px 12px; vertical-align: top; border-top: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 13px; font-weight: 700; color: #0f172a;"><span style="color: #2563eb;">03.</span> Quality Assurance &amp; Lab Audits</p>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #64748b; line-height: 1.5;">Batch-tested concrete, Fe 550D TMT steel &amp; disciplined engineering supervision.</p>
                   </td>
                 </tr>
               </table>
@@ -617,7 +619,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
               </p>
 
               <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px;">
-                <p style="margin: 0; font-size: 13px; font-weight: 800; color: #065f46;">🛡️ Official Workmanship Warranty Certificate Included</p>
+                <p style="margin: 0; font-size: 13px; font-weight: 800; color: #065f46;">&#10003; Official Workmanship Warranty Certificate Included</p>
                 <p style="margin: 4px 0 0; font-size: 12px; color: #047857; line-height: 1.5;">
                   Covers crack-bridging capability, thermal insulation reduction (lowers terrace temperature by 5-7°C), and zero seepage guarantee.
                 </p>
@@ -1051,7 +1053,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 <tr>
                   <td>
                     <p style="margin: 0; color: #065f46; font-size: 14px; font-weight: 700;">
-                      ✅ Verification Status: KYC AUDIT CLEARED & APPROVED
+                      &#10003; VERIFICATION STATUS: KYC AUDIT CLEARED &amp; APPROVED
                     </p>
                     <p style="margin: 4px 0 0; color: #047857; font-size: 12px; line-height: 1.5;">
                       Your enterprise dossiers, GST compliance, and audited turnover have been accepted by the Procurement Board.
@@ -1072,7 +1074,7 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
                 <tr>
                   <td>
                     <p style="margin: 0 0 8px; font-size: 12px; font-weight: 800; color: #92400e; text-transform: uppercase;">
-                      📋 YOUR EMPANELLED PRIVILEGES
+                      YOUR EMPANELLED PRIVILEGES
                     </p>
                     <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #78350f; line-height: 1.7;">
                       <li><strong>Direct Tender Package Alerts:</strong> Immediate dispatch when relevant scopes are released.</li>
@@ -1208,9 +1210,9 @@ export const BUSINESS_TEMPLATES: AutomailBusinessTemplate[] = [
               </p>
 
               <div style="background-color: #f1f5f9; border-left: 4px solid #10b981; padding: 14px 16px; border-radius: 4px; margin-bottom: 20px;">
-                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">🛡️ Mandatory Site Safety Rules:</p>
+                <p style="margin: 0; font-size: 12px; font-weight: 700; color: #0f172a;">Mandatory Site Safety Compliance</p>
                 <p style="margin: 4px 0 0; font-size: 11px; color: #475569; line-height: 1.5;">
-                  All site crew must possess standard PPE (Steel-Toe Boots, Hard Hats & High-Visibility Vests). No entry permitted without safety equipment.
+                  All site crew must possess standard PPE (Steel-Toe Boots, Hard Hats &amp; High-Visibility Vests). No entry permitted without safety equipment.
                 </p>
               </div>
 

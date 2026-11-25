@@ -362,25 +362,30 @@ export async function getHostingerMailboxes(tokenOverride?: string): Promise<Arr
 }
 
 /**
- * Find mailbox resource ID by sender email address, or fallback to first available
+ * Find mailbox resource ID by sender email address, or fallback to configured default
  */
 export async function resolveHostingerMailboxId(senderEmail?: string, tokenOverride?: string, mailboxIdOverride?: string): Promise<string> {
   if (mailboxIdOverride) return mailboxIdOverride;
   const settings = getAutomailSettings();
+
+  try {
+    const mailboxes = await getHostingerMailboxes(tokenOverride);
+    if (Array.isArray(mailboxes) && mailboxes.length > 0) {
+      if (senderEmail) {
+        const clean = senderEmail.toLowerCase().trim();
+        const matched = mailboxes.find((m) => m.address?.toLowerCase().trim() === clean);
+        if (matched) return matched.resourceId;
+      }
+      if (settings.hostingerMailboxId) return settings.hostingerMailboxId;
+      return mailboxes[0].resourceId;
+    }
+  } catch (err) {
+    if (settings.hostingerMailboxId) return settings.hostingerMailboxId;
+    throw err;
+  }
+
   if (settings.hostingerMailboxId) return settings.hostingerMailboxId;
-
-  const mailboxes = await getHostingerMailboxes(tokenOverride);
-  if (!mailboxes || mailboxes.length === 0) {
-    throw new Error("No mailboxes found for this Hostinger API Token. Please ensure your mailbox exists in Hostinger.");
-  }
-
-  if (senderEmail) {
-    const clean = senderEmail.toLowerCase().trim();
-    const matched = mailboxes.find((m) => m.address?.toLowerCase().trim() === clean);
-    if (matched) return matched.resourceId;
-  }
-
-  return mailboxes[0].resourceId;
+  throw new Error("No mailboxes found for this Hostinger API Token. Please ensure your mailbox exists in Hostinger.");
 }
 
 /**
@@ -523,7 +528,7 @@ export async function sendEmailViaHostingerApi({
 }
 
 /**
- * Check if the active delivery configuration has valid credentials
+ * Check if the active delivery configuration has valid credentials (global or any active corporate mailbox)
  */
 export function isEmailDeliveryConfigured(customConfig?: Partial<AutomailSettings>): boolean {
   const settings = getAutomailSettings();
@@ -532,10 +537,14 @@ export function isEmailDeliveryConfigured(customConfig?: Partial<AutomailSetting
   const user = (customConfig?.smtpUser || settings.smtpUser || "").trim();
   const pass = (customConfig?.smtpPass !== undefined ? customConfig.smtpPass : settings.smtpPass || "").trim();
 
-  if (deliveryMethod === "hostinger_api") {
-    return Boolean(token);
-  }
-  return Boolean((user && pass) || token);
+  if (token) return true;
+  if (deliveryMethod === "hostinger_api") return false;
+  if (user && pass) return true;
+
+  const hasConfiguredMailbox = Array.isArray(settings.mailboxes) && settings.mailboxes.some(
+    (m) => m.status === "active" && Boolean((m.smtpPass && m.smtpPass.trim()) || (m.hostingerApiToken && m.hostingerApiToken.trim()))
+  );
+  return hasConfiguredMailbox;
 }
 
 /**

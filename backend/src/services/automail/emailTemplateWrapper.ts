@@ -19,6 +19,9 @@ export interface CorporateEmailOptions {
 
 export interface BrandMetadata {
   brandKey: string;
+  portalCode: string;
+  monogram: string;
+  monogramBg: string;
   brandTitle: string;
   brandTagline: string;
   badgeLabel: string;
@@ -27,6 +30,7 @@ export interface BrandMetadata {
   badgeColor: string;
   badgeBg: string;
   accentBarColor: string;
+  ctaBg: string;
   websiteUrl: string;
   websiteDisplay: string;
   contactEmail: string;
@@ -38,14 +42,18 @@ export interface BrandMetadata {
 export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
   hipro: {
     brandKey: "hipro",
+    portalCode: "HiPRO CIVIL PORTAL",
+    monogram: "HP",
+    monogramBg: "#1d4ed8",
     brandTitle: "HINDUSTAN PROJECTS",
-    brandTagline: "Civil Engineering • Turnkey Construction • Architectural Planning • Infrastructure",
+    brandTagline: "Civil Engineering • Turnkey EPC • Architectural Design • Infrastructure",
     badgeLabel: "OFFICIAL CORPORATE DISPATCH",
-    headerBg: "linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%)",
+    headerBg: "linear-gradient(135deg, #071124 0%, #0f1f3d 55%, #172e54 100%)",
     headerAccent: "#dc2626",
-    badgeColor: "#fca5a5",
-    badgeBg: "rgba(220, 38, 38, 0.25)",
+    badgeColor: "#fecaca",
+    badgeBg: "rgba(220, 38, 38, 0.22)",
     accentBarColor: "#dc2626",
+    ctaBg: "#0f1f3d",
     websiteUrl: "https://www.hindustanprojects.in",
     websiteDisplay: "www.hindustanprojects.in",
     contactEmail: "info@hindustanprojects.in",
@@ -53,62 +61,74 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     divisionLabel: "Civil Engineering, EPC & Turnkey Infrastructure Directorate",
     trustPoints: [
       "Quality-First Civil Execution",
-      "Turnkey EPC & PMC Execution",
-      "Pan-Rajasthan Project Footprint",
+      "Transparent BOQ & Costing",
+      "Pan-Rajasthan Project Delivery",
     ],
   },
   hbs: {
     brandKey: "hbs",
+    portalCode: "HiBUILD HBS CARE",
+    monogram: "HB",
+    monogramBg: "#b91c1c",
     brandTitle: "HIND BUILDING SOLUTIONS",
-    brandTagline: "Structural Repair • 100% Guaranteed Waterproofing • PU Crack Injection • AMC",
+    brandTagline: "Structural Rehabilitation • Guaranteed Waterproofing • PU Crack Injection",
     badgeLabel: "HiBUILD STRUCTURAL CARE DESK",
-    headerBg: "linear-gradient(135deg, #450a0a 0%, #7f1d1d 60%, #991b1b 100%)",
-    headerAccent: "#ef4444",
-    badgeColor: "#fecaca",
-    badgeBg: "rgba(239, 68, 68, 0.25)",
-    accentBarColor: "#b91c1c",
+    headerBg: "linear-gradient(135deg, #3b0707 0%, #6b1111 55%, #991b1b 100%)",
+    headerAccent: "#f59e0b",
+    badgeColor: "#fef3c7",
+    badgeBg: "rgba(245, 158, 11, 0.22)",
+    accentBarColor: "#d97706",
+    ctaBg: "#991b1b",
     websiteUrl: "https://hindbuilding.hindustanprojects.in",
     websiteDisplay: "hindbuilding.hindustanprojects.in",
     contactEmail: "hbs@hindustanprojects.in",
     helplinePhone: "+91 75970 00601",
     divisionLabel: "HiBUILD Property Protection & Waterproofing Division • Hindustan Projects",
     trustPoints: [
-      "Documented Workmanship Warranties",
-      "Non-Destructive Thermal Leakage Audit",
-      "German Polymer & PU Chemical Tech",
+      "5–10 Yr Written Warranty",
+      "Thermal Moisture Diagnostics",
+      "German Polymer Chemical Systems",
     ],
   },
   empanelment: {
     brandKey: "empanelment",
+    portalCode: "VENDOR EMPANELMENT HUB",
+    monogram: "EP",
+    monogramBg: "#b45309",
     brandTitle: "HINDUSTAN PROJECTS",
-    brandTagline: "Procurement Directorate • Vendor & Contractor Empanelment Board",
+    brandTagline: "Procurement Directorate • Contractor Empanelment • Tenders & Gate Access",
     badgeLabel: "OFFICIAL PROCUREMENT & TENDER DESK",
-    headerBg: "linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #78350f 100%)",
+    headerBg: "linear-gradient(135deg, #0b1322 0%, #162235 55%, #451a03 100%)",
     headerAccent: "#f59e0b",
-    badgeColor: "#fef3c7",
-    badgeBg: "rgba(245, 158, 11, 0.25)",
+    badgeColor: "#fde68a",
+    badgeBg: "rgba(245, 158, 11, 0.22)",
     accentBarColor: "#d97706",
+    ctaBg: "#b45309",
     websiteUrl: "https://empanelment.hindustanprojects.in",
     websiteDisplay: "empanelment.hindustanprojects.in",
     contactEmail: "empanelment@hindustanprojects.in",
     helplinePhone: "+91 75970 00601",
     divisionLabel: "Central Procurement, Contractor Empanelment & Site Logistics Directorate",
     trustPoints: [
-      "Central Vendor Registry & Smart Card",
-      "Strict 14-Day RA Bill Clearance",
-      "Commercial Work Packages & Tenders",
+      "Verified Vendor Registry",
+      "14-Day RA Bill Clearance",
+      "QR Digital Site Gate Pass",
     ],
   },
   all: {
     brandKey: "all",
+    portalCode: "HINDUSTAN GROUP HQ",
+    monogram: "HG",
+    monogramBg: "#2563eb",
     brandTitle: "HINDUSTAN PROJECTS GROUP",
-    brandTagline: "Civil Engineering • Turnkey Construction • Building Repairs • Procurement Hub",
+    brandTagline: "Civil Engineering • Turnkey Construction • Building Care • Procurement Hub",
     badgeLabel: "OFFICIAL EXECUTIVE DISPATCH",
     headerBg: "linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%)",
     headerAccent: "#dc2626",
-    badgeColor: "#93c5fd",
-    badgeBg: "rgba(37, 99, 235, 0.25)",
+    badgeColor: "#bfdbfe",
+    badgeBg: "rgba(37, 99, 235, 0.24)",
     accentBarColor: "#2563eb",
+    ctaBg: "#0f172a",
     websiteUrl: "https://www.hindustanprojects.in",
     websiteDisplay: "www.hindustanprojects.in",
     contactEmail: "info@hindustanprojects.in",
@@ -116,7 +136,7 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     divisionLabel: "Hindustan Projects Group • Engineering, Infrastructure & Building Care",
     trustPoints: [
       "Quality-First Civil Execution",
-      "Turnkey EPC & PMC Execution",
+      "Multi-Division Turnkey Delivery",
       "Pan-Rajasthan Project Footprint",
     ],
   },
@@ -206,6 +226,7 @@ export function wrapWithCorporateTemplate(
 
   const refCode = options.referenceId || generateRefCode(meta.brandKey.toUpperCase());
   const recipientEmail = options.recipientEmail || "{{email}}";
+  const effectiveContactEmail = options.senderEmail?.trim() || meta.contactEmail;
   const subjectText = options.subject || `${meta.brandTitle} Official Communication`;
   const preheader = options.preheaderText || subjectText;
 
@@ -220,125 +241,100 @@ export function wrapWithCorporateTemplate(
   <meta name="x-apple-disable-message-reformatting" />
   <title>${escapeHtml(subjectText)}</title>
   <style type="text/css">
-    /* Reset & Client-Specific Styles */
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
     table { border-collapse: collapse !important; }
-    body { margin: 0 !important; padding: 0 !important; width: 100% !important; min-width: 100%; background-color: #f1f5f9; }
-    
-    /* Responsive Queries */
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; min-width: 100%; background-color: #eef2f7; }
     @media only screen and (max-width: 620px) {
-      .email-container { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
-      .mobile-padding { padding-left: 18px !important; padding-right: 18px !important; }
-      .mobile-stack { display: block !important; width: 100% !important; text-align: left !important; }
-      .mobile-center { text-align: center !important; }
+      .email-container { width: 100% !important; max-width: 100% !important; border-radius: 10px !important; }
+      .mobile-padding { padding: 22px 18px !important; }
       .mobile-hide { display: none !important; }
       .brand-title { font-size: 20px !important; }
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #eef2f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased;">
 
-  <!-- Preheader text for inbox preview snippet (hidden in body) -->
-  <div style="display: none; font-size: 1px; color: #f1f5f9; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;">
-    ${escapeHtml(preheader)} &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+  <div style="display: none; font-size: 1px; color: #eef2f7; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;">
+    ${escapeHtml(preheader)} &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
 
-  <!-- Outer Background Table -->
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f1f5f9; padding: 24px 8px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #eef2f7; padding: 28px 10px;">
     <tr>
       <td align="center" valign="top">
-        
-        <!-- Main Email Container (Max 600px) -->
-        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 14px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);">
+        <table role="presentation" class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="width: 100%; max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);">
           
-          <!-- ═══════════════════════════════════════════════════════════ -->
-          <!-- 1. TOP METADATA & VERIFICATION STRIP -->
-          <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- 1. TOP METADATA & PORTAL STRIP -->
           <tr>
-            <td style="background-color: #090e17; padding: 8px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <td style="background-color: #070d19; padding: 9px 24px; border-bottom: 1px solid rgba(255,255,255,0.08);">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">
-                    <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
-                    <span>VERIFIED DISPATCH</span>
-                    <span style="color: #475569; margin: 0 6px;">•</span>
-                    <span style="color: #cbd5e1;">${escapeHtml(formattedDate)}</span>
+                  <td align="left" style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.9px;">
+                    <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background-color: #22c55e; margin-right: 6px; vertical-align: middle;"></span>
+                    <span style="color: #e2e8f0;">${escapeHtml(meta.portalCode)}</span>
+                    <span style="color: #475569; margin: 0 6px;">&bull;</span>
+                    <span style="color: #94a3b8;">${escapeHtml(formattedDate)}</span>
                   </td>
                   <td align="right" class="mobile-hide" style="font-size: 10px; font-family: 'SF Mono', Consolas, monospace; color: #94a3b8; letter-spacing: 0.5px;">
-                    REF: <strong style="color: #e2e8f0;">${escapeHtml(refCode)}</strong>
+                    REF <strong style="color: #e2e8f0;">${escapeHtml(refCode)}</strong>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- ═══════════════════════════════════════════════════════════ -->
-          <!-- 2. OFFICIAL CORPORATE BRAND HEADER -->
-          <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- 2. EXECUTIVE CORPORATE HEADER -->
           <tr>
-            <td style="background: ${meta.headerBg}; padding: 30px 24px 24px; text-align: center; border-bottom: 4px solid ${meta.accentBarColor};">
+            <td style="background: ${meta.headerBg}; padding: 28px 26px 24px; text-align: center; border-bottom: 4px solid ${meta.accentBarColor};">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    
-                    <!-- Top Category Badge Pill -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 12px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 12px;">
                       <tr>
-                        <td align="center" style="background-color: ${meta.badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 4px 14px;">
-                          <span style="color: ${meta.badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">
+                        <td align="center" valign="middle" style="width: 34px; height: 34px; background-color: ${meta.monogramBg}; border-radius: 9px; color: #ffffff; font-size: 13px; font-weight: 900; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.22);">
+                          ${escapeHtml(meta.monogram)}
+                        </td>
+                        <td style="width: 10px;"></td>
+                        <td align="center" style="background-color: ${meta.badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 5px 14px;">
+                          <span style="color: ${meta.badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;">
                             ${escapeHtml(meta.badgeLabel)}
                           </span>
                         </td>
                       </tr>
                     </table>
 
-                    <!-- Main Brand Corporate Title -->
-                    <h1 class="brand-title" style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 900; letter-spacing: 1.8px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.2;">
+                    <h1 class="brand-title" style="margin: 0; color: #ffffff; font-size: 23px; font-weight: 900; letter-spacing: 1.6px; text-transform: uppercase; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.25;">
                       ${escapeHtml(meta.brandTitle)}
                     </h1>
 
-                    <!-- Division / Sub-title -->
-                    <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; line-height: 1.4;">
+                    <p style="margin: 6px 0 0; color: #cbd5e1; font-size: 11px; font-weight: 700; letter-spacing: 0.9px; text-transform: uppercase; line-height: 1.45;">
                       ${escapeHtml(meta.brandTagline)}
                     </p>
 
-                    <!-- Trust Strip Badges -->
-                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 14px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px;">
                       <tr>
                         <td align="center">
-                          <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                            🏛️ ${escapeHtml(meta.trustPoints[0])}
-                          </span>
-                          <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                            🛡️ ${escapeHtml(meta.trustPoints[1])}
-                          </span>
-                          <span style="display: inline-block; font-size: 10px; color: #94a3b8; font-weight: 600; margin: 2px 6px;">
-                            ⚡ ${escapeHtml(meta.trustPoints[2])}
-                          </span>
+                          <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${escapeHtml(meta.trustPoints[0])}</span>
+                          <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${escapeHtml(meta.trustPoints[1])}</span>
+                          <span style="display: inline-block; font-size: 10px; color: #cbd5e1; font-weight: 600; margin: 2px 8px;">&#10003; ${escapeHtml(meta.trustPoints[2])}</span>
                         </td>
                       </tr>
                     </table>
-
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- ═══════════════════════════════════════════════════════════ -->
           <!-- 3. MAIN EMAIL BODY CONTENT -->
-          <!-- ═══════════════════════════════════════════════════════════ -->
           <tr>
-            <td class="mobile-padding" style="padding: 30px 28px; background-color: #ffffff; color: #1e293b; font-size: 14px; line-height: 1.65;">
+            <td class="mobile-padding" style="padding: 32px 28px; background-color: #ffffff; color: #1e293b; font-size: 14px; line-height: 1.7;">
               ${innerContent}
             </td>
           </tr>
 
-          <!-- ═══════════════════════════════════════════════════════════ -->
-          <!-- 4. OFFICIAL CONTACT & QUICK ACTION BAR -->
-          <!-- ═══════════════════════════════════════════════════════════ -->
+          <!-- 4. OFFICIAL PORTAL & HELPLINE BAR -->
           <tr>
             <td style="background-color: #f8fafc; padding: 18px 24px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -346,14 +342,14 @@ export function wrapWithCorporateTemplate(
                   <td align="center">
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td align="center" style="padding: 4px 8px;">
-                          <a href="${meta.websiteUrl}" target="_blank" style="display: inline-block; background-color: #0f172a; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; letter-spacing: 0.5px;">
-                            🌐 Visit ${escapeHtml(meta.websiteDisplay)}
+                        <td align="center" style="padding: 4px 6px;">
+                          <a href="${meta.websiteUrl}" target="_blank" style="display: inline-block; background-color: ${meta.ctaBg}; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 9px 18px; border-radius: 8px; letter-spacing: 0.4px;">
+                            Visit ${escapeHtml(meta.websiteDisplay)} &rarr;
                           </a>
                         </td>
-                        <td align="center" style="padding: 4px 8px;">
-                          <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 8px 16px; border-radius: 6px; letter-spacing: 0.5px;">
-                            💬 WhatsApp: ${escapeHtml(meta.helplinePhone)}
+                        <td align="center" style="padding: 4px 6px;">
+                          <a href="https://wa.me/917597000601" target="_blank" style="display: inline-block; background-color: #15803d; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 9px 18px; border-radius: 8px; letter-spacing: 0.4px;">
+                            WhatsApp Desk: ${escapeHtml(meta.helplinePhone)}
                           </a>
                         </td>
                       </tr>
@@ -364,17 +360,13 @@ export function wrapWithCorporateTemplate(
             </td>
           </tr>
 
-          <!-- ═══════════════════════════════════════════════════════════ -->
           <!-- 5. CORPORATE HEADQUARTERS & CREDENTIALS FOOTER -->
-          <!-- ═══════════════════════════════════════════════════════════ -->
           <tr data-hipro-corporate-footer="true">
-            <td style="background-color: #0f172a; color: #cbd5e1; padding: 28px 24px 22px; font-size: 11px; line-height: 1.6;">
+            <td style="background-color: #090e1a; color: #cbd5e1; padding: 26px 24px 20px; font-size: 11px; line-height: 1.6;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                
-                <!-- Company Name & Division -->
                 <tr>
-                  <td align="center" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <div style="font-size: 14px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
+                  <td align="center" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <div style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
                       ${escapeHtml(meta.brandTitle)}
                     </div>
                     <div style="font-size: 11px; color: #94a3b8; margin-top: 3px; font-weight: 600;">
@@ -383,56 +375,48 @@ export function wrapWithCorporateTemplate(
                   </td>
                 </tr>
 
-                <!-- Registered Address & Helplines -->
                 <tr>
                   <td align="center" style="padding: 14px 8px 10px;">
                     <p style="margin: 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
-                      📍 <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan, India
+                      <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan
                     </p>
                     <p style="margin: 6px 0 0; color: #94a3b8; font-size: 11px;">
-                      📞 <strong>Site Helpline:</strong> <a href="tel:+917597000601" style="color: #38bdf8; text-decoration: none;">+91 75970 00601</a>
-                      <span style="color: #475569; margin: 0 6px;">•</span>
-                      ✉️ <strong>Official Email:</strong> <a href="mailto:${meta.contactEmail}" style="color: #38bdf8; text-decoration: none;">${escapeHtml(meta.contactEmail)}</a>
+                      <strong>Site Helpline:</strong> <a href="tel:+917597000601" style="color: #60a5fa; text-decoration: none;">+91 75970 00601</a>
+                      <span style="color: #475569; margin: 0 6px;">&bull;</span>
+                      <strong>Official Desk:</strong> <a href="mailto:${escapeHtml(effectiveContactEmail)}" style="color: #60a5fa; text-decoration: none;">${escapeHtml(effectiveContactEmail)}</a>
                     </p>
-                    <p style="margin: 4px 0 0; color: #94a3b8; font-size: 10px;">
-                      🏗️ Project Operations Active in Bhilwara, Jaipur, Udaipur, Jodhpur, Kota & Pan-Rajasthan
+                    <p style="margin: 4px 0 0; color: #64748b; font-size: 10px;">
+                      Active Operations: Bhilwara &bull; Jaipur &bull; Udaipur &bull; Jodhpur &bull; Kota &bull; Pan-Rajasthan
                     </p>
                   </td>
                 </tr>
 
-                <!-- Legal & Statutory Confidentiality Disclaimer -->
                 <tr>
-                  <td style="padding: 12px 10px; background-color: rgba(0, 0, 0, 0.35); border-radius: 6px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.06);">
-                    <p style="margin: 0; font-size: 9.5px; line-height: 1.45; color: #94a3b8; text-align: justify;">
-                      <strong style="color: #cbd5e1;">CONFIDENTIALITY & LEGAL NOTICE:</strong> This electronic mail transmission, including any attachments, contains information which may be confidential, legally privileged, and protected from disclosure under applicable laws. It is intended solely for the use of the individual or entity to whom it is addressed (recipient: <strong style="color: #f1f5f9;">${escapeHtml(recipientEmail)}</strong>). If you are not the intended recipient, please be advised that any review, dissemination, copying, or taking of any action in reliance upon the contents of this communication is strictly prohibited. If you have received this transmission in error, please immediately notify the sender by reply email and permanently delete all copies of this transmission.
+                  <td style="padding: 11px 12px; background-color: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.07);">
+                    <p style="margin: 0; font-size: 9.5px; line-height: 1.5; color: #94a3b8; text-align: justify;">
+                      <strong style="color: #cbd5e1;">CONFIDENTIALITY &amp; STATUTORY NOTICE:</strong> This electronic transmission is intended solely for <strong style="color: #f1f5f9;">${escapeHtml(recipientEmail)}</strong> and contains confidential information of Hindustan Projects Group. Unauthorized dissemination or copying is strictly prohibited.
                     </p>
                   </td>
                 </tr>
 
-                <!-- System Attribution & Copyright -->
                 <tr>
                   <td align="center" style="padding-top: 14px; font-size: 10px; color: #64748b;">
                     <p style="margin: 0;">
-                      ⚡ Dispatched via <strong>Hindustan Projects AutoMail Engine</strong> • Dispatch Reference ID: <strong style="color: #94a3b8;">${escapeHtml(refCode)}</strong>
+                      Dispatched via <strong style="color: #94a3b8;">Hindustan Projects AutoMail Engine</strong> &bull; Ref: <strong style="color: #94a3b8;">${escapeHtml(refCode)}</strong>
                     </p>
                     <p style="margin: 4px 0 0;">
-                      © ${currentYear} <strong>Hindustan Projects Group</strong>. All rights reserved.
+                      &copy; ${currentYear} <strong>Hindustan Projects Group</strong>. All rights reserved.
                     </p>
                   </td>
                 </tr>
-
               </table>
             </td>
           </tr>
 
         </table>
-        <!-- End Main Email Container -->
-
       </td>
     </tr>
   </table>
-  <!-- End Outer Background Table -->
-
 </body>
 </html>`;
 }

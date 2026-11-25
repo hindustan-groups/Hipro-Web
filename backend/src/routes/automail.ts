@@ -37,6 +37,7 @@ import {
 } from "../services/automail/settingsService";
 import {
   getCustomTemplates,
+  getCustomTemplatesAsync,
   createCustomTemplate,
   updateCustomTemplate,
   deleteCustomTemplate,
@@ -79,7 +80,7 @@ router.get("/stats", async (req: Request, res: Response) => {
       (prisma as any).automailContact.count({ where: { brand: "empanelment" } }),
     ]);
 
-    const settings = getAutomailSettings();
+    const settings = await getAutomailSettingsAsync();
     const dailyLimit = settings.dailyLimit || 200;
     const rateLimit = settings.rateLimitPerMinute || 5;
 
@@ -113,7 +114,9 @@ router.get("/stats", async (req: Request, res: Response) => {
         smtpHost: settings.smtpHost,
         smtpPort: settings.smtpPort,
         smtpUser: settings.smtpUser,
-        smtpConfigured: Boolean(settings.smtpPass),
+        smtpConfigured: isEmailDeliveryConfigured(settings),
+        mailboxCount: (settings.mailboxes || []).length,
+        activeMailboxesCount: (settings.mailboxes || []).filter((m) => m.status === "active").length,
       },
     });
   } catch (err: any) {
@@ -187,11 +190,18 @@ router.post("/settings/test", async (req: Request, res: Response) => {
   try {
     const body = { ...req.body };
     const current = await getAutomailSettingsAsync();
+    const targetMb = body.mailboxId
+      ? (current.mailboxes || []).find((m) => m.id === body.mailboxId)
+      : undefined;
+
     if (body.smtpPass === "••••••••••••" || !body.smtpPass) {
-      body.smtpPass = current.smtpPass;
+      body.smtpPass = targetMb?.smtpPass || current.smtpPass;
     }
     if (body.hostingerApiToken === "••••••••••••" || !body.hostingerApiToken) {
-      body.hostingerApiToken = current.hostingerApiToken;
+      body.hostingerApiToken = targetMb?.hostingerApiToken || current.hostingerApiToken;
+    }
+    if (!body.hostingerMailboxId && targetMb?.hostingerMailboxId) {
+      body.hostingerMailboxId = targetMb.hostingerMailboxId;
     }
     const result = await testSmtpConnection(body);
 
@@ -369,9 +379,9 @@ router.get("/routing/resolve/:triggerKey", async (req: Request, res: Response) =
 // ----------------------------------------------------
 // CUSTOM & IMPORTED EMAIL TEMPLATES
 // ----------------------------------------------------
-router.get("/custom-templates", (req: Request, res: Response) => {
+router.get("/custom-templates", async (req: Request, res: Response) => {
   try {
-    const templates = getCustomTemplates();
+    const templates = await getCustomTemplatesAsync();
     const { brand } = req.query;
     const filtered = brand && brand !== "all"
       ? templates.filter((t) => t.brand === brand || t.brand === "all")
@@ -382,13 +392,13 @@ router.get("/custom-templates", (req: Request, res: Response) => {
   }
 });
 
-router.post("/custom-templates", (req: Request, res: Response) => {
+router.post("/custom-templates", async (req: Request, res: Response) => {
   try {
     const { title, category, brand, description, subject, senderName, senderEmail, html } = req.body;
     if (!title || !subject || !html) {
       return res.status(400).json({ success: false, error: "Title, subject, and HTML body are required" });
     }
-    const template = createCustomTemplate({
+    const template = await createCustomTemplate({
       title,
       category,
       brand,
@@ -404,10 +414,10 @@ router.post("/custom-templates", (req: Request, res: Response) => {
   }
 });
 
-router.put("/custom-templates/:id", (req: Request, res: Response) => {
+router.put("/custom-templates/:id", async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const updated = updateCustomTemplate(id, req.body);
+    const updated = await updateCustomTemplate(id, req.body);
     if (!updated) {
       return res.status(404).json({ success: false, error: "Template not found" });
     }
@@ -417,10 +427,10 @@ router.put("/custom-templates/:id", (req: Request, res: Response) => {
   }
 });
 
-router.delete("/custom-templates/:id", (req: Request, res: Response) => {
+router.delete("/custom-templates/:id", async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
-    const deleted = deleteCustomTemplate(id);
+    const deleted = await deleteCustomTemplate(id);
     if (!deleted) {
       return res.status(404).json({ success: false, error: "Template not found" });
     }
@@ -430,7 +440,7 @@ router.delete("/custom-templates/:id", (req: Request, res: Response) => {
   }
 });
 
-router.post("/custom-templates/import-file", upload.single("file"), (req: Request, res: Response) => {
+router.post("/custom-templates/import-file", upload.single("file"), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: "No HTML file provided" });
@@ -448,7 +458,7 @@ router.post("/custom-templates/import-file", upload.single("file"), (req: Reques
     // Auto extract subject if provided or fallback
     const subject = req.body.subject || extractedTitle || "Official Update from Hindustan Projects";
 
-    const template = createCustomTemplate({
+    const template = await createCustomTemplate({
       title: req.body.title || extractedTitle || "Imported Email Template",
       category,
       brand,
@@ -551,13 +561,31 @@ router.post("/send-test", async (req: Request, res: Response) => {
       </div>
     `;
 
+    const testSender = await resolveEffectiveMailboxConfig({
+      mailboxId,
+      brand,
+    });
+
     const info = await sendOneEmail({
       to,
       subject: testSubject,
       htmlBody: testBody,
       brand,
-      customConfig: Object.keys(customConfig).length > 0 ? customConfig : undefined,
+      senderName: testSender.senderName,
+      senderEmail: smtpUser || testSender.senderEmail,
+      customConfig: Object.keys(customConfig).length > 0 ? customConfig : testSender.customConfig,
     });
+
+    await recordDirectDispatch({
+      to,
+      name: "Test Verification",
+      subject: testSubject,
+      brand,
+      senderName: testSender.senderName,
+      senderEmail: smtpUser || testSender.senderEmail,
+      source: "automail_test_send",
+      success: true,
+    }).catch(() => null);
 
     // Auto-save working credentials on successful test send so credentials are never lost!
     if (info && hostingerApiToken && hostingerApiToken !== "••••••••••••") {

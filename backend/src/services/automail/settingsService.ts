@@ -87,9 +87,9 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
   return {
     quote_requests: {
       triggerKey: "quote_requests",
-      name: "Turnkey Civil Quotes & Estimates",
+      name: "Turnkey Civil Quotes & Estimator",
       portal: "HiPRO Flagship Civil",
-      description: "Dispatched upon client submission of construction quotation, turnkey villa or PEB estimation.",
+      description: "Client quotation replies, BOQ follow-ups & cost-estimator acknowledgments from HiPRO Civil.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
@@ -97,8 +97,17 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
     contact_inquiries: {
       triggerKey: "contact_inquiries",
       name: "General Contact & Website Inquiries",
-      portal: "Holding Corporate",
-      description: "Client receipt confirmations and internal executive alerts for website contact forms.",
+      portal: "HiPRO Flagship Civil",
+      description: "Direct replies and executive notifications for website Contact Us & project inquiry forms.",
+      mailboxId: "mb_hp_primary",
+      ccEmail: "",
+      active: true,
+    },
+    job_applications: {
+      triggerKey: "job_applications",
+      name: "Civil Careers & Job Applications",
+      portal: "HiPRO Flagship Civil",
+      description: "Interview calls, shortlisting notices & HR replies for engineer/site supervisor applicants.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
@@ -107,16 +116,25 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       triggerKey: "hbs_leads",
       name: "HBS Waterproofing & Structural Repair Leads",
       portal: "Hind Building (HBS)",
-      description: "Inbound leads for basement dampness, roof waterproofing, PU injection grouting & repair quotes.",
-      mailboxId: "mb_hbs_waterproofing",
+      description: "Inbound leads for terrace waterproofing, basement dampness, PU grouting & HBS repair quotes.",
+      mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
     },
     vendor_kyc_approvals: {
       triggerKey: "vendor_kyc_approvals",
-      name: "Vendor Hub Empanelment & KYC Approvals",
+      name: "Vendor Hub Empanelment, KYC & Activation",
       portal: "Vendor Procurement Hub",
-      description: "Contractor KYC clearance certificates, assigned CPWD grade (Class A-D), and bidding authorization.",
+      description: "Application receipt, KYC approval/revision emails, activation invites & password resets.",
+      mailboxId: "mb_hp_primary",
+      ccEmail: "",
+      active: true,
+    },
+    tenders_support: {
+      triggerKey: "tenders_support",
+      name: "Vendor Tenders, Bids & Support Tickets",
+      portal: "Vendor Procurement Hub",
+      description: "Commercial tender bid confirmations, RA billing notifications & vendor helpdesk ticket replies.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
@@ -125,7 +143,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       triggerKey: "smart_pvc_cards",
       name: "Smart PVC Card Dispatches & Tracking",
       portal: "Vendor Procurement Hub",
-      description: "Notification with Speed Post / Blue Dart courier tracking for physical 3D NFC holographic vendor cards.",
+      description: "Courier dispatch notifications for physical NFC contractor ID cards.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
@@ -134,25 +152,25 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       triggerKey: "site_gate_passes",
       name: "Daily Worker Site Gate Passes",
       portal: "Vendor Procurement Hub",
-      description: "QR-coded daily access passes sent to site engineers and security check cabins.",
+      description: "QR-coded daily site entry clearances issued to verified contractors and workers.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
     },
     security_alerts: {
       triggerKey: "security_alerts",
-      name: "Master Admin 2FA & Emergency System Alerts",
+      name: "Master Admin 2FA & Security Alerts",
       portal: "Company Headquarters",
-      description: "Emergency TOTP bypass recovery notices, IP anomaly alerts, and secrets rotation audit summaries.",
+      description: "Emergency recovery alerts, IP anomaly notices & security audit summaries.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
     },
     newsletter_campaigns: {
       triggerKey: "newsletter_campaigns",
-      name: "Investor Relations & Monthly Progress Digests",
+      name: "Bulk Broadcasts & Monthly Digests",
       portal: "Group Corporate",
-      description: "Broadcast monthly infrastructure digests, investor milestones, and active commercial tender notices.",
+      description: "AutoMail bulk newsletters, festive wishes, and pan-portal marketing announcements.",
       mailboxId: "mb_hp_primary",
       ccEmail: "",
       active: true,
@@ -216,15 +234,61 @@ export function getAutomailSettingsFromFile(): AutomailSettings {
   return defaults;
 }
 
+const REGISTRY_ROW_ID = "registry_v1";
+
+function mergeRoutingWithDefaults(rawRouting?: Record<string, DispatchRoutingRule>): Record<string, DispatchRoutingRule> {
+  const defaults = getDefaultRoutingRules();
+  if (!rawRouting || typeof rawRouting !== "object") return defaults;
+  const merged: Record<string, DispatchRoutingRule> = {};
+  for (const key of Object.keys(defaults)) {
+    merged[key] = rawRouting[key] ? { ...defaults[key], ...rawRouting[key] } : defaults[key];
+  }
+  for (const key of Object.keys(rawRouting)) {
+    if (!merged[key]) merged[key] = rawRouting[key];
+  }
+  return merged;
+}
+
 /**
- * Primary asynchronous getter: Reads from PostgreSQL database and synchronizes with local multi-mailbox state
+ * Primary asynchronous getter: Reads from PostgreSQL database and synchronizes with persistent multi-mailbox registry
  */
 export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
   const fileFallback = getAutomailSettingsFromFile();
   try {
-    const dbRecord = await (prisma as any).automailSetting.findUnique({
-      where: { id: "singleton" },
-    });
+    const [dbRecord, registryRecord] = await Promise.all([
+      (prisma as any).automailSetting.findUnique({ where: { id: "singleton" } }),
+      (prisma as any).automailSetting.findUnique({ where: { id: REGISTRY_ROW_ID } }),
+    ]);
+
+    let dbMailboxes: CorporateMailbox[] | undefined;
+    let dbRouting: Record<string, DispatchRoutingRule> | undefined;
+    if (registryRecord) {
+      try {
+        if (registryRecord.hostingerApiToken) {
+          const parsedMb = JSON.parse(registryRecord.hostingerApiToken);
+          if (Array.isArray(parsedMb) && parsedMb.length > 0) dbMailboxes = parsedMb;
+        }
+      } catch {
+        // Ignore malformed JSON
+      }
+      try {
+        if (registryRecord.smtpPass) {
+          const parsedRt = JSON.parse(registryRecord.smtpPass);
+          if (parsedRt && typeof parsedRt === "object") dbRouting = parsedRt;
+        }
+      } catch {
+        // Ignore malformed JSON
+      }
+    }
+
+    const resolvedMailboxes =
+      dbMailboxes && dbMailboxes.length > 0
+        ? dbMailboxes
+        : fileFallback.mailboxes && fileFallback.mailboxes.length > 0
+        ? fileFallback.mailboxes
+        : getDefaultMailboxes();
+
+    const resolvedRouting = mergeRoutingWithDefaults(dbRouting || fileFallback.dispatchRouting);
 
     if (dbRecord) {
       const dbSettings: AutomailSettings = {
@@ -242,8 +306,8 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
         dailyLimit: Number(dbRecord.dailyLimit || fileFallback.dailyLimit || 200),
         rateLimitPerMinute: Number(dbRecord.rateLimitPerMinute || fileFallback.rateLimitPerMinute || 15),
         replyTo: dbRecord.replyTo || fileFallback.replyTo || "info@hindustanprojects.in",
-        mailboxes: fileFallback.mailboxes && fileFallback.mailboxes.length > 0 ? fileFallback.mailboxes : getDefaultMailboxes(),
-        dispatchRouting: fileFallback.dispatchRouting || getDefaultRoutingRules(),
+        mailboxes: resolvedMailboxes,
+        dispatchRouting: resolvedRouting,
       };
       cachedSettings = dbSettings;
       process.env.DELIVERY_METHOD = dbSettings.deliveryMethod;
@@ -253,7 +317,6 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
     }
 
     try {
-      // Prisma-compatible payload (only known schema fields)
       const { mailboxes: _m, dispatchRouting: _d, ...prismaData } = fileFallback;
       await (prisma as any).automailSetting.create({
         data: {
@@ -265,12 +328,17 @@ export async function getAutomailSettingsAsync(): Promise<AutomailSettings> {
     } catch {
       // Ignore conflict
     }
-    cachedSettings = fileFallback;
-    return fileFallback;
+    const hydrated = { ...fileFallback, mailboxes: resolvedMailboxes, dispatchRouting: resolvedRouting };
+    cachedSettings = hydrated;
+    return hydrated;
   } catch (err) {
     console.error("[AUTOMAIL] Database settings lookup failed, using file fallback:", err);
-    cachedSettings = fileFallback;
-    return fileFallback;
+    const hydrated = {
+      ...fileFallback,
+      dispatchRouting: mergeRoutingWithDefaults(fileFallback.dispatchRouting),
+    };
+    cachedSettings = hydrated;
+    return hydrated;
   }
 }
 
@@ -359,20 +427,36 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
     dispatchRouting: mergedRouting,
   };
 
-  // 1. Persist to PostgreSQL database (Only Prisma model columns)
+  // 1. Persist to PostgreSQL database (Both global engine row AND multi-mailbox + routing registry row)
   try {
     const { mailboxes: _m, dispatchRouting: _d, ...prismaData } = merged;
-    await (prisma as any).automailSetting.upsert({
-      where: { id: "singleton" },
-      create: {
-        id: "singleton",
-        ...prismaData,
-      },
-      update: {
-        ...prismaData,
-      },
-    });
-    console.log("[AUTOMAIL] Settings saved permanently to PostgreSQL database.");
+    await Promise.all([
+      (prisma as any).automailSetting.upsert({
+        where: { id: "singleton" },
+        create: {
+          id: "singleton",
+          ...prismaData,
+        },
+        update: {
+          ...prismaData,
+        },
+      }),
+      (prisma as any).automailSetting.upsert({
+        where: { id: REGISTRY_ROW_ID },
+        create: {
+          id: REGISTRY_ROW_ID,
+          deliveryMethod: merged.deliveryMethod,
+          hostingerApiToken: JSON.stringify(mergedMailboxes),
+          smtpPass: JSON.stringify(mergedRouting),
+        },
+        update: {
+          deliveryMethod: merged.deliveryMethod,
+          hostingerApiToken: JSON.stringify(mergedMailboxes),
+          smtpPass: JSON.stringify(mergedRouting),
+        },
+      }),
+    ]);
+    console.log("[AUTOMAIL] Settings, Mailboxes & Routing saved permanently to PostgreSQL database.");
   } catch (dbErr) {
     console.error("[AUTOMAIL] Failed to upsert settings to PostgreSQL database:", dbErr);
   }
@@ -408,51 +492,93 @@ export async function saveAutomailSettings(newSettings: Partial<AutomailSettings
   return merged;
 }
 
+const BRAND_TRIGGER_MAP: Record<string, string[]> = {
+  hipro: ["quote_requests", "contact_inquiries", "job_applications"],
+  hbs: ["hbs_leads"],
+  empanelment: ["vendor_kyc_approvals", "tenders_support", "smart_pvc_cards", "site_gate_passes"],
+  all: ["newsletter_campaigns", "security_alerts"],
+};
+
 /**
  * Manage Corporate Mailboxes
  */
-export async function saveCorporateMailbox(mailbox: Partial<CorporateMailbox>): Promise<CorporateMailbox> {
+export async function saveCorporateMailbox(
+  mailbox: Partial<CorporateMailbox> & { autoAssignBrandRoutes?: boolean }
+): Promise<CorporateMailbox> {
+  const { autoAssignBrandRoutes, ...mailboxFields } = mailbox;
   const settings = await getAutomailSettingsAsync();
   const list: CorporateMailbox[] = [...(settings.mailboxes || getDefaultMailboxes())];
 
   let savedMailbox: CorporateMailbox;
 
-  if (mailbox.id) {
+  if (mailboxFields.id) {
     // Update existing
-    const idx = list.findIndex((m: CorporateMailbox) => m.id === mailbox.id);
+    const idx = list.findIndex((m: CorporateMailbox) => m.id === mailboxFields.id);
     if (idx >= 0) {
       const existing = list[idx];
-      const pass = mailbox.smtpPass && mailbox.smtpPass !== "••••••••••••"
-        ? mailbox.smtpPass
-        : existing.smtpPass;
+      const pass =
+        mailboxFields.smtpPass && mailboxFields.smtpPass !== "••••••••••••"
+          ? mailboxFields.smtpPass
+          : existing.smtpPass;
+      const apiToken =
+        mailboxFields.hostingerApiToken && mailboxFields.hostingerApiToken !== "••••••••••••"
+          ? mailboxFields.hostingerApiToken
+          : existing.hostingerApiToken;
 
       savedMailbox = {
         ...existing,
-        ...mailbox,
+        ...mailboxFields,
         id: existing.id,
         smtpPass: pass,
         smtpPassConfigured: Boolean(pass),
+        hostingerApiToken: apiToken || "",
       } as CorporateMailbox;
 
-      if (mailbox.isDefault) {
-        list.forEach((m: CorporateMailbox) => { m.isDefault = false; });
+      if (mailboxFields.isDefault) {
+        list.forEach((m: CorporateMailbox) => {
+          m.isDefault = false;
+        });
         savedMailbox.isDefault = true;
       }
       list[idx] = savedMailbox;
     } else {
       // Create with given ID
-      savedMailbox = createMailboxObject(mailbox);
-      if (savedMailbox.isDefault) list.forEach((m: CorporateMailbox) => { m.isDefault = false; });
+      savedMailbox = createMailboxObject(mailboxFields);
+      if (savedMailbox.isDefault) list.forEach((m: CorporateMailbox) => {
+        m.isDefault = false;
+      });
       list.push(savedMailbox);
     }
   } else {
     // Create brand new
-    savedMailbox = createMailboxObject(mailbox);
-    if (savedMailbox.isDefault) list.forEach((m: CorporateMailbox) => { m.isDefault = false; });
+    savedMailbox = createMailboxObject(mailboxFields);
+    if (savedMailbox.isDefault) list.forEach((m: CorporateMailbox) => {
+      m.isDefault = false;
+    });
     list.push(savedMailbox);
   }
 
-  await saveAutomailSettings({ mailboxes: list });
+  let updatedRouting: Record<string, DispatchRoutingRule> | undefined;
+  if (autoAssignBrandRoutes && savedMailbox.brand) {
+    const triggers = BRAND_TRIGGER_MAP[String(savedMailbox.brand).toLowerCase()] || [];
+    if (triggers.length > 0) {
+      updatedRouting = mergeRoutingWithDefaults(settings.dispatchRouting);
+      for (const triggerKey of triggers) {
+        if (updatedRouting[triggerKey]) {
+          updatedRouting[triggerKey] = {
+            ...updatedRouting[triggerKey],
+            mailboxId: savedMailbox.id,
+            active: true,
+          };
+        }
+      }
+    }
+  }
+
+  await saveAutomailSettings({
+    mailboxes: list,
+    ...(updatedRouting ? { dispatchRouting: updatedRouting } : {}),
+  });
   return savedMailbox;
 }
 

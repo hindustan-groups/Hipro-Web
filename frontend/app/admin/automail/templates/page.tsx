@@ -65,6 +65,12 @@ export default function AutoMailTemplatesPage() {
   const [previewTemplate, setPreviewTemplate] = useState<CustomTemplateItem | null>(null);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [previewTestEmail, setPreviewTestEmail] = useState("");
+  const [sendingPreviewTest, setSendingPreviewTest] = useState(false);
+
+  // Delete Confirm Modal
+  const [deleteTemplateTarget, setDeleteTemplateTarget] = useState<{ id: string; title: string } | null>(null);
+  const [deletingTemplate, setDeletingTemplate] = useState(false);
 
   // Create / Edit Modal
   const [showEditorModal, setShowEditorModal] = useState(false);
@@ -188,8 +194,14 @@ export default function AutoMailTemplatesPage() {
     setEditorBrand(selectedBrand !== "all" ? (selectedBrand as any) : "hipro");
     setEditorDescription("");
     setEditorSubject("Hindustan Projects Official Update for {{name}}");
-    setEditorSenderName(selectedBrand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects");
-    setEditorSenderEmail(selectedBrand === "hbs" ? "hbs@hindustanprojects.in" : "info@hindustanprojects.in");
+    setEditorSenderName(
+      selectedBrand === "hbs"
+        ? "Hind Building Solutions"
+        : selectedBrand === "empanelment"
+        ? "HiPRO Empanelment Desk"
+        : "Hindustan Projects"
+    );
+    setEditorSenderEmail("info@hindustanprojects.in");
     setEditorHtml(`<!DOCTYPE html>
 <html lang="en" data-hipro-branded="true">
 <head>
@@ -280,7 +292,7 @@ export default function AutoMailTemplatesPage() {
                 CONFIDENTIALITY NOTICE: This transmission is intended solely for {{email}}. It contains privileged corporate information. Any unauthorized review or copying is strictly prohibited.
               </div>
               <p style="margin: 0; font-size: 10px; color: #64748b;">
-                © \${new Date().getFullYear()} Hindustan Projects Group. All rights reserved.
+                &copy; ${new Date().getFullYear()} Hindustan Projects Group. All rights reserved.
               </p>
             </td>
           </tr>
@@ -323,20 +335,68 @@ export default function AutoMailTemplatesPage() {
     setShowEditorModal(true);
   };
 
-  // Delete Custom Template
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete custom template "${title}"?`)) return;
+  // Delete Custom Template (confirmed via Cupertino dialog)
+  const confirmDeleteTemplate = async () => {
+    if (!deleteTemplateTarget) return;
+    setDeletingTemplate(true);
     try {
-      const res = await fetch(`/api/automail/custom-templates/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/automail/custom-templates/${deleteTemplateTarget.id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setToast({ message: `Template "${title}" deleted.`, type: "success" });
+        setToast({ message: `Template "${deleteTemplateTarget.title}" deleted cleanly.`, type: "success" });
+        setDeleteTemplateTarget(null);
         fetchCustomTemplates();
       } else {
         setToast({ message: data.error || "Failed to delete template", type: "error" });
       }
     } catch {
       setToast({ message: "Network error deleting template", type: "error" });
+    } finally {
+      setDeletingTemplate(false);
+    }
+  };
+
+  // Send Test Email straight from Template Preview Modal
+  const handleSendPreviewTest = async () => {
+    if (!previewTemplate) return;
+    if (!previewTestEmail.trim() || !previewTestEmail.includes("@")) {
+      setToast({ message: "Enter a valid inbox email address to test this template.", type: "error" });
+      return;
+    }
+    setSendingPreviewTest(true);
+    try {
+      const renderedHtml = previewTemplate.html
+        .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
+        .replace(/\{\{first_name\}\}/gi, "Ramesh")
+        .replace(/\{\{email\}\}/gi, previewTestEmail.trim())
+        .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects")
+        .replace(/\{\{date\}\}/gi, new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }))
+        .replace(/\{\{year\}\}/gi, String(new Date().getFullYear()));
+      const renderedSubject = previewTemplate.subject
+        .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
+        .replace(/\{\{first_name\}\}/gi, "Ramesh")
+        .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects");
+
+      const res = await fetch("/api/automail/send-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: previewTestEmail.trim(),
+          subject: renderedSubject,
+          htmlBody: renderedHtml,
+          brand: previewTemplate.brand || "hipro",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setToast({ message: `Template test sent to ${previewTestEmail.trim()}!`, type: "success" });
+      } else {
+        setToast({ message: data.error || "Failed to send template test", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error sending template test", type: "error" });
+    } finally {
+      setSendingPreviewTest(false);
     }
   };
 
@@ -603,6 +663,90 @@ export default function AutoMailTemplatesPage() {
         </div>
       </div>
 
+      {/* 3-Portal Brand Suite Quick Selector Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          {
+            id: "all",
+            title: "All 3 Portals & CRM",
+            desc: "Universal & portal-wide presets",
+            count: allTemplates.length,
+            accent: "border-slate-900 bg-slate-900 text-white",
+            idle: "border-slate-200 bg-white hover:border-slate-300",
+            iconCls: "bg-slate-100 text-slate-700",
+            Icon: Globe2,
+          },
+          {
+            id: "hipro",
+            title: "Portal 1: HiPRO Civil",
+            desc: "Turnkey construction, BOQ & digests",
+            count: allTemplates.filter((t) => t.brand === "hipro").length,
+            accent: "border-blue-600 bg-blue-50/70 ring-2 ring-blue-500/20",
+            idle: "border-slate-200 bg-white hover:border-blue-300",
+            iconCls: "bg-blue-50 text-blue-600",
+            Icon: Building2,
+          },
+          {
+            id: "hbs",
+            title: "Portal 2: Hind Building",
+            desc: "Waterproofing, PU repair & AMC",
+            count: allTemplates.filter((t) => t.brand === "hbs").length,
+            accent: "border-red-600 bg-red-50/70 ring-2 ring-red-500/20",
+            idle: "border-slate-200 bg-white hover:border-red-300",
+            iconCls: "bg-red-50 text-red-600",
+            Icon: Hammer,
+          },
+          {
+            id: "empanelment",
+            title: "Portal 3: Empanelment",
+            desc: "KYC approvals, tenders & gate pass",
+            count: allTemplates.filter((t) => t.brand === "empanelment").length,
+            accent: "border-amber-500 bg-amber-50/70 ring-2 ring-amber-500/20",
+            idle: "border-slate-200 bg-white hover:border-amber-300",
+            iconCls: "bg-amber-50 text-amber-700",
+            Icon: ShieldCheck,
+          },
+        ].map((card) => {
+          const CIcon = card.Icon;
+          const isSelected = selectedBrand === card.id;
+          return (
+            <button
+              key={card.id}
+              type="button"
+              onClick={() => setSelectedBrand(card.id)}
+              className={`text-left rounded-2xl border p-4 transition-all flex items-center justify-between gap-3 shadow-2xs ${
+                isSelected ? card.accent : card.idle
+              }`}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    isSelected && card.id === "all" ? "bg-white/15 text-white" : card.iconCls
+                  }`}
+                >
+                  <CIcon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className={`text-xs font-bold truncate ${isSelected && card.id === "all" ? "text-white" : "text-slate-900"}`}>
+                    {card.title}
+                  </p>
+                  <p className={`text-[11px] truncate ${isSelected && card.id === "all" ? "text-slate-300" : "text-slate-500"}`}>
+                    {card.desc}
+                  </p>
+                </div>
+              </div>
+              <span
+                className={`text-sm font-black font-mono px-2 py-0.5 rounded-lg shrink-0 ${
+                  isSelected && card.id === "all" ? "bg-white/15 text-white" : "bg-slate-100 text-slate-800"
+                }`}
+              >
+                {card.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Filter & Tabs Bar */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -720,13 +864,24 @@ export default function AutoMailTemplatesPage() {
 
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredTemplates.map((t) => (
+        {filteredTemplates.map((t) => {
+          const barGradient =
+            t.brand === "hipro"
+              ? "from-blue-700 to-indigo-700"
+              : t.brand === "hbs"
+              ? "from-red-700 to-rose-600"
+              : t.brand === "empanelment"
+              ? "from-amber-600 to-orange-600"
+              : "from-slate-800 to-slate-900";
+          return (
           <div
             key={t.id}
-            className={`bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group space-y-4 ${
+            className={`bg-white border rounded-2xl overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group ${
               t.isCustom ? "border-blue-200 ring-1 ring-blue-500/10" : "border-slate-200"
             }`}
           >
+            <div className={`h-1.5 w-full bg-gradient-to-r ${barGradient}`} />
+            <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               {/* Header Badges */}
               <div className="flex items-center justify-between gap-2">
@@ -847,7 +1002,7 @@ export default function AutoMailTemplatesPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleDelete(t.id, t.title)}
+                      onClick={() => setDeleteTemplateTarget({ id: t.id, title: t.title })}
                       className="text-slate-500 hover:text-red-600 flex items-center gap-1 p-1 hover:bg-slate-50 rounded"
                       title="Delete custom template"
                     >
@@ -858,8 +1013,10 @@ export default function AutoMailTemplatesPage() {
                 )}
               </div>
             </div>
+            </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {filteredTemplates.length === 0 && (
@@ -924,19 +1081,51 @@ export default function AutoMailTemplatesPage() {
               </div>
             </div>
 
-            {/* Modal Preview Body */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-100/70 flex justify-center">
+            {/* Realistic Inbox Envelope Bar & Preview Body */}
+            <div className="px-5 py-3 bg-white border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="space-y-0.5 min-w-0">
+                <p className="text-slate-600 truncate">
+                  <strong className="text-slate-900">From:</strong> {previewTemplate.senderName || "Hindustan Projects"} &lt;configured portal mailbox&gt;
+                </p>
+                <p className="text-slate-600 truncate">
+                  <strong className="text-slate-900">To:</strong> Ramesh Sharma &lt;client@company.com&gt;
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  type="email"
+                  value={previewTestEmail}
+                  onChange={(e) => setPreviewTestEmail(e.target.value)}
+                  placeholder="your-inbox@gmail.com"
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:border-blue-500 w-44"
+                />
+                <button
+                  type="button"
+                  disabled={sendingPreviewTest}
+                  onClick={handleSendPreviewTest}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-50 whitespace-nowrap"
+                >
+                  {sendingPreviewTest ? "Sending..." : "Test to Inbox"}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 bg-slate-100/80 flex justify-center">
               <div
-                className={`transition-all bg-white shadow-md rounded-xl overflow-hidden ${
+                className={`transition-all bg-white shadow-lg rounded-2xl overflow-hidden border border-slate-200 ${
                   previewDevice === "mobile" ? "max-w-sm w-full" : "max-w-2xl w-full"
                 }`}
               >
                 <div
-                  className="prose prose-sm max-w-none"
+                  className="max-w-none"
                   dangerouslySetInnerHTML={{
                     __html: previewTemplate.html
-                      .replace(/\{\{name\}\}/g, "Valued Client")
-                      .replace(/\{\{email\}\}/g, "client@company.com"),
+                      .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
+                      .replace(/\{\{first_name\}\}/gi, "Ramesh")
+                      .replace(/\{\{email\}\}/gi, "client@company.com")
+                      .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects")
+                      .replace(/\{\{date\}\}/gi, new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }))
+                      .replace(/\{\{year\}\}/gi, String(new Date().getFullYear())),
                   }}
                 />
               </div>
@@ -1304,6 +1493,39 @@ export default function AutoMailTemplatesPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+      {/* Delete Custom Template Confirmation Dialog */}
+      {deleteTemplateTarget && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="w-11 h-11 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto border border-red-100">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-black text-slate-900">Delete Custom Template?</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                &ldquo;<strong className="text-slate-800">{deleteTemplateTarget.title}</strong>&rdquo; will be permanently removed from your library.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setDeleteTemplateTarget(null)}
+                className="py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingTemplate}
+                onClick={confirmDeleteTemplate}
+                className="py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold disabled:opacity-50"
+              >
+                {deletingTemplate ? "Deleting..." : "Delete Template"}
+              </button>
+            </div>
           </div>
         </div>
       )}
