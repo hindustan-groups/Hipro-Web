@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { sendOneEmail } from "./automail/emailSender";
+import { sendOneEmail, resolveEffectiveMailboxConfig, recordDirectDispatch } from "./automail/emailSender";
 import { logVendorActivity } from "./vendorActivityService";
 import { prisma } from "../lib/db";
 
@@ -934,13 +934,21 @@ export async function sendCustomVendorEmail(params: {
   let success = false;
   let errorMessage: string | undefined;
 
+  let resolved: any = null;
   try {
+    resolved = await resolveEffectiveMailboxConfig({
+      triggerKey: "vendor_kyc_approvals",
+      brand: "empanelment",
+      senderName: adminName ? `${adminName} (HiPRO Procurement)` : "HiPRO Empanelment Desk",
+    });
     await sendOneEmail({
       to: recipientEmail,
       subject,
       htmlBody,
       brand: "empanelment",
-      senderName: adminName ? `${adminName} (HiPRO Procurement)` : "HiPRO Empanelment Desk",
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      customConfig: resolved.customConfig,
     });
     success = true;
   } catch (err: any) {
@@ -956,6 +964,17 @@ export async function sendCustomVendorEmail(params: {
       success,
       errorMessage,
     });
+    await recordDirectDispatch({
+      to: recipientEmail,
+      name: recipientName,
+      subject,
+      brand: "empanelment",
+      senderName: resolved?.senderName || "HiPRO Empanelment Desk",
+      senderEmail: resolved?.senderEmail || "info@hindustanprojects.in",
+      source: "vendor_manual_email",
+      success,
+      errorMessage,
+    }).catch(() => null);
   }
 
   return { success, error: errorMessage };

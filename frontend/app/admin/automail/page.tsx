@@ -29,6 +29,7 @@ export default function AutoMailDashboard() {
   const router = useRouter();
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [stats, setStats] = useState<any>(null);
+  const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [testingSmtp, setTestingSmtp] = useState(false);
   const [smtpStatus, setSmtpStatus] = useState<any>(null);
@@ -40,10 +41,16 @@ export default function AutoMailDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/automail/stats?brand=${selectedBrand}`);
-      const data = await res.json();
+      const [statsRes, logsRes] = await Promise.all([
+        fetch(`/api/automail/stats?brand=${selectedBrand}`),
+        fetch(`/api/automail/logs?brand=${selectedBrand}&limit=15`),
+      ]);
+      const [data, logsData] = await Promise.all([statsRes.json(), logsRes.json()]);
       if (data.success) {
         setStats(data.stats);
+      }
+      if (logsData.success && Array.isArray(logsData.logs)) {
+        setRecentLogs(logsData.logs);
       }
     } catch (err) {
       console.error("Failed to load automail stats:", err);
@@ -523,6 +530,125 @@ export default function AutoMailDashboard() {
             <RefreshCw className={`w-3.5 h-3.5 ${testingSmtp ? "animate-spin" : ""}`} />
             <span>{testingSmtp ? "Testing SMTP Server..." : "Test Connection Now"}</span>
           </button>
+        </div>
+      </div>
+
+      {/* Unified Live Mail Dispatch Audit Log */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-blue-600" />
+              <span>Recent Mail Dispatches (All Panels &amp; Campaigns)</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Unified live delivery audit covering CRM Quick Mail, Empanelment, AutoMail Direct &amp; Campaigns
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={fetchStats}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
+            <Link
+              href="/admin/automail/compose"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-blue-600 text-white text-xs font-semibold rounded-lg transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Compose Mail</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-4">Recipient</th>
+                <th className="py-3 px-4">Subject &amp; Channel</th>
+                <th className="py-3 px-4">Sender Mailbox</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs">
+              {recentLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-10 text-center text-slate-400">
+                    No recent email dispatches recorded yet for this filter.
+                  </td>
+                </tr>
+              ) : (
+                recentLogs.map((log: any) => {
+                  const isDirect = log.campaign?.template === "direct_crm";
+                  return (
+                    <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4">
+                        <p className="font-bold text-slate-900">{log.contactName || "Client"}</p>
+                        <p className="text-[11px] font-mono text-slate-500">{log.contactEmail}</p>
+                      </td>
+                      <td className="py-3 px-4 max-w-xs">
+                        <p className="font-semibold text-slate-800 truncate">
+                          {log.campaign?.subject || log.campaign?.name || "Direct Dispatch"}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              isDirect
+                                ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                : "bg-blue-50 text-blue-700 border border-blue-200"
+                            }`}
+                          >
+                            {isDirect ? "Direct / CRM Quick Mail" : "Campaign Broadcast"}
+                          </span>
+                          {!isDirect && log.campaignId && (
+                            <Link
+                              href={`/admin/automail/campaigns/${log.campaignId}`}
+                              className="text-[10px] font-semibold text-blue-600 hover:underline"
+                            >
+                              Monitor →
+                            </Link>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[11px] text-slate-600">
+                        {log.campaign?.senderEmail || "info@hindustanprojects.in"}
+                      </td>
+                      <td className="py-3 px-4">
+                        {log.status === "sent" ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                            <CheckCircle2 className="w-3 h-3" /> Delivered
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold"
+                            title={log.error || "Delivery failed"}
+                          >
+                            <XCircle className="w-3 h-3" /> Failed
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                        {log.createdAt
+                          ? new Date(log.createdAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -831,6 +831,44 @@ async function runTests() {
     assert(result.statusCode === 403, "Automail access returns 403 Forbidden");
   })();
 
+  // 8.5 Unified CRM QuickMail guard (/api/mail) permits CRM/portal roles and blocks unrelated staff
+  const crmMailGuard = requirePermission([
+    "leads",
+    "quotes",
+    "contacts",
+    "applications",
+    "hbs",
+    "empanelment",
+    "automail",
+  ]);
+  await (async () => {
+    const reqAllowed = createMockRequest({ cookie: venturesStaffCuid });
+    const { res: resAllowed } = createMockResponse();
+    let allowedPassed = false;
+    await crmMailGuard(reqAllowed, resAllowed, () => {
+      allowedPassed = true;
+    });
+    assert(allowedPassed, "Staff with 'hbs'/'empanelment' allowed on Unified CRM /api/mail endpoints");
+
+    const reqDenied = createMockRequest({ cookie: staffCuid }); // only has 'blogs'
+    const { res: resDenied, result: deniedResult } = createMockResponse();
+    let deniedPassed = false;
+    await crmMailGuard(reqDenied, resDenied, () => {
+      deniedPassed = true;
+    });
+    assert(!deniedPassed, "Staff with only 'blogs' blocked from Unified CRM /api/mail endpoints");
+    assert(deniedResult.statusCode === 403, "Unauthorized staff on /api/mail returns 403 Forbidden");
+
+    const reqAnon = createMockRequest({});
+    const { res: resAnon, result: anonResult } = createMockResponse();
+    let anonPassed = false;
+    await crmMailGuard(reqAnon, resAnon, () => {
+      anonPassed = true;
+    });
+    assert(!anonPassed, "Unauthenticated request blocked on /api/mail");
+    assert(anonResult.statusCode === 401, "Unauthenticated /api/mail returns 401 Unauthorized");
+  })();
+
   // ─────────────────────────────────────────────────────────────────
   // 9. Session Invalidation on Staff Account Deletion
   // ─────────────────────────────────────────────────────────────────

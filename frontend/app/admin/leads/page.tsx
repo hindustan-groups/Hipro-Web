@@ -30,6 +30,7 @@ import {
 import StatusBadge from "@/components/admin/StatusBadge";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
+import QuickMailModal, { QuickMailRecipient } from "@/components/admin/QuickMailModal";
 
 export interface UnifiedLead {
   id: string;
@@ -127,6 +128,9 @@ export default function AdminLeadsPage() {
 
   // Status updating indicator
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Unified In-Place Mail Modal
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
 
   // Debounce search
   useEffect(() => {
@@ -285,15 +289,22 @@ export default function AdminLeadsPage() {
     return `https://wa.me/${intlNumber}?text=${greeting}`;
   };
 
-  const getMailtoLink = (lead: UnifiedLead) => {
-    if (!lead.email) return "#";
-    const subject = encodeURIComponent(`Regarding your enquiry with Hindustan Projects`);
-    const body = encodeURIComponent(
-      `Hi ${lead.name || "there"},\n\nThank you for contacting Hindustan Projects.\n\nWe received your request:\n"${
-        lead.details?.message || lead.details?.description || "Inquiry"
-      }"\n\nBest regards,\nHindustan Projects Team`
-    );
-    return `mailto:${lead.email}?subject=${subject}&body=${body}`;
+  const openQuickMail = (lead: UnifiedLead) => {
+    if (!lead.email) return;
+    const isQuote = lead.type === "quote" || lead.type === "estimator";
+    const isApp = lead.type === "application";
+    const isHbs = lead.source?.toLowerCase().includes("hbs");
+    setMailRecipient({
+      name: lead.name || "Client",
+      email: lead.email,
+      phone: lead.phone,
+      leadId: lead.id,
+      leadType: isQuote ? "quote" : isApp ? "application" : "contact",
+      brand: isHbs ? "hbs" : "hipro",
+      triggerKey: isQuote ? "quote_requests" : isHbs ? "hbs_leads" : "contact_inquiries",
+      contextBadge: lead.details?.projectType || lead.details?.service || lead.details?.role || lead.source,
+      defaultNextStatus: isQuote ? "reviewed" : isApp ? "reviewed" : "replied",
+    });
   };
 
   return (
@@ -586,13 +597,14 @@ export default function AdminLeadsPage() {
                             </button>
 
                             {lead.email && (
-                              <a
-                                href={getMailtoLink(lead)}
-                                title="Reply via Email"
-                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
+                              <button
+                                type="button"
+                                onClick={() => openQuickMail(lead)}
+                                title="Send Official Email Reply"
+                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors cursor-pointer"
                               >
                                 <Mail className="w-3.5 h-3.5" />
-                              </a>
+                              </button>
                             )}
 
                             {lead.phone && (
@@ -702,13 +714,14 @@ export default function AdminLeadsPage() {
                           View
                         </button>
                         {lead.email && (
-                          <a
-                            href={`/admin/automail/compose?to=${encodeURIComponent(lead.email)}&name=${encodeURIComponent(lead.name || "")}&brand=${lead.source?.toLowerCase().includes("hbs") ? "hbs" : "hipro"}&template=lead_inquiry_followup`}
-                            className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
-                            title="Send Email via AutoMail Studio"
+                          <button
+                            type="button"
+                            onClick={() => openQuickMail(lead)}
+                            className="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
+                            title="Send Official Email Reply"
                           >
                             <Mail className="w-3.5 h-3.5" />
-                          </a>
+                          </button>
                         )}
                         {lead.phone && (
                           <a
@@ -952,14 +965,13 @@ export default function AdminLeadsPage() {
             <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {selectedLead.email && (
-                  <>
-                    <a
-                      href={`/admin/automail/compose?to=${encodeURIComponent(selectedLead.email)}&name=${encodeURIComponent(selectedLead.name || "")}&brand=${selectedLead.source?.toLowerCase().includes("hbs") ? "hbs" : "hipro"}&template=lead_inquiry_followup`}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-xs shadow-xs transition-colors"
-                    >
-                      <Mail className="w-3.5 h-3.5" /> Send AutoMail
-                    </a>
-                  </>
+                  <button
+                    type="button"
+                    onClick={() => openQuickMail(selectedLead)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-xs shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5" /> Send Official Mail
+                  </button>
                 )}
 
                 {selectedLead.phone && (
@@ -1016,6 +1028,25 @@ export default function AdminLeadsPage() {
         onClose={() => {
           setDeleteModalLead(null);
           setDeleteError("");
+        }}
+      />
+
+      {/* Unified In-Place Mail Composer Modal */}
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={({ email, updatedStatus }) => {
+          if (updatedStatus && mailRecipient?.leadId) {
+            setLeads((prev) =>
+              prev.map((l) => (l.id === mailRecipient.leadId ? { ...l, status: updatedStatus } : l))
+            );
+            if (selectedLead?.id === mailRecipient.leadId) {
+              setSelectedLead((prev) => (prev ? { ...prev, status: updatedStatus } : null));
+            }
+          }
+          setSuccessBanner(`Official email successfully delivered to ${email}!`);
+          setTimeout(() => setSuccessBanner(""), 4000);
         }}
       />
     </div>

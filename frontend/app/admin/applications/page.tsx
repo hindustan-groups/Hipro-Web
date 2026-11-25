@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
+import QuickMailModal, { QuickMailRecipient } from "@/components/admin/QuickMailModal";
 import type { JobApplication } from "@/lib/types";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
@@ -35,6 +36,22 @@ export default function AdminApplicationsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
+
+  const openApplicationMail = (app: JobApplication) => {
+    if (!app.email) return;
+    setMailRecipient({
+      name: app.name || "Candidate",
+      email: app.email,
+      phone: app.phone,
+      leadId: app.id,
+      leadType: "application",
+      brand: "hipro",
+      triggerKey: "contact_inquiries",
+      contextBadge: `${app.role || "Role"}${app.experience ? ` · ${app.experience}` : ""}`,
+      defaultNextStatus: app.status === "new" ? "reviewed" : "",
+    });
+  };
 
   const fetchApplications = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -309,9 +326,13 @@ export default function AdminApplicationsPage() {
                       <div className="font-bold text-slate-900 text-sm">{app.name}</div>
                       <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-mono">
                         <Mail className="w-3 h-3 text-slate-400" />
-                        <a href={`mailto:${app.email}`} className="hover:text-blue-600 hover:underline">
+                        <button
+                          type="button"
+                          onClick={() => openApplicationMail(app)}
+                          className="hover:text-blue-600 hover:underline cursor-pointer text-left"
+                        >
                           {app.email}
-                        </a>
+                        </button>
                       </div>
                       {app.phone && (
                         <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-mono">
@@ -387,18 +408,29 @@ export default function AdminApplicationsPage() {
                       )}
                     </td>
 
-                    {/* Delete Action */}
+                    {/* Mail & Delete Actions */}
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => {
-                          setDeleteError("");
-                          setAppToDelete(app);
-                        }}
-                        className="text-slate-400 hover:text-red-600 p-2 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
-                        title="Delete Application"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="inline-flex items-center gap-1.5">
+                        {app.email && (
+                          <button
+                            onClick={() => openApplicationMail(app)}
+                            className="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded-xl transition-colors cursor-pointer"
+                            title="Send Interview / Status Email"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setDeleteError("");
+                            setAppToDelete(app);
+                          }}
+                          className="text-slate-400 hover:text-red-600 p-2 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Delete Application"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -438,6 +470,21 @@ export default function AdminApplicationsPage() {
             setAppToDelete(null);
             setDeleteError("");
           }
+        }}
+      />
+
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={({ email, updatedStatus }) => {
+          if (updatedStatus && mailRecipient?.leadId) {
+            setApplications((prev) =>
+              prev.map((a) => (a.id === mailRecipient.leadId ? { ...a, status: updatedStatus } : a))
+            );
+          }
+          setSuccessBanner(`Official email sent to applicant ${email}!`);
+          setTimeout(() => setSuccessBanner(""), 4000);
         }}
       />
     </div>

@@ -17,6 +17,9 @@ import {
   getBrandConfigs,
   getTransporter,
   BRAND_CONFIGS,
+  resolveEffectiveMailboxConfig,
+  recordDirectDispatch,
+  plainTextToEmailHtml,
 } from "../services/automail/emailSender";
 import { parseContactsFile } from "../services/automail/csvParser";
 import {
@@ -576,17 +579,30 @@ router.post("/send-test", async (req: Request, res: Response) => {
   }
 });
 
-// Direct single email send (for CRM Leads, Inquiries, Quotes)
+// Direct single email send (for CRM Leads, Inquiries, Quotes, Custom Direct Compose)
 router.post("/send-single", async (req: Request, res: Response) => {
   try {
-    const { to, name, subject, htmlBody, textBody, brand = "all", senderName, senderEmail } = req.body;
+    const {
+      to,
+      name,
+      subject,
+      htmlBody,
+      messageText,
+      textBody,
+      brand = "all",
+      senderName,
+      senderEmail,
+      mailboxId,
+      triggerKey,
+    } = req.body;
     if (!to || !to.includes("@")) {
       return res.status(400).json({ success: false, error: "Valid recipient email address is required" });
     }
     if (!subject) {
       return res.status(400).json({ success: false, error: "Subject line is required" });
     }
-    if (!htmlBody) {
+    const rawBody = (htmlBody && String(htmlBody).trim()) || (messageText && String(messageText).trim());
+    if (!rawBody) {
       return res.status(400).json({ success: false, error: "Email body content is required" });
     }
 
@@ -594,45 +610,110 @@ router.post("/send-single", async (req: Request, res: Response) => {
     const { fullName } = extractCleanContactName(name, cleanEmail);
     const contactInfo = { name: fullName, email: cleanEmail };
 
-    // Personalize subject & content
-    const personalizedSubject = personalizeContent(subject, contactInfo, brand);
-    const personalizedHtml = personalizeContent(htmlBody, contactInfo, brand);
-    const personalizedText = textBody ? personalizeContent(textBody, contactInfo, brand) : undefined;
-
-    // Send single email via SMTP
-    const info = await sendOneEmail({
-      to: cleanEmail,
-      subject: personalizedSubject,
-      htmlBody: personalizedHtml,
-      textBody: personalizedText,
-      senderName,
+    const resolved = await resolveEffectiveMailboxConfig({
+      mailboxId,
       senderEmail,
+      senderName,
+      triggerKey,
       brand,
     });
 
-    // Upsert contact so audience database updates automatically
-    await (prisma as any).automailContact.upsert({
-      where: { email: cleanEmail },
-      create: { email: cleanEmail, name: fullName, brand, source: "crm_single_send" },
-      update: { name: fullName || undefined },
-    }).catch(() => null);
+    const formattedHtml = htmlBody?.trim() ? String(htmlBody) : plainTextToEmailHtml(String(messageText));
 
-    // Increment today stats
-    const today = new Date().toISOString().split("T")[0];
-    await (prisma as any).automailDailyStat.upsert({
-      where: { date: today },
-      create: { date: today, totalSent: 1, totalFailed: 0 },
-      update: { totalSent: { increment: 1 } },
-    }).catch(() => null);
+    // Personalize subject & content
+    const personalizedSubject = personalizeContent(subject, contactInfo, brand);
+    const personalizedHtml = personalizeContent(formattedHtml, contactInfo, brand);
+    const personalizedText = (textBody || messageText)
+      ? personalizeContent(String(textBody || messageText), contactInfo, brand)
+      : undefined;
 
-    return res.json({
-      success: true,
-      message: `Email successfully delivered to ${cleanEmail}!`,
-      messageId: info.messageId,
-    });
+    try {
+      const info = await sendOneEmail({
+        to: cleanEmail,
+        subject: personalizedSubject,
+        htmlBody: personalizedHtml,
+        textBody: personalizedText,
+        senderName: resolved.senderName,
+        senderEmail: resolved.senderEmail,
+        brand,
+        customConfig: resolved.customConfig,
+      });
+
+      await recordDirectDispatch({
+        to: cleanEmail,
+        name: fullName,
+        subject: personalizedSubject,
+        brand,
+        senderName: resolved.senderName,
+        senderEmail: resolved.senderEmail,
+        source: "crm_single_send",
+        success: true,
+      });
+
+      return res.json({
+        success: true,
+        message: `Email successfully delivered to ${cleanEmail}!`,
+        messageId: info.messageId,
+        senderEmail: resolved.senderEmail,
+      });
+    } catch (sendErr: any) {
+      await recordDirectDispatch({
+        to: cleanEmail,
+        name: fullName,
+        subject: personalizedSubject,
+        brand,
+        senderName: resolved.senderName,
+        senderEmail: resolved.senderEmail,
+        source: "crm_single_send",
+        success: false,
+        errorMessage: sendErr.message || "Failed to deliver email",
+      });
+      throw sendErr;
+    }
   } catch (err: any) {
     console.error("[AUTOMAIL] Send single email error:", err);
     return res.status(500).json({ success: false, error: err.message || "Failed to deliver email" });
+  }
+});
+
+// Unified Dispatch Logs (Direct CRM Emails + Campaign Broadcasts)
+router.get("/logs", async (req: Request, res: Response) => {
+  try {
+    const { brand, status, search, limit = "50" } = req.query;
+    const take = Math.min(200, Math.max(1, parseInt(String(limit), 10) || 50));
+
+    const where: any = {};
+    if (brand && brand !== "all") where.brand = String(brand);
+    if (status && status !== "all") where.status = String(status);
+    if (search && typeof search === "string" && search.trim()) {
+      where.OR = [
+        { contactEmail: { contains: search.trim(), mode: "insensitive" } },
+        { contactName: { contains: search.trim(), mode: "insensitive" } },
+        { error: { contains: search.trim(), mode: "insensitive" } },
+      ];
+    }
+
+    const logs = await (prisma as any).automailSendLog.findMany({
+      where,
+      take,
+      orderBy: { createdAt: "desc" },
+      include: {
+        campaign: {
+          select: {
+            id: true,
+            name: true,
+            subject: true,
+            senderEmail: true,
+            template: true,
+          },
+        },
+      },
+    });
+
+    return res.json({ success: true, logs });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Fetch logs error:", err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

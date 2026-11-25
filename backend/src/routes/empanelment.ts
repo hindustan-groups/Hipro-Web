@@ -13,6 +13,12 @@ import {
   retryEmpanelmentEmail,
 } from "../services/empanelmentMailer";
 import {
+  sendOneEmail,
+  resolveEffectiveMailboxConfig,
+  recordDirectDispatch,
+  plainTextToEmailHtml,
+} from "../services/automail/emailSender";
+import {
   createOrGetVendorAccount,
   generateActivationToken,
   requestPasswordReset,
@@ -1174,9 +1180,10 @@ router.get("/admin/applications/:id/emails", async (req: Request, res: Response)
 router.post("/admin/applications/:id/send-email", async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
-    const { subject, htmlBody } = req.body;
+    const { subject, htmlBody, body } = req.body;
+    const rawContent = (htmlBody && String(htmlBody).trim()) || (body && String(body).trim());
 
-    if (!subject?.trim() || !htmlBody?.trim()) {
+    if (!subject?.trim() || !rawContent) {
       return res.status(400).json({ success: false, error: "Subject and message body are required" });
     }
 
@@ -1186,12 +1193,13 @@ router.post("/admin/applications/:id/send-email", async (req: Request, res: Resp
     }
 
     const adminName = (req as any).user?.name || "Procurement Officer";
+    const formattedHtml = plainTextToEmailHtml(rawContent);
     const result = await sendCustomVendorEmail({
       applicationId: id,
       recipientEmail: application.email,
       recipientName: application.contactName,
       subject: subject.trim(),
-      htmlBody: htmlBody.trim(),
+      htmlBody: formattedHtml,
       adminName,
     });
 
@@ -1698,7 +1706,7 @@ router.get("/admin/tickets", async (req: Request, res: Response) => {
 router.patch("/admin/tickets/:id", async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
-    const { status, adminReply, priority } = req.body;
+    const { status, adminReply, priority, sendEmail } = req.body;
 
     const updateData: any = {};
     if (status) updateData.status = status;
@@ -1719,10 +1727,47 @@ router.patch("/admin/tickets/:id", async (req: Request, res: Response) => {
       },
     });
 
+    let emailDispatched = false;
+    if (sendEmail && ticket.vendor?.email && adminReply?.trim()) {
+      try {
+        const resolved = await resolveEffectiveMailboxConfig({
+          triggerKey: "vendor_kyc_approvals",
+          brand: "empanelment",
+        });
+        const emailSubject = `[Ticket ${ticket.ticketNo}] Update: ${ticket.subject}`;
+        const bodyText = `Dear ${ticket.vendor.contactName || ticket.vendor.companyName},\n\nThere is an official update on your support ticket (${ticket.ticketNo}) with Hindustan Projects Procurement Desk.\n\nStatus: ${ticket.status}\n\nAdmin Response:\n${adminReply.trim()}\n\nWarm regards,\nHindustan Projects Procurement Support`;
+        await sendOneEmail({
+          to: ticket.vendor.email,
+          subject: emailSubject,
+          htmlBody: plainTextToEmailHtml(bodyText),
+          senderName: resolved.senderName,
+          senderEmail: resolved.senderEmail,
+          brand: "empanelment",
+          customConfig: resolved.customConfig,
+        });
+        await recordDirectDispatch({
+          to: ticket.vendor.email,
+          name: ticket.vendor.contactName || ticket.vendor.companyName,
+          subject: emailSubject,
+          brand: "empanelment",
+          senderName: resolved.senderName,
+          senderEmail: resolved.senderEmail,
+          source: "vendor_ticket_reply",
+          success: true,
+        });
+        emailDispatched = true;
+      } catch (mailErr) {
+        console.warn("[Empanelment Ticket] Email dispatch warning:", mailErr);
+      }
+    }
+
     return res.json({
       success: true,
       ticket,
-      message: "Support ticket updated successfully",
+      emailDispatched,
+      message: emailDispatched
+        ? "Support ticket updated & email reply dispatched!"
+        : "Support ticket updated successfully",
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });

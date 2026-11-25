@@ -51,6 +51,7 @@ import {
 import type { HbsLead, HbsInternalNote } from "@/lib/types";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
+import QuickMailModal, { QuickMailRecipient } from "@/components/admin/QuickMailModal";
 
 const LEAD_STATUSES = [
   "NEW",
@@ -185,6 +186,22 @@ export default function HbsAdminLeads() {
   const [leadToDelete, setLeadToDelete] = useState<HbsLead | null>(null);
   const [isDeletingLead, setIsDeletingLead] = useState(false);
   const [leadDeleteError, setLeadDeleteError] = useState("");
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
+
+  const openHbsMail = (lead: HbsLead) => {
+    if (!lead.email) return;
+    setMailRecipient({
+      name: lead.name || "Client",
+      email: lead.email,
+      phone: lead.phone,
+      leadId: lead.id,
+      leadType: "hbs_lead",
+      brand: "hbs",
+      triggerKey: "hbs_leads",
+      contextBadge: lead.selectedService || "Waterproofing & Repair",
+      defaultNextStatus: (lead.status || "NEW").toUpperCase() === "NEW" ? "CONTACTED" : "",
+    });
+  };
 
   // Edit fields
   const [editStatus, setEditStatus] = useState("NEW");
@@ -1333,6 +1350,17 @@ export default function HbsAdminLeads() {
                                   >
                                     <Eye className="w-3 h-3" />
                                   </button>
+
+                                  {lead.email && (
+                                    <button
+                                      type="button"
+                                      onClick={() => openHbsMail(lead)}
+                                      className="w-7 h-7 flex items-center justify-center bg-blue-50/90 hover:bg-blue-100 text-blue-700 border border-blue-200/70 rounded-lg transition-all duration-150 hover:scale-105 shrink-0 cursor-pointer"
+                                      title={`Send Official Email to ${lead.email}`}
+                                    >
+                                      <Mail className="w-3 h-3 text-blue-600" />
+                                    </button>
+                                  )}
                                 </div>
 
                                 {/* Advance Stage Button */}
@@ -1535,6 +1563,17 @@ export default function HbsAdminLeads() {
                         {/* Actions */}
                         <td className="p-3.5 text-right">
                           <div className="inline-flex items-center gap-1.5">
+                            {lead.email && (
+                              <button
+                                type="button"
+                                onClick={() => openHbsMail(lead)}
+                                className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                title="Send Official Email"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             <button
                               type="button"
                               onClick={() => openLeadModal(lead)}
@@ -1891,13 +1930,14 @@ export default function HbsAdminLeads() {
 
                 {/* Email */}
                 {viewingLead.email && (
-                  <a
-                    href={`mailto:${viewingLead.email}?subject=Hind Building Solutions Quote #${(viewingLead.id || "").slice(-6).toUpperCase()}`}
-                    className="px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 transition-all shadow-2xs"
+                  <button
+                    type="button"
+                    onClick={() => openHbsMail(viewingLead)}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
                   >
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Email</span>
-                  </a>
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Send Official Email</span>
+                  </button>
                 )}
               </div>
 
@@ -2288,6 +2328,19 @@ export default function HbsAdminLeads() {
             setLeadToDelete(null);
             setLeadDeleteError("");
           }
+        }}
+      />
+
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={({ email, updatedStatus }) => {
+          if (updatedStatus) {
+            setEditStatus(updatedStatus);
+          }
+          setMessage({ text: `Official email sent to ${email} and logged in lead audit trail.`, type: "success" });
+          loadLeads();
         }}
       />
     </div>

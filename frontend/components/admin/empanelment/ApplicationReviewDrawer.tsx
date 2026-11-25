@@ -260,7 +260,7 @@ export default function ApplicationReviewDrawer({
         credentials: "include",
         body: JSON.stringify({
           subject: emailSubject.trim(),
-          body: emailBody.trim(),
+          htmlBody: emailBody.trim(),
           template: emailTemplate,
         }),
       });

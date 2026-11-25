@@ -52,6 +52,7 @@ export default function AdminTicketsPage() {
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
   const [replyText, setReplyText] = useState("");
   const [replyStatus, setReplyStatus] = useState("RESOLVED");
+  const [sendEmailNotif, setSendEmailNotif] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchTickets = useCallback(async () => {
@@ -105,6 +106,7 @@ export default function AdminTicketsPage() {
         body: JSON.stringify({
           adminReply: replyText,
           status: replyStatus,
+          sendEmail: sendEmailNotif,
         }),
       });
 
@@ -390,6 +392,21 @@ export default function AdminTicketsPage() {
                   <option value="CLOSED">Closed</option>
                 </select>
               </div>
+
+              {activeTicket.vendor?.email && (
+                <label className="flex items-center gap-2 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80 text-blue-900 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendEmailNotif}
+                    onChange={(e) => setSendEmailNotif(e.target.checked)}
+                    className="rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-[11px] font-semibold">
+                    Also send official reply notification email to{" "}
+                    <span className="font-mono font-bold">{activeTicket.vendor.email}</span>
+                  </span>
+                </label>
+              )}
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button

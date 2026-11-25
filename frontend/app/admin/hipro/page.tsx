@@ -28,6 +28,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
+import QuickMailModal, { type QuickMailRecipient } from "@/components/admin/QuickMailModal";
 
 export default function HiproControlCenterPage() {
   const [data, setData] = useState<any>(null);
@@ -37,6 +38,7 @@ export default function HiproControlCenterPage() {
   const [lastSyncedTime, setLastSyncedTime] = useState<string>("");
   const [activeHoverMonth, setActiveHoverMonth] = useState<number | null>(null);
   const [activeFeedTab, setActiveFeedTab] = useState<"quotes" | "contacts" | "projects" | "services">("quotes");
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
 
   const isFetchingRef = useRef(false);
 
@@ -752,10 +754,32 @@ export default function HiproControlCenterPage() {
                     </p>
                     <p className="text-slate-400 text-[10px] font-mono mt-0.5">{q.phone || q.email}</p>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <span className="text-[10px] font-mono font-semibold px-2.5 py-0.5 bg-amber-50 text-amber-700 rounded-full border border-amber-200">
                       {q.status || "Pending"}
                     </span>
+                    {q.email && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMailRecipient({
+                            name: q.name || "Client",
+                            email: q.email,
+                            phone: q.phone || "",
+                            leadId: q.id,
+                            leadType: "quote",
+                            brand: "hipro",
+                            triggerKey: "quote_requests",
+                            contextBadge: `Quote • ${q.projectType || "Turnkey Construction"}`,
+                          })
+                        }
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-blue-600 text-white text-[11px] font-semibold transition-all shadow-2xs"
+                        title={`Send mail to ${q.email}`}
+                      >
+                        <Mail className="w-3 h-3" />
+                        <span>Mail</span>
+                      </button>
+                    )}
                     <Link
                       href={`/admin/quotes`}
                       className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
@@ -790,7 +814,7 @@ export default function HiproControlCenterPage() {
                     </p>
                     <p className="text-slate-400 text-[10px] font-mono mt-0.5">{c.phone || c.email}</p>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     <span
                       className={`text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full border ${
                         c.status === "new"
@@ -800,6 +824,28 @@ export default function HiproControlCenterPage() {
                     >
                       {c.status || "new"}
                     </span>
+                    {c.email && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setMailRecipient({
+                            name: c.name || "Inquirer",
+                            email: c.email,
+                            phone: c.phone || "",
+                            leadId: c.id,
+                            leadType: "contact",
+                            brand: "hipro",
+                            triggerKey: "contact_inquiries",
+                            contextBadge: "Direct Contact Inquiry",
+                          })
+                        }
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-blue-600 text-white text-[11px] font-semibold transition-all shadow-2xs"
+                        title={`Send mail to ${c.email}`}
+                      >
+                        <Mail className="w-3 h-3" />
+                        <span>Mail</span>
+                      </button>
+                    )}
                     <Link
                       href={`/admin/contacts`}
                       className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
@@ -896,6 +942,15 @@ export default function HiproControlCenterPage() {
           </div>
         )}
       </div>
+
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={() => {
+          loadData(false);
+        }}
+      />
     </div>
   );
 }

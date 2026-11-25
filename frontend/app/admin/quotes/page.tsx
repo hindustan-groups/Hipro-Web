@@ -24,6 +24,7 @@ import {
 import StatusBadge from "@/components/admin/StatusBadge";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
+import QuickMailModal, { QuickMailRecipient } from "@/components/admin/QuickMailModal";
 
 interface Quote {
   id: string;
@@ -50,6 +51,22 @@ export default function AdminQuotes() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
+
+  const openQuoteMail = (q: Quote) => {
+    if (!q.email) return;
+    setMailRecipient({
+      name: q.name || "Client",
+      email: q.email,
+      phone: q.phone,
+      leadId: q.id,
+      leadType: "quote",
+      brand: "hipro",
+      triggerKey: "quote_requests",
+      contextBadge: `${q.projectType || "Civil Quote"}${q.budget ? ` · ${q.budget}` : ""}`,
+      defaultNextStatus: q.status === "pending" ? "reviewed" : "",
+    });
+  };
 
   const fetchQuotes = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -349,6 +366,15 @@ export default function AdminQuotes() {
                             className="inline-flex items-center gap-1.5"
                             onClick={(e) => e.stopPropagation()}
                           >
+                            {q.email && (
+                              <button
+                                onClick={() => openQuoteMail(q)}
+                                title="Send Quotation / Follow-up Email"
+                                className="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center transition-colors cursor-pointer border border-blue-200"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <button
                               onClick={() => updateStatus(q.id, "approved")}
                               title="Approve Quote"
@@ -412,13 +438,19 @@ export default function AdminQuotes() {
               {/* Contact Pills */}
               <div className="space-y-2 text-xs">
                 {selected.email && (
-                  <a
-                    href={`mailto:${selected.email}`}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition-colors border border-slate-200/70 truncate"
+                  <button
+                    type="button"
+                    onClick={() => openQuoteMail(selected)}
+                    className="w-full flex items-center justify-between gap-2 p-2.5 rounded-xl bg-blue-50/80 hover:bg-blue-100 text-blue-800 transition-colors border border-blue-200/80 cursor-pointer"
                   >
-                    <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span className="truncate">{selected.email}</span>
-                  </a>
+                    <span className="flex items-center gap-2 min-w-0">
+                      <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span className="truncate font-semibold">{selected.email}</span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-md shrink-0 flex items-center gap-1">
+                      <Send className="w-2.5 h-2.5" /> Mail
+                    </span>
+                  </button>
                 )}
                 {selected.phone && (
                   <a
@@ -530,6 +562,24 @@ export default function AdminQuotes() {
         onClose={() => {
           setQuoteToDelete(null);
           setDeleteError("");
+        }}
+      />
+
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={({ email, updatedStatus }) => {
+          if (updatedStatus && mailRecipient?.leadId) {
+            setQuotes((prev) =>
+              prev.map((q) => (q.id === mailRecipient.leadId ? { ...q, status: updatedStatus } : q))
+            );
+            if (selected?.id === mailRecipient.leadId) {
+              setSelected((prev) => (prev ? { ...prev, status: updatedStatus } : null));
+            }
+          }
+          setSuccessBanner(`Official email dispatched to ${email}`);
+          setTimeout(() => setSuccessBanner(""), 4000);
         }}
       />
     </div>

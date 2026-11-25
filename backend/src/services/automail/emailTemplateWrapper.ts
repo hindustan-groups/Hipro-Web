@@ -440,7 +440,7 @@ export function wrapWithCorporateTemplate(
 /**
  * Basic HTML escaping helper to prevent script injection in subject/names
  */
-function escapeHtml(text?: string | null): string {
+export function escapeHtml(text?: string | null): string {
   if (!text) return "";
   return String(text)
     .replace(/&/g, "&amp;")
@@ -448,4 +448,26 @@ function escapeHtml(text?: string | null): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+/**
+ * Convert clean plain-text message typed in a CRM reply box into formatted,
+ * mobile-friendly HTML paragraphs while preserving full HTML templates as-is.
+ */
+export function plainTextToEmailHtml(input?: string | null): string {
+  const raw = (input || "").trim();
+  if (!raw) return "";
+
+  // Preserve already structured HTML templates/snippets
+  if (/<(div|table|p|h[1-6]|ul|ol|html|body|section|article)\b/i.test(raw)) {
+    return raw;
+  }
+
+  const paragraphs = raw.split(/\n{2,}/);
+  return paragraphs
+    .map((para) => {
+      const safeLines = escapeHtml(para.trim()).replace(/\n/g, "<br />");
+      return `<p style="margin: 0 0 14px; color: #1e293b; font-size: 14px; line-height: 1.65;">${safeLines}</p>`;
+    })
+    .join("\n");
 }

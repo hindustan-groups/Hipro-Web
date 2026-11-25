@@ -2,14 +2,22 @@ import dns from "dns";
 import nodemailer from "nodemailer";
 import { Configuration, AccountApi, SendApi } from "hostinger-mail-api-sdk";
 import { prisma } from "../../lib/db";
-import { getAutomailSettings, AutomailSettings } from "./settingsService";
+import {
+  getAutomailSettings,
+  getAutomailSettingsAsync,
+  getDefaultMailboxes,
+  resolveSenderForTrigger,
+  AutomailSettings,
+  CorporateMailbox,
+} from "./settingsService";
 import {
   wrapWithCorporateTemplate,
   getBrandMetadata,
   isAlreadyCorporatelyBranded,
+  plainTextToEmailHtml,
 } from "./emailTemplateWrapper";
 
-export { wrapWithCorporateTemplate, getBrandMetadata, isAlreadyCorporatelyBranded };
+export { wrapWithCorporateTemplate, getBrandMetadata, isAlreadyCorporatelyBranded, plainTextToEmailHtml };
 
 // Enforce IPv4 DNS resolution across all SMTP socket operations (fixes ENETUNREACH on IPv6)
 if (dns.setDefaultResultOrder) {
@@ -31,29 +39,37 @@ export interface BrandConfig {
 
 export function getBrandConfigs(): Record<string, BrandConfig> {
   const settings = getAutomailSettings();
+  const mailboxes = Array.isArray(settings.mailboxes) && settings.mailboxes.length > 0 ? settings.mailboxes : getDefaultMailboxes();
+  const activeDefault = mailboxes.find((m) => m.isDefault && m.status === "active") || mailboxes.find((m) => m.status === "active") || mailboxes[0];
+  const fallbackEmail = activeDefault?.email || settings.smtpUser || settings.senderEmailHipro || "info@hindustanprojects.in";
+
+  const hiproMb = mailboxes.find((m) => m.brand === "hipro" && m.status === "active");
+  const hbsMb = mailboxes.find((m) => m.brand === "hbs" && m.status === "active");
+  const empMb = mailboxes.find((m) => m.brand === "empanelment" && m.status === "active");
+
   return {
     hipro: {
       key: "hipro",
-      name: settings.senderNameHipro || "Hindustan Projects",
-      defaultEmail: settings.senderEmailHipro || "info@hindustanprojects.in",
+      name: hiproMb?.name || settings.senderNameHipro || "Hindustan Projects",
+      defaultEmail: hiproMb?.email || fallbackEmail,
       website: "https://www.hindustanprojects.in",
     },
     hbs: {
       key: "hbs",
-      name: settings.senderNameHbs || "Hind Building Solutions",
-      defaultEmail: settings.senderEmailHbs || "hbs@hindustanprojects.in",
+      name: hbsMb?.name || settings.senderNameHbs || "Hind Building Solutions",
+      defaultEmail: hbsMb?.email || fallbackEmail,
       website: "https://hindbuilding.hindustanprojects.in",
     },
     empanelment: {
       key: "empanelment",
-      name: "HiPRO Empanelment Desk",
-      defaultEmail: (settings as any).senderEmailEmpanelment || "empanelment@hindustanprojects.in",
+      name: empMb?.name || "HiPRO Empanelment Desk",
+      defaultEmail: empMb?.email || fallbackEmail,
       website: "https://empanelment.hindustanprojects.in",
     },
     all: {
       key: "all",
       name: "Hindustan Projects Group",
-      defaultEmail: settings.senderEmailHipro || "info@hindustanprojects.in",
+      defaultEmail: fallbackEmail,
       website: "https://www.hindustanprojects.in",
     },
   };
@@ -662,12 +678,32 @@ export async function sendOneEmail({
       isMock: true,
     };
   }
-  const settings = getAutomailSettings();
-  const deliveryMethod = customConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
-  const apiToken = (customConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  const settings = await getAutomailSettingsAsync().catch(() => getAutomailSettings());
+
+  // Automatically resolve per-mailbox settings if caller supplied a senderEmail matching a configured mailbox
+  let resolvedConfig = customConfig;
+  if (!resolvedConfig && senderEmail && Array.isArray(settings.mailboxes)) {
+    const matchedMb = settings.mailboxes.find(
+      (mb: CorporateMailbox) => mb.email?.toLowerCase().trim() === senderEmail.toLowerCase().trim() && mb.status === "active"
+    );
+    if (matchedMb) {
+      resolvedConfig = {
+        deliveryMethod: matchedMb.deliveryMethod || settings.deliveryMethod,
+        smtpHost: matchedMb.smtpHost || settings.smtpHost,
+        smtpPort: matchedMb.smtpPort || settings.smtpPort,
+        smtpUser: matchedMb.smtpUser || matchedMb.email,
+        smtpPass: matchedMb.smtpPass || settings.smtpPass,
+        hostingerApiToken: matchedMb.hostingerApiToken || settings.hostingerApiToken,
+        hostingerMailboxId: matchedMb.hostingerMailboxId || settings.hostingerMailboxId,
+      };
+    }
+  }
+
+  const deliveryMethod = resolvedConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
+  const apiToken = (resolvedConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
 
   // If Hostinger API is selected OR if SMTP pass is empty but API token exists
-  if (deliveryMethod === "hostinger_api" || (!settings.smtpPass && apiToken)) {
+  if (deliveryMethod === "hostinger_api" || (!((resolvedConfig?.smtpPass !== undefined ? resolvedConfig.smtpPass : settings.smtpPass) || "").trim() && apiToken)) {
     return await sendEmailViaHostingerApi({
       to,
       subject,
@@ -677,12 +713,12 @@ export async function sendOneEmail({
       senderEmail,
       brand,
       token: apiToken,
-      mailboxId: customConfig?.hostingerMailboxId || settings.hostingerMailboxId,
+      mailboxId: resolvedConfig?.hostingerMailboxId || settings.hostingerMailboxId,
     });
   }
 
   // SMTP Flow
-  const host = (customConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
+  const host = (resolvedConfig?.smtpHost || settings.smtpHost || "smtp.hostinger.com").trim();
   await getHostIpv4(host);
 
   const brandMap = getBrandConfigs();
@@ -690,7 +726,7 @@ export async function sendOneEmail({
   const fromName = senderName?.trim() || brandDefaults.name;
   const fromEmail = senderEmail?.trim() || brandDefaults.defaultEmail;
 
-  const { transporter, isConfigured, user, port, pass } = getTransporter(customConfig);
+  const { transporter, isConfigured, user, port, pass } = getTransporter(resolvedConfig);
 
   if (!isConfigured) {
     if (apiToken) {
@@ -887,6 +923,170 @@ export async function incrementDailyStats(success: boolean) {
     });
   } catch (err) {
     console.error("[AUTOMAIL] Failed to increment daily stats:", err);
+  }
+}
+
+/**
+ * Resolve exact active mailbox configuration by explicit mailboxId, senderEmail,
+ * dispatch routing triggerKey, or brand default fallback.
+ */
+export async function resolveEffectiveMailboxConfig(params: {
+  mailboxId?: string | null;
+  senderEmail?: string | null;
+  senderName?: string | null;
+  triggerKey?: string | null;
+  brand?: string | null;
+}) {
+  const settings = await getAutomailSettingsAsync().catch(() => getAutomailSettings());
+  const mailboxes: CorporateMailbox[] =
+    settings.mailboxes && settings.mailboxes.length > 0
+      ? settings.mailboxes
+      : getDefaultMailboxes();
+
+  const activeMailboxes = mailboxes.filter((m) => m.status === "active");
+  const pool = activeMailboxes.length > 0 ? activeMailboxes : mailboxes;
+
+  let chosen: CorporateMailbox | undefined;
+
+  if (params.mailboxId) {
+    chosen = pool.find((m) => m.id === params.mailboxId);
+  }
+  if (!chosen && params.senderEmail) {
+    const clean = params.senderEmail.toLowerCase().trim();
+    chosen = pool.find((m) => m.email?.toLowerCase().trim() === clean);
+  }
+  if (!chosen && params.triggerKey) {
+    const routed = resolveSenderForTrigger(params.triggerKey);
+    if (routed?.mailbox) {
+      chosen = pool.find((m) => m.id === routed.mailbox.id) || routed.mailbox;
+    }
+  }
+  if (!chosen && params.brand && params.brand !== "all") {
+    chosen = pool.find((m) => m.brand === params.brand);
+  }
+  if (!chosen) {
+    chosen = pool.find((m) => m.isDefault) || pool[0];
+  }
+
+  const brandKey = params.brand || chosen?.brand || "hipro";
+  const brandDefaults = getBrandConfigs()[brandKey] || getBrandConfigs().all;
+
+  const finalSenderName = params.senderName?.trim() || chosen?.name || brandDefaults.name;
+  const finalSenderEmail = chosen?.email || params.senderEmail?.trim() || brandDefaults.defaultEmail;
+
+  const customConfig: Partial<AutomailSettings> | undefined = chosen
+    ? {
+        deliveryMethod: chosen.deliveryMethod || settings.deliveryMethod,
+        smtpHost: chosen.smtpHost || settings.smtpHost,
+        smtpPort: chosen.smtpPort || settings.smtpPort,
+        smtpUser: chosen.smtpUser || chosen.email,
+        smtpPass: chosen.smtpPass || settings.smtpPass,
+        hostingerApiToken: chosen.hostingerApiToken || settings.hostingerApiToken,
+        hostingerMailboxId: chosen.hostingerMailboxId || settings.hostingerMailboxId,
+      }
+    : undefined;
+
+  return {
+    mailbox: chosen,
+    senderName: finalSenderName,
+    senderEmail: finalSenderEmail,
+    customConfig,
+  };
+}
+
+/**
+ * Record every direct single / CRM email dispatch cleanly into:
+ * 1) AutomailContact (audience directory upsert)
+ * 2) AutomailDailyStat (today sent/failed count)
+ * 3) AutomailSendLog under a reusable system direct-dispatch campaign bucket
+ *    so Master Cockpit & AutoMail telemetry reflect real outbound volume with zero schema drift.
+ */
+export async function recordDirectDispatch(params: {
+  to: string;
+  name?: string | null;
+  subject: string;
+  brand?: string;
+  senderName?: string | null;
+  senderEmail?: string | null;
+  source?: string;
+  success: boolean;
+  errorMessage?: string | null;
+}) {
+  const cleanEmail = params.to.trim().toLowerCase();
+  const normalizedBrand = (params.brand || "hipro").toLowerCase().trim() || "hipro";
+  const { fullName } = extractCleanContactName(params.name, cleanEmail);
+
+  // 1. Upsert AutoMail contact directory
+  await (prisma as any).automailContact
+    .upsert({
+      where: { email: cleanEmail },
+      create: {
+        email: cleanEmail,
+        name: fullName,
+        brand: normalizedBrand,
+        source: params.source || "crm_direct_reply",
+      },
+      update: {
+        name: params.name?.trim() ? fullName : undefined,
+      },
+    })
+    .catch(() => null);
+
+  // 2. Increment daily stats
+  await incrementDailyStats(params.success);
+
+  // 3. Persist send log inside a reusable per-brand Direct CRM Dispatch bucket
+  try {
+    const bucketId = `sys_direct_crm_${normalizedBrand.replace(/[^a-z0-9_]/g, "")}`;
+    const bucketName =
+      normalizedBrand === "hbs"
+        ? "Direct CRM Replies — Hind Building Solutions"
+        : normalizedBrand === "empanelment"
+        ? "Direct CRM Replies — Vendor Empanelment"
+        : "Direct CRM Replies — Hindustan Projects";
+
+    await (prisma as any).automailCampaign.upsert({
+      where: { id: bucketId },
+      create: {
+        id: bucketId,
+        name: bucketName,
+        subject: "1-on-1 Direct Lead & Client Replies",
+        brand: normalizedBrand,
+        senderName: params.senderName || "Hindustan Projects",
+        senderEmail: params.senderEmail || "info@hindustanprojects.in",
+        htmlBody: "<p>System ledger for 1-on-1 CRM lead & client email replies.</p>",
+        textBody: "System ledger for 1-on-1 CRM lead & client email replies.",
+        template: "direct_crm_ledger",
+        status: "completed",
+        targetAudience: "selected",
+        totalRecipients: 1,
+        sentCount: params.success ? 1 : 0,
+        failedCount: params.success ? 0 : 1,
+        sentAt: new Date(),
+      },
+      update: {
+        totalRecipients: { increment: 1 },
+        sentCount: params.success ? { increment: 1 } : undefined,
+        failedCount: !params.success ? { increment: 1 } : undefined,
+        sentAt: new Date(),
+      },
+    });
+
+    await (prisma as any).automailSendLog.create({
+      data: {
+        campaignId: bucketId,
+        contactEmail: cleanEmail,
+        contactName: fullName,
+        brand: normalizedBrand,
+        status: params.success ? "sent" : "failed",
+        error: params.success
+          ? `Subject: ${params.subject}` // clean traceable note when sent
+          : params.errorMessage || "Delivery failed",
+        sentAt: params.success ? new Date() : null,
+      },
+    });
+  } catch (err) {
+    console.warn("[AUTOMAIL] Direct dispatch log write warning:", err);
   }
 }
 

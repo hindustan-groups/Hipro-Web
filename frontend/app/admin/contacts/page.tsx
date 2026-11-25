@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import DeleteConfirmModal from "@/components/admin/DeleteConfirmModal";
+import QuickMailModal, { QuickMailRecipient } from "@/components/admin/QuickMailModal";
 import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface Contact {
@@ -45,6 +46,22 @@ export default function AdminContacts() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
+  const [mailRecipient, setMailRecipient] = useState<QuickMailRecipient | null>(null);
+
+  const openContactMail = (c: Contact) => {
+    if (!c.email) return;
+    setMailRecipient({
+      name: c.name || "Client",
+      email: c.email,
+      phone: c.phone,
+      leadId: c.id,
+      leadType: "contact",
+      brand: "hipro",
+      triggerKey: "contact_inquiries",
+      contextBadge: c.service || "General Inquiry",
+      defaultNextStatus: "replied",
+    });
+  };
 
   const fetchContacts = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -371,6 +388,15 @@ export default function AdminContacts() {
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
+                          {c.email && (
+                            <button
+                              onClick={() => openContactMail(c)}
+                              title="Send Official Email Reply"
+                              className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-600 hover:text-white text-blue-600 flex items-center justify-center transition-all shadow-2xs cursor-pointer"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           {c.status !== "replied" && (
                             <button
                               onClick={() => updateStatus(c.id, "replied")}
@@ -434,9 +460,13 @@ export default function AdminContacts() {
                 <span className="text-slate-400 font-mono uppercase text-[10px]">Email</span>
                 <p className="font-semibold text-slate-900 truncate mt-0.5">
                   {selected.email ? (
-                    <a href={`mailto:${selected.email}`} className="text-blue-600 hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => openContactMail(selected)}
+                      className="text-blue-600 hover:underline font-semibold text-left truncate max-w-full cursor-pointer"
+                    >
                       {selected.email}
-                    </a>
+                    </button>
                   ) : "—"}
                 </p>
               </div>
@@ -474,6 +504,16 @@ export default function AdminContacts() {
                 {selected.createdAt ? new Date(selected.createdAt).toLocaleString("en-IN") : ""}
               </span>
               <div className="flex items-center gap-2">
+                {selected.email && (
+                  <button
+                    type="button"
+                    onClick={() => openContactMail(selected)}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-all shadow-2xs cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Reply via Mail</span>
+                  </button>
+                )}
                 {selected.status !== "replied" && (
                   <button
                     onClick={() => updateStatus(selected.id, "replied")}
@@ -527,6 +567,24 @@ export default function AdminContacts() {
             setContactToDelete(null);
             setDeleteError("");
           }
+        }}
+      />
+
+      <QuickMailModal
+        isOpen={Boolean(mailRecipient)}
+        onClose={() => setMailRecipient(null)}
+        recipient={mailRecipient}
+        onSentSuccess={({ email, updatedStatus }) => {
+          if (updatedStatus && mailRecipient?.leadId) {
+            setContacts((prev) =>
+              prev.map((c) => (c.id === mailRecipient.leadId ? { ...c, status: updatedStatus } : c))
+            );
+            if (selected?.id === mailRecipient.leadId) {
+              setSelected((prev) => (prev ? { ...prev, status: updatedStatus } : null));
+            }
+          }
+          setSuccessBanner(`Official email reply delivered to ${email}!`);
+          setTimeout(() => setSuccessBanner(""), 4000);
         }}
       />
     </div>

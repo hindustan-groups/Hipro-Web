@@ -126,13 +126,7 @@ export default function AutoMailCompose() {
       ? "HiPRO Empanelment Desk"
       : "Hindustan Projects"
   );
-  const [senderEmail, setSenderEmail] = useState(
-    initialBrand === "hbs"
-      ? "hbs@hindustanprojects.in"
-      : initialBrand === "empanelment"
-      ? "empanelment@hindustanprojects.in"
-      : "info@hindustanprojects.in"
-  );
+  const [senderEmail, setSenderEmail] = useState("info@hindustanprojects.in");
   const [configuredMailboxes, setConfiguredMailboxes] = useState<Array<{
     id: string;
     name: string;
@@ -172,6 +166,12 @@ export default function AutoMailCompose() {
   const [saving, setSaving] = useState(false);
   const [sendingDirect, setSendingDirect] = useState(false);
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false);
+  const [directSendResult, setDirectSendResult] = useState<{
+    recipients: string[];
+    senderEmail: string;
+    subject: string;
+    message: string;
+  } | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Template Library Modal
@@ -235,11 +235,19 @@ export default function AutoMailCompose() {
         const data = await res.json();
         if (data.success && Array.isArray(data.mailboxes) && data.mailboxes.length > 0) {
           setConfiguredMailboxes(data.mailboxes);
-          const defaultMb = data.mailboxes.find((m: any) => m.isDefault) || data.mailboxes[0];
-          if (defaultMb && !searchParams?.get("brand")) {
-            setSelectedMailboxId(defaultMb.id);
-            setSenderEmail(defaultMb.email);
-            setSenderName(defaultMb.name);
+          const preferredBrand = initialBrand !== "all" ? initialBrand : brand;
+          const brandMb =
+            preferredBrand && preferredBrand !== "all"
+              ? data.mailboxes.find(
+                  (m: any) => String(m.brand || "").toLowerCase() === preferredBrand.toLowerCase()
+                )
+              : null;
+          const activeMb =
+            brandMb || data.mailboxes.find((m: any) => m.isDefault) || data.mailboxes[0];
+          if (activeMb) {
+            setSelectedMailboxId(activeMb.id);
+            setSenderEmail(activeMb.email);
+            setSenderName(activeMb.name);
           }
         }
       } catch {
@@ -273,31 +281,48 @@ export default function AutoMailCompose() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTemplateId]);
 
+  const resolveMailboxForBrand = (targetBrand: string) => {
+    if (configuredMailboxes.length === 0) return null;
+    if (targetBrand && targetBrand !== "all") {
+      const exact = configuredMailboxes.find(
+        (m: any) => String(m.brand || "").toLowerCase() === targetBrand.toLowerCase()
+      );
+      if (exact) return exact;
+    }
+    return configuredMailboxes.find((m: any) => m.isDefault) || configuredMailboxes[0];
+  };
+
   const applyTemplate = (t: any) => {
     setHtmlBody(t.html);
     setSubject(t.subject);
     setName(t.title);
-    setBrand(t.brand || "all");
-    setSenderName(
-      t.senderName ||
-        (t.brand === "hbs"
-          ? "Hind Building Solutions"
-          : t.brand === "empanelment"
-          ? "HiPRO Empanelment Desk"
-          : "Hindustan Projects")
-    );
-    setSenderEmail(
-      t.senderEmail ||
-        (t.brand === "hbs"
-          ? "hbs@hindustanprojects.in"
-          : t.brand === "empanelment"
-          ? "empanelment@hindustanprojects.in"
-          : "info@hindustanprojects.in")
-    );
-    if (t.brand === "hipro") setTargetAudience("hipro");
-    else if (t.brand === "hbs") setTargetAudience("hbs");
-    else if (t.brand === "empanelment") setTargetAudience("empanelment");
-    else setTargetAudience("all");
+    const nextBrand =
+      t.brand && t.brand !== "all" ? t.brand : brand !== "all" ? brand : "all";
+    setBrand(nextBrand);
+
+    const matchedMb = resolveMailboxForBrand(nextBrand);
+    if (matchedMb) {
+      setSelectedMailboxId(matchedMb.id);
+      setSenderEmail(matchedMb.email);
+      setSenderName(t.senderName || matchedMb.name);
+    } else {
+      setSenderName(
+        t.senderName ||
+          (nextBrand === "hbs"
+            ? "Hind Building Solutions"
+            : nextBrand === "empanelment"
+            ? "HiPRO Empanelment Desk"
+            : "Hindustan Projects")
+      );
+      setSenderEmail(t.senderEmail || senderEmail || "info@hindustanprojects.in");
+    }
+
+    if (recipientMode !== "custom") {
+      if (nextBrand === "hipro") setTargetAudience("hipro");
+      else if (nextBrand === "hbs") setTargetAudience("hbs");
+      else if (nextBrand === "empanelment") setTargetAudience("empanelment");
+      else setTargetAudience("all");
+    }
     setShowLibraryModal(false);
     setToast({ message: `Loaded template: "${t.title}"`, type: "success" });
   };
@@ -342,25 +367,31 @@ export default function AutoMailCompose() {
     }
   };
 
+  const applySenderDefaultsForBrand = (targetBrand: string) => {
+    const matchedMb = resolveMailboxForBrand(targetBrand);
+    if (matchedMb) {
+      setSelectedMailboxId(matchedMb.id);
+      setSenderEmail(matchedMb.email);
+      setSenderName(matchedMb.name);
+      return;
+    }
+    setSenderName(
+      targetBrand === "hbs"
+        ? "Hind Building Solutions"
+        : targetBrand === "empanelment"
+        ? "HiPRO Empanelment Desk"
+        : "Hindustan Projects"
+    );
+    setSenderEmail(senderEmail || "info@hindustanprojects.in");
+  };
+
   const handleBrandChange = (newBrand: string) => {
     setBrand(newBrand);
-    if (newBrand === "hbs") {
-      setSenderName("Hind Building Solutions");
-      setSenderEmail("hbs@hindustanprojects.in");
-      setTargetAudience("hbs");
-    } else if (newBrand === "empanelment") {
-      setSenderName("HiPRO Empanelment Desk");
-      setSenderEmail("empanelment@hindustanprojects.in");
-      setTargetAudience("empanelment");
-    } else if (newBrand === "hipro") {
-      setSenderName("Hindustan Projects");
-      setSenderEmail("info@hindustanprojects.in");
-      setTargetAudience("hipro");
-    } else {
-      setSenderName("Hindustan Projects");
-      setSenderEmail("info@hindustanprojects.in");
-      setTargetAudience("all");
-    }
+    applySenderDefaultsForBrand(newBrand);
+    if (newBrand === "hbs") setTargetAudience("hbs");
+    else if (newBrand === "empanelment") setTargetAudience("empanelment");
+    else if (newBrand === "hipro") setTargetAudience("hipro");
+    else setTargetAudience("all");
   };
 
   const insertTag = (tag: string, target: "body" | "subject" = "body") => {
@@ -403,18 +434,11 @@ export default function AutoMailCompose() {
     setSubject(wf.subject);
     setName(wf.title);
     setBrand(wf.brand as any);
-    if (wf.brand === "hbs") {
-      setSenderName("Hind Building Solutions");
-      setSenderEmail("hbs@hindustanprojects.in");
-      setTargetAudience("hbs");
-    } else if (wf.brand === "empanelment") {
-      setSenderName("HiPRO Empanelment Desk");
-      setSenderEmail("empanelment@hindustanprojects.in");
-      setTargetAudience("empanelment");
-    } else {
-      setSenderName("Hindustan Projects");
-      setSenderEmail("info@hindustanprojects.in");
-      setTargetAudience("hipro");
+    applySenderDefaultsForBrand(wf.brand);
+    if (recipientMode !== "custom") {
+      if (wf.brand === "hbs") setTargetAudience("hbs");
+      else if (wf.brand === "empanelment") setTargetAudience("empanelment");
+      else setTargetAudience("hipro");
     }
     setToast({
       message: `Workflow loaded: "${wf.title}". Formatted automatically for client!`,
@@ -466,6 +490,24 @@ export default function AutoMailCompose() {
       .replace(/\{\{brand\}\}/gi, pBrand);
   };
 
+  const parseCustomRecipientList = (raw: string): Array<{ email: string; name?: string }> => {
+    return raw
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((entry) => {
+        const bracketMatch = entry.match(/^(.*?)\s*<([^\s>]+@[^\s>]+)>$/);
+        if (bracketMatch) {
+          return {
+            name: bracketMatch[1].trim() || undefined,
+            email: bracketMatch[2].trim().toLowerCase(),
+          };
+        }
+        return { email: entry.toLowerCase() };
+      })
+      .filter((r) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+  };
+
   // 1-Click Direct Send to Audience or Custom Recipient
   const handleDirectSend = async () => {
     if (!smtpConfigured) {
@@ -488,10 +530,62 @@ export default function AutoMailCompose() {
       return;
     }
 
+    const customList = recipientMode === "custom" ? parseCustomRecipientList(customTo) : [];
+    if (recipientMode === "custom" && customList.length === 0) {
+      setToast({ message: "Please enter a valid recipient email address", type: "error" });
+      return;
+    }
+
     setSendingDirect(true);
     setShowConfirmSendModal(false);
+    setDirectSendResult(null);
 
     try {
+      // Single / Small Direct 1-to-1 Sends (<= 5): dispatch directly without creating a bulk campaign or leaving compose
+      if (recipientMode === "custom" && customList.length <= 5) {
+        const deliveredEmails: string[] = [];
+        let usedSenderEmail = senderEmail;
+
+        for (const rec of customList) {
+          const singleRes = await fetch("/api/automail/send-single", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: rec.email,
+              name: rec.name || customClientName.trim() || undefined,
+              subject,
+              htmlBody,
+              textBody: htmlBody.replace(/<[^>]*>/g, ""),
+              brand,
+              senderName,
+              senderEmail,
+              mailboxId: selectedMailboxId || undefined,
+            }),
+          });
+          const singleData = await singleRes.json();
+          if (!singleRes.ok || !singleData.success) {
+            throw new Error(singleData.error || `Failed sending to ${rec.email}`);
+          }
+          deliveredEmails.push(rec.email);
+          if (singleData.senderEmail) usedSenderEmail = singleData.senderEmail;
+        }
+
+        const msg =
+          deliveredEmails.length === 1
+            ? `Email sent directly to ${deliveredEmails[0]} from ${usedSenderEmail}!`
+            : `${deliveredEmails.length} direct emails delivered from ${usedSenderEmail}!`;
+
+        setToast({ message: msg, type: "success" });
+        setDirectSendResult({
+          recipients: deliveredEmails,
+          senderEmail: usedSenderEmail,
+          subject,
+          message: msg,
+        });
+        return;
+      }
+
+      // Group audience or >5 recipients -> Launch Campaign Broadcast Queue
       const payload: any = {
         name: name || subject,
         subject,
@@ -524,8 +618,8 @@ export default function AutoMailCompose() {
       } else {
         setToast({ message: data.error || "Failed to start broadcast", type: "error" });
       }
-    } catch {
-      setToast({ message: "Network error starting broadcast", type: "error" });
+    } catch (err: any) {
+      setToast({ message: err?.message || "Network error sending email", type: "error" });
     } finally {
       setSendingDirect(false);
     }
@@ -658,6 +752,39 @@ export default function AutoMailCompose() {
           >
             Open Settings & Enter Password →
           </button>
+        </div>
+      )}
+
+      {/* Direct Send Inline Delivery Card (No Campaign Redirect) */}
+      {directSendResult && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <div className="text-xs space-y-0.5">
+              <p className="font-bold text-emerald-950 text-sm">{directSendResult.message}</p>
+              <p className="text-emerald-800">
+                Dispatched directly via <span className="font-mono font-semibold">{directSendResult.senderEmail}</span> to{" "}
+                <span className="font-mono font-semibold">{directSendResult.recipients.join(", ")}</span> &bull; Logged in Unified Sent Audit
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/admin/automail"
+              className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all"
+            >
+              View Sent Log →
+            </Link>
+            <button
+              type="button"
+              onClick={() => setDirectSendResult(null)}
+              className="px-3 py-2 bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-900 text-xs font-semibold rounded-xl transition-all"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
@@ -869,7 +996,11 @@ export default function AutoMailCompose() {
                       type="radio"
                       name="audience"
                       checked={targetAudience === "all"}
-                      onChange={() => setTargetAudience("all")}
+                      onChange={() => {
+                        setTargetAudience("all");
+                        setBrand("all");
+                        applySenderDefaultsForBrand("all");
+                      }}
                     />
                   </div>
                   <p className="text-[11px] text-slate-500">
@@ -896,8 +1027,7 @@ export default function AutoMailCompose() {
                       onChange={() => {
                         setTargetAudience("hipro");
                         setBrand("hipro");
-                        setSenderName("Hindustan Projects");
-                        setSenderEmail("info@hindustanprojects.in");
+                        applySenderDefaultsForBrand("hipro");
                       }}
                     />
                   </div>
@@ -925,8 +1055,7 @@ export default function AutoMailCompose() {
                       onChange={() => {
                         setTargetAudience("hbs");
                         setBrand("hbs");
-                        setSenderName("Hind Building Solutions");
-                        setSenderEmail("hbs@hindustanprojects.in");
+                        applySenderDefaultsForBrand("hbs");
                       }}
                     />
                   </div>
@@ -954,8 +1083,7 @@ export default function AutoMailCompose() {
                       onChange={() => {
                         setTargetAudience("empanelment");
                         setBrand("empanelment");
-                        setSenderName("HiPRO Empanelment Desk");
-                        setSenderEmail("empanelment@hindustanprojects.in");
+                        applySenderDefaultsForBrand("empanelment");
                       }}
                     />
                   </div>
@@ -1264,11 +1392,13 @@ export default function AutoMailCompose() {
           <div className="text-xs text-slate-600">
             <p className="font-bold text-slate-900">
               {recipientMode === "custom"
-                ? `Direct Send Mode: Delivering to ${customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0} Recipient(s)`
+                ? `Direct Send Mode: Delivering to ${parseCustomRecipientList(customTo).length || (customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0)} Recipient(s)`
                 : `Broadcast Mode: Delivering to ${currentAudienceCount} Contacts`}
             </p>
             <p className="text-[11px] text-slate-500">
-              Delivered safely through Hostinger SMTP engine with safe pacing.
+              {recipientMode === "custom" && parseCustomRecipientList(customTo).length <= 5
+                ? `Instant 1-to-1 delivery via ${senderEmail} — logs straight to Sent History.`
+                : "Delivered safely through Hostinger SMTP engine with safe pacing."}
             </p>
           </div>
 
@@ -1404,7 +1534,9 @@ export default function AutoMailCompose() {
                 {recipientMode === "custom" ? "Confirm Direct Email Send" : "Confirm Email Broadcast"}
               </h3>
               <p className="text-xs text-slate-500">
-                Hostinger SMTP queue ke zariye safe transmission launch hoga.
+                {recipientMode === "custom" && parseCustomRecipientList(customTo).length <= 5
+                  ? "Direct 1-to-1 dispatch via configured mailbox — sends immediately without creating a campaign."
+                  : "Hostinger SMTP queue ke zariye safe bulk broadcast transmission launch hoga."}
               </p>
             </div>
 
