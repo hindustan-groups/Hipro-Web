@@ -35,6 +35,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import HbsAdminPageHeader from "@/components/hbs/admin/HbsAdminPageHeader";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 interface HbsStats {
   servicesCount: number;
@@ -56,8 +57,8 @@ export default function HbsAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const [resServices, resProjects, resTestimonials, resLeads] = await Promise.all([
@@ -79,15 +80,17 @@ export default function HbsAdminDashboard() {
       const testimonials = testimonialsJson.success ? testimonialsJson.data : [];
       const leads = leadsJson.success ? leadsJson.data : [];
 
-      setStats({
+      const newStats = {
         servicesCount: services.length,
         projectsCount: projects.length,
         testimonialsCount: testimonials.length,
         leadsCount: leads.length,
         newLeadsCount: leads.filter((l: any) => l.status === "new" || l.status === "NEW").length,
-      });
+      };
 
+      setStats(newStats);
       setRecentLeads(leads.slice(0, 6));
+      setAdminCache("admin:hbs_dashboard", { stats: newStats, recentLeads: leads.slice(0, 6) });
     } catch {
       setError("Failed to load dashboard data. Check backend connection.");
     } finally {
@@ -96,7 +99,13 @@ export default function HbsAdminDashboard() {
   };
 
   useEffect(() => {
-    loadData();
+    const cached = getAdminCache<{ stats: HbsStats; recentLeads: any[] }>("admin:hbs_dashboard");
+    if (cached) {
+      setStats(cached.stats);
+      setRecentLeads(cached.recentLeads);
+      setLoading(false);
+    }
+    loadData(!cached);
   }, []);
 
   const updateLeadStatus = async (id: string, newStatus: string) => {
@@ -127,7 +136,7 @@ export default function HbsAdminDashboard() {
         description="Unified Glassmorphic management hub for Hind Building Solutions (HiBUILD) — Live CMS content, verified case studies, trade catalogs, and customer leads."
       >
         <button
-          onClick={loadData}
+          onClick={() => loadData(true)}
           disabled={loading}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 backdrop-blur-md bg-white/80 border border-white hover:bg-white transition-all rounded-xl shadow-2xs disabled:opacity-50"
         >

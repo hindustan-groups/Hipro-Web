@@ -89,30 +89,20 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AdminLeadsPage() {
-  const cachedData = getAdminCache<{
-    leads: UnifiedLead[];
-    counts: LeadCounts;
-    totalPages: number;
-    totalLeads: number;
-  }>("admin:leads:default");
-
-  const [leads, setLeads] = useState<UnifiedLead[]>(() => cachedData?.leads || []);
-  const [counts, setCounts] = useState<LeadCounts>(
-    () =>
-      cachedData?.counts || {
-        all: 0,
-        contact: 0,
-        quote: 0,
-        estimator: 0,
-        project: 0,
-        service: 0,
-        application: 0,
-        newsletter: 0,
-        new: 0,
-        archived: 0,
-      }
-  );
-  const [loading, setLoading] = useState(!cachedData);
+  const [leads, setLeads] = useState<UnifiedLead[]>([]);
+  const [counts, setCounts] = useState<LeadCounts>({
+    all: 0,
+    contact: 0,
+    quote: 0,
+    estimator: 0,
+    project: 0,
+    service: 0,
+    application: 0,
+    newsletter: 0,
+    new: 0,
+    archived: 0,
+  });
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
 
@@ -123,8 +113,8 @@ export default function AdminLeadsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(() => cachedData?.totalPages || 1);
-  const [totalLeads, setTotalLeads] = useState(() => cachedData?.totalLeads || 0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalLeads, setTotalLeads] = useState(0);
 
   // Detail Modal / Drawer
   const [selectedLead, setSelectedLead] = useState<UnifiedLead | null>(null);
@@ -196,6 +186,22 @@ export default function AdminLeadsPage() {
       setLoading(false);
     }
   }, [activeType, statusFilter, debouncedSearch, page, sortOrder, leads.length]);
+
+  useEffect(() => {
+    const cached = getAdminCache<{
+      leads: UnifiedLead[];
+      counts: LeadCounts;
+      totalPages: number;
+      totalLeads: number;
+    }>("admin:leads:default");
+    if (cached) {
+      setLeads(cached.leads);
+      setCounts(cached.counts);
+      setTotalPages(cached.totalPages);
+      setTotalLeads(cached.totalLeads);
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchLeads();

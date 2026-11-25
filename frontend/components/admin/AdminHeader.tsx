@@ -1,15 +1,32 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Bell, Search, Menu, X, LogOut, ExternalLink } from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  Bell,
+  PanelLeft,
+  LogOut,
+  ExternalLink,
+  ShieldCheck,
+  Building2,
+  Flame,
+  CheckCircle2,
+  Clock,
+  X,
+} from "lucide-react";
+import AdminSpotlightModal from "@/components/admin/AdminSpotlightModal";
 import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
 
-
 const titles: Record<string, string> = {
-  "/admin":             "Dashboard",
-  "/admin/stats":       "Site Stats & Analytics",
+  "/admin":             "Company Headquarters",
+  "/admin/hipro":       "HiPRO Corporate Web Studio",
+  "/admin/security":    "Security & 2FA Vault",
+  "/admin/backup":      "Database Backup Vault",
+  "/admin/data-tools":  "Universal Data Import & Export",
+  "/admin/api-keys":    "API Keys & Secrets Vault",
+  "/admin/hq-settings": "Master HQ Settings",
+  "/admin/stats":       "HiPRO · Homepage Counters CMS",
   "/admin/leads":       "Leads Hub",
   "/admin/automail":    "AutoMail Studio",
   "/admin/quotes":      "Quote Requests",
@@ -60,23 +77,41 @@ const titles: Record<string, string> = {
 
 export default function AdminHeader({ user }: { user: any }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(3);
+  const notifRef = useRef<HTMLDivElement>(null);
 
+  // Global Ctrl + K / Cmd + K spotlight shortcut
   useEffect(() => {
-    const handleSidebarChange = (e: any) => {
-      if (typeof e.detail?.open === "boolean") {
-        setIsDrawerOpen(e.detail.open);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSpotlightOpen((prev) => !prev);
       }
     };
-    window.addEventListener("admin-sidebar-change", handleSidebarChange);
-    return () => window.removeEventListener("admin-sidebar-change", handleSidebarChange);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-  
+
+  // Close notifications on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    if (isNotifOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isNotifOpen]);
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/admin-login";
   };
+
   const getTitle = () => {
     if (!pathname) return "Admin Panel";
     if (titles[pathname]) return titles[pathname];
@@ -87,25 +122,62 @@ export default function AdminHeader({ user }: { user: any }) {
   };
   const title = getTitle();
 
+  const isEmpanelment = pathname?.startsWith("/admin/empanelment");
+  const isHbs = pathname?.startsWith("/admin/hbs");
+  const isHipro =
+    !isEmpanelment &&
+    !isHbs &&
+    (pathname?.startsWith("/admin/hipro") ||
+      pathname === "/admin/projects" ||
+      pathname?.startsWith("/admin/projects/") ||
+      pathname === "/admin/services" ||
+      pathname?.startsWith("/admin/services/") ||
+      pathname === "/admin/quotes" ||
+      pathname?.startsWith("/admin/quotes/") ||
+      pathname === "/admin/contacts" ||
+      pathname?.startsWith("/admin/contacts/") ||
+      pathname === "/admin/applications" ||
+      pathname?.startsWith("/admin/applications/") ||
+      pathname === "/admin/blogs" ||
+      pathname?.startsWith("/admin/blogs/") ||
+      pathname === "/admin/hero" ||
+      pathname === "/admin/about" ||
+      pathname === "/admin/contact-page" ||
+      pathname === "/admin/cost-estimator" ||
+      pathname === "/admin/image-showcase" ||
+      pathname === "/admin/projects-hero" ||
+      pathname === "/admin/blogs-hero" ||
+      pathname === "/admin/jobs" ||
+      pathname === "/admin/cta-management" ||
+      pathname === "/admin/navigation" ||
+      pathname === "/admin/testimonials" ||
+      pathname === "/admin/team" ||
+      pathname === "/admin/newsletter" ||
+      pathname === "/admin/leads" ||
+      pathname === "/admin/stats" ||
+      pathname === "/admin/settings");
+
   return (
-    <header className="h-[70px] shrink-0 bg-white/85 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-8 z-40 sticky top-0 shadow-[0_4px_20px_rgba(15,23,42,0.02)]">
-      <div className="flex items-center gap-3 min-w-0">
-        <button 
+    <header className="h-16 shrink-0 bg-white/80 backdrop-blur-2xl border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 z-30 sticky top-0 shadow-[0_2px_16px_rgba(15,23,42,0.02)]">
+      {/* ── Left: Sidebar Collapse Toggle & Page Title ── */}
+      <div className="flex items-center gap-3 shrink-0">
+        <button
           onClick={() => window.dispatchEvent(new Event("toggle-admin-sidebar"))}
-          aria-label={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
-          title={isDrawerOpen ? "Close Navigation" : "Open Navigation"}
-          className="md:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 focus:outline-none shrink-0"
+          aria-label="Toggle Sidebar Navigation"
+          title="Toggle Sidebar (Ctrl + B)"
+          className="p-2 -ml-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 rounded-xl transition-all focus:outline-none shrink-0 cursor-pointer shadow-2xs"
         >
-          {isDrawerOpen ? <X className="w-6 h-6 text-slate-800" /> : <Menu className="w-6 h-6" />}
+          <PanelLeft className="w-4.5 h-4.5" />
         </button>
-        <div className="flex items-center gap-2.5 min-w-0">
+
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={pathname?.startsWith("/admin/hbs") ? "/hibuild-brand-logo.png" : "/logo.jpg"}
             alt="Brand Logo"
             className="h-7 w-auto object-contain md:hidden mix-blend-multiply shrink-0"
           />
-          <h1 className="text-slate-900 font-bold text-lg md:text-xl tracking-tight whitespace-nowrap">
+          <h1 className="text-slate-900 font-bold text-base md:text-lg tracking-tight whitespace-nowrap">
             {pathname?.startsWith("/admin/hbs") ? (
               <>
                 <span className="md:hidden">Hind Build Admin</span>
@@ -121,121 +193,214 @@ export default function AdminHeader({ user }: { user: any }) {
             )}
           </h1>
         </div>
+
+        {/* Portal Switcher Dropdown (Fast Ecosystem Access) */}
+        <div className="hidden sm:block ml-2">
+          <PortalSwitcherDropdown variant="header" />
+        </div>
       </div>
+
+      {/* ── Right: Live Status, Interactive Notification Center & Profile ── */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        {pathname?.startsWith("/admin/empanelment") ? (
-          <>
-
-            {/* Public Portal Link */}
-            <a
-              href="https://empanelment.hindustanprojects.in"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 text-amber-900 border border-amber-200/70 text-xs font-semibold backdrop-blur-md transition-all shadow-2xs group"
-              title="Open Public Empanelment Portal (New Tab)"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              <span>Public Portal ↗</span>
-            </a>
-
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
-
-            <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-amber-500 rounded-full" />
-            </button>
-
-            <button
-              onClick={handleLogout}
-              title="Logout"
-              className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-red-50 border border-slate-200/70 hover:border-red-200 flex items-center justify-center hover:text-red-600 transition-all text-slate-500 shadow-2xs"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200/60">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
-                {(user?.name || user?.email || "E").charAt(0).toUpperCase()}
-              </div>
-              <div className="hidden md:block">
-                <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
-                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider font-mono">Empanelment Staff</p>
-              </div>
-            </div>
-          </>
-        ) : pathname?.startsWith("/admin/hbs") ? (
-          <>
-            {/* Apple Spotlight Capsule Search */}
-            <div className="hidden md:flex items-center gap-2 bg-slate-100/70 hover:bg-slate-100/90 rounded-full px-3.5 py-1.5 border border-slate-200/60 w-60 focus-within:w-72 focus-within:bg-white focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400 transition-all duration-200 backdrop-blur-md">
-              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search CMS..."
-                className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
-              />
-            </div>
-
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
-
-            <button className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
-
-            {/* Logout Apple Glass Pill */}
-            <button
-              onClick={handleLogout}
-              title="Logout"
-              className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-red-50 border border-slate-200/70 hover:border-red-200 flex items-center justify-center hover:text-red-600 transition-all text-slate-500 shadow-2xs"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-
-            {/* Apple Avatar Profile Pill */}
-            <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200/60">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
-                {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
-              </div>
-              <div className="hidden md:block">
-                <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
-                <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wider font-mono">HiBUILD Staff</p>
-              </div>
-            </div>
-          </>
+        {/* Live Operational Status Capsule */}
+        {isHipro ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+            <span>HiPRO Civil Live</span>
+          </div>
+        ) : isHbs ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 text-[11px] font-semibold border border-orange-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-pulse" />
+            <span>HBS Studio Live</span>
+          </div>
+        ) : isEmpanelment ? (
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold border border-amber-200/80 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+            <span>Procurement Hub</span>
+          </div>
         ) : (
-          <>
-            <div className="hidden md:flex items-center gap-2 bg-slate-50 rounded-none px-3 py-2 border border-slate-200 w-64 focus-within:border-construction-navy transition-all">
-              <Search className="w-4 h-4 text-slate-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="bg-transparent text-xs text-slate-900 placeholder-slate-400 outline-none w-full"
-              />
-            </div>
-            {/* Portals & SnapTech Ecosystem Dropdown */}
-            <PortalSwitcherDropdown variant="header" />
+          <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 text-[11px] font-semibold border border-emerald-500/20 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Holding HQ Online</span>
+          </div>
+        )}
 
-            <button className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-construction-navy transition-colors text-slate-500">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-construction-red rounded-full" />
-            </button>
-            <button onClick={handleLogout} title="Logout" className="relative w-9 h-9 rounded-none bg-white border border-slate-200 flex items-center justify-center hover:bg-red-50 hover:text-construction-red transition-colors text-slate-500">
-              <LogOut className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200">
-              <div className="w-9 h-9 rounded-none bg-construction-navy text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider">
-                {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
+        {/* ── Interactive Notification Center Popover ── */}
+        <div className="relative" ref={notifRef}>
+          <button
+            onClick={() => setIsNotifOpen((prev) => !prev)}
+            aria-label="View notifications"
+            className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-white border border-slate-200/70 flex items-center justify-center hover:text-slate-900 transition-all text-slate-500 shadow-2xs cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-construction-red rounded-full ring-2 ring-white" />
+            )}
+          </button>
+
+          {/* Apple Frosted Notification Center Dropdown */}
+          {isNotifOpen && (
+            <div className="absolute right-0 top-11 w-80 sm:w-96 bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
+                    HQ Notifications
+                  </p>
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => setUnreadCount(0)}
+                    className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto mt-2">
+                {/* Notification 1: HiPRO Quote */}
+                <Link
+                  href="/admin/quotes"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 truncate">New Civil Quote Request</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Industrial PEB shed construction in Bhilwara</p>
+                    <span className="text-[10px] text-slate-400 font-mono">5 mins ago · HiPRO</span>
+                  </div>
+                </Link>
+
+                {/* Notification 2: HBS Lead */}
+                <Link
+                  href="/admin/hbs/leads"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                    <Flame className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 truncate">New Waterproofing Lead</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Basement crack repair & injection grouting</p>
+                    <span className="text-[10px] text-slate-400 font-mono">22 mins ago · HBS</span>
+                  </div>
+                </Link>
+
+                {/* Notification 3: Vendor KYC */}
+                <Link
+                  href="/admin/empanelment/applications"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 truncate">Contractor KYC Submitted</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Class-B Civil Subcontractor vetting required</p>
+                    <span className="text-[10px] text-slate-400 font-mono">1 hr ago · Vendor Hub</span>
+                  </div>
+                </Link>
+
+                {/* Notification 4: 2FA */}
+                <Link
+                  href="/admin/security"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold text-slate-900 truncate">2FA Vault Operational</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">RFC 6238 TOTP two-factor security is active</p>
+                    <span className="text-[10px] text-emerald-600 font-mono">Protected · Master HQ</span>
+                  </div>
+                </Link>
+              </div>
+
+              <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                <span className="text-slate-400 font-mono">Hindustan Group Master HQ</span>
+                <button
+                  onClick={() => setIsNotifOpen(false)}
+                  className="text-slate-600 hover:text-slate-900 font-semibold cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Logout Apple Glass Pill */}
+        <button
+          onClick={handleLogout}
+          title="Logout"
+          className="relative w-9 h-9 rounded-xl bg-white/80 hover:bg-red-50 border border-slate-200/70 hover:border-red-200 flex items-center justify-center hover:text-red-600 transition-all text-slate-500 shadow-2xs cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+
+        {/* Profile Pill */}
+        <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-200/60">
+          {isHipro ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0F2C59] to-blue-700 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-blue-900/20">
+                H
               </div>
               <div className="hidden md:block">
-                <p className="text-xs font-bold text-slate-900 leading-tight">{user?.name || user?.email || "Admin"}</p>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">{user?.role || "admin"}</p>
+                <p className="text-xs font-bold text-slate-900 leading-tight">HiPRO Admin</p>
+                <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-widest font-mono">CIVIL PORTAL</p>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          ) : isHbs ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-600 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-orange-900/20">
+                B
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Hind Build</p>
+                <p className="text-[10px] font-semibold text-orange-700 uppercase tracking-widest font-mono">WATERPROOFING</p>
+              </div>
+            </>
+          ) : isEmpanelment ? (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-amber-900/20">
+                V
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Vendor Desk</p>
+                <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-widest font-mono">PROCUREMENT</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-slate-900 to-indigo-950 text-white flex items-center justify-center font-bold text-xs uppercase tracking-wider shadow-xs ring-1 ring-black/5">
+                M
+              </div>
+              <div className="hidden md:block">
+                <p className="text-xs font-bold text-slate-900 leading-tight">Master Admin</p>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest font-mono">HOLDING HQ</p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      <AdminSpotlightModal
+        isOpen={isSpotlightOpen}
+        onClose={() => setIsSpotlightOpen(false)}
+      />
     </header>
   );
 }

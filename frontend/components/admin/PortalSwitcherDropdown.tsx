@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, ChevronDown, Check, ExternalLink } from "lucide-react";
+import { ShieldCheck, ChevronDown, Check, ExternalLink, Building2, Flame, LayoutDashboard } from "lucide-react";
 
 export interface PortalOption {
-  id: "hipro" | "hbs" | "empanelment" | "snaptech";
+  id: "master" | "hipro" | "hbs" | "empanelment" | "snaptech";
   name: string;
   shortName: string;
   badge: string;
@@ -15,28 +15,38 @@ export interface PortalOption {
   externalHref?: string;
   logo?: string;
   icon?: any;
-  themeColor: "emerald" | "red" | "amber" | "blue";
+  themeColor: "emerald" | "red" | "amber" | "blue" | "slate";
 }
 
 export const PORTAL_OPTIONS: PortalOption[] = [
   {
-    id: "hipro",
-    name: "HiPRO Master Admin",
-    shortName: "HiPRO Master",
-    badge: "Master Console",
-    description: "Core website CMS, customer leads & operations",
+    id: "master",
+    name: "Master Admin HQ",
+    shortName: "Holding HQ",
+    badge: "Holding HQ",
+    description: "Central holding governance, RBAC, backups & tools",
     href: "/admin",
-    logo: "/logo.jpg",
+    icon: LayoutDashboard,
     themeColor: "emerald",
   },
   {
+    id: "hipro",
+    name: "HiPRO Corporate Web",
+    shortName: "HiPRO Web",
+    badge: "Civil Portal",
+    description: "Core architecture, civil engineering, cost estimator & CMS",
+    href: "/admin/hipro",
+    icon: Building2,
+    themeColor: "blue",
+  },
+  {
     id: "hbs",
-    name: "HiBUILD (HBS) CMS",
+    name: "Hind Build (HBS)",
     shortName: "HiBUILD (HBS)",
-    badge: "Construction CMS",
-    description: "Turnkey building solutions & trade catalogs",
+    badge: "Waterproofing CMS",
+    description: "Turnkey building solutions, waterproofing & BOQ",
     href: "/admin/hbs",
-    logo: "/hbs-icon.jpg",
+    icon: Flame,
     themeColor: "red",
   },
   {
@@ -64,15 +74,51 @@ export const PORTAL_OPTIONS: PortalOption[] = [
 
 export function getActivePortal(pathname: string | null): PortalOption {
   if (pathname?.startsWith("/admin/hbs")) {
-    return PORTAL_OPTIONS[1];
-  }
-  if (pathname?.startsWith("/admin/empanelment")) {
     return PORTAL_OPTIONS[2];
   }
-  if (pathname?.startsWith("/admin/snaptech")) {
+  if (pathname?.startsWith("/admin/empanelment")) {
     return PORTAL_OPTIONS[3];
   }
-  // Default to HiPRO Master
+  if (pathname?.startsWith("/admin/snaptech")) {
+    return PORTAL_OPTIONS[4];
+  }
+
+  const isHiproPath =
+    pathname?.startsWith("/admin/hipro") ||
+    pathname === "/admin/projects" ||
+    pathname?.startsWith("/admin/projects/") ||
+    pathname === "/admin/services" ||
+    pathname?.startsWith("/admin/services/") ||
+    pathname === "/admin/quotes" ||
+    pathname?.startsWith("/admin/quotes/") ||
+    pathname === "/admin/contacts" ||
+    pathname?.startsWith("/admin/contacts/") ||
+    pathname === "/admin/applications" ||
+    pathname?.startsWith("/admin/applications/") ||
+    pathname === "/admin/blogs" ||
+    pathname?.startsWith("/admin/blogs/") ||
+    pathname === "/admin/hero" ||
+    pathname === "/admin/about" ||
+    pathname === "/admin/contact-page" ||
+    pathname === "/admin/cost-estimator" ||
+    pathname === "/admin/image-showcase" ||
+    pathname === "/admin/projects-hero" ||
+    pathname === "/admin/blogs-hero" ||
+    pathname === "/admin/jobs" ||
+    pathname === "/admin/cta-management" ||
+    pathname === "/admin/navigation" ||
+    pathname === "/admin/testimonials" ||
+    pathname === "/admin/team" ||
+    pathname === "/admin/newsletter" ||
+    pathname === "/admin/leads" ||
+    pathname === "/admin/stats" ||
+    pathname === "/admin/settings";
+
+  if (isHiproPath) {
+    return PORTAL_OPTIONS[1];
+  }
+
+  // Master Admin Holding HQ
   return PORTAL_OPTIONS[0];
 }
 
@@ -140,6 +186,14 @@ export default function PortalSwitcherDropdown({
               alt={activePortal.shortName}
               className="w-4 h-4 object-contain rounded shrink-0 bg-white shadow-2xs"
             />
+          ) : activePortal.icon ? (
+            <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 shadow-2xs ${
+              activePortal.themeColor === 'emerald' ? 'bg-emerald-600 text-white' :
+              activePortal.themeColor === 'blue' ? 'bg-blue-600 text-white' :
+              activePortal.themeColor === 'red' ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'
+            }`}>
+              <activePortal.icon className="w-2.5 h-2.5" />
+            </div>
           ) : (
             <div className="w-4 h-4 rounded bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
               <ShieldCheck className="w-3 h-3" />
@@ -184,6 +238,14 @@ export default function PortalSwitcherDropdown({
                 alt={activePortal.shortName}
                 className="w-6 h-6 object-contain rounded-md shrink-0 bg-white p-0.5 border border-slate-200/80 shadow-2xs"
               />
+            ) : activePortal.icon ? (
+              <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 shadow-2xs ${
+                activePortal.themeColor === 'emerald' ? 'bg-emerald-600 text-white' :
+                activePortal.themeColor === 'blue' ? 'bg-blue-600 text-white' :
+                activePortal.themeColor === 'red' ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'
+              }`}>
+                <activePortal.icon className="w-3.5 h-3.5" />
+              </div>
             ) : (
               <div className="w-6 h-6 rounded-md bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -234,7 +296,7 @@ export default function PortalSwitcherDropdown({
               </span>
             </div>
             <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full font-mono">
-              4 Portals
+              5 Portals
             </span>
           </div>
 
@@ -261,7 +323,11 @@ export default function PortalSwitcherDropdown({
                         className="w-8 h-8 object-contain rounded-lg p-0.5 shrink-0 bg-white border border-slate-200"
                       />
                     ) : portal.icon ? (
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-amber-500 text-white">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        portal.themeColor === 'emerald' ? 'bg-emerald-600 text-white' :
+                        portal.themeColor === 'blue' ? 'bg-blue-600 text-white' :
+                        portal.themeColor === 'red' ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'
+                      }`}>
                         <portal.icon className="w-4 h-4" />
                       </div>
                     ) : null}

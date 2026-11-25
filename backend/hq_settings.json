@@ -1,0 +1,27 @@
+{
+  "holdingName": "Hindustan Projects Group",
+  "holdingCin": "U45201RJ2020PTC068942",
+  "holdingGst": "08AABCH1234F1Z8",
+  "headOffice": "Near Circuit House, Subhash Nagar, Bhilwara, Rajasthan 311001",
+  "centralEmail": "info@hindustanprojects.in",
+  "supportPhone": "+91 94141 12345",
+  "emergencyHelpline": "+91 1482 234567",
+  "portalRouting": {
+    "hiproDomain": "https://www.hindustanprojects.in",
+    "hbsDomain": "https://hindbuilding.hindustanprojects.in",
+    "vendorDomain": "https://empanelment.hindustanprojects.in"
+  },
+  "maintenanceMode": {
+    "hipro": false,
+    "hbs": false,
+    "vendor": false,
+    "maintenanceNotice": "This portal is currently undergoing scheduled infrastructure maintenance. Normal operations will resume shortly."
+  },
+  "brandAssets": {
+    "logoUrl": "/logo.jpg",
+    "faviconUrl": "/favicon.ico",
+    "letterheadHeader": "Hindustan Projects Group · Architectural Engineering, Turnkey Construction & Civil Infrastructure",
+    "officialDisclaimer": "Confidentiality Notice: This digital transmission and any accompanying credentials are confidential and legally privileged. Strictly governed by Hindustan Projects Group central corporate governance protocols."
+  },
+  "updatedAt": "2026-11-22T10:26:22.782Z"
+}

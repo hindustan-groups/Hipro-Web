@@ -159,14 +159,7 @@ export default function EmpanelmentPortalHomePage() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [openFaqId, setOpenFaqId] = useState<string | null>("f1");
   const [tenders, setTenders] = useState<any[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    try {
-      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
-      if (token) setIsLoggedIn(true);
-    } catch (_e) {}
-  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -790,17 +783,7 @@ export default function EmpanelmentPortalHomePage() {
                     </div>
 
                     {/* Action Gating */}
-                    {isLoggedIn ? (
-                      <Link
-                        href="/empanelment/portal/tenders"
-                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-xs text-xs text-center"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>View in Portal & Submit Bid</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                         <Link
                           href="/empanelment/login?redirect=/empanelment/portal/tenders"
                           className="py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1 shadow-xs text-xs text-center transition-colors"
@@ -816,7 +799,6 @@ export default function EmpanelmentPortalHomePage() {
                           <ArrowRight className="w-3 h-3 text-slate-400" />
                         </Link>
                       </div>
-                    )}
                   </div>
                 ))}
               </div>

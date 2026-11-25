@@ -21,6 +21,8 @@ import {
   ArrowRight,
   MapPin,
   Calendar,
+  LayoutTemplate,
+  Mail,
 } from "lucide-react";
 import EmpanelmentAdminPageHeader from "@/components/admin/empanelment/EmpanelmentAdminPageHeader";
 import EmpanelmentKpiCards from "@/components/admin/empanelment/EmpanelmentKpiCards";
@@ -28,6 +30,7 @@ import ApplicationReviewDrawer, {
   VendorApplicationDetail,
 } from "@/components/admin/empanelment/ApplicationReviewDrawer";
 import TenderCreateModal from "@/components/admin/empanelment/TenderCreateModal";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export default function EmpanelmentAdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -41,8 +44,8 @@ export default function EmpanelmentAdminDashboard() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isTenderModalOpen, setIsTenderModalOpen] = useState(false);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  const fetchDashboardData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
 
     try {
@@ -71,6 +74,14 @@ export default function EmpanelmentAdminDashboard() {
       if (statsJson?.success) setStats(statsJson.stats);
       if (appsJson?.success) setRecentApplications(appsJson.applications || []);
       if (tendersJson?.success) setActiveTenders(tendersJson.tenders || []);
+
+      if (statsJson?.success) {
+        setAdminCache("admin:empanelment_dashboard", {
+          stats: statsJson.stats,
+          recentApplications: appsJson?.applications || [],
+          activeTenders: tendersJson?.tenders || [],
+        });
+      }
     } catch (err: any) {
       setError(err.message || "Failed to load empanelment metrics");
     } finally {
@@ -79,7 +90,16 @@ export default function EmpanelmentAdminDashboard() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const cached = getAdminCache<{ stats: any; recentApplications: any[]; activeTenders: any[] }>(
+      "admin:empanelment_dashboard"
+    );
+    if (cached) {
+      setStats(cached.stats);
+      setRecentApplications(cached.recentApplications);
+      setActiveTenders(cached.activeTenders);
+      setLoading(false);
+    }
+    fetchDashboardData(!cached);
   }, []);
 
   const handleOpenReview = (app: VendorApplicationDetail) => {
@@ -222,6 +242,7 @@ export default function EmpanelmentAdminDashboard() {
               </span>
               <Link
                 href="/admin/empanelment/applications"
+                scroll={false}
                 className="text-xs font-semibold text-amber-800 hover:text-amber-900 flex items-center gap-1 group"
               >
                 <span>Open Full Applications Pipeline</span>
@@ -252,6 +273,7 @@ export default function EmpanelmentAdminDashboard() {
 
               <Link
                 href="/admin/empanelment/tenders"
+                scroll={false}
                 className="text-xs font-semibold text-slate-600 hover:text-slate-900"
               >
                 View Radar →
@@ -273,6 +295,7 @@ export default function EmpanelmentAdminDashboard() {
                   <Link
                     key={tender.id}
                     href="/admin/empanelment/tenders"
+                    scroll={false}
                     className="block p-3.5 rounded-2xl bg-slate-50/70 hover:bg-slate-100/70 border border-slate-200/60 transition-all space-y-1.5 group"
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -308,6 +331,7 @@ export default function EmpanelmentAdminDashboard() {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <Link
                 href="/admin/empanelment/directory"
+                scroll={false}
                 className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
                 <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
@@ -321,6 +345,7 @@ export default function EmpanelmentAdminDashboard() {
 
               <Link
                 href="/admin/empanelment/gate-passes"
+                scroll={false}
                 className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
                 <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
@@ -334,6 +359,7 @@ export default function EmpanelmentAdminDashboard() {
 
               <Link
                 href="/admin/empanelment/categories"
+                scroll={false}
                 className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
                 <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
@@ -347,6 +373,7 @@ export default function EmpanelmentAdminDashboard() {
 
               <Link
                 href="/admin/empanelment/work-orders"
+                scroll={false}
                 className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
               >
                 <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
@@ -355,6 +382,34 @@ export default function EmpanelmentAdminDashboard() {
                 <div>
                   <p className="font-bold text-slate-900 leading-tight">Work Orders</p>
                   <p className="text-[10px] text-slate-400">Billing &amp; RTGS</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/content"
+                scroll={false}
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <LayoutTemplate className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Portal CMS</p>
+                  <p className="text-[10px] text-slate-400">Landing &amp; Content</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/admin/empanelment/tickets"
+                scroll={false}
+                className="p-3 rounded-2xl bg-slate-50/70 hover:bg-slate-100/80 border border-slate-200/60 transition-all flex items-center gap-2.5 group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center shadow-2xs border border-slate-200/70 group-hover:text-amber-700">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-900 leading-tight">Support Desk</p>
+                  <p className="text-[10px] text-slate-400">Grievances &amp; Q&amp;A</p>
                 </div>
               </Link>
             </div>

@@ -300,13 +300,17 @@ model BlogPost {
 }
 
 model AdminUser {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String
-  name        String
-  role        String   @default("employee")
-  permissions String?
-  createdAt   DateTime @default(now())
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  password              String
+  name                  String
+  role                  String    @default("employee")
+  permissions           String?
+  twoFactorSecret       String?
+  twoFactorTempSecret   String?
+  isTwoFactorEnabled    Boolean   @default(false)
+  twoFactorBackupCodes  String?   // JSON array of hashed or plain emergency backup recovery codes
+  createdAt             DateTime  @default(now())
 }
 
 model AdminSession {

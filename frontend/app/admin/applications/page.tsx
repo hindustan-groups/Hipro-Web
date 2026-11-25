@@ -1,12 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { 
-  Download, FileText, CheckCircle, Clock, RefreshCw, 
-  Trash2, Search, UserCheck, XCircle, Mail, Phone, Briefcase 
+import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import {
+  Download,
+  FileText,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  Trash2,
+  Search,
+  ArrowLeft,
+  Mail,
+  Phone,
+  Briefcase,
+  ExternalLink,
+  X,
+  UserCheck,
 } from "lucide-react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import type { JobApplication } from "@/lib/types";
+import { getAdminCache, setAdminCache } from "@/lib/adminCache";
 
 export default function AdminApplicationsPage() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -15,14 +29,15 @@ export default function AdminApplicationsPage() {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
-  const fetchApplications = async () => {
-    setLoading(true);
+  const fetchApplications = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/applications", { credentials: "include" });
       const json = await res.json();
       if (json.success) {
         setApplications(json.data || []);
+        setAdminCache("admin:applications_list", json.data || []);
       } else {
         setError(json.error || "Failed to load applications");
       }
@@ -34,7 +49,12 @@ export default function AdminApplicationsPage() {
   };
 
   useEffect(() => {
-    fetchApplications();
+    const cached = getAdminCache<JobApplication[]>("admin:applications_list");
+    if (cached) {
+      setApplications(cached);
+      setLoading(false);
+    }
+    fetchApplications(!cached);
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
@@ -72,93 +92,139 @@ export default function AdminApplicationsPage() {
     }
   };
 
-  const filtered = applications.filter((app) => {
-    const matchFilter = filter === "all" || app.status === filter;
-    const matchSearch =
-      search === "" ||
-      app.name?.toLowerCase().includes(search.toLowerCase()) ||
-      app.role?.toLowerCase().includes(search.toLowerCase()) ||
-      app.email?.toLowerCase().includes(search.toLowerCase()) ||
-      app.phone?.includes(search);
-    return matchFilter && matchSearch;
-  });
+  const filtered = useMemo(() => {
+    return applications.filter((app) => {
+      const matchFilter = filter === "all" || app.status === filter;
+      const q = search.toLowerCase().trim();
+      const matchSearch =
+        !q ||
+        app.name?.toLowerCase().includes(q) ||
+        app.role?.toLowerCase().includes(q) ||
+        app.email?.toLowerCase().includes(q) ||
+        app.phone?.includes(q);
+      return matchFilter && matchSearch;
+    });
+  }, [applications, filter, search]);
 
-  const countNew = applications.filter((a) => a.status === "new").length;
-  const countReviewed = applications.filter((a) => a.status === "reviewed").length;
-  const countApproved = applications.filter((a) => a.status === "approved" || a.status === "interviewed").length;
+  const stats = useMemo(() => {
+    const total = applications.length;
+    const newCount = applications.filter((a) => a.status === "new").length;
+    const reviewed = applications.filter((a) => a.status === "reviewed").length;
+    const approved = applications.filter(
+      (a) => a.status === "approved" || a.status === "interviewed"
+    ).length;
+    return { total, newCount, reviewed, approved };
+  }, [applications]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-construction-red font-bold text-xs uppercase tracking-wider mb-1">
-            <Briefcase className="w-4 h-4" /> Recruitment Management
+    <div className="max-w-7xl mx-auto space-y-7 pb-16">
+      {/* ── Top Header Glass Breadcrumb ───────────────────────── */}
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-[0_4px_30px_rgba(15,23,42,0.03)] relative overflow-hidden">
+        <div className="absolute -right-20 -top-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <Link
+                href="/admin/hipro"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 transition-all shadow-2xs group"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>← Back to HiPRO Overview</span>
+              </Link>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider border border-blue-200/80 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                Careers Talent Pool
+              </span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight font-display">
+              Candidate Resumes &amp; Job Applications
+            </h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium">
+              Review engineering, site supervisor, and managerial applicants submitted through the Careers portal.
+            </p>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-display uppercase tracking-tight">
-            Job Applications
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Review, download candidate resumes, and manage hiring stages.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchApplications}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-xl transition-colors shadow-sm"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-2.5 self-start sm:self-auto">
+            <Link
+              href="/admin/jobs"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs transition-all"
+            >
+              <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+              <span>Manage Job Postings</span>
+            </Link>
+            <button
+              onClick={() => fetchApplications(true)}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
+              <span>{loading ? "Refreshing..." : "Refresh"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Applicants</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{applications.length}</p>
-        </div>
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-blue-600">New / Unread</p>
-          <p className="text-2xl font-black text-blue-600 mt-1">{countNew}</p>
-        </div>
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600">Under Review</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{countReviewed}</p>
-        </div>
-        <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Interviewed / Shortlisted</p>
-          <p className="text-2xl font-black text-emerald-600 mt-1">{countApproved}</p>
-        </div>
+      {/* ── Stats Summary Bento Bar ───────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Total Candidates", count: stats.total, filterKey: "all" },
+          { label: "New / Unread", count: stats.newCount, filterKey: "new" },
+          { label: "Under Review", count: stats.reviewed, filterKey: "reviewed" },
+          { label: "Shortlisted / Interviewed", count: stats.approved, filterKey: "interviewed" },
+        ].map((s) => {
+          const isActive = filter === s.filterKey;
+          return (
+            <button
+              key={s.filterKey}
+              onClick={() => setFilter(s.filterKey)}
+              className={`p-3.5 rounded-2xl text-left border transition-all cursor-pointer ${
+                isActive
+                  ? "bg-white border-blue-500 ring-2 ring-blue-500/10 shadow-sm"
+                  : "bg-white/80 hover:bg-white border-slate-200/70 shadow-2xs"
+              }`}
+            >
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+                {s.label}
+              </p>
+              <p className="text-xl font-black text-slate-900 font-display mt-0.5">
+                {s.count}
+              </p>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
-        {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      {/* ── Toolbar: Search & Filter Tabs ─────────────────────── */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search candidate, role, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-construction-navy"
+            placeholder="Search candidate, role, email..."
+            className="w-full bg-white/90 border border-slate-200/80 rounded-xl pl-9 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 shadow-2xs"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-100/80 border border-slate-200/60 overflow-x-auto w-full sm:w-auto">
           {["all", "new", "reviewed", "interviewed", "rejected"].map((st) => (
             <button
               key={st}
               onClick={() => setFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all whitespace-nowrap cursor-pointer ${
                 filter === st
-                  ? "bg-construction-navy text-white shadow-sm"
-                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  ? "bg-white text-slate-900 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
               {st} {st !== "all" && `(${applications.filter((a) => a.status === st).length})`}
@@ -167,58 +233,62 @@ export default function AdminApplicationsPage() {
         </div>
       </div>
 
-      {/* Applications Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      {error && (
+        <div className="p-4 rounded-2xl bg-red-50/90 border border-red-200 text-red-700 text-sm flex items-center justify-between shadow-2xs">
+          <span>{error}</span>
+          <button onClick={() => setError("")} className="text-xs uppercase font-bold text-red-600 hover:underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* ── Table Glass Container ─────────────────────────────── */}
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 shadow-[0_4px_30px_rgba(15,23,42,0.03)] overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-slate-400">
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-            <p className="text-xs font-bold uppercase tracking-wider">Loading Applications...</p>
-          </div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-600 text-sm font-semibold">
-            {error}
+          <div className="p-16 text-center text-slate-400">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+            <p className="text-xs font-bold font-mono uppercase tracking-wider">Loading Applications...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">
-            <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <div className="p-16 text-center text-slate-500">
+            <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
             <p className="font-bold text-base text-slate-800">No applications found</p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               {search || filter !== "all"
                 ? "Try adjusting your filters or search query."
-                : "When candidates apply through the Careers page, their profiles will appear here."}
+                : "When candidates apply through hindustanprojects.in/careers, their CVs will appear here."}
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
-                <tr>
-                  <th className="px-6 py-4">Candidate Details</th>
-                  <th className="px-6 py-4">Applied Role</th>
-                  <th className="px-6 py-4">Experience</th>
-                  <th className="px-6 py-4">Date Applied</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-center">Resume / CV</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+              <thead>
+                <tr className="border-b border-slate-200/70 bg-slate-50/70 text-slate-500 text-[11px] font-mono uppercase tracking-wider">
+                  <th className="px-6 py-4 font-bold">Candidate Details</th>
+                  <th className="px-6 py-4 font-bold">Applied Role</th>
+                  <th className="px-6 py-4 font-bold">Experience</th>
+                  <th className="px-6 py-4 font-bold">Date Applied</th>
+                  <th className="px-6 py-4 font-bold">Pipeline Stage</th>
+                  <th className="px-6 py-4 font-bold text-center">Resume / CV</th>
+                  <th className="px-6 py-4 font-bold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filtered.map((app) => (
-                  <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
-                    
+                  <tr key={app.id} className="hover:bg-slate-50/70 transition-colors">
                     {/* Candidate Name & Contacts */}
                     <td className="px-6 py-4">
                       <div className="font-bold text-slate-900 text-sm">{app.name}</div>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-mono">
                         <Mail className="w-3 h-3 text-slate-400" />
-                        <a href={`mailto:${app.email}`} className="hover:text-construction-navy hover:underline">
+                        <a href={`mailto:${app.email}`} className="hover:text-blue-600 hover:underline">
                           {app.email}
                         </a>
                       </div>
                       {app.phone && (
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5 font-mono">
                           <Phone className="w-3 h-3 text-slate-400" />
-                          <a href={`tel:${app.phone}`} className="hover:text-construction-navy hover:underline">
+                          <a href={`tel:${app.phone}`} className="hover:text-blue-600 hover:underline">
                             {app.phone}
                           </a>
                         </div>
@@ -227,8 +297,9 @@ export default function AdminApplicationsPage() {
 
                     {/* Position */}
                     <td className="px-6 py-4">
-                      <span className="font-bold text-construction-navy bg-blue-50/80 border border-blue-100 px-3 py-1 rounded-lg text-xs">
-                        {app.role}
+                      <span className="font-bold text-blue-900 bg-blue-50/80 border border-blue-200/80 px-3 py-1 rounded-full text-xs inline-flex items-center gap-1.5">
+                        <Briefcase className="w-3 h-3 text-blue-600" />
+                        <span>{app.role}</span>
                       </span>
                     </td>
 
@@ -238,11 +309,11 @@ export default function AdminApplicationsPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="px-6 py-4 text-xs text-slate-500">
+                    <td className="px-6 py-4 text-xs text-slate-500 font-mono">
                       {app.createdAt
-                        ? new Date(app.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
+                        ? new Date(app.createdAt).toLocaleDateString("en-IN", {
                             day: "numeric",
+                            month: "short",
                             year: "numeric",
                           })
                         : "Recent"}
@@ -253,7 +324,7 @@ export default function AdminApplicationsPage() {
                       <select
                         value={app.status || "new"}
                         onChange={(e) => updateStatus(app.id!, e.target.value)}
-                        className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-lg border cursor-pointer focus:outline-none ${
+                        className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-xl border cursor-pointer focus:outline-none transition-all shadow-2xs ${
                           app.status === "new"
                             ? "bg-blue-50 text-blue-700 border-blue-200"
                             : app.status === "reviewed"
@@ -264,8 +335,8 @@ export default function AdminApplicationsPage() {
                         }`}
                       >
                         <option value="new">🔵 New</option>
-                        <option value="reviewed">🟡 Reviewed</option>
-                        <option value="interviewed">🟢 Interviewed</option>
+                        <option value="reviewed">🟡 Under Review</option>
+                        <option value="interviewed">🟢 Shortlisted</option>
                         <option value="rejected">🔴 Rejected</option>
                       </select>
                     </td>
@@ -277,11 +348,11 @@ export default function AdminApplicationsPage() {
                           href={app.cvUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-construction-navy hover:bg-black text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all hover:scale-105"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0F2C59] hover:bg-blue-900 text-white text-xs font-semibold rounded-xl shadow-2xs transition-all"
                           title="Open Resume in new tab"
                         >
-                          <Download className="w-3.5 h-3.5 text-yellow-400" />
-                          View CV
+                          <Download className="w-3.5 h-3.5 text-blue-300" />
+                          <span>View CV</span>
                         </a>
                       ) : (
                         <span className="text-xs text-slate-400 italic">No File</span>
@@ -292,21 +363,26 @@ export default function AdminApplicationsPage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => deleteApplication(app.id!)}
-                        className="text-slate-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        className="text-slate-400 hover:text-red-600 p-2 rounded-xl hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Application"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
-
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </div>
 
+        <div className="px-6 py-3.5 border-t border-slate-200/70 bg-slate-50/50 text-slate-500 text-xs font-medium flex items-center justify-between">
+          <span className="font-mono text-[11px]">{filtered.length} candidates listed</span>
+          <span className="text-[11px] text-slate-400 font-mono">
+            {stats.newCount} new • {stats.reviewed} review • {stats.approved} shortlisted
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

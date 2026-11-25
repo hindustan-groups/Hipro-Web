@@ -153,14 +153,12 @@ const CATEGORY_OPTIONS = [
 ];
 
 export default function AdminServices() {
-  const cachedServices = getAdminCache<Service[]>("admin:services");
-  const cachedGuarantees = getAdminCache<Guarantee[]>("admin:guarantees");
   const [activeTab, setActiveTab] = useState<"services" | "guarantees">("services");
-  const [services, setServices] = useState<Service[]>(cachedServices || []);
-  const [guarantees, setGuarantees] = useState<Guarantee[]>(cachedGuarantees || []);
+  const [services, setServices] = useState<Service[]>([]);
+  const [guarantees, setGuarantees] = useState<Guarantee[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [loading, setLoading] = useState(!cachedServices);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -177,7 +175,7 @@ export default function AdminServices() {
   const [guaranteeForm, setGuaranteeForm] = useState(EMPTY_GUARANTEE);
 
   const fetchData = async (force = false) => {
-    if (force || !services.length) {
+    if (force) {
       setLoading(true);
     }
     setError("");
@@ -204,7 +202,12 @@ export default function AdminServices() {
   };
 
   useEffect(() => {
-    fetchData();
+    const cachedServices = getAdminCache<Service[]>("admin:services");
+    const cachedGuarantees = getAdminCache<Guarantee[]>("admin:guarantees");
+    if (cachedServices) setServices(cachedServices);
+    if (cachedGuarantees) setGuarantees(cachedGuarantees);
+    if (cachedServices && cachedGuarantees) setLoading(false);
+    fetchData(!cachedServices);
   }, []);
 
   const filteredServices = useMemo(() => {
@@ -389,24 +392,31 @@ export default function AdminServices() {
   return (
     <div className="space-y-6 pb-24">
       {/* Top Header & Notifications */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-[0_4px_30px_rgba(15,23,42,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Building2 className="w-6 h-6 text-construction-red" />
-            Services & Guarantees CMS
+          <div className="flex items-center gap-2 text-[11px] font-mono tracking-wider text-slate-500 uppercase mb-1">
+            <span>CIVIL CAPABILITIES</span>
+            <span className="text-slate-400">/</span>
+            <span className="text-blue-600 font-bold">SERVICES CMS</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-slate-900 flex items-center gap-2.5">
+            <Building2 className="w-7 h-7 text-blue-600" />
+            HiPRO Civil Services & Specs
           </h1>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">
             Manage comprehensive engineering service pages, technical capabilities, process workflows, FAQs, and guarantees.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => fetchData(true)}
             disabled={loading}
-            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-semibold disabled:opacity-50 transition-colors shadow-sm"
+            suppressHydrationWarning
+            className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-4 py-2.5 text-xs font-semibold rounded-2xl disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
+            <span>Refresh</span>
           </button>
           <button
             onClick={() => {
@@ -415,25 +425,26 @@ export default function AdminServices() {
               setEditorSubTab("basics");
               setShowForm(!showForm || editingServiceId !== null);
             }}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-900 text-white px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-[#0F2C59] hover:bg-blue-900 text-white px-5 py-2.5 text-xs font-semibold rounded-2xl transition-all shadow-sm cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Add {activeTab === "services" ? "Service" : "Guarantee"}
+            <Plus className="w-4 h-4 text-blue-300" />
+            <span>Add {activeTab === "services" ? "Service" : "Guarantee"}</span>
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-6">
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 w-fit">
         <button
           onClick={() => {
             setActiveTab("services");
             setShowForm(false);
             setError("");
           }}
-          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "services"
-              ? "border-construction-red text-construction-red"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "bg-white text-slate-900 shadow-2xs"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
           Core Engineering Services ({services.length})
@@ -444,10 +455,10 @@ export default function AdminServices() {
             setShowForm(false);
             setError("");
           }}
-          className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "guarantees"
-              ? "border-construction-red text-construction-red"
-              : "border-transparent text-slate-500 hover:text-slate-800"
+              ? "bg-white text-slate-900 shadow-2xs"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
           Company Guarantees ({guarantees.length})
@@ -1670,36 +1681,36 @@ export default function AdminServices() {
 
       {/* SEARCH BAR & SUMMARY */}
       {activeTab === "services" && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 border border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white/85 backdrop-blur-md p-4 rounded-3xl border border-slate-200/70 shadow-2xs">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filter services by keyword..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-construction-navy"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
           </div>
           <div className="text-xs text-slate-500 font-medium self-end sm:self-center">
-            Showing {filteredServices.length} of {services.length} services
+            Showing <strong className="text-slate-800">{filteredServices.length}</strong> of {services.length} services
           </div>
         </div>
       )}
 
       {/* SERVICES / GUARANTEES TABLES */}
-      <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm rounded-3xl overflow-hidden">
         <div className="overflow-x-auto">
           {activeTab === "services" ? (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 text-xs uppercase tracking-wider font-bold">
-                  <th className="text-left px-5 py-3.5">Service & Scope</th>
-                  <th className="text-left px-5 py-3.5">Category</th>
-                  <th className="text-left px-5 py-3.5">Icon</th>
-                  <th className="text-left px-5 py-3.5">Order</th>
-                  <th className="text-left px-5 py-3.5">Status</th>
-                  <th className="text-right px-5 py-3.5">Actions</th>
+                <tr className="border-b border-slate-200/80 bg-slate-50/70 text-slate-500 text-[10px] font-mono uppercase tracking-widest">
+                  <th className="text-left px-5 py-3.5 font-semibold">Service & Scope</th>
+                  <th className="text-left px-5 py-3.5 font-semibold">Category</th>
+                  <th className="text-left px-5 py-3.5 font-semibold">Icon</th>
+                  <th className="text-left px-5 py-3.5 font-semibold">Order</th>
+                  <th className="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th className="text-right px-5 py-3.5 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1707,13 +1718,13 @@ export default function AdminServices() {
                   [...Array(3)].map((_, i) => (
                     <tr key={i} className="animate-pulse">
                       <td colSpan={6} className="px-5 py-4">
-                        <div className="h-10 bg-slate-100" />
+                        <div className="h-10 bg-slate-100 rounded-xl" />
                       </td>
                     </tr>
                   ))
                 ) : filteredServices.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center text-slate-500 py-16">
+                    <td colSpan={6} className="text-center text-slate-500 py-16 text-xs font-mono">
                       {searchQuery ? "No services match your search filter." : "No services yet."}
                     </td>
                   </tr>
@@ -1724,16 +1735,16 @@ export default function AdminServices() {
                       <tr
                         key={s.id}
                         className={`transition-colors ${
-                          s.active === false ? "opacity-60 bg-slate-50/50" : "hover:bg-slate-50/80"
+                          s.active === false ? "opacity-60 bg-slate-50/50" : "hover:bg-blue-50/30"
                         }`}
                       >
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 shrink-0 bg-slate-100 border border-slate-200 flex items-center justify-center text-construction-navy">
+                            <div className="w-10 h-10 shrink-0 bg-blue-50 text-blue-600 border border-blue-100/80 flex items-center justify-center rounded-2xl shadow-2xs">
                               <DynamicIcon name={s.icon || "Building2"} className="w-4 h-4" />
                             </div>
                             <div>
-                              <p className="text-slate-900 font-bold leading-snug">{s.title}</p>
+                              <p className="text-slate-900 font-bold leading-snug font-display">{s.title}</p>
                               {s.badge && (
                                 <span className="inline-block text-[10px] text-slate-500 font-medium">
                                   {s.badge}
@@ -1746,26 +1757,26 @@ export default function AdminServices() {
                           </div>
                         </td>
                         <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
-                          <span className="text-xs px-2.5 py-1 bg-slate-100 text-slate-800 font-medium">
+                          <span className="text-xs px-3 py-1 bg-slate-100 text-slate-800 font-medium rounded-full border border-slate-200/60">
                             {s.category || "Design & Planning"}
                           </span>
                         </td>
                         <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-mono">
-                            <DynamicIcon name={s.icon} className="w-3 h-3 text-construction-navy" />
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-200/80 text-slate-700 text-xs font-mono rounded-xl">
+                            <DynamicIcon name={s.icon} className="w-3 h-3 text-blue-600" />
                             <span>{s.icon}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-slate-700 font-bold whitespace-nowrap">
+                        <td className="px-5 py-4 text-slate-700 font-bold whitespace-nowrap font-mono">
                           #{s.order}
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap">
                           <button
                             type="button"
                             onClick={() => toggleActive("services", s)}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer ${
                               s.active !== false
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs"
                                 : "bg-slate-100 text-slate-400 border border-slate-200"
                             }`}
                           >
@@ -1786,7 +1797,7 @@ export default function AdminServices() {
                               href={`/services/${slug}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="w-8 h-8 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition-colors"
+                              className="w-8 h-8 bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl flex items-center justify-center transition-all shadow-2xs"
                               title="View Public Page"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -1794,15 +1805,15 @@ export default function AdminServices() {
                             <button
                               type="button"
                               onClick={() => startEditService(s)}
-                              className="px-3 h-8 bg-construction-navy hover:bg-blue-900 text-white flex items-center gap-1 text-xs font-bold transition-colors shadow-sm"
+                              className="px-3.5 h-8 bg-[#0F2C59] hover:bg-blue-900 text-white flex items-center gap-1 text-xs font-semibold rounded-xl transition-all shadow-2xs cursor-pointer"
                               title="Edit Comprehensive Content"
                             >
-                              <Edit className="w-3.5 h-3.5" /> Edit CMS
+                              <Edit className="w-3.5 h-3.5 text-blue-300" /> Edit CMS
                             </button>
                             <button
                               type="button"
                               onClick={() => deleteItem("services", s.id as string)}
-                              className="w-8 h-8 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 flex items-center justify-center transition-colors"
+                              className="w-8 h-8 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-xl flex items-center justify-center transition-all cursor-pointer"
                               title="Delete Service"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

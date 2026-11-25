@@ -133,6 +133,15 @@ export default function AutoMailCompose() {
       ? "empanelment@hindustanprojects.in"
       : "info@hindustanprojects.in"
   );
+  const [configuredMailboxes, setConfiguredMailboxes] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    brand: string;
+    brandName?: string;
+    isDefault?: boolean;
+  }>>([]);
+  const [selectedMailboxId, setSelectedMailboxId] = useState<string>("");
   const [htmlBody, setHtmlBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
@@ -220,9 +229,28 @@ export default function AutoMailCompose() {
       }
     }
 
+    async function loadMailboxes() {
+      try {
+        const res = await fetch("/api/automail/mailboxes");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.mailboxes) && data.mailboxes.length > 0) {
+          setConfiguredMailboxes(data.mailboxes);
+          const defaultMb = data.mailboxes.find((m: any) => m.isDefault) || data.mailboxes[0];
+          if (defaultMb && !searchParams?.get("brand")) {
+            setSelectedMailboxId(defaultMb.id);
+            setSenderEmail(defaultMb.email);
+            setSenderName(defaultMb.name);
+          }
+        }
+      } catch {
+        // Non-blocking
+      }
+    }
+
     loadStats();
     loadCustomTemplates();
-  }, [initialTemplateId]);
+    loadMailboxes();
+  }, [initialTemplateId, searchParams]);
 
   // Set template on initial load
   useEffect(() => {
@@ -976,13 +1004,55 @@ export default function AutoMailCompose() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                From Email (Hostinger Mailbox)
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  From Mailbox *
+                </label>
+                <Link
+                  href="/admin/automail/settings"
+                  className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold"
+                >
+                  Manage Mailboxes →
+                </Link>
+              </div>
+
+              {/* Dynamic Configured Mailboxes Pills */}
+              {configuredMailboxes.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {configuredMailboxes.map((mb) => {
+                    const isSelected = senderEmail.toLowerCase() === mb.email.toLowerCase();
+                    return (
+                      <button
+                        key={mb.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMailboxId(mb.id);
+                          setSenderEmail(mb.email);
+                          setSenderName(mb.name);
+                          if (mb.brand && mb.brand !== "custom") {
+                            setBrand(mb.brand);
+                          }
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 ${
+                          isSelected
+                            ? "bg-slate-900 text-white shadow-xs"
+                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-emerald-400" : "bg-slate-400"}`} />
+                        <span>{mb.email}</span>
+                        {mb.isDefault && <span className="text-[9px] text-amber-300">★</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <input
                 type="email"
                 value={senderEmail}
                 onChange={(e) => setSenderEmail(e.target.value)}
+                placeholder="info@hindustanprojects.in"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 outline-none focus:border-blue-500 font-semibold"
               />
             </div>

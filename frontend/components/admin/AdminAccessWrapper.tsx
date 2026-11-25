@@ -8,6 +8,11 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
   const pathname = usePathname();
 
   useEffect(() => {
+    // Prevent browser from restoring scrolled-down position on refresh
+    if (typeof window !== "undefined" && "scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
     // Lock outer browser window scroll so admin header and sidebar never scroll off-screen
     window.scrollTo(0, 0);
     const origBodyOverflow = document.body.style.overflow;
@@ -15,16 +20,32 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
 
-    // Guard: ensure admin content column holding AdminHeader can NEVER be scrolled off
+    // Reset main viewport scroll to top
+    const mainViewport = document.getElementById("admin-main-viewport");
+    if (mainViewport) {
+      mainViewport.scrollTop = 0;
+    }
+
+    // Guard: ensure admin content column and root viewport holding AdminHeader can NEVER be scrolled off
     const contentCol = document.getElementById("admin-content-column");
+    const rootViewport = document.querySelector(".admin-root-viewport") as HTMLElement | null;
+
     const guardScroll = () => {
       if (contentCol) {
         if (contentCol.scrollTop !== 0) contentCol.scrollTop = 0;
         if (contentCol.scrollLeft !== 0) contentCol.scrollLeft = 0;
       }
+      if (rootViewport) {
+        if (rootViewport.scrollTop !== 0) rootViewport.scrollTop = 0;
+        if (rootViewport.scrollLeft !== 0) rootViewport.scrollLeft = 0;
+      }
     };
+
     if (contentCol) {
       contentCol.addEventListener("scroll", guardScroll, { passive: true });
+    }
+    if (rootViewport) {
+      rootViewport.addEventListener("scroll", guardScroll, { passive: true });
     }
 
     return () => {
@@ -32,6 +53,9 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
       document.documentElement.style.overflow = origHtmlOverflow;
       if (contentCol) {
         contentCol.removeEventListener("scroll", guardScroll);
+      }
+      if (rootViewport) {
+        rootViewport.removeEventListener("scroll", guardScroll);
       }
     };
   }, []);
@@ -42,10 +66,16 @@ export default function AdminAccessWrapper({ user, children }: { user: any, chil
     if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
     if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
 
-    // 2. Lock content column scrollTop to 0 so header is never scrolled away
+    // 2. Lock root viewport & content column scrollTop to 0 so header is never scrolled away
+    const rootViewport = document.querySelector(".admin-root-viewport") as HTMLElement | null;
+    if (rootViewport) {
+      if (rootViewport.scrollTop !== 0) rootViewport.scrollTop = 0;
+      if (rootViewport.scrollLeft !== 0) rootViewport.scrollLeft = 0;
+    }
     const contentCol = document.getElementById("admin-content-column");
-    if (contentCol && contentCol.scrollTop !== 0) {
-      contentCol.scrollTop = 0;
+    if (contentCol) {
+      if (contentCol.scrollTop !== 0) contentCol.scrollTop = 0;
+      if (contentCol.scrollLeft !== 0) contentCol.scrollLeft = 0;
     }
 
     // 3. Reset main viewport scroll to top cleanly on route/portal switch

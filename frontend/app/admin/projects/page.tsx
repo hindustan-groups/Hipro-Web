@@ -292,9 +292,8 @@ function projectToFormState(p: Project): FormState {
 }
 
 export default function AdminProjects() {
-  const cached = getAdminCache<Project[]>("admin:projects");
-  const [projects, setProjects] = useState<Project[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -355,7 +354,12 @@ export default function AdminProjects() {
   };
 
   useEffect(() => {
-    fetchProjects();
+    const cached = getAdminCache<Project[]>("admin:projects");
+    if (cached) {
+      setProjects(cached);
+      setLoading(false);
+    }
+    fetchProjects(!cached);
   }, []);
 
   // Update form state helper
@@ -822,17 +826,17 @@ export default function AdminProjects() {
       {/* SECTION 1: 5-PHASE PROJECT WORKBENCH EDITOR                   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {showEditor && (
-        <div className="bg-white border border-slate-300 shadow-sm rounded-none">
+        <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-md rounded-3xl overflow-hidden">
           {/* SINGLE UNIFIED STICKY COMMAND BAR */}
-          <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+          <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
             {/* Upper Command Bar */}
-            <div className="px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border-b border-slate-200 text-slate-900">
+            <div className="px-4 sm:px-6 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white/80 border-b border-slate-200/80 text-slate-900">
               {/* Left Group */}
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <button
                   type="button"
                   onClick={handleRequestCloseEditor}
-                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 border border-slate-300 transition-colors shrink-0 cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-200 transition-all shrink-0 cursor-pointer shadow-2xs"
                   title="Return to Projects List"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -841,12 +845,12 @@ export default function AdminProjects() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap text-[11px] font-mono">
-                    <span className="text-construction-navy font-bold uppercase text-[10px]">
+                    <span className="text-[#0F2C59] font-bold uppercase text-[10px]">
                       {editingProject ? `ID #${editingProject.id}` : "NEW PROJECT"}
                     </span>
                     <span className="text-slate-300">/</span>
                     <span
-                      className={`px-1.5 py-0.2 text-[9px] font-mono font-bold uppercase tracking-wider border ${
+                      className={`px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider border rounded-full ${
                         form.publishStatus === "published"
                           ? "bg-emerald-50 text-emerald-700 border-emerald-300"
                           : form.publishStatus === "archived"
@@ -1378,17 +1382,17 @@ export default function AdminProjects() {
       {!showEditor && (
         <div className="space-y-6">
           {/* Header & Quick Action */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+          <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-[0_4px_30px_rgba(15,23,42,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-[11px] font-mono tracking-wider text-slate-500 uppercase mb-1">
                 <span>PORTFOLIO WORKBENCH</span>
                 <span className="text-slate-400">/</span>
-                <span className="text-slate-900 font-bold">PROJECTS REGISTRY</span>
+                <span className="text-blue-600 font-bold">PROJECTS REGISTRY</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold font-display uppercase tracking-tight text-slate-900">
-                HiPRO Projects Registry
+              <h1 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-slate-900">
+                HiPRO Civil Projects Portfolio
               </h1>
-              <p className="text-slate-600 text-xs sm:text-sm mt-0.5">
+              <p className="text-slate-500 text-xs sm:text-sm mt-1">
                 Central ledger for industrial, commercial, and turnkey construction portfolio assets.
               </p>
             </div>
@@ -1397,68 +1401,71 @@ export default function AdminProjects() {
               <button
                 onClick={() => fetchProjects(true)}
                 disabled={loading}
-                className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-3.5 py-2 text-xs font-bold uppercase tracking-wider rounded-none disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+                suppressHydrationWarning
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 px-4 py-2.5 text-xs font-semibold rounded-2xl disabled:opacity-50 transition-all shadow-2xs cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : "text-slate-500"}`} />
+                <span>Refresh</span>
               </button>
               <button
                 onClick={handleStartAdd}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-none transition-colors shadow-sm cursor-pointer"
+                className="flex items-center gap-2 bg-[#0F2C59] hover:bg-blue-900 text-white px-5 py-2.5 text-xs font-semibold rounded-2xl transition-all shadow-sm cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-amber-400" /> New Project
+                <Plus className="w-4 h-4 text-blue-300" />
+                <span>New Project</span>
               </button>
             </div>
           </div>
 
-          {/* Quick Metrics Bar */}
+          {/* Quick Metrics Bento Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-white border border-slate-200 p-3 sm:p-4 shadow-sm rounded-none">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
+            <div className="rounded-3xl bg-white/85 backdrop-blur-md border border-slate-200/70 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-1">
                 Total Projects
               </span>
-              <span className="text-xl sm:text-2xl font-bold text-slate-900 font-display">{projects.length}</span>
+              <span className="text-2xl sm:text-3xl font-black text-slate-900 font-display">{projects.length}</span>
             </div>
 
-            <div className="bg-white border border-emerald-200 p-3 sm:p-4 shadow-sm rounded-none bg-emerald-50/20">
+            <div className="rounded-3xl bg-emerald-50/50 backdrop-blur-md border border-emerald-200/80 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 block mb-1">
                 Published (Live)
               </span>
-              <span className="text-xl sm:text-2xl font-bold text-emerald-700 font-display">{publishedCount}</span>
+              <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-display">{publishedCount}</span>
             </div>
 
-            <div className="bg-white border border-amber-200 p-3 sm:p-4 shadow-sm rounded-none bg-amber-50/20">
+            <div className="rounded-3xl bg-amber-50/50 backdrop-blur-md border border-amber-200/80 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-700 block mb-1">
                 Drafts
               </span>
-              <span className="text-xl sm:text-2xl font-bold text-amber-700 font-display">{draftCount}</span>
+              <span className="text-2xl sm:text-3xl font-black text-amber-700 font-display">{draftCount}</span>
             </div>
 
-            <div className="bg-white border border-blue-200 p-3 sm:p-4 shadow-sm rounded-none bg-blue-50/20">
+            <div className="rounded-3xl bg-blue-50/50 backdrop-blur-md border border-blue-200/80 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-700 block mb-1">
                 Ongoing
               </span>
-              <span className="text-xl sm:text-2xl font-bold text-blue-700 font-display">{ongoingCount}</span>
+              <span className="text-2xl sm:text-3xl font-black text-blue-700 font-display">{ongoingCount}</span>
             </div>
 
-            <div className="bg-white border border-purple-200 p-3 sm:p-4 shadow-sm rounded-none bg-purple-50/20 col-span-2 sm:col-span-1">
+            <div className="rounded-3xl bg-purple-50/50 backdrop-blur-md border border-purple-200/80 p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all col-span-2 sm:col-span-1">
               <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-700 block mb-1">
                 Archived
               </span>
-              <span className="text-xl sm:text-2xl font-bold text-purple-700 font-display">{archivedCount}</span>
+              <span className="text-2xl sm:text-3xl font-black text-purple-700 font-display">{archivedCount}</span>
             </div>
           </div>
 
           {/* Filter & Search Bar */}
-          <div className="bg-white border border-slate-200 p-3.5 sm:p-4 shadow-sm rounded-none flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="rounded-3xl bg-white/85 backdrop-blur-md border border-slate-200/70 p-4 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             {/* Search Box */}
             <div className="relative flex-1 max-w-md">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search projects by title, location, client..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 pl-8 pr-3 py-2 text-xs rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy"
+                className="w-full bg-slate-50/80 border border-slate-200/80 text-slate-900 pl-10 pr-4 py-2 text-xs rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -1467,7 +1474,7 @@ export default function AdminProjects() {
               <select
                 value={publishStatusFilter}
                 onChange={(e) => setPublishStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="all">Publish: All</option>
                 <option value="published">Publish: Published</option>
@@ -1478,7 +1485,7 @@ export default function AdminProjects() {
               <select
                 value={operationalStatusFilter}
                 onChange={(e) => setOperationalStatusFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="all">Lifecycle: All</option>
                 <option value="ongoing">Lifecycle: Ongoing</option>
@@ -1489,7 +1496,7 @@ export default function AdminProjects() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-2.5 py-2 rounded-none focus:outline-none focus:ring-1 focus:ring-construction-navy cursor-pointer"
+                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl focus:outline-none cursor-pointer"
               >
                 <option value="all">Category: All</option>
                 <option value="commercial">Commercial</option>
@@ -1499,7 +1506,7 @@ export default function AdminProjects() {
                 <option value="institutional">Institutional</option>
               </select>
 
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-2 rounded-none">
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl">
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                 <select
                   value={sortBy}
@@ -1516,7 +1523,7 @@ export default function AdminProjects() {
           </div>
 
           {/* DESKTOP VIEW: Projects Table (>= md / 768px) */}
-          <div className="hidden md:block bg-white border border-slate-200 shadow-sm rounded-none overflow-hidden">
+          <div className="hidden md:block bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm rounded-3xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -1561,10 +1568,10 @@ export default function AdminProjects() {
                                 <img
                                   src={p.image}
                                   alt={p.title}
-                                  className="w-12 h-12 object-cover border border-slate-200 shrink-0 rounded-none"
+                                  className="w-12 h-12 object-cover border border-slate-200/80 shrink-0 rounded-2xl shadow-2xs"
                                 />
                               ) : (
-                                <div className="w-12 h-12 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 rounded-none">
+                                <div className="w-12 h-12 bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 rounded-2xl">
                                   <ImageIcon className="w-5 h-5" />
                                 </div>
                               )}
@@ -1585,12 +1592,12 @@ export default function AdminProjects() {
                               type="button"
                               onClick={() => handleTogglePublishStatus(p)}
                               title="Click to toggle between Draft and Published"
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-none cursor-pointer transition-all ${
+                              className={`inline-flex items-center gap-1 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-full cursor-pointer transition-all ${
                                 isPublished
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 shadow-2xs"
                                   : p.publishStatus === "archived"
-                                  ? "bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100"
-                                  : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                                  ? "bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 shadow-2xs"
+                                  : "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100 shadow-2xs"
                               }`}
                             >
                               {isPublished ? (
@@ -1615,10 +1622,10 @@ export default function AdminProjects() {
                               type="button"
                               onClick={() => handleToggleOperationalStatus(p)}
                               title="Click to toggle between Ongoing and Completed"
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-none cursor-pointer transition-all ${
+                              className={`inline-flex items-center gap-1 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-full cursor-pointer transition-all ${
                                 isCompleted
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
-                                  : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 shadow-2xs"
+                                  : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 shadow-2xs"
                               }`}
                             >
                               {isCompleted ? (
@@ -1635,7 +1642,7 @@ export default function AdminProjects() {
 
                           {/* Category */}
                           <td className="px-3 py-3.5 text-slate-600 whitespace-nowrap">
-                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider rounded-none">
+                            <span className="px-2.5 py-1 bg-slate-100 border border-slate-200/70 text-slate-700 text-xs font-semibold rounded-full">
                               {p.category || "—"}
                             </span>
                           </td>
@@ -1655,23 +1662,23 @@ export default function AdminProjects() {
                             <button
                               onClick={() => handleToggleFeatured(p)}
                               title="Toggle Featured on Homepage"
-                              className={`w-7 h-7 inline-flex items-center justify-center transition-colors rounded-none cursor-pointer ${
+                              className={`w-8 h-8 inline-flex items-center justify-center transition-all rounded-xl cursor-pointer ${
                                 p.featured
-                                  ? "bg-amber-50 text-amber-600 border border-amber-300"
+                                  ? "bg-amber-50 text-amber-600 border border-amber-300 shadow-2xs"
                                   : "bg-slate-50 border border-slate-200 text-slate-300 hover:text-amber-500"
                               }`}
                             >
-                              <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
+                              <Star className={`w-4 h-4 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
                             </button>
                           </td>
 
                           {/* Actions */}
                           <td className="px-4 py-3.5 whitespace-nowrap text-right">
-                            <div className="inline-flex items-center gap-1.5">
+                            <div className="inline-flex items-center gap-2">
                               <button
                                 onClick={() => handleRowPreview(p)}
                                 title="Draft-Safe Full Preview"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-600 text-xs font-mono font-bold uppercase rounded-none transition-all cursor-pointer"
+                                className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
                               >
                                 <Eye className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Preview</span>
@@ -1680,16 +1687,16 @@ export default function AdminProjects() {
                               <button
                                 onClick={() => handleStartEdit(p)}
                                 title="Edit Project Specifications"
-                                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold uppercase tracking-wider rounded-none transition-all cursor-pointer"
+                                className="flex items-center gap-1 px-3.5 py-1.5 bg-[#0F2C59] text-white hover:bg-blue-900 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-2xs"
                               >
-                                <Pencil className="w-3 h-3 text-amber-400" />
+                                <Pencil className="w-3 h-3 text-blue-300" />
                                 <span>Edit</span>
                               </button>
 
                               <button
                                 onClick={() => handleDeleteProject(p, false)}
                                 title="Archive Project"
-                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors rounded-none cursor-pointer"
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl cursor-pointer"
                               >
                                 <Archive className="w-3.5 h-3.5" />
                               </button>
@@ -1725,7 +1732,7 @@ export default function AdminProjects() {
                 return (
                   <div
                     key={p.id}
-                    className="bg-white border border-slate-200 p-4 space-y-3 shadow-sm"
+                    className="bg-white/90 backdrop-blur-md border border-slate-200/70 p-5 space-y-3 shadow-sm rounded-3xl"
                   >
                     {/* Top Row: Thumbnail + Title + Featured Star */}
                     <div className="flex items-start gap-3">
@@ -1734,24 +1741,24 @@ export default function AdminProjects() {
                         <img
                           src={p.image}
                           alt={p.title}
-                          className="w-14 h-14 object-cover border border-slate-200 shrink-0"
+                          className="w-14 h-14 object-cover border border-slate-200/80 shrink-0 rounded-2xl shadow-2xs"
                         />
                       ) : (
-                        <div className="w-14 h-14 bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                        <div className="w-14 h-14 bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 rounded-2xl">
                           <ImageIcon className="w-5 h-5" />
                         </div>
                       )}
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-mono font-bold uppercase tracking-wider">
+                          <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-mono font-bold uppercase tracking-wider rounded-full">
                             {p.category || "Unassigned"}
                           </span>
                           <button
                             onClick={() => handleToggleFeatured(p)}
                             className="text-slate-400 hover:text-amber-500 p-1"
                           >
-                            <Star className={`w-3.5 h-3.5 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
+                            <Star className={`w-4 h-4 ${p.featured ? "fill-amber-500 text-amber-500" : ""}`} />
                           </button>
                         </div>
                         <h3 className="text-sm font-bold text-slate-900 font-display leading-tight truncate">
@@ -1766,7 +1773,7 @@ export default function AdminProjects() {
                     {/* Metadata Row */}
                     <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-slate-100 text-slate-600 font-mono">
                       <div className="flex items-center gap-1 truncate">
-                        <MapPin className="w-3 h-3 text-construction-red shrink-0" />
+                        <MapPin className="w-3 h-3 text-red-500 shrink-0" />
                         <span className="truncate">{p.location || "No Location"}</span>
                       </div>
                       <div className="flex items-center gap-1 truncate">
@@ -1780,7 +1787,7 @@ export default function AdminProjects() {
                       <button
                         type="button"
                         onClick={() => handleTogglePublishStatus(p)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border cursor-pointer ${
+                        className={`inline-flex items-center gap-1 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-full cursor-pointer ${
                           isPublished
                             ? "bg-emerald-50 text-emerald-700 border-emerald-300"
                             : "bg-amber-50 text-amber-700 border-amber-300"
@@ -1793,7 +1800,7 @@ export default function AdminProjects() {
                       <button
                         type="button"
                         onClick={() => handleToggleOperationalStatus(p)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border cursor-pointer ${
+                        className={`inline-flex items-center gap-1 px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-full cursor-pointer ${
                           isCompleted
                             ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                             : "bg-blue-50 text-blue-700 border-blue-200"
@@ -1808,19 +1815,19 @@ export default function AdminProjects() {
                     <div className="flex items-center gap-2 pt-1">
                       <button
                         onClick={() => handleRowPreview(p)}
-                        className="flex-1 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-700 text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                        className="flex-1 py-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl flex items-center justify-center gap-1 transition-all"
                       >
-                        <Eye className="w-3.5 h-3.5" /> Preview
+                        <Eye className="w-3.5 h-3.5 text-amber-600" /> Preview
                       </button>
                       <button
                         onClick={() => handleStartEdit(p)}
-                        className="flex-1 py-1.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                        className="flex-1 py-2 bg-[#0F2C59] text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1 transition-all"
                       >
-                        <Pencil className="w-3 h-3 text-amber-400" /> Edit
+                        <Pencil className="w-3 h-3 text-blue-300" /> Edit
                       </button>
                       <button
                         onClick={() => handleDeleteProject(p, false)}
-                        className="p-1.5 border border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                        className="p-2 border border-slate-200 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                         title="Archive Project"
                       >
                         <Archive className="w-4 h-4" />

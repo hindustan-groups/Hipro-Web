@@ -24,7 +24,13 @@ import {
   getAutomailSettingsAsync,
   saveAutomailSettings,
   initAutomailSettings,
+  saveCorporateMailbox,
+  deleteCorporateMailbox,
+  saveDispatchRouting,
+  resolveSenderForTrigger,
   AutomailSettings,
+  CorporateMailbox,
+  DispatchRoutingRule,
 } from "../services/automail/settingsService";
 import {
   getCustomTemplates,
@@ -117,6 +123,12 @@ router.get("/stats", async (req: Request, res: Response) => {
 router.get("/settings", async (req: Request, res: Response) => {
   try {
     const settings = await getAutomailSettingsAsync();
+    const sanitizedMailboxes = (settings.mailboxes || []).map((m) => ({
+      ...m,
+      smtpPassConfigured: Boolean(m.smtpPass),
+      smtpPass: m.smtpPass ? "••••••••••••" : "",
+    }));
+
     return res.json({
       success: true,
       settings: {
@@ -125,6 +137,8 @@ router.get("/settings", async (req: Request, res: Response) => {
         smtpPass: settings.smtpPass ? "••••••••••••" : "",
         hostingerApiTokenConfigured: Boolean(settings.hostingerApiToken),
         hostingerApiToken: settings.hostingerApiToken || "",
+        mailboxes: sanitizedMailboxes,
+        dispatchRouting: settings.dispatchRouting || {},
       },
     });
   } catch (err: any) {
@@ -142,6 +156,12 @@ router.post("/settings", async (req: Request, res: Response) => {
       delete body.hostingerApiToken;
     }
     const updated = await saveAutomailSettings(body);
+    const sanitizedMailboxes = (updated.mailboxes || []).map((m) => ({
+      ...m,
+      smtpPassConfigured: Boolean(m.smtpPass),
+      smtpPass: m.smtpPass ? "••••••••••••" : "",
+    }));
+
     return res.json({
       success: true,
       message: "AutoMail settings saved permanently to PostgreSQL database!",
@@ -151,6 +171,8 @@ router.post("/settings", async (req: Request, res: Response) => {
         smtpPass: updated.smtpPass ? "••••••••••••" : "",
         hostingerApiTokenConfigured: Boolean(updated.hostingerApiToken),
         hostingerApiToken: updated.hostingerApiToken || "",
+        mailboxes: sanitizedMailboxes,
+        dispatchRouting: updated.dispatchRouting || {},
       },
     });
   } catch (err: any) {
@@ -192,10 +214,150 @@ router.post("/settings/test", async (req: Request, res: Response) => {
   }
 });
 
+// ----------------------------------------------------
+// DYNAMIC CORPORATE MAILBOXES MANAGEMENT
+// ----------------------------------------------------
 router.get("/mailboxes", async (req: Request, res: Response) => {
   try {
-    const mailboxes = await getHostingerMailboxes();
-    return res.json({ success: true, mailboxes });
+    const settings = await getAutomailSettingsAsync();
+    const mailboxes = (settings.mailboxes || []).map((m: CorporateMailbox) => ({
+      ...m,
+      smtpPassConfigured: Boolean(m.smtpPass),
+      smtpPass: m.smtpPass ? "••••••••••••" : "",
+    }));
+
+    let hostingerDiscovered: any[] = [];
+    if (settings.hostingerApiToken) {
+      try {
+        hostingerDiscovered = await getHostingerMailboxes();
+      } catch {
+        // Non-blocking fallback
+      }
+    }
+
+    return res.json({ success: true, mailboxes, hostingerDiscovered });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/mailboxes", async (req: Request, res: Response) => {
+  try {
+    const { name, email } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ success: false, error: "Mailbox display name and email address are required." });
+    }
+
+    const saved = await saveCorporateMailbox(req.body);
+    return res.json({
+      success: true,
+      message: `Corporate mailbox "${saved.email}" saved successfully!`,
+      mailbox: {
+        ...saved,
+        smtpPassConfigured: Boolean(saved.smtpPass),
+        smtpPass: saved.smtpPass ? "••••••••••••" : "",
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete("/mailboxes/:id", async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    await deleteCorporateMailbox(id);
+    return res.json({ success: true, message: "Corporate mailbox deleted successfully." });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/mailboxes/:id/test", async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const settings = await getAutomailSettingsAsync();
+    const targetMb = settings.mailboxes?.find((m: CorporateMailbox) => m.id === id);
+
+    if (!targetMb) {
+      return res.status(404).json({ success: false, message: "Corporate mailbox not found." });
+    }
+
+    const testConfig: Partial<AutomailSettings> = {
+      deliveryMethod: targetMb.deliveryMethod || "smtp",
+      smtpHost: targetMb.smtpHost || "smtp.hostinger.com",
+      smtpPort: targetMb.smtpPort || 465,
+      smtpUser: targetMb.smtpUser || targetMb.email,
+      smtpPass: targetMb.smtpPass || "",
+      hostingerApiToken: targetMb.hostingerApiToken || settings.hostingerApiToken || "",
+      hostingerMailboxId: targetMb.hostingerMailboxId || "",
+    };
+
+    const result = await testSmtpConnection(testConfig);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ----------------------------------------------------
+// AUTOMATED DISPATCH ROUTING MATRIX ("Kisko kis mail se jayega")
+// ----------------------------------------------------
+router.get("/routing", async (req: Request, res: Response) => {
+  try {
+    const settings = await getAutomailSettingsAsync();
+    return res.json({
+      success: true,
+      routing: settings.dispatchRouting || {},
+      mailboxes: (settings.mailboxes || []).map((m: CorporateMailbox) => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        brand: m.brand,
+        brandName: m.brandName,
+        isDefault: m.isDefault,
+        status: m.status,
+      })),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/routing", async (req: Request, res: Response) => {
+  try {
+    const { routing } = req.body;
+    if (!routing || typeof routing !== "object") {
+      return res.status(400).json({ success: false, error: "Routing rules object is required." });
+    }
+
+    const saved = await saveDispatchRouting(routing);
+    return res.json({
+      success: true,
+      message: "Automated dispatch routing matrix updated successfully!",
+      routing: saved,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get("/routing/resolve/:triggerKey", async (req: Request, res: Response) => {
+  try {
+    const triggerKey = Array.isArray(req.params.triggerKey) ? req.params.triggerKey[0] : req.params.triggerKey;
+    const resolved = resolveSenderForTrigger(triggerKey);
+    return res.json({
+      success: true,
+      triggerKey,
+      senderMailbox: {
+        id: resolved.mailbox.id,
+        name: resolved.mailbox.name,
+        email: resolved.mailbox.email,
+        brand: resolved.mailbox.brand,
+        brandName: resolved.mailbox.brandName,
+      },
+      ccEmail: resolved.ccEmail,
+    });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -317,17 +479,32 @@ router.get("/test-connection", async (req: Request, res: Response) => {
 // Send single test email
 router.post("/send-test", async (req: Request, res: Response) => {
   try {
-    const { to, subject, htmlBody, brand = "all", deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
+    const { to, subject, htmlBody, brand = "all", mailboxId, deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
     if (!to) {
       return res.status(400).json({ success: false, error: "Recipient email is required" });
     }
 
     const current = await getAutomailSettingsAsync();
     const customConfig: Partial<AutomailSettings> = {};
+
+    // If mailboxId is provided, pull credentials from that corporate mailbox
+    if (mailboxId) {
+      const mb = (current.mailboxes || []).find((m) => m.id === mailboxId);
+      if (mb) {
+        customConfig.deliveryMethod = mb.deliveryMethod || "smtp";
+        if (mb.smtpHost) customConfig.smtpHost = mb.smtpHost;
+        if (mb.smtpPort) customConfig.smtpPort = mb.smtpPort;
+        if (mb.smtpUser) customConfig.smtpUser = mb.smtpUser;
+        if (mb.smtpPass) customConfig.smtpPass = mb.smtpPass;
+        if (mb.hostingerApiToken) customConfig.hostingerApiToken = mb.hostingerApiToken;
+        if (mb.hostingerMailboxId) customConfig.hostingerMailboxId = mb.hostingerMailboxId;
+      }
+    }
+
     if (deliveryMethod) customConfig.deliveryMethod = deliveryMethod;
     if (hostingerApiToken && hostingerApiToken !== "••••••••••••") {
       customConfig.hostingerApiToken = hostingerApiToken;
-    } else if (current.hostingerApiToken) {
+    } else if (current.hostingerApiToken && !customConfig.hostingerApiToken) {
       customConfig.hostingerApiToken = current.hostingerApiToken;
     }
     if (hostingerMailboxId) customConfig.hostingerMailboxId = hostingerMailboxId;
@@ -336,7 +513,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
     if (smtpUser) customConfig.smtpUser = smtpUser;
     if (smtpPass && smtpPass !== "••••••••••••") {
       customConfig.smtpPass = smtpPass;
-    } else if (current.smtpPass) {
+    } else if (current.smtpPass && !customConfig.smtpPass) {
       customConfig.smtpPass = current.smtpPass;
     }
 

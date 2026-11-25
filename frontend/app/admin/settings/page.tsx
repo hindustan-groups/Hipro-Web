@@ -2,52 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Save, Loader2, Cloud, Share2, Phone, MapPin, Mail, Info, Layers, ExternalLink, Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Save,
+  Loader2,
+  Cloud,
+  Share2,
+  Phone,
+  MapPin,
+  Mail,
+  Info,
+  Layers,
+  ArrowLeft,
+  ExternalLink,
+  CheckCircle2,
+  Sparkles,
+  Building2,
+} from "lucide-react";
 import type { Settings } from "@/lib/types";
-
-interface GroupCompanyConfig {
-  name: string;
-  category?: string;
-  description: string;
-  website: string;
-  status: string;
-  active: boolean;
-  order: number;
-}
-
-const DEFAULT_GROUP_COMPANIES: GroupCompanyConfig[] = [
-  {
-    name: "Hindustan Projects",
-    description: "Core Architecture, Turnkey Civil Construction & Infrastructure Execution.",
-    website: "https://www.hindustanprojects.in/",
-    status: "Flagship",
-    active: true,
-    order: 1,
-  },
-  {
-    name: "HiPro Marketing",
-    description: "Marketing and brand solutions under the Hindustan Group.",
-    website: "",
-    status: "Coming Soon",
-    active: true,
-    order: 2,
-  },
-  {
-    name: "Hindustan Empanelment",
-    description: "Contractor, Vendor & Institutional Empanelment Services.",
-    website: "https://empanelment.hindustanprojects.in/",
-    status: "Live Portal",
-    active: true,
-    order: 4,
-  },
-];
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<Settings>({
     cloudinaryCloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh",
-    cloudinaryUploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+    cloudinaryUploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default",
   });
-  
+
   // Structured state for socials
   const [socials, setSocials] = useState({
     facebook: "",
@@ -72,9 +50,6 @@ export default function AdminSettings() {
   const [homeAboutBullet3Title, setHomeAboutBullet3Title] = useState("Architecture & Planning");
   const [homeAboutBullet3Desc, setHomeAboutBullet3Desc] = useState("Smart spatial layouts, 3D architectural visualization, and site-tailored master planning rooted in practical construction.");
 
-  // Group companies ecosystem
-  const [groupCompanies, setGroupCompanies] = useState<GroupCompanyConfig[]>(DEFAULT_GROUP_COMPANIES);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -86,25 +61,32 @@ export default function AdminSettings() {
         if (data.success && data.data) {
           setSettings({
             ...data.data,
-            cloudinaryCloudName: data.data.cloudinaryCloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh",
-            cloudinaryUploadPreset: data.data.cloudinaryUploadPreset || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"
+            cloudinaryCloudName:
+              data.data.cloudinaryCloudName || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "fczoredh",
+            cloudinaryUploadPreset:
+              data.data.cloudinaryUploadPreset || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default",
           });
-          
+
           if (data.data.socialLinks) {
             try {
               const parsedSocials = JSON.parse(data.data.socialLinks);
               setSocials((prev) => ({ ...prev, ...parsedSocials }));
-            } catch { /* silent fallback */ }
+            } catch {
+              /* silent fallback */
+            }
           }
 
           if (data.data.pageContent) {
             try {
-              const parsedContent = JSON.parse(data.data.pageContent);
+              const parsedContent =
+                typeof data.data.pageContent === "string"
+                  ? JSON.parse(data.data.pageContent)
+                  : data.data.pageContent;
               if (parsedContent.projectsHeader) setProjectsHeader(parsedContent.projectsHeader);
               if (parsedContent.homeAboutTag) setHomeAboutTag(parsedContent.homeAboutTag);
               if (parsedContent.homeAboutHeading) setHomeAboutHeading(parsedContent.homeAboutHeading);
               if (parsedContent.homeAboutText) setHomeAboutText(parsedContent.homeAboutText);
-              
+
               if (parsedContent.homeAboutBullet1Title) setHomeAboutBullet1Title(parsedContent.homeAboutBullet1Title);
               else if (parsedContent.homeAboutBullet1) setHomeAboutBullet1Title(parsedContent.homeAboutBullet1);
               if (parsedContent.homeAboutBullet1Desc) setHomeAboutBullet1Desc(parsedContent.homeAboutBullet1Desc);
@@ -116,21 +98,9 @@ export default function AdminSettings() {
               if (parsedContent.homeAboutBullet3Title) setHomeAboutBullet3Title(parsedContent.homeAboutBullet3Title);
               else if (parsedContent.homeAboutBullet3) setHomeAboutBullet3Title(parsedContent.homeAboutBullet3);
               if (parsedContent.homeAboutBullet3Desc) setHomeAboutBullet3Desc(parsedContent.homeAboutBullet3Desc);
-
-              if (parsedContent.groupCompanies && Array.isArray(parsedContent.groupCompanies) && parsedContent.groupCompanies.length > 0) {
-                setGroupCompanies(
-                  parsedContent.groupCompanies.map((c: any, i: number) => ({
-                    name: c.name || "",
-                    category: c.category || (c.name?.includes("Marketing") ? "Brand & Commercial Solutions" : c.name?.includes("IT") ? "Digital & Technology" : c.name?.includes("Empanelment") ? "Institutional Empanelment" : "Architecture & Infrastructure"),
-                    description: c.description || "",
-                    website: c.website || c.url || "",
-                    status: c.status || c.statusText || (c.website || c.url ? "Live Portal" : "Coming Soon"),
-                    active: c.active !== false,
-                    order: typeof c.order === "number" ? c.order : i + 1,
-                  }))
-                );
-              }
-            } catch { /* silent fallback */ }
+            } catch {
+              /* silent fallback */
+            }
           }
         }
         setLoading(false);
@@ -138,76 +108,23 @@ export default function AdminSettings() {
       .catch(() => setLoading(false));
   }, []);
 
-  const handleGroupCompanyChange = (index: number, field: keyof GroupCompanyConfig, value: any) => {
-    setGroupCompanies((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  };
-
-  const handleAddGroupCompany = () => {
-    setGroupCompanies((prev) => [
-      ...prev,
-      {
-        name: "",
-        category: "Architecture & Infrastructure",
-        description: "",
-        website: "",
-        status: "Live Portal",
-        active: true,
-        order: prev.length + 1,
-      },
-    ]);
-  };
-
-  const handleRemoveGroupCompany = (index: number) => {
-    setGroupCompanies((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleMoveGroupCompany = (index: number, direction: "up" | "down") => {
-    setGroupCompanies((prev) => {
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
-      const updated = [...prev];
-      const temp = updated[index];
-      updated[index] = updated[targetIndex];
-      updated[targetIndex] = temp;
-      return updated.map((item, i) => ({ ...item, order: i + 1 }));
-    });
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setMessage({ text: "", type: "" });
 
     // Preserve existing pageContent keys when updating
-    let currentParsed = {};
+    let currentParsed: any = {};
     try {
       if (settings.pageContent) {
-        currentParsed = typeof settings.pageContent === "string"
-          ? JSON.parse(settings.pageContent)
-          : settings.pageContent;
+        currentParsed =
+          typeof settings.pageContent === "string"
+            ? JSON.parse(settings.pageContent)
+            : settings.pageContent;
       }
-    } catch { /* silent */ }
-
-    // Cleanse deprecated legacy dummy keys that contained old 1999 / demo content
-    const deprecatedKeys = [
-      "aboutStory",
-      "aboutChecklist",
-      "aboutHero",
-      "aboutHeritageTag",
-      "aboutStoryTitle",
-      "aboutBadge1Label",
-      "aboutBadge1Value",
-      "aboutBadge2Label",
-      "aboutBadge2Value",
-      "valuesSubtitle",
-      "valuesTitle",
-      "valuesTag"
-    ];
-    deprecatedKeys.forEach((k) => delete (currentParsed as any)[k]);
+    } catch {
+      /* silent */
+    }
 
     const updatedPageContent = {
       ...currentParsed,
@@ -221,7 +138,6 @@ export default function AdminSettings() {
       homeAboutBullet2Desc,
       homeAboutBullet3Title,
       homeAboutBullet3Desc,
-      groupCompanies,
     };
 
     const payload = {
@@ -238,16 +154,17 @@ export default function AdminSettings() {
       });
       const data = await res.json();
       if (data.success) {
-        // Trigger on-demand cache revalidation for settings tag and affected public paths
         try {
           await fetch("/api/revalidate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ tag: "settings", paths: ["/", "/about"] }),
           });
-        } catch { /* silent */ }
+        } catch {
+          /* silent */
+        }
 
-        setMessage({ text: "Settings saved successfully!", type: "success" });
+        setMessage({ text: "HiPRO Web settings saved successfully!", type: "success" });
         setSettings((prev) => ({
           ...prev,
           pageContent: JSON.stringify(updatedPageContent),
@@ -266,473 +183,386 @@ export default function AdminSettings() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-slate-500 font-medium">
-        <Loader2 className="w-6 h-6 animate-spin mr-2 text-construction-navy" /> Loading settings...
+        <Loader2 className="w-6 h-6 animate-spin mr-2 text-blue-600" /> Loading HiPRO settings...
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl space-y-6 pb-12">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 mb-1">Global Settings</h1>
-        <p className="text-slate-500 text-sm">Manage site-wide contact info, homepage dynamic sections, group companies, and Cloudinary keys.</p>
+    <div className="max-w-5xl mx-auto space-y-8 pb-16">
+      {/* ── Top Header Glass Breadcrumb ───────────────────────── */}
+      <div className="rounded-3xl bg-white/85 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-[0_4px_30px_rgba(15,23,42,0.03)] relative overflow-hidden">
+        <div className="absolute -right-20 -top-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <Link
+                href="/admin/hipro"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/90 hover:bg-slate-200 text-[11px] font-semibold text-slate-700 transition-all shadow-2xs group"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+                <span>← Back to HiPRO Overview</span>
+              </Link>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold uppercase tracking-wider border border-blue-200/80 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                HiPRO Web CMS
+              </span>
+            </div>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight font-display">
+              HiPRO Corporate Web · Site Settings
+            </h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium">
+              hindustanprojects.in · Cloudinary CDN media, civil office contact info, social channels, and homepage editorial copy.
+            </p>
+          </div>
+
+          <a
+            href="https://www.hindustanprojects.in"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/80 shadow-2xs transition-all self-start sm:self-auto"
+          >
+            <span>Live Website</span>
+            <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+          </a>
+        </div>
       </div>
 
-      <form onSubmit={handleSave} className="bg-white border border-slate-200 rounded-none shadow-sm overflow-hidden space-y-0">
-        
+      <form onSubmit={handleSave} className="space-y-6">
         {/* ── 1. Cloudinary Integration ────────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-blue-50 flex items-center justify-center border border-blue-100">
-              <Cloud className="w-5 h-5 text-blue-600" />
+        <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-sm">
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center ring-1 ring-blue-100 shrink-0">
+              <Cloud className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Cloudinary Integration</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Configure cloud storage for image uploads.</p>
+              <h2 className="text-base font-bold text-slate-900">Cloudinary CDN & Media Storage</h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Image optimization and direct upload preset for civil projects, services, and team photos.
+              </p>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Cloud Name</label>
-              <input 
-                type="text" 
-                value={settings.cloudinaryCloudName || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Cloud Name
+              </label>
+              <input
+                type="text"
+                value={settings.cloudinaryCloudName || ""}
                 onChange={(e) => setSettings({ ...settings, cloudinaryCloudName: e.target.value })}
-                placeholder="e.g. dxyz123ab"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400 font-mono" 
+                placeholder="e.g. fczoredh"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
               />
             </div>
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Unsigned Upload Preset</label>
-              <input 
-                type="text" 
-                value={settings.cloudinaryUploadPreset || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Unsigned Upload Preset
+              </label>
+              <input
+                type="text"
+                value={settings.cloudinaryUploadPreset || ""}
                 onChange={(e) => setSettings({ ...settings, cloudinaryUploadPreset: e.target.value })}
-                placeholder="e.g. my_preset"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all placeholder:text-slate-400 font-mono" 
+                placeholder="e.g. ml_default"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
         </div>
 
-        {/* ── 2. Contact Details ───────────────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/30">
+        {/* ── 2. Civil Contact Details ─────────────────────────── */}
+        <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-none bg-slate-100 flex items-center justify-center border border-slate-200">
-                <Phone className="w-5 h-5 text-slate-700" />
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center ring-1 ring-emerald-100 shrink-0">
+                <Phone className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 leading-tight">Company Contact Information</h2>
-                <p className="text-slate-500 text-xs mt-0.5">Appears in footer and on the Contact page.</p>
+                <h2 className="text-base font-bold text-slate-900">Corporate Civil Contact Information</h2>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Published in the website footer, navigation bar, and quote inquiry forms.
+                </p>
               </div>
             </div>
             <Link
               href="/admin/contact-page"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-construction-navy hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider font-display transition-colors self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-all self-start sm:self-auto shadow-2xs"
             >
-              <MapPin className="w-3.5 h-3.5 text-construction-red" />
+              <MapPin className="w-3.5 h-3.5 text-rose-400" />
               <span>Full Contact Page & Map CMS →</span>
             </Link>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Email Address</label>
-              <input 
-                type="email" 
-                value={settings.companyEmail || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Official Inquiries Email
+              </label>
+              <input
+                type="email"
+                value={settings.companyEmail || ""}
                 onChange={(e) => setSettings({ ...settings, companyEmail: e.target.value })}
                 placeholder="info@hindustanprojects.in"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Phone Number</label>
-              <input 
-                type="text" 
-                value={settings.companyPhone || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Civil Hotline Phone
+              </label>
+              <input
+                type="text"
+                value={settings.companyPhone || ""}
                 onChange={(e) => setSettings({ ...settings, companyPhone: e.target.value })}
                 placeholder="+91 75970 00601"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
             <div className="md:col-span-2">
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Headquarters Address</label>
-              <input 
-                type="text" 
-                value={settings.companyAddress || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Corporate Headquarters Address (Bhilwara)
+              </label>
+              <input
+                type="text"
+                value={settings.companyAddress || ""}
                 onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
-                placeholder="Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001, India"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                placeholder="Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara, Rajasthan 311001"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* ── 3. Social Media Links ────────────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-red-50 flex items-center justify-center border border-red-100">
-              <Share2 className="w-5 h-5 text-construction-red" />
+        <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-sm">
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center ring-1 ring-rose-100 shrink-0">
+              <Share2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Social Media Links</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Verified links will render in the website footer.</p>
+              <h2 className="text-base font-bold text-slate-900">Official Social Media Links</h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Verified public links displayed across hindustanprojects.in footer and headers.
+              </p>
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Instagram URL</label>
-              <input 
-                type="url" 
-                value={socials.instagram} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Instagram URL
+              </label>
+              <input
+                type="url"
+                value={socials.instagram}
                 onChange={(e) => setSocials({ ...socials, instagram: e.target.value })}
                 placeholder="https://www.instagram.com/hindustan_projects/"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Facebook URL</label>
-              <input 
-                type="url" 
-                value={socials.facebook} 
-                onChange={(e) => setSocials({ ...socials, facebook: e.target.value })}
-                placeholder="https://facebook.com/your-page"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
-              />
-            </div>
-            <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">LinkedIn URL</label>
-              <input 
-                type="url" 
-                value={socials.linkedin} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                LinkedIn URL
+              </label>
+              <input
+                type="url"
+                value={socials.linkedin}
                 onChange={(e) => setSocials({ ...socials, linkedin: e.target.value })}
                 placeholder="https://linkedin.com/company/hindustanprojects"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Pinterest URL</label>
-              <input 
-                type="url" 
-                value={socials.pinterest || ""} 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Facebook URL
+              </label>
+              <input
+                type="url"
+                value={socials.facebook}
+                onChange={(e) => setSocials({ ...socials, facebook: e.target.value })}
+                placeholder="https://facebook.com/hindustanprojects"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Pinterest URL
+              </label>
+              <input
+                type="url"
+                value={socials.pinterest || ""}
                 onChange={(e) => setSocials({ ...socials, pinterest: e.target.value })}
                 placeholder="https://pin.it/5OlMWwi2w"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
-            <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Twitter / X URL</label>
-              <input 
-                type="url" 
-                value={socials.twitter} 
+            <div className="md:col-span-2">
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Twitter / X URL
+              </label>
+              <input
+                type="url"
+                value={socials.twitter}
                 onChange={(e) => setSocials({ ...socials, twitter: e.target.value })}
-                placeholder="https://twitter.com/your-handle"
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                placeholder="https://twitter.com/hindustan_proj"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
         </div>
 
-        {/* ── 4. Homepage Section Titles ─────────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/20">
-          <div className="mb-4">
-            <h2 className="text-lg font-bold text-slate-900 leading-tight">Homepage Section Titles</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Customize default section headings on the homepage.</p>
-          </div>
-
-          <div>
-            <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Projects Section Title</label>
-            <input 
-              type="text" 
-              value={projectsHeader} 
-              onChange={(e) => setProjectsHeader(e.target.value)}
-              placeholder="e.g. Landmarks In The Making"
-              className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all font-medium" 
-            />
-          </div>
-        </div>
-
-        {/* ── 5. Home About / Intro ───────────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-none bg-amber-50 flex items-center justify-center border border-amber-200">
-              <Info className="w-5 h-5 text-amber-700" />
+        {/* ── 4. Homepage Dynamic Civil Sections ───────────────── */}
+        <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 p-6 md:p-8 shadow-sm">
+          <div className="flex items-center gap-3.5 mb-6">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center ring-1 ring-amber-100 shrink-0">
+              <Info className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 leading-tight">Home About / Introduction</h2>
-              <p className="text-slate-500 text-xs mt-0.5">Control the introductory overview displayed on the homepage.</p>
+              <h2 className="text-base font-bold text-slate-900">Homepage Dynamic Civil Sections</h2>
+              <p className="text-slate-500 text-xs mt-0.5">
+                Headlines and intro narrative displayed directly on the hindustanprojects.in landing page.
+              </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Projects Showcase Section Title
+              </label>
+              <input
+                type="text"
+                value={projectsHeader}
+                onChange={(e) => setProjectsHeader(e.target.value)}
+                placeholder="e.g. Landmarks In The Making"
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 pt-2">
               <div>
-                <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Home About Tag / Badge</label>
-                <input 
-                  type="text" 
-                  value={homeAboutTag} 
+                <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                  Home About Tag / Badge
+                </label>
+                <input
+                  type="text"
+                  value={homeAboutTag}
                   onChange={(e) => setHomeAboutTag(e.target.value)}
                   placeholder="e.g. About Hindustan Projects · Est. 2019"
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                  className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
               </div>
               <div>
-                <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Home About Heading</label>
-                <input 
-                  type="text" 
-                  value={homeAboutHeading} 
+                <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                  Home About Heading
+                </label>
+                <input
+                  type="text"
+                  value={homeAboutHeading}
                   onChange={(e) => setHomeAboutHeading(e.target.value)}
                   placeholder="e.g. Engineering Landmarks. Building Trust in Rajasthan."
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                  className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-semibold"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">Home About Description</label>
-              <textarea 
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-1.5 font-bold font-mono">
+                Home About Narrative Description
+              </label>
+              <textarea
                 rows={3}
-                value={homeAboutText} 
+                value={homeAboutText}
                 onChange={(e) => setHomeAboutText(e.target.value)}
-                placeholder="Comprehensive corporate overview paragraph..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-construction-navy/20 focus:border-construction-navy transition-all" 
+                placeholder="Brief narrative of HiPRO civil engineering firm..."
+                className="w-full bg-slate-50/70 border border-slate-200 text-slate-900 rounded-xl px-4 py-2.5 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
               />
             </div>
 
-            {/* Bullets / Pillars */}
-            <div className="border-t border-slate-200 pt-4 mt-4 space-y-4">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Intro Key Pillars / Bullets</h3>
-              
-              {/* Pillar 1 */}
-              <div className="p-4 bg-slate-50 border border-slate-200 space-y-3">
-                <p className="text-[11px] font-bold text-construction-navy uppercase tracking-wider">Pillar 1</p>
-                <input 
-                  type="text" 
-                  value={homeAboutBullet1Title} 
-                  onChange={(e) => setHomeAboutBullet1Title(e.target.value)}
-                  placeholder="Pillar 1 Title (e.g. Engineering & Construction)"
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-                <textarea 
-                  rows={2}
-                  value={homeAboutBullet1Desc} 
-                  onChange={(e) => setHomeAboutBullet1Desc(e.target.value)}
-                  placeholder="Pillar 1 Description..."
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-              </div>
-
-              {/* Pillar 2 */}
-              <div className="p-4 bg-slate-50 border border-slate-200 space-y-3">
-                <p className="text-[11px] font-bold text-construction-navy uppercase tracking-wider">Pillar 2</p>
-                <input 
-                  type="text" 
-                  value={homeAboutBullet2Title} 
-                  onChange={(e) => setHomeAboutBullet2Title(e.target.value)}
-                  placeholder="Pillar 2 Title (e.g. Turnkey Project Execution)"
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-                <textarea 
-                  rows={2}
-                  value={homeAboutBullet2Desc} 
-                  onChange={(e) => setHomeAboutBullet2Desc(e.target.value)}
-                  placeholder="Pillar 2 Description..."
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-              </div>
-
-              {/* Pillar 3 */}
-              <div className="p-4 bg-slate-50 border border-slate-200 space-y-3">
-                <p className="text-[11px] font-bold text-construction-navy uppercase tracking-wider">Pillar 3</p>
-                <input 
-                  type="text" 
-                  value={homeAboutBullet3Title} 
-                  onChange={(e) => setHomeAboutBullet3Title(e.target.value)}
-                  placeholder="Pillar 3 Title (e.g. Architecture & Planning)"
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-                <textarea 
-                  rows={2}
-                  value={homeAboutBullet3Desc} 
-                  onChange={(e) => setHomeAboutBullet3Desc(e.target.value)}
-                  placeholder="Pillar 3 Description..."
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── 6. Hindustan Group Companies ───────────────────────── */}
-        <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-none bg-indigo-50 flex items-center justify-center border border-indigo-200">
-                <Layers className="w-5 h-5 text-indigo-700" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 leading-tight">Hindustan Group Ecosystem</h2>
-                <p className="text-slate-500 text-xs mt-0.5">Manage group companies, status badges, categories, and external portal URLs.</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={handleAddGroupCompany}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-none shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Company</span>
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {groupCompanies.map((company, index) => (
-              <div key={index} className="p-4 bg-white border border-slate-200 rounded-none space-y-3 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-construction-navy">
-                      Company #{index + 1}: {company.name || "Untitled Company"}
-                    </span>
-                    <div className="flex items-center gap-1 ml-2">
-                      <button
-                        type="button"
-                        disabled={index === 0}
-                        onClick={() => handleMoveGroupCompany(index, "up")}
-                        title="Move Up"
-                        className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <ChevronUp className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === groupCompanies.length - 1}
-                        onClick={() => handleMoveGroupCompany(index, "down")}
-                        title="Move Down"
-                        className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer">
-                      <input 
-                        type="checkbox"
-                        checked={company.active !== false}
-                        onChange={(e) => handleGroupCompanyChange(index, "active", e.target.checked)}
-                        className="rounded-none text-construction-navy focus:ring-construction-navy"
-                      />
-                      Active on Homepage
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveGroupCompany(index)}
-                      title="Remove Company"
-                      className="text-slate-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Company Name</label>
-                    <input 
-                      type="text" 
-                      value={company.name}
-                      onChange={(e) => handleGroupCompanyChange(index, "name", e.target.value)}
-                      placeholder="e.g. Hindustan Empanelment"
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Category / Sector</label>
-                    <input 
-                      type="text" 
-                      value={company.category || ""}
-                      onChange={(e) => handleGroupCompanyChange(index, "category", e.target.value)}
-                      placeholder="e.g. Digital & Technology"
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Status Badge Text</label>
-                    <select
-                      value={company.status}
-                      onChange={(e) => handleGroupCompanyChange(index, "status", e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy"
-                    >
-                      <option value="Flagship">Flagship</option>
-                      <option value="Live Portal">Live Portal</option>
-                      <option value="Coming Soon">Coming Soon</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Portal Website URL</label>
-                  <input 
-                    type="url" 
-                    value={company.website}
-                    onChange={(e) => handleGroupCompanyChange(index, "website", e.target.value)}
-                    placeholder="https://... (Leave blank for Coming Soon)"
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
+            {/* 3 Core Highlight Bullets */}
+            <div className="pt-2">
+              <label className="text-slate-500 text-[11px] uppercase tracking-wider block mb-2 font-bold font-mono">
+                Homepage 3 Core Capabilities Bullets
+              </label>
+              <div className="grid md:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-2">
+                  <input
+                    type="text"
+                    value={homeAboutBullet1Title}
+                    onChange={(e) => setHomeAboutBullet1Title(e.target.value)}
+                    placeholder="Bullet 1 Title"
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Short Description</label>
-                  <textarea 
+                  <textarea
                     rows={2}
-                    value={company.description}
-                    onChange={(e) => handleGroupCompanyChange(index, "description", e.target.value)}
-                    placeholder="Brief summary of company operations..."
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-construction-navy" 
+                    value={homeAboutBullet1Desc}
+                    onChange={(e) => setHomeAboutBullet1Desc(e.target.value)}
+                    placeholder="Bullet 1 Description..."
+                    className="w-full bg-white border border-slate-200 text-slate-700 rounded-lg p-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-2">
+                  <input
+                    type="text"
+                    value={homeAboutBullet2Title}
+                    onChange={(e) => setHomeAboutBullet2Title(e.target.value)}
+                    placeholder="Bullet 2 Title"
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <textarea
+                    rows={2}
+                    value={homeAboutBullet2Desc}
+                    onChange={(e) => setHomeAboutBullet2Desc(e.target.value)}
+                    placeholder="Bullet 2 Description..."
+                    className="w-full bg-white border border-slate-200 text-slate-700 rounded-lg p-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-2">
+                  <input
+                    type="text"
+                    value={homeAboutBullet3Title}
+                    onChange={(e) => setHomeAboutBullet3Title(e.target.value)}
+                    placeholder="Bullet 3 Title"
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <textarea
+                    rows={2}
+                    value={homeAboutBullet3Desc}
+                    onChange={(e) => setHomeAboutBullet3Desc(e.target.value)}
+                    placeholder="Bullet 3 Description..."
+                    className="w-full bg-white border border-slate-200 text-slate-700 rounded-lg p-2 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
               </div>
-            ))}
-
-            {groupCompanies.length === 0 && (
-              <div className="p-8 text-center border-2 border-dashed border-slate-200 bg-white">
-                <p className="text-xs text-slate-500 mb-3">No group companies configured yet.</p>
-                <button
-                  type="button"
-                  onClick={handleAddGroupCompany}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-none shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add First Company</span>
-                </button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* ── Form Actions ───────────────────────────────────── */}
-        <div className="bg-slate-50 p-6 flex items-center justify-between">
+        {/* ── Form Actions Floating Bar ────────────────────────── */}
+        <div className="rounded-2xl bg-white/90 backdrop-blur-xl border border-slate-200/80 p-4 shadow-sm flex items-center justify-between sticky bottom-4 z-20">
           <div>
             {message.text && (
-              <p className={`text-sm font-bold ${message.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+              <p
+                className={`text-xs font-bold flex items-center gap-1.5 ${
+                  message.type === "success" ? "text-emerald-600" : "text-rose-600"
+                }`}
+              >
+                {message.type === "success" && <CheckCircle2 className="w-4 h-4" />}
                 {message.text}
               </p>
             )}
           </div>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={saving}
-            className="flex items-center gap-2 bg-construction-navy hover:bg-blue-800 text-white px-6 py-2.5 rounded-none text-sm font-semibold disabled:opacity-50 transition-colors shadow-md shadow-blue-900/20 cursor-pointer"
+            className="flex items-center gap-2 bg-[#0F2C59] hover:bg-blue-900 text-white px-6 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? "Saving..." : "Save Settings"}
+            <span>{saving ? "Saving Changes..." : "Save HiPRO Settings"}</span>
           </button>
         </div>
-
       </form>
     </div>
   );

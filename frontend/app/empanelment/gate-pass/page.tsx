@@ -23,14 +23,7 @@ import {
 
 function GatePassContent() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    try {
-      const token = localStorage.getItem("vendor_token") || localStorage.getItem("hipro_vendor_token");
-      if (token) setIsLoggedIn(true);
-    } catch (_e) {}
-  }, []);
 
   useEffect(() => {
     async function fetchCms() {
@@ -102,15 +95,7 @@ function GatePassContent() {
           </div>
 
           <div className="pt-2">
-            {isLoggedIn ? (
-              <Link
-                href="/empanelment/portal/gate-pass"
-                className="w-full py-3 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
-              >
-                <span>Generate Official Site Gate Pass ➔</span>
-              </Link>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
                 <Link
                   href="/empanelment/login?redirect=/empanelment/portal/gate-pass"
                   className="flex-1 py-3 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs text-center"
@@ -125,7 +110,6 @@ function GatePassContent() {
                   Register
                 </Link>
               </div>
-            )}
           </div>
         </div>
 

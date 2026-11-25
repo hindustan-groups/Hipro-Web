@@ -22,6 +22,20 @@ html:has(.admin-root-viewport) {
   scroll-behavior: auto !important;
 }
 
+.admin-root-viewport {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  contain: strict;
+  max-height: 100vh !important;
+  max-width: 100vw !important;
+}
+
+#admin-content-column {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  contain: layout size;
+}
+
 body {
   background-color: #ffffff;
   color: #000000;

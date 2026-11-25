@@ -23,17 +23,19 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full flex overflow-hidden bg-slate-50/90 text-slate-900 font-sans antialiased selection:bg-red-500/20 selection:text-red-900 admin-root-viewport">
+    <div className="fixed inset-0 w-full h-full flex overflow-hidden bg-slate-50/90 text-slate-900 font-sans antialiased selection:bg-red-500/20 selection:text-red-900 admin-root-viewport overscroll-none">
       <AdminNavigationProgress />
-      {/* Subtle Apple-style Ambient Glow Blooms */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-300/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 -right-40 w-[450px] h-[450px] bg-red-200/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-indigo-200/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Subtle Apple-style Ambient Glow Blooms - Isolated inside an overflow-hidden container so they can never bleed scroll height */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-300/15 rounded-full blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-[450px] h-[450px] bg-red-200/15 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-indigo-200/15 rounded-full blur-3xl" />
+      </div>
 
       <AdminSidebar user={user} />
       <div
         id="admin-content-column"
-        className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative overscroll-none"
+        className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative overscroll-none z-10"
       >
         <AdminHeader user={user} />
         <main

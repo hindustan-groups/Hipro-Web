@@ -145,7 +145,7 @@ export default function PublicTendersRadarPage() {
           </div>
         </div>
         <Link
-          href="/empanelment/portal/tenders"
+          href="/empanelment/login?redirect=/empanelment/portal/tenders"
           className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shrink-0 transition-colors"
         >
           <span>Partner Bidding Radar</span>

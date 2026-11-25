@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Inbox,
   Search,
@@ -22,12 +23,21 @@ export default function ApplicationsPipelinePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const searchParams = useSearchParams();
+  const qStatus = searchParams?.get("status") || "ALL";
+
   // Filters
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState(qStatus);
   const [tierFilter, setTierFilter] = useState("ALL");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (qStatus && qStatus !== statusFilter) {
+      setStatusFilter(qStatus);
+    }
+  }, [qStatus]);
 
   // Modals & Drawers
   const [selectedApplication, setSelectedApplication] = useState<VendorApplicationDetail | null>(null);
@@ -105,6 +115,7 @@ export default function ApplicationsPipelinePage() {
 
   const statusTabs = [
     { label: "All Pipeline", value: "ALL" },
+    { label: "Pending Review", value: "PENDING" },
     { label: "Submitted", value: "SUBMITTED" },
     { label: "Under Review", value: "UNDER_REVIEW" },
     { label: "Docs Pending", value: "DOCS_REQUESTED" },
