@@ -148,7 +148,7 @@ function LoginForm() {
 
           {step === "credentials" ? (
             /* ================= STEP 1: CREDENTIALS ================= */
-            <form onSubmit={handleCredentialsSubmit} className="space-y-5">
+            <form onSubmit={handleCredentialsSubmit} className="space-y-5" autoComplete="off">
               <div>
                 <label htmlFor="admin-email" className="text-slate-500 text-xs uppercase tracking-wider block mb-1.5 font-bold">
                   Email Address
@@ -159,9 +159,9 @@ function LoginForm() {
                   </div>
                   <input
                     id="admin-email"
-                    name="email"
+                    name="hipro_admin_email"
                     type="email"
-                    autoComplete="username"
+                    autoComplete="off"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -181,9 +181,9 @@ function LoginForm() {
                   </div>
                   <input
                     id="admin-password"
-                    name="password"
+                    name="hipro_admin_secret"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

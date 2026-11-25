@@ -80,23 +80,6 @@ export function getDefaultMailboxes(): CorporateMailbox[] {
       replyTo: process.env.SMTP_USER || "info@hindustanprojects.in",
       description: "Primary corporate mailbox for civil contracts, corporate inquiries, and master HQ dispatches.",
     },
-    {
-      id: "mb_hbs_waterproofing",
-      name: "Hind Building Solutions (HBS)",
-      email: process.env.HBS_SMTP_USER || "hbs@hindustanprojects.in",
-      brand: "hbs",
-      brandName: "HBS Waterproofing & Structural Repair",
-      deliveryMethod: "smtp",
-      smtpHost: process.env.SMTP_HOST || "smtp.hostinger.com",
-      smtpPort: parseInt(process.env.SMTP_PORT || "465", 10),
-      smtpUser: process.env.HBS_SMTP_USER || "hbs@hindustanprojects.in",
-      smtpPass: process.env.SMTP_PASS || "",
-      smtpPassConfigured: Boolean(process.env.SMTP_PASS),
-      isDefault: false,
-      status: "active",
-      replyTo: process.env.HBS_SMTP_USER || "hbs@hindustanprojects.in",
-      description: "Specialized building repair desk for terrace waterproofing, concrete crack repair & site BOQs.",
-    },
   ];
 }
 

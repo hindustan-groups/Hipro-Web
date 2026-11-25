@@ -1610,7 +1610,7 @@ export default function MasterCompanyDashboard() {
                   }`}
                 >
                   {data?.automail?.connectedCount !== undefined
-                    ? `${data.automail.connectedCount} Active · ${data?.automail?.mailboxes?.length || 2} Configured`
+                    ? `${data.automail.connectedCount} Active · ${data?.automail?.mailboxes?.length || 1} Configured`
                     : "Mailbox Radar"}
                 </span>
               </div>
@@ -1633,17 +1633,6 @@ export default function MasterCompanyDashboard() {
                         smtpPort: 465,
                         description: "Turnkey Quotes, Job Applications & Holding Master Notifications",
                         isConfigured: true,
-                      },
-                      {
-                        id: "mb_hbs_waterproofing",
-                        name: "Hind Building Solutions (HBS)",
-                        email: "hbs@hindustanprojects.in",
-                        brand: "hbs",
-                        brandName: "HBS Repairs",
-                        status: "needs_setup",
-                        smtpPort: 465,
-                        description: "Waterproofing Inspections, Crack Repair BOQ & Quotes",
-                        isConfigured: false,
                       },
                     ]
                 ).map((mb: any, idx: number) => {

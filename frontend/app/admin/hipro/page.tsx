@@ -555,9 +555,9 @@ export default function HiproControlCenterPage() {
               <span className="text-slate-500">Leading Territories</span>
               <span
                 className="font-bold text-slate-900 font-mono truncate max-w-[140px] text-right"
-                title={hiproMetrics.velocity?.leadingTerritories || "Bhilwara, RJ"}
+                title={hiproMetrics.velocity?.leadingTerritories || "Bhilwara (HQ)"}
               >
-                {hiproMetrics.velocity?.leadingTerritories || "Bhilwara, RJ"}
+                {hiproMetrics.velocity?.leadingTerritories || "Bhilwara (HQ)"}
               </span>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
