@@ -59,79 +59,64 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // 2. Stealth Admin Gateway Secret Key Verification:
-  // Check if candidate secret key is provided via query parameter (?key=..., ?secret=...) or path slug (/admin-login/KEY, /admin/KEY)
+  // 2. Strict Stealth Admin Gateway Verification:
+  // Access to /admin-login STRICTLY requires the secret key in the request URL.
+  // No persistent cookie bypass: removing the key from URL immediately redirects to Home (/).
   const querySecretKey =
     req.nextUrl.searchParams.get("key") ||
     req.nextUrl.searchParams.get("secret") ||
     req.nextUrl.searchParams.get("gateway_key") ||
     req.nextUrl.searchParams.get("token");
 
-  let candidateSlug: string | null = null;
+  let isKeyInPath = false;
   if (pathname.startsWith("/admin-login/")) {
-    candidateSlug = pathname.replace(/^\/admin-login\//, "").split("/")[0];
-  } else if (pathname.startsWith("/admin/")) {
-    candidateSlug = pathname.replace(/^\/admin\//, "").split("/")[0];
-  }
-
-  const candidateKey = querySecretKey || candidateSlug;
-  const isKeyValid = candidateKey ? await isValidAdminSecretKey(candidateKey) : false;
-
-  // If valid secret key is provided (query or path), grant persistent access cookie and redirect to clean /admin-login
-  if (isKeyValid) {
-    const targetUrl = new URL("/admin-login", req.url);
-    const returnTo = req.nextUrl.searchParams.get("returnTo");
-    if (returnTo) {
-      targetUrl.searchParams.set("returnTo", returnTo);
+    const slug = pathname.replace(/^\/admin-login\//, "").split("/")[0];
+    if (slug && (await isValidAdminSecretKey(slug))) {
+      isKeyInPath = true;
     }
-    const response = NextResponse.redirect(targetUrl, 307);
-    response.cookies.set({
-      name: "admin_portal_access",
-      value: "granted",
-      httpOnly: true,
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60, // 7 days persistent gatekeeper access
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-    return response;
+  } else if (pathname.startsWith("/admin/")) {
+    const slug = pathname.replace(/^\/admin\//, "").split("/")[0];
+    if (slug && (await isValidAdminSecretKey(slug))) {
+      isKeyInPath = true;
+    }
   }
 
-  // 3. Admin Access Authorization State:
-  const hasPortalAccessCookie = req.cookies.get("admin_portal_access")?.value === "granted";
-  const hasAdminSession = Boolean(req.cookies.get("admin_session")?.value?.trim());
-  const isAuthorizedAdminVisitor = hasPortalAccessCookie || hasAdminSession;
+  const isKeyInQuery = querySecretKey ? await isValidAdminSecretKey(querySecretKey) : false;
+  const isKeyValid = isKeyInQuery || isKeyInPath;
 
-  // 4. Guard /admin-login:
-  // If unauthorized (no secret key cookie and not logged in), hide the page completely and redirect to Home (/)
+  const hasAdminSession = Boolean(req.cookies.get("admin_session")?.value?.trim());
+
+  // 3. Guard /admin-login and /admin-login/*:
   const isAdminLoginRoute = pathname === "/admin-login" || pathname.startsWith("/admin-login/");
   if (isAdminLoginRoute) {
-    if (!isAuthorizedAdminVisitor) {
-      return NextResponse.redirect(new URL("/", req.url), 307);
+    // If the valid key is present in the path (/admin-login/KEY), rewrite to /admin-login so the route renders
+    if (isKeyInPath) {
+      return NextResponse.rewrite(new URL("/admin-login", req.url));
     }
-    return NextResponse.next();
+    // If valid key is in query (?key=KEY), allow the login page to render directly
+    if (isKeyInQuery) {
+      return NextResponse.next();
+    }
+    // NO valid secret key in URL -> STRICTLY redirect to Home page (/)
+    return NextResponse.redirect(new URL("/", req.url), 307);
   }
 
-  // 5. Guard /admin and /admin/*:
+  // 4. Guard /admin and /admin/*:
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   if (isAdminRoute) {
-    // If visitor has no secret key cookie and no admin session, bounce to Home (/)
-    if (!isAuthorizedAdminVisitor) {
-      return NextResponse.redirect(new URL("/", req.url), 307);
+    // If someone visited /admin/KEY (secret path), rewrite/redirect to /admin-login?key=KEY
+    if (isKeyInPath) {
+      const slug = pathname.replace(/^\/admin\//, "").split("/")[0];
+      return NextResponse.redirect(new URL(`/admin-login?key=${encodeURIComponent(slug)}`, req.url), 307);
     }
 
-    // Visitor has unlocked the gate via secret key, but is not yet authenticated with admin_session:
-    if (!hasAdminSession) {
-      const loginUrl = new URL("/admin-login", req.url);
-      const returnTo = `${pathname}${search}`;
-      if (returnTo !== "/admin") {
-        loginUrl.searchParams.set("returnTo", returnTo);
-      }
-      return NextResponse.redirect(loginUrl, 307);
+    // Authenticated admin session -> allow dashboard access
+    if (hasAdminSession) {
+      return NextResponse.next();
     }
 
-    // Both portal access and admin session present: proceed to Server Component & backend validation
-    return NextResponse.next();
+    // Unauthenticated -> bounce to Home page (/)
+    return NextResponse.redirect(new URL("/", req.url), 307);
   }
 
   if (!isHbsSubdomain && !isEmpanelmentSubdomain) {
