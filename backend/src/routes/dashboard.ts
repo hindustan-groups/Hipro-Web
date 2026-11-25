@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
 import { authGuard } from "../middleware/authGuard";
 import type { ApiResponse } from "../lib/types";
+import { getAutomailSettings, getDefaultMailboxes } from "../services/automail/settingsService";
 
 const router = Router();
 
@@ -383,11 +384,39 @@ router.get("/", async (req: Request, res: Response) => {
         gatePasses: { total: gatePassesTotal, today: gatePassesToday },
       },
 
-      // ✉️ Global AutoMail
-      automail: {
-        campaigns: automailCampaignsTotal,
-        dispatchesToday: automailLogsToday,
-      },
+      // ✉️ Global AutoMail & Dynamic Mailbox Radar
+      automail: (() => {
+        const automailConfig = getAutomailSettings();
+        const rawMailboxes =
+          automailConfig?.mailboxes && automailConfig.mailboxes.length > 0
+            ? automailConfig.mailboxes
+            : getDefaultMailboxes();
+
+        const activeMailboxes = rawMailboxes.filter((m) => m.status === "active");
+
+        return {
+          campaigns: automailCampaignsTotal,
+          dispatchesToday: automailLogsToday,
+          connectedCount: activeMailboxes.length,
+          mailboxes: rawMailboxes.map((mb, idx) => ({
+            id: mb.id || `mb_${idx}`,
+            name: mb.name,
+            email: mb.email,
+            brand: mb.brand,
+            brandName: mb.brandName || (mb.brand === "hbs" ? "HBS Repairs" : "Flagship"),
+            deliveryMethod: mb.deliveryMethod || "smtp",
+            smtpPort: mb.smtpPort || 465,
+            smtpHost: mb.smtpHost || "smtp.hostinger.com",
+            status: mb.status || "active",
+            description:
+              mb.description ||
+              (mb.brand === "hbs"
+                ? "Waterproofing Inspections, Crack Repair BOQ & Quotes"
+                : "Turnkey Quotes, Job Applications & Holding Master Notifications"),
+            isDefault: mb.isDefault ?? (idx === 0),
+          })),
+        };
+      })(),
 
       // Cross-Portal Recent Feed
       recentQuotes,

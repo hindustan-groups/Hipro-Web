@@ -69,6 +69,20 @@ interface ExecutiveData {
   automail: {
     campaigns: number;
     dispatchesToday: number;
+    connectedCount?: number;
+    mailboxes?: Array<{
+      id: string;
+      name: string;
+      email: string;
+      brand: string;
+      brandName?: string;
+      status: string;
+      smtpPort?: number;
+      smtpHost?: string;
+      deliveryMethod?: string;
+      description?: string;
+      isDefault?: boolean;
+    }>;
   };
   recentQuotes: any[];
   recentContacts: any[];
@@ -1589,49 +1603,90 @@ export default function MasterCompanyDashboard() {
                   </h3>
                 </div>
                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  2 Connected
+                  {data?.automail?.connectedCount ?? (data?.automail?.mailboxes?.length || 2)} Connected
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                 Dual company mailboxes powering automated corporate dispatches and repair notifications.
               </p>
 
-              {/* Mailbox 1 */}
-              <div className="mt-4 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-slate-400">
-                    Mailbox 1 · Flagship
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    TLS 465 Active
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-slate-900 font-mono">
-                  info@hindustanprojects.in
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Turnkey Quotes, Job Applications & Holding Master Notifications
-                </p>
-              </div>
+              {/* Dynamic Connected Mailboxes */}
+              <div className="mt-4 space-y-3">
+                {(data?.automail?.mailboxes && data.automail.mailboxes.length > 0
+                  ? data.automail.mailboxes
+                  : [
+                      {
+                        id: "mb_hp_primary",
+                        name: "Hindustan Projects Corporate & HiPRO Civil",
+                        email: "info@hindustanprojects.in",
+                        brand: "hipro",
+                        brandName: "Flagship Civil",
+                        status: "active",
+                        smtpPort: 465,
+                        description: "Turnkey Quotes, Job Applications & Holding Master Notifications",
+                      },
+                      {
+                        id: "mb_hbs_waterproofing",
+                        name: "Hind Building Solutions (HBS)",
+                        email: "hbs@hindustanprojects.in",
+                        brand: "hbs",
+                        brandName: "HBS Repairs",
+                        status: "active",
+                        smtpPort: 465,
+                        description: "Waterproofing Inspections, Crack Repair BOQ & Quotes",
+                      },
+                    ]
+                ).map((mb, idx) => {
+                  const isHbs = mb.brand === "hbs";
+                  const isEmpanelment = mb.brand === "empanelment";
+                  const isActive = mb.status === "active";
 
-              {/* Mailbox 2 */}
-              <div className="mt-3 p-3.5 rounded-2xl bg-orange-50/50 border border-orange-200/70 space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider font-mono text-orange-600">
-                    Mailbox 2 · HBS Repairs
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    TLS 465 Active
-                  </span>
-                </div>
-                <p className="text-xs font-bold text-slate-900 font-mono">
-                  hbs@hindustanprojects.in
-                </p>
-                <p className="text-[11px] text-slate-500">
-                  Waterproofing Inspections, Crack Repair BOQ & Quotes
-                </p>
+                  return (
+                    <div
+                      key={mb.id || mb.email || idx}
+                      className={`p-3.5 rounded-2xl border space-y-1 transition-all ${
+                        isHbs
+                          ? "bg-orange-50/50 border-orange-200/70"
+                          : isEmpanelment
+                          ? "bg-amber-50/50 border-amber-200/70"
+                          : "bg-slate-50 border-slate-200/70"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider font-mono ${
+                            isHbs
+                              ? "text-orange-600"
+                              : isEmpanelment
+                              ? "text-amber-700"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          Mailbox {idx + 1} · {mb.brandName || (isHbs ? "HBS Repairs" : isEmpanelment ? "Procurement" : "Flagship")}
+                        </span>
+                        {isActive ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 font-mono">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            TLS {mb.smtpPort || 465} Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 font-mono">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                            Standby
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-900 font-mono break-all">
+                        {mb.email}
+                      </p>
+                      {mb.description && (
+                        <p className="text-[11px] text-slate-500 line-clamp-2">
+                          {mb.description}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -1713,10 +1768,14 @@ export default function MasterCompanyDashboard() {
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between">
                 <div>
                   <p className="font-bold text-slate-900 font-sans">Corporate Mail Relays</p>
-                  <p className="text-[11px] text-slate-400">info@ & hbs@ (Hostinger SMTP)</p>
+                  <p className="text-[11px] text-slate-400">
+                    {data?.automail?.mailboxes && data.automail.mailboxes.length > 0
+                      ? data.automail.mailboxes.map((m) => m.email.split("@")[0] + "@").join(" & ") + " (" + (data.automail.mailboxes[0].deliveryMethod === "hostinger_api" ? "Hostinger API" : "Hostinger SMTP") + ")"
+                      : "info@ & hbs@ (Hostinger SMTP)"}
+                  </p>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                  2 Armed
+                  {data?.automail?.connectedCount ?? (data?.automail?.mailboxes?.length || 2)} Armed
                 </span>
               </div>
             </div>
