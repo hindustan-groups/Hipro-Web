@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import AdminGatewayKeyCard from "@/components/admin/AdminGatewayKeyCard";
 import {
   Settings,
   Building2,
@@ -807,6 +808,11 @@ export default function MasterHqSettingsPage() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* ── Section 5: Stealth Admin Gateway URL & Key Protection ── */}
+          <div className="rounded-3xl bg-white border border-slate-200 p-6 md:p-8 shadow-xs">
+            <AdminGatewayKeyCard />
           </div>
 
           {/* ── Save Bar Sticky Footer ── */}

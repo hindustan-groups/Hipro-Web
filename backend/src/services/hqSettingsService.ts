@@ -28,6 +28,7 @@ export interface MasterHqSettings {
     letterheadHeader: string;
     officialDisclaimer: string;
   };
+  adminSecretKey?: string;
   updatedAt?: string;
 }
 
@@ -65,6 +66,7 @@ export function getDefaultHqSettings(): MasterHqSettings {
       letterheadHeader: "Hindustan Projects Group · Architectural Engineering, Turnkey Construction & Civil Infrastructure",
       officialDisclaimer: "Confidentiality Notice: This digital transmission and any accompanying credentials are confidential and legally privileged. Strictly governed by Hindustan Projects Group central corporate governance protocols.",
     },
+    adminSecretKey: process.env.ADMIN_SECRET_KEY || "hp-admin-gateway-key-2026",
     updatedAt: new Date().toISOString(),
   };
 }

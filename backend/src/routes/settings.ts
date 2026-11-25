@@ -53,6 +53,56 @@ router.post("/hq/ping", adminGuard, async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/settings/gateway-key — Get current gateway secret key (Admin only)
+router.get("/gateway-key", adminGuard, async (req: Request, res: Response) => {
+  try {
+    const hq = await getHqSettingsAsync();
+    const currentKey = hq.adminSecretKey || process.env.ADMIN_SECRET_KEY || "hp-admin-gateway-key-2026";
+    return res.json({
+      success: true,
+      key: currentKey,
+      stealthActive: true,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to load gateway key" });
+  }
+});
+
+// PUT /api/settings/gateway-key — Update gateway secret key (Admin only)
+router.put("/gateway-key", adminGuard, async (req: Request, res: Response) => {
+  try {
+    const { key } = req.body;
+    if (!key || typeof key !== "string" || key.trim().length < 4) {
+      return res.status(400).json({ success: false, error: "Gateway key must be at least 4 characters long" });
+    }
+    const cleanKey = key.trim();
+    const updated = await saveHqSettings({ adminSecretKey: cleanKey });
+    return res.json({
+      success: true,
+      message: "Admin Stealth Gateway Secret Key updated successfully!",
+      key: updated.adminSecretKey,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to update gateway key" });
+  }
+});
+
+// GET /api/settings/gateway-verify — Verify candidate key (Used by Edge Middleware)
+router.get("/gateway-verify", async (req: Request, res: Response) => {
+  try {
+    const candidate = req.query.key;
+    if (!candidate || typeof candidate !== "string") {
+      return res.json({ valid: false });
+    }
+    const hq = await getHqSettingsAsync();
+    const activeKey = hq.adminSecretKey || process.env.ADMIN_SECRET_KEY || "hp-admin-gateway-key-2026";
+    const isValid = candidate.trim().toLowerCase() === activeKey.trim().toLowerCase();
+    return res.json({ valid: isValid });
+  } catch {
+    return res.json({ valid: false });
+  }
+});
+
 // GET /api/settings/hq/public — Public portal status & maintenance mode checks
 router.get("/hq/public", async (req: Request, res: Response) => {
   try {

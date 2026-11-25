@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck, KeyRound, Lock } from "lucide-react";
 import SecuritySettingsCard from "@/components/admin/SecuritySettingsCard";
+import AdminGatewayKeyCard from "@/components/admin/AdminGatewayKeyCard";
 
 export default function MasterSecurityPage() {
   return (
@@ -27,7 +28,7 @@ export default function MasterSecurityPage() {
                 Master Security & 2FA Vault
               </h1>
               <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                Parent Company Access Control · RFC 6238 TOTP Two-Factor Authentication & Credential Governance
+                Parent Company Access Control · Stealth Gateway URL Obscurity & RFC 6238 2FA Governance
               </p>
             </div>
           </div>
@@ -35,11 +36,16 @@ export default function MasterSecurityPage() {
 
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 text-emerald-800 text-xs font-semibold border border-emerald-500/20 shadow-2xs self-start sm:self-auto">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>RFC 6238 Standard Enforced</span>
+          <span>Multi-Layer Perimeter Enforced</span>
         </div>
       </div>
 
-      {/* ── Security Card Component ───────────────────────────── */}
+      {/* ── Stealth Gateway Secret URL Card ───────────────────── */}
+      <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm p-6 md:p-8">
+        <AdminGatewayKeyCard />
+      </div>
+
+      {/* ── 2FA & Password Management Card ───────────────────── */}
       <div className="rounded-3xl bg-white/90 backdrop-blur-xl border border-slate-200/70 shadow-sm p-6 md:p-8">
         <SecuritySettingsCard />
       </div>

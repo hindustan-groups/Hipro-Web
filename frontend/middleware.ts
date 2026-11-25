@@ -4,12 +4,29 @@ import type { NextRequest } from "next/server";
 // Admin Gateway Secret Key (Configurable via environment variable or default secure key)
 const ADMIN_SECRET_KEY = (process.env.ADMIN_SECRET_KEY || "hp-admin-gateway-key-2026").trim();
 
-function isValidAdminSecretKey(candidate: string | null | undefined): boolean {
+async function isValidAdminSecretKey(candidate: string | null | undefined): Promise<boolean> {
   if (!candidate) return false;
-  return candidate.trim().toLowerCase() === ADMIN_SECRET_KEY.toLowerCase();
+  const clean = candidate.trim().toLowerCase();
+  if (clean === ADMIN_SECRET_KEY.toLowerCase()) return true;
+
+  try {
+    const rawBackendUrl =
+      process.env.BACKEND_API_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "https://hipro-backend-749v.onrender.com"
+        : "http://localhost:5000");
+    const res = await fetch(`${rawBackendUrl}/api/settings/gateway-verify?key=${encodeURIComponent(clean)}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return false;
+    const json = await res.json();
+    return Boolean(json?.valid);
+  } catch {
+    return false;
+  }
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const hostHeader = (req.headers.get("x-forwarded-host") || req.headers.get("host") || "").split(":")[0].toLowerCase();
   const nextHostname = req.nextUrl.hostname?.toLowerCase() || "";
 
@@ -50,19 +67,18 @@ export function middleware(req: NextRequest) {
     req.nextUrl.searchParams.get("gateway_key") ||
     req.nextUrl.searchParams.get("token");
 
-  const isKeyInQuery = isValidAdminSecretKey(querySecretKey);
-
-  let isKeyInPath = false;
+  let candidateSlug: string | null = null;
   if (pathname.startsWith("/admin-login/")) {
-    const slug = pathname.replace(/^\/admin-login\//, "").split("/")[0];
-    if (isValidAdminSecretKey(slug)) isKeyInPath = true;
+    candidateSlug = pathname.replace(/^\/admin-login\//, "").split("/")[0];
   } else if (pathname.startsWith("/admin/")) {
-    const slug = pathname.replace(/^\/admin\//, "").split("/")[0];
-    if (isValidAdminSecretKey(slug)) isKeyInPath = true;
+    candidateSlug = pathname.replace(/^\/admin\//, "").split("/")[0];
   }
 
+  const candidateKey = querySecretKey || candidateSlug;
+  const isKeyValid = candidateKey ? await isValidAdminSecretKey(candidateKey) : false;
+
   // If valid secret key is provided (query or path), grant persistent access cookie and redirect to clean /admin-login
-  if (isKeyInQuery || isKeyInPath) {
+  if (isKeyValid) {
     const targetUrl = new URL("/admin-login", req.url);
     const returnTo = req.nextUrl.searchParams.get("returnTo");
     if (returnTo) {
