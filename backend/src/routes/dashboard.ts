@@ -471,4 +471,192 @@ router.get("/", async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/dashboard/notifications — Unified Real-Time Multi-Portal Notification Feed
+router.get("/notifications", async (req: Request, res: Response) => {
+  try {
+    const [
+      quotes,
+      contacts,
+      hbsLeads,
+      vendorApps,
+      jobApps,
+      quotesPending,
+      contactsNew,
+      hbsLeadsNew,
+      vendorAppsSubmitted,
+      jobAppsNew,
+    ] = await Promise.all([
+      // 1. Recent quotes
+      prisma.quoteRequest.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          projectType: true,
+          budget: true,
+          location: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+      // 2. Recent contacts
+      prisma.contactMessage.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          message: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+      // 3. Recent HBS leads
+      prisma.hbsLead.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          selectedService: true,
+          message: true,
+          quotationAmount: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+      // 4. Recent Vendor applications
+      prisma.vendorApplication.findMany({
+        take: 6,
+        orderBy: { submittedAt: "desc" },
+        select: {
+          id: true,
+          companyName: true,
+          category: true,
+          tier: true,
+          status: true,
+          submittedAt: true,
+        },
+      }),
+      // 5. Recent Job applications
+      prisma.jobApplication.findMany({
+        take: 6,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          status: true,
+          createdAt: true,
+        },
+      }),
+      // Counts of unread/pending items
+      prisma.quoteRequest.count({ where: { status: "pending" } }),
+      prisma.contactMessage.count({ where: { status: "new" } }),
+      prisma.hbsLead.count({ where: { status: "NEW" } }),
+      prisma.vendorApplication.count({ where: { status: "SUBMITTED" } }),
+      prisma.jobApplication.count({ where: { status: "new" } }),
+    ]);
+
+    const totalUnreadCount = quotesPending + contactsNew + hbsLeadsNew + vendorAppsSubmitted + jobAppsNew;
+
+    const notifs: Array<{
+      id: string;
+      type: "quote" | "contact" | "hbs_lead" | "vendor_app" | "job_app";
+      portal: string;
+      title: string;
+      subtitle: string;
+      status: string;
+      isUnread: boolean;
+      createdAt: string;
+      href: string;
+    }> = [];
+
+    for (const q of quotes) {
+      notifs.push({
+        id: `quote_${q.id}`,
+        type: "quote",
+        portal: "HiPRO Civil",
+        title: `Turnkey Quote: ${q.name}`,
+        subtitle: `${q.budget || q.projectType || "New Inquiry"}${q.location ? ` · ${q.location.split(",")[0]}` : ""}`,
+        status: q.status,
+        isUnread: q.status === "pending",
+        createdAt: q.createdAt.toISOString(),
+        href: "/admin/quotes",
+      });
+    }
+
+    for (const c of contacts) {
+      notifs.push({
+        id: `contact_${c.id}`,
+        type: "contact",
+        portal: "Corporate Desk",
+        title: `Contact Inquiry: ${c.name}`,
+        subtitle: c.message ? (c.message.length > 50 ? `${c.message.slice(0, 50)}...` : c.message) : "New website inquiry",
+        status: c.status,
+        isUnread: c.status === "new",
+        createdAt: c.createdAt.toISOString(),
+        href: "/admin/contacts",
+      });
+    }
+
+    for (const h of hbsLeads) {
+      notifs.push({
+        id: `hbs_${h.id}`,
+        type: "hbs_lead",
+        portal: "HBS Repairs",
+        title: `Waterproofing Lead: ${h.name}`,
+        subtitle: `${h.selectedService || "Repair Quote"}${h.quotationAmount ? ` · ₹${h.quotationAmount.toLocaleString("en-IN")}` : ""}`,
+        status: h.status,
+        isUnread: h.status === "NEW",
+        createdAt: h.createdAt.toISOString(),
+        href: "/admin/hbs/leads",
+      });
+    }
+
+    for (const v of vendorApps) {
+      notifs.push({
+        id: `vendor_${v.id}`,
+        type: "vendor_app",
+        portal: "Vendor Hub",
+        title: `Contractor KYC: ${v.companyName}`,
+        subtitle: `${v.category || "Procurement"}${v.tier ? ` · ${v.tier}` : ""}`,
+        status: v.status,
+        isUnread: v.status === "SUBMITTED",
+        createdAt: v.submittedAt.toISOString(),
+        href: "/admin/empanelment/applications",
+      });
+    }
+
+    for (const j of jobApps) {
+      notifs.push({
+        id: `job_${j.id}`,
+        type: "job_app",
+        portal: "Careers",
+        title: `Job Application: ${j.name}`,
+        subtitle: `Role: ${j.role || "Candidate"}`,
+        status: j.status,
+        isUnread: j.status === "new",
+        createdAt: j.createdAt.toISOString(),
+        href: "/admin/applications",
+      });
+    }
+
+    // Sort all events by createdAt descending (newest first)
+    notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return res.json({
+      success: true,
+      data: {
+        unreadCount: totalUnreadCount,
+        notifications: notifs.slice(0, 15),
+      },
+    } as ApiResponse);
+  } catch (err: any) {
+    console.error("[Notifications API error]", err);
+    return res.status(500).json({ success: false, error: "Internal server error" } as ApiResponse);
+  }
+});
+
 export default router;

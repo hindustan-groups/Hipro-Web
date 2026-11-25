@@ -14,6 +14,10 @@ import {
   CheckCircle2,
   Clock,
   X,
+  Mail,
+  Briefcase,
+  Inbox,
+  ChevronRight,
 } from "lucide-react";
 import AdminSpotlightModal from "@/components/admin/AdminSpotlightModal";
 import PortalSwitcherDropdown from "@/components/admin/PortalSwitcherDropdown";
@@ -75,12 +79,78 @@ const titles: Record<string, string> = {
   "/admin/empanelment/settings":    "Empanelment Settings",
 };
 
+function formatRelativeTime(dateString: string): string {
+  try {
+    const diffMs = Date.now() - new Date(dateString).getTime();
+    if (diffMs < 0) return "Just now";
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return "Just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(dateString).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  } catch {
+    return "";
+  }
+}
+
 export default function AdminHeader({ user }: { user: any }) {
   const pathname = usePathname();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [serverUnreadCount, setServerUnreadCount] = useState(0);
+  const [lastReadTimestamp, setLastReadTimestamp] = useState<number>(0);
+  const [isLoadingNotifs, setIsLoadingNotifs] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Restore client read-timestamp on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("hipro_admin_notif_read_until");
+      if (stored) {
+        setLastReadTimestamp(parseInt(stored, 10));
+      }
+    } catch {}
+  }, []);
+
+  // Fetch real-time notifications from PostgreSQL backend
+  const fetchNotifications = React.useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard/notifications", {
+        credentials: "include",
+        cache: "no-store",
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setNotifications(json.data.notifications || []);
+        setServerUnreadCount(json.data.unreadCount || 0);
+      }
+    } catch {
+      // Quiet failover
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000); // 30s real-time poll
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  const handleMarkAllRead = () => {
+    const now = Date.now();
+    setLastReadTimestamp(now);
+    try {
+      localStorage.setItem("hipro_admin_notif_read_until", now.toString());
+    } catch {}
+  };
+
+  // Compute effective unread count based on server unread + client-acknowledged timestamp
+  const effectiveUnreadCount = notifications.filter(
+    (n) => n.isUnread && (lastReadTimestamp === 0 || new Date(n.createdAt).getTime() > lastReadTimestamp)
+  ).length;
 
   // Global Ctrl + K / Cmd + K spotlight shortcut
   useEffect(() => {
@@ -234,8 +304,8 @@ export default function AdminHeader({ user }: { user: any }) {
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-construction-red rounded-full ring-2 ring-white" />
+            {effectiveUnreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-600 rounded-full ring-2 ring-white animate-pulse" />
             )}
           </button>
 
@@ -247,15 +317,19 @@ export default function AdminHeader({ user }: { user: any }) {
                   <p className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
                     HQ Notifications
                   </p>
-                  {unreadCount > 0 && (
+                  {effectiveUnreadCount > 0 ? (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                      {unreadCount} new
+                      {effectiveUnreadCount} new
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      All caught up
                     </span>
                   )}
                 </div>
-                {unreadCount > 0 && (
+                {effectiveUnreadCount > 0 && (
                   <button
-                    onClick={() => setUnreadCount(0)}
+                    onClick={handleMarkAllRead}
                     className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
                   >
                     Mark all read
@@ -264,73 +338,102 @@ export default function AdminHeader({ user }: { user: any }) {
               </div>
 
               <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto mt-2">
-                {/* Notification 1: HiPRO Quote */}
-                <Link
-                  href="/admin/quotes"
-                  onClick={() => setIsNotifOpen(false)}
-                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4" />
+                {notifications.length === 0 ? (
+                  <div className="py-8 px-4 text-center space-y-2">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800">All Caught Up</p>
+                    <p className="text-[11px] text-slate-500 max-w-[220px] mx-auto">
+                      No pending inquiries, quotes, or contractor applications across group portals.
+                    </p>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900 truncate">New Civil Quote Request</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Industrial PEB shed construction in Bhilwara</p>
-                    <span className="text-[10px] text-slate-400 font-mono">5 mins ago · HiPRO</span>
-                  </div>
-                </Link>
+                ) : (
+                  notifications.map((notif: any) => {
+                    const isItemUnread =
+                      notif.isUnread &&
+                      (lastReadTimestamp === 0 || new Date(notif.createdAt).getTime() > lastReadTimestamp);
 
-                {/* Notification 2: HBS Lead */}
-                <Link
-                  href="/admin/hbs/leads"
-                  onClick={() => setIsNotifOpen(false)}
-                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
-                    <Flame className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900 truncate">New Waterproofing Lead</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Basement crack repair & injection grouting</p>
-                    <span className="text-[10px] text-slate-400 font-mono">22 mins ago · HBS</span>
-                  </div>
-                </Link>
+                    const getIcon = () => {
+                      switch (notif.type) {
+                        case "quote":
+                          return (
+                            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                              <Building2 className="w-4 h-4" />
+                            </div>
+                          );
+                        case "hbs_lead":
+                          return (
+                            <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                              <Flame className="w-4 h-4" />
+                            </div>
+                          );
+                        case "vendor_app":
+                          return (
+                            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                              <ShieldCheck className="w-4 h-4" />
+                            </div>
+                          );
+                        case "job_app":
+                          return (
+                            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                              <Briefcase className="w-4 h-4" />
+                            </div>
+                          );
+                        default:
+                          return (
+                            <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                              <Mail className="w-4 h-4" />
+                            </div>
+                          );
+                      }
+                    };
 
-                {/* Notification 3: Vendor KYC */}
-                <Link
-                  href="/admin/empanelment/applications"
-                  onClick={() => setIsNotifOpen(false)}
-                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900 truncate">Contractor KYC Submitted</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">Class-B Civil Subcontractor vetting required</p>
-                    <span className="text-[10px] text-slate-400 font-mono">1 hr ago · Vendor Hub</span>
-                  </div>
-                </Link>
-
-                {/* Notification 4: 2FA */}
-                <Link
-                  href="/admin/security"
-                  onClick={() => setIsNotifOpen(false)}
-                  className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-900 truncate">2FA Vault Operational</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 truncate">RFC 6238 TOTP two-factor security is active</p>
-                    <span className="text-[10px] text-emerald-600 font-mono">Protected · Master HQ</span>
-                  </div>
-                </Link>
+                    return (
+                      <Link
+                        key={notif.id}
+                        href={notif.href || "/admin"}
+                        onClick={() => setIsNotifOpen(false)}
+                        className={`p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors block ${
+                          isItemUnread ? "bg-blue-50/30" : ""
+                        }`}
+                      >
+                        {getIcon()}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <p
+                              className={`text-xs truncate ${
+                                isItemUnread ? "font-bold text-slate-900" : "font-medium text-slate-700"
+                              }`}
+                            >
+                              {notif.title}
+                            </p>
+                            {isItemUnread && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 truncate">
+                            {notif.subtitle}
+                          </p>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {formatRelativeTime(notif.createdAt)} · {notif.portal}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })
+                )}
               </div>
 
               <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-mono">Hindustan Group Master HQ</span>
+                <Link
+                  href="/admin"
+                  onClick={() => setIsNotifOpen(false)}
+                  className="text-blue-600 hover:text-blue-800 font-semibold font-mono flex items-center gap-0.5"
+                >
+                  <span>Activity Log</span>
+                  <ChevronRight className="w-3 h-3" />
+                </Link>
                 <button
                   onClick={() => setIsNotifOpen(false)}
                   className="text-slate-600 hover:text-slate-900 font-semibold cursor-pointer"
