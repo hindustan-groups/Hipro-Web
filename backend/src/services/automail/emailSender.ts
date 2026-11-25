@@ -689,11 +689,15 @@ export async function sendOneEmail({
   }
   const settings = await getAutomailSettingsAsync().catch(() => getAutomailSettings());
 
-  // Automatically resolve per-mailbox settings if caller supplied a senderEmail matching a configured mailbox
+  // Automatically resolve per-mailbox settings if caller supplied a senderEmail matching a configured mailbox or its aliases
   let resolvedConfig = customConfig;
   if (!resolvedConfig && senderEmail && Array.isArray(settings.mailboxes)) {
+    const cleanSender = senderEmail.toLowerCase().trim();
     const matchedMb = settings.mailboxes.find(
-      (mb: CorporateMailbox) => mb.email?.toLowerCase().trim() === senderEmail.toLowerCase().trim() && mb.status === "active"
+      (mb: CorporateMailbox) =>
+        mb.status === "active" &&
+        (mb.email?.toLowerCase().trim() === cleanSender ||
+          (mb.aliases || []).some((a) => a.toLowerCase().trim() === cleanSender))
     );
     if (matchedMb) {
       resolvedConfig = {
@@ -765,9 +769,10 @@ export async function sendOneEmail({
   });
 
   const authSender = user || fromEmail;
+  const effectiveFrom = fromEmail || authSender;
   const mailOptions = {
-    from: `"${fromName}" <${authSender}>`,
-    replyTo: fromEmail && fromEmail !== authSender ? `"${fromName}" <${fromEmail}>` : undefined,
+    from: `"${fromName}" <${effectiveFrom}>`,
+    replyTo: effectiveFrom !== authSender ? `"${fromName}" <${effectiveFrom}>` : undefined,
     to,
     subject,
     text: textBody || (brandedHtml ? brandedHtml.replace(/<[^>]*>/g, "") : ""),
@@ -956,18 +961,24 @@ export async function resolveEffectiveMailboxConfig(params: {
   const pool = activeMailboxes.length > 0 ? activeMailboxes : mailboxes;
 
   let chosen: CorporateMailbox | undefined;
+  let routedSenderEmail: string | undefined;
 
   if (params.mailboxId) {
     chosen = pool.find((m) => m.id === params.mailboxId);
   }
   if (!chosen && params.senderEmail) {
     const clean = params.senderEmail.toLowerCase().trim();
-    chosen = pool.find((m) => m.email?.toLowerCase().trim() === clean);
+    chosen = pool.find(
+      (m) =>
+        m.email?.toLowerCase().trim() === clean ||
+        (m.aliases || []).some((a) => a.toLowerCase().trim() === clean)
+    );
   }
   if (!chosen && params.triggerKey) {
     const routed = resolveSenderForTrigger(params.triggerKey);
     if (routed?.mailbox) {
       chosen = pool.find((m) => m.id === routed.mailbox.id) || routed.mailbox;
+      routedSenderEmail = routed.senderEmail;
     }
   }
   if (!chosen && params.brand && params.brand !== "all") {
@@ -980,8 +991,20 @@ export async function resolveEffectiveMailboxConfig(params: {
   const brandKey = params.brand || chosen?.brand || "hipro";
   const brandDefaults = getBrandConfigs()[brandKey] || getBrandConfigs().all;
 
+  const requestedEmail = params.senderEmail?.trim().toLowerCase();
+  const matchesChosenOrAlias =
+    requestedEmail &&
+    chosen &&
+    (chosen.email?.toLowerCase().trim() === requestedEmail ||
+      (chosen.aliases || []).some((a) => a.toLowerCase().trim() === requestedEmail));
+
   const finalSenderName = params.senderName?.trim() || chosen?.name || brandDefaults.name;
-  const finalSenderEmail = chosen?.email || params.senderEmail?.trim() || brandDefaults.defaultEmail;
+  const finalSenderEmail =
+    (matchesChosenOrAlias ? requestedEmail : undefined) ||
+    routedSenderEmail ||
+    chosen?.email ||
+    params.senderEmail?.trim() ||
+    brandDefaults.defaultEmail;
 
   const customConfig: Partial<AutomailSettings> | undefined = chosen
     ? {
