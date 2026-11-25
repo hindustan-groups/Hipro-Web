@@ -38,20 +38,34 @@ export default function AutoMailDashboard() {
   const [syncingCrm, setSyncingCrm] = useState(false);
   const [syncToast, setSyncToast] = useState<string | null>(null);
   const [logStatusFilter, setLogStatusFilter] = useState<"all" | "sent" | "failed">("all");
+  const [logSenderFilter, setLogSenderFilter] = useState<string>("all");
+  const [senderFilterOptions, setSenderFilterOptions] = useState<Array<{ email: string; label: string }>>([]);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const [statsRes, logsRes] = await Promise.all([
+      const senderParam = logSenderFilter !== "all" ? `&senderEmail=${encodeURIComponent(logSenderFilter)}` : "";
+      const [statsRes, logsRes, mbRes] = await Promise.all([
         fetch(`/api/automail/stats?brand=${selectedBrand}`),
-        fetch(`/api/automail/logs?brand=${selectedBrand}&limit=15`),
+        fetch(`/api/automail/logs?brand=${selectedBrand}&limit=25${senderParam}`),
+        fetch("/api/automail/mailboxes"),
       ]);
-      const [data, logsData] = await Promise.all([statsRes.json(), logsRes.json()]);
+      const [data, logsData, mbData] = await Promise.all([statsRes.json(), logsRes.json(), mbRes.json()]);
       if (data.success) {
         setStats(data.stats);
       }
       if (logsData.success && Array.isArray(logsData.logs)) {
         setRecentLogs(logsData.logs);
+      }
+      if (mbData.success && Array.isArray(mbData.mailboxes)) {
+        const opts: Array<{ email: string; label: string }> = [];
+        for (const mb of mbData.mailboxes) {
+          opts.push({ email: mb.email.toLowerCase(), label: `${mb.email} (Primary)` });
+          for (const alias of mb.aliases || []) {
+            opts.push({ email: alias.toLowerCase(), label: `${alias} (Alias)` });
+          }
+        }
+        setSenderFilterOptions(opts);
       }
     } catch (err) {
       console.error("Failed to load automail stats:", err);
@@ -62,7 +76,7 @@ export default function AutoMailDashboard() {
 
   useEffect(() => {
     fetchStats();
-  }, [selectedBrand]);
+  }, [selectedBrand, logSenderFilter]);
 
   const testConnection = async () => {
     setTestingSmtp(true);
@@ -576,6 +590,21 @@ export default function AutoMailDashboard() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            {senderFilterOptions.length > 0 && (
+              <select
+                value={logSenderFilter}
+                onChange={(e) => setLogSenderFilter(e.target.value)}
+                className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-mono font-semibold text-slate-700 outline-none focus:border-blue-500"
+                title="Filter sent logs by Mailbox or Alias"
+              >
+                <option value="all">All Mailboxes &amp; Aliases</option>
+                {senderFilterOptions.map((opt) => (
+                  <option key={opt.email} value={opt.email}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            )}
             <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-[11px] font-bold">
               {(["all", "sent", "failed"] as const).map((st) => (
                 <button

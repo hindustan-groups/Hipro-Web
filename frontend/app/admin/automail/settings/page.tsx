@@ -40,6 +40,7 @@ export interface CorporateMailbox {
   id: string;
   name: string;
   email: string;
+  aliases?: string[];
   brand: string;
   brandName?: string;
   deliveryMethod: "smtp" | "hostinger_api";
@@ -62,6 +63,7 @@ export interface DispatchRoutingRule {
   portal: string;
   description: string;
   mailboxId: string;
+  senderAlias?: string;
   fallbackMailboxId?: string;
   ccEmail?: string;
   active: boolean;
@@ -204,6 +206,8 @@ export default function AutoMailSettingsPage() {
   const [formMbStatus, setFormMbStatus] = useState<"active" | "inactive">("active");
   const [formMbDesc, setFormMbDesc] = useState("");
   const [formAutoAssignRoutes, setFormAutoAssignRoutes] = useState(true);
+  const [formMbAliases, setFormMbAliases] = useState<string[]>([]);
+  const [aliasInput, setAliasInput] = useState("");
 
   // Delete Confirm Modal
   const [deleteTarget, setDeleteTarget] = useState<CorporateMailbox | null>(null);
@@ -218,6 +222,7 @@ export default function AutoMailSettingsPage() {
   // Automated Dispatch Routing Matrix State
   const [routingRules, setRoutingRules] = useState<Record<string, DispatchRoutingRule>>({});
   const [routingPortalFilter, setRoutingPortalFilter] = useState("all");
+  const [routingSenderFilter, setRoutingSenderFilter] = useState("all");
   const [savingRouting, setSavingRouting] = useState(false);
 
   // Global Engine Delivery Method
@@ -387,6 +392,8 @@ export default function AutoMailSettingsPage() {
     setFormMbIsDefault(mailboxes.length === 0);
     setFormMbStatus("active");
     setFormMbDesc(matchedPreset.description);
+    setFormMbAliases([]);
+    setAliasInput("");
     setFormAutoAssignRoutes(true);
     setModalTestResult(null);
     setModalShowPassword(false);
@@ -413,6 +420,8 @@ export default function AutoMailSettingsPage() {
     setFormMbIsDefault(Boolean(mb.isDefault));
     setFormMbStatus(mb.status || "active");
     setFormMbDesc(mb.description || "");
+    setFormMbAliases(Array.isArray(mb.aliases) ? mb.aliases : []);
+    setAliasInput("");
     setFormAutoAssignRoutes(false);
     setModalTestResult(null);
     setModalShowPassword(false);
@@ -480,6 +489,7 @@ export default function AutoMailSettingsPage() {
         isDefault: formMbIsDefault,
         status: formMbStatus,
         description: formMbDesc.trim(),
+        aliases: formMbAliases,
         autoAssignBrandRoutes: formAutoAssignRoutes,
       };
 
@@ -724,17 +734,39 @@ export default function AutoMailSettingsPage() {
     setQuickTestModalOpen(true);
   };
 
+  const allSenderAddresses = useMemo(() => {
+    const list: Array<{ email: string; label: string }> = [];
+    for (const mb of mailboxes) {
+      list.push({ email: mb.email.toLowerCase(), label: `${mb.email} (Primary)` });
+      for (const alias of mb.aliases || []) {
+        list.push({ email: alias.toLowerCase(), label: `${alias} (Alias of ${mb.email})` });
+      }
+    }
+    return list;
+  }, [mailboxes]);
+
   const filteredRoutingEntries = useMemo(() => {
-    const entries = Object.entries(routingRules);
-    if (routingPortalFilter === "all") return entries;
-    return entries.filter(([, rule]) => {
-      const p = (rule.portal || "").toLowerCase();
-      if (routingPortalFilter === "hipro") return p.includes("hipro");
-      if (routingPortalFilter === "hbs") return p.includes("hbs") || p.includes("hind building");
-      if (routingPortalFilter === "empanelment") return p.includes("vendor") || p.includes("procurement");
-      return p.includes("group") || p.includes("headquarters");
+    return Object.entries(routingRules).filter(([, rule]) => {
+      if (routingPortalFilter !== "all") {
+        const p = (rule.portal || "").toLowerCase();
+        const portalMatch =
+          routingPortalFilter === "hipro"
+            ? p.includes("hipro")
+            : routingPortalFilter === "hbs"
+            ? p.includes("hbs") || p.includes("hind building")
+            : routingPortalFilter === "empanelment"
+            ? p.includes("vendor") || p.includes("procurement")
+            : p.includes("group") || p.includes("headquarters");
+        if (!portalMatch) return false;
+      }
+      if (routingSenderFilter !== "all") {
+        const mb = mailboxes.find((m) => m.id === rule.mailboxId) || defaultMailbox;
+        const effectiveAddr = (rule.senderAlias || mb?.email || "").toLowerCase();
+        if (effectiveAddr !== routingSenderFilter.toLowerCase()) return false;
+      }
+      return true;
     });
-  }, [routingRules, routingPortalFilter]);
+  }, [routingRules, routingPortalFilter, routingSenderFilter, mailboxes, defaultMailbox]);
 
   const activeRouteCount = useMemo(
     () => Object.values(routingRules).filter((r) => r.active).length,
@@ -1155,6 +1187,20 @@ export default function AutoMailSettingsPage() {
                           <h3 className="text-sm font-bold text-slate-900 leading-tight">{mb.name}</h3>
                           <p className="text-xs font-mono font-bold text-blue-700 mt-1 break-all">{mb.email}</p>
 
+                          {Array.isArray(mb.aliases) && mb.aliases.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {mb.aliases.map((alias) => (
+                                <span
+                                  key={alias}
+                                  className="inline-flex items-center gap-1 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200"
+                                  title={`Mail alias of ${mb.email}`}
+                                >
+                                  Alias: {alias}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           {mb.description && (
                             <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">{mb.description}</p>
                           )}
@@ -1347,28 +1393,46 @@ export default function AutoMailSettingsPage() {
                 </div>
               </div>
 
-              {/* Portal Filter Strip */}
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { id: "all", label: `All Events (${Object.keys(routingRules).length})` },
-                  { id: "hipro", label: "HiPRO Civil" },
-                  { id: "hbs", label: "Hind Building (HBS)" },
-                  { id: "empanelment", label: "Vendor Empanelment" },
-                  { id: "hq", label: "HQ & Broadcasts" },
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setRoutingPortalFilter(f.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                      routingPortalFilter === f.id
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                    }`}
+              {/* Portal + Sender/Alias Filter Strip */}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {[
+                    { id: "all", label: `All Events (${Object.keys(routingRules).length})` },
+                    { id: "hipro", label: "HiPRO Civil" },
+                    { id: "hbs", label: "Hind Building (HBS)" },
+                    { id: "empanelment", label: "Vendor Empanelment" },
+                    { id: "hq", label: "HQ & Broadcasts" },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setRoutingPortalFilter(f.id)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                        routingPortalFilter === f.id
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Filter by Mail / Alias:</span>
+                  <select
+                    value={routingSenderFilter}
+                    onChange={(e) => setRoutingSenderFilter(e.target.value)}
+                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-semibold text-slate-800 outline-none focus:border-blue-500"
                   >
-                    {f.label}
-                  </button>
-                ))}
+                    <option value="all">All Mailboxes &amp; Aliases</option>
+                    {allSenderAddresses.map((addr) => (
+                      <option key={addr.email} value={addr.email}>
+                        {addr.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Routing Rules List */}
@@ -1406,37 +1470,71 @@ export default function AutoMailSettingsPage() {
                                   : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                               }`}
                             >
-                              {isFallback ? `Smart Fallback -> ${effectiveMb.email}` : `Live -> ${effectiveMb.email}`}
+                              {isFallback
+                                ? `Smart Fallback -> ${effectiveMb.email}`
+                                : `Live -> ${rule.senderAlias || effectiveMb.email}`}
                             </span>
                           </div>
                         )}
                       </div>
 
-                      {/* Middle: Outgoing Mailbox Selector */}
-                      <div className="flex-1 max-w-sm">
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-mono">
-                          Outgoing Sender Mailbox
-                        </label>
-                        <select
-                          value={mailboxes.some((m) => m.id === rule.mailboxId) ? rule.mailboxId : effectiveMb?.id || ""}
-                          onChange={(e) => {
-                            const newMbId = e.target.value;
-                            setRoutingRules((prev) => ({
-                              ...prev,
-                              [key]: {
-                                ...prev[key],
-                                mailboxId: newMbId,
-                              },
-                            }));
-                          }}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                        >
-                          {mailboxes.map((mb) => (
-                            <option key={mb.id} value={mb.id}>
-                              {mb.email} — {mb.name} {mb.isDefault ? "(Default)" : ""}
-                            </option>
-                          ))}
-                        </select>
+                      {/* Middle: Outgoing Mailbox & Alias Selector */}
+                      <div className="flex-1 max-w-sm space-y-2">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 font-mono">
+                            Outgoing Sender Mailbox
+                          </label>
+                          <select
+                            value={mailboxes.some((m) => m.id === rule.mailboxId) ? rule.mailboxId : effectiveMb?.id || ""}
+                            onChange={(e) => {
+                              const newMbId = e.target.value;
+                              setRoutingRules((prev) => ({
+                                ...prev,
+                                [key]: {
+                                  ...prev[key],
+                                  mailboxId: newMbId,
+                                  senderAlias: "",
+                                },
+                              }));
+                            }}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                          >
+                            {mailboxes.map((mb) => (
+                              <option key={mb.id} value={mb.id}>
+                                {mb.email} — {mb.name} {mb.isDefault ? "(Default)" : ""}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {effectiveMb && Array.isArray(effectiveMb.aliases) && effectiveMb.aliases.length > 0 && (
+                          <div>
+                            <label className="block text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1 font-mono">
+                              Send-As Mail Alias (Optional)
+                            </label>
+                            <select
+                              value={rule.senderAlias || ""}
+                              onChange={(e) => {
+                                const newAlias = e.target.value;
+                                setRoutingRules((prev) => ({
+                                  ...prev,
+                                  [key]: {
+                                    ...prev[key],
+                                    senderAlias: newAlias,
+                                  },
+                                }));
+                              }}
+                              className="w-full px-3 py-1.5 bg-indigo-50/60 border border-indigo-200 rounded-xl text-xs font-mono font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            >
+                              <option value="">Primary: {effectiveMb.email}</option>
+                              {effectiveMb.aliases.map((alias) => (
+                                <option key={alias} value={alias}>
+                                  Alias: {alias}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
 
                       {/* Right: Internal CC Alert + Quick Test + Toggle */}
@@ -2138,6 +2236,84 @@ export default function AutoMailSettingsPage() {
               </div>
 
               {/* Purpose & Auto-Route Option */}
+              <div className="p-4 bg-indigo-50/40 rounded-2xl border border-indigo-200/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-indigo-950 uppercase tracking-wider">
+                    Mail Aliases (Send-As Addresses for This Mailbox)
+                  </label>
+                  <span className="text-[10px] font-mono text-indigo-700 bg-white px-2 py-0.5 rounded-md border border-indigo-200">
+                    {formMbAliases.length} Alias(es)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600">
+                  Hostinger me banaye gaye alias emails (jaise <code className="font-mono">sales@</code>,{" "}
+                  <code className="font-mono">support@</code>, <code className="font-mono">tenders@</code>) yahan add karein.
+                  Compose aur Routing me filter karke inse mail bhej sakte hain.
+                </p>
+
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={aliasInput}
+                    onChange={(e) => setAliasInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const clean = aliasInput.trim().toLowerCase();
+                        if (clean && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean) && clean !== formMbEmail.trim().toLowerCase() && !formMbAliases.includes(clean)) {
+                          setFormMbAliases((prev) => [...prev, clean]);
+                          setAliasInput("");
+                        }
+                      }
+                    }}
+                    placeholder="e.g. sales@hindustanprojects.in"
+                    className="flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clean = aliasInput.trim().toLowerCase();
+                      if (!clean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+                        setToast({ message: "Enter a valid alias email address.", type: "error" });
+                        return;
+                      }
+                      if (clean === formMbEmail.trim().toLowerCase()) {
+                        setToast({ message: "Alias cannot be the same as the primary email.", type: "error" });
+                        return;
+                      }
+                      if (!formMbAliases.includes(clean)) {
+                        setFormMbAliases((prev) => [...prev, clean]);
+                      }
+                      setAliasInput("");
+                    }}
+                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shrink-0"
+                  >
+                    + Add Alias
+                  </button>
+                </div>
+
+                {formMbAliases.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {formMbAliases.map((alias) => (
+                      <span
+                        key={alias}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-indigo-200 text-indigo-800 rounded-lg text-[11px] font-mono font-semibold"
+                      >
+                        <span>{alias}</span>
+                        <button
+                          type="button"
+                          onClick={() => setFormMbAliases((prev) => prev.filter((a) => a !== alias))}
+                          className="text-slate-400 hover:text-red-600 font-bold"
+                          title="Remove alias"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Purpose / Desk Notes</label>

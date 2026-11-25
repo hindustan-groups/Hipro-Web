@@ -133,6 +133,7 @@ export default function AutoMailCompose() {
     id: string;
     name: string;
     email: string;
+    aliases?: string[];
     brand: string;
     brandName?: string;
     isDefault?: boolean;
@@ -1177,33 +1178,60 @@ export default function AutoMailCompose() {
                 </Link>
               </div>
 
-              {/* Dynamic Configured Mailboxes Pills */}
+              {/* Dynamic Configured Mailboxes & Aliases Pills */}
               {configuredMailboxes.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {configuredMailboxes.map((mb) => {
-                    const isSelected = senderEmail.toLowerCase() === mb.email.toLowerCase();
+                    const isPrimarySelected = senderEmail.toLowerCase() === mb.email.toLowerCase();
                     return (
-                      <button
-                        key={mb.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMailboxId(mb.id);
-                          setSenderEmail(mb.email);
-                          setSenderName(mb.name);
-                          if (mb.brand && mb.brand !== "custom") {
-                            setBrand(mb.brand);
-                          }
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 ${
-                          isSelected
-                            ? "bg-slate-900 text-white shadow-xs"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-emerald-400" : "bg-slate-400"}`} />
-                        <span>{mb.email}</span>
-                        {mb.isDefault && <span className="text-[9px] text-amber-300">★</span>}
-                      </button>
+                      <div key={mb.id} className="contents">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMailboxId(mb.id);
+                            setSenderEmail(mb.email);
+                            setSenderName(mb.name);
+                            if (mb.brand && mb.brand !== "custom") {
+                              setBrand(mb.brand);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 ${
+                            isPrimarySelected
+                              ? "bg-slate-900 text-white shadow-xs"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${isPrimarySelected ? "bg-emerald-400" : "bg-slate-400"}`} />
+                          <span>{mb.email}</span>
+                          {mb.isDefault && <span className="text-[9px] text-amber-300">★</span>}
+                        </button>
+                        {(mb.aliases || []).map((alias) => {
+                          const isAliasSelected = senderEmail.toLowerCase() === alias.toLowerCase();
+                          return (
+                            <button
+                              key={`${mb.id}:${alias}`}
+                              type="button"
+                              onClick={() => {
+                                setSelectedMailboxId(mb.id);
+                                setSenderEmail(alias);
+                                setSenderName(mb.name);
+                                if (mb.brand && mb.brand !== "custom") {
+                                  setBrand(mb.brand);
+                                }
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 border ${
+                                isAliasSelected
+                                  ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                                  : "bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100"
+                              }`}
+                              title={`Alias of ${mb.email}`}
+                            >
+                              <span className="text-[9px] uppercase opacity-75">Alias</span>
+                              <span>{alias}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     );
                   })}
                 </div>

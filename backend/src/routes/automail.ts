@@ -326,6 +326,7 @@ router.get("/routing", async (req: Request, res: Response) => {
         id: m.id,
         name: m.name,
         email: m.email,
+        aliases: m.aliases || [],
         brand: m.brand,
         brandName: m.brandName,
         isDefault: m.isDefault,
@@ -707,12 +708,17 @@ router.post("/send-single", async (req: Request, res: Response) => {
 // Unified Dispatch Logs (Direct CRM Emails + Campaign Broadcasts)
 router.get("/logs", async (req: Request, res: Response) => {
   try {
-    const { brand, status, search, limit = "50" } = req.query;
+    const { brand, status, senderEmail, search, limit = "50" } = req.query;
     const take = Math.min(200, Math.max(1, parseInt(String(limit), 10) || 50));
 
     const where: any = {};
     if (brand && brand !== "all") where.brand = String(brand);
     if (status && status !== "all") where.status = String(status);
+    if (senderEmail && senderEmail !== "all" && typeof senderEmail === "string" && senderEmail.trim()) {
+      where.campaign = {
+        senderEmail: { equals: senderEmail.trim(), mode: "insensitive" },
+      };
+    }
     if (search && typeof search === "string" && search.trim()) {
       where.OR = [
         { contactEmail: { contains: search.trim(), mode: "insensitive" } },
