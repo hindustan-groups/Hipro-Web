@@ -85,6 +85,10 @@ export default function AutoMailInboxPage() {
   const [replyMailboxId, setReplyMailboxId] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
+  // AI Draft Assistant
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   // Contact Sync
   const [syncingContacts, setSyncingContacts] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -215,6 +219,46 @@ export default function AutoMailInboxPage() {
       }
     } catch {
       setToast({ message: "Failed to update read status", type: "error" });
+    }
+  };
+
+  const handleDraftReplyWithAi = async (customPrompt?: string) => {
+    if (!detail) return;
+    const promptToUse = (customPrompt ?? aiPrompt).trim();
+    if (!promptToUse) {
+      setToast({ message: "Write a short instruction for AI (e.g. 'Schedule site visit tomorrow at 11am').", type: "info" });
+      return;
+    }
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/automail/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: promptToUse,
+          mode: "reply",
+          brand: detail.brand,
+          incomingSubject: detail.subject,
+          incomingBody: detail.text || "",
+          incomingFromName: detail.fromName,
+          recipientName: detail.fromName,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.bodyText) {
+        setReplyText(data.bodyText);
+        if (!customPrompt) setAiPrompt("");
+        setToast({
+          message: `AI drafted your reply (${data.provider === "gemini" ? "Gemini AI" : "Smart Corporate AI"})!`,
+          type: "success",
+        });
+      } else {
+        setToast({ message: data.error || "Failed to generate AI reply", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error generating AI reply", type: "error" });
+    } finally {
+      setAiGenerating(false);
     }
   };
 
@@ -607,6 +651,58 @@ export default function AutoMailInboxPage() {
                         </option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Write with AI Bar */}
+                <div className="p-2.5 bg-indigo-50/70 border border-indigo-200/80 rounded-xl space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-indigo-600" />
+                      Write Reply with AI
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        { label: "Acknowledge & Call", prompt: "Acknowledge receipt and schedule a quick discovery call" },
+                        { label: "Send Quote Follow-up", prompt: "Share quotation & BOQ follow-up with transparent rates" },
+                        { label: "Site Inspection", prompt: "Confirm engineer site inspection visit and request location" },
+                        { label: "Vendor / Tender", prompt: "Share vendor empanelment and tender next steps" },
+                      ].map((chip) => (
+                        <button
+                          key={chip.label}
+                          type="button"
+                          disabled={aiGenerating}
+                          onClick={() => handleDraftReplyWithAi(chip.prompt)}
+                          className="px-2 py-0.5 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-800 rounded-md text-[10px] font-bold transition-colors disabled:opacity-50"
+                        >
+                          {chip.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleDraftReplyWithAi();
+                        }
+                      }}
+                      placeholder="Type instruction in English/Hinglish (e.g. 'Kal 11 baje site visit confirm karo')..."
+                      className="flex-1 px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs outline-none focus:border-indigo-500"
+                    />
+                    <button
+                      type="button"
+                      disabled={aiGenerating || !aiPrompt.trim()}
+                      onClick={() => handleDraftReplyWithAi()}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold shrink-0 disabled:opacity-50"
+                    >
+                      {aiGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                      <span>Draft AI</span>
+                    </button>
                   </div>
                 </div>
 

@@ -94,7 +94,7 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     ctaBg: "#991b1b",
     websiteUrl: "https://hindbuilding.hindustanprojects.in",
     websiteDisplay: "hindbuilding.hindustanprojects.in",
-    contactEmail: "hbs@hindustanprojects.in",
+    contactEmail: "hindbuild@hindustanprojects.in",
     helplinePhone: "+91 75970 00601",
     divisionLabel: "HiBUILD Property Protection & Waterproofing Division • Hindustan Projects",
     trustPoints: [
@@ -127,7 +127,7 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     ctaBg: "#b45309",
     websiteUrl: "https://empanelment.hindustanprojects.in",
     websiteDisplay: "empanelment.hindustanprojects.in",
-    contactEmail: "empanelment@hindustanprojects.in",
+    contactEmail: "empanel@hindustanprojects.in",
     helplinePhone: "+91 75970 00601",
     divisionLabel: "Central Procurement, Contractor Empanelment & Site Logistics Directorate",
     trustPoints: [
