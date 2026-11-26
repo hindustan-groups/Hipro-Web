@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AutoMailNav from "@/components/admin/automail/AutoMailNav";
-import { BUSINESS_TEMPLATES, AutomailBusinessTemplate } from "@/lib/automailTemplates";
+import {
+  BUSINESS_TEMPLATES,
+  AutomailBusinessTemplate,
+  renderTemplatePreviewHtml,
+  renderTemplatePreviewSubject,
+} from "@/lib/automailTemplates";
 import {
   PenSquare,
   Eye,
@@ -498,60 +503,22 @@ export default function AutoMailCompose() {
   // Render Real Client Visual Preview
   const getRenderedPreviewHtml = () => {
     if (!htmlBody) return "";
-    if (!previewPersonalized) return htmlBody;
-    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
-    const pFirstName = pName.split(" ")[0] || "Ramesh";
-    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand =
-      brand === "hbs"
-        ? "Hind Building Solutions"
-        : brand === "empanelment"
-        ? "HiPRO Empanelment Desk"
-        : "Hindustan Projects";
-    const pWebsite =
-      brand === "hbs"
-        ? "https://hindbuilding.hindustanprojects.in"
-        : brand === "empanelment"
-        ? "https://www.hindustanprojects.in/empanelment"
-        : "https://www.hindustanprojects.in";
-    const pPhone = "+91 75970 00601";
-    const pDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-    const pYear = String(new Date().getFullYear());
-
-    return htmlBody
-      .replace(/\{\{name\}\}/gi, pName)
-      .replace(/\{\{client_name\}\}/gi, pName)
-      .replace(/\{\{first_name\}\}/gi, pFirstName)
-      .replace(/\{\{firstName\}\}/gi, pFirstName)
-      .replace(/\{\{email\}\}/gi, pEmail)
-      .replace(/\{\{brand\}\}/gi, pBrand)
-      .replace(/\{\{company\}\}/gi, pBrand)
-      .replace(/\{\{website\}\}/gi, pWebsite)
-      .replace(/\{\{phone\}\}/gi, pPhone)
-      .replace(/\{\{date\}\}/gi, pDate)
-      .replace(/\{\{year\}\}/gi, pYear);
+    return renderTemplatePreviewHtml(htmlBody, {
+      brand,
+      name: previewTestName.trim() || customClientName.trim() || "Ramesh Sharma",
+      email: customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com",
+      personalized: previewPersonalized,
+    });
   };
 
   const getRenderedPreviewSubject = () => {
     if (!subject) return "";
-    if (!previewPersonalized) return subject;
-    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
-    const pFirstName = pName.split(" ")[0] || "Ramesh";
-    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand =
-      brand === "hbs"
-        ? "Hind Building Solutions"
-        : brand === "empanelment"
-        ? "HiPRO Empanelment Desk"
-        : "Hindustan Projects";
-
-    return subject
-      .replace(/\{\{name\}\}/gi, pName)
-      .replace(/\{\{client_name\}\}/gi, pName)
-      .replace(/\{\{first_name\}\}/gi, pFirstName)
-      .replace(/\{\{firstName\}\}/gi, pFirstName)
-      .replace(/\{\{email\}\}/gi, pEmail)
-      .replace(/\{\{brand\}\}/gi, pBrand);
+    return renderTemplatePreviewSubject(subject, {
+      brand,
+      name: previewTestName.trim() || customClientName.trim() || "Ramesh Sharma",
+      email: customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com",
+      personalized: previewPersonalized,
+    });
   };
 
   const parseCustomRecipientList = (raw: string): Array<{ email: string; name?: string }> => {
@@ -1534,8 +1501,8 @@ export default function AutoMailCompose() {
               </div>
 
               <div
-                className={`bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3 mx-auto transition-all duration-200 ${
-                  previewDevice === "mobile" ? "max-w-[395px]" : "w-full"
+                className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3 mx-auto transition-all duration-200 ${
+                  previewDevice === "mobile" ? "w-[375px] max-w-full" : "w-full"
                 }`}
               >
                 <div className="pb-3 border-b border-slate-100 text-xs text-slate-600 space-y-1">
@@ -1543,11 +1510,31 @@ export default function AutoMailCompose() {
                   <p><strong>To:</strong> <span className="font-medium text-slate-900">{previewPersonalized ? `${previewTestName || "Ramesh Sharma"} <${customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com"}>` : (customTo || "{{email}}")}</span></p>
                   <p><strong>Subject:</strong> <span className="font-bold text-slate-900">{getRenderedPreviewSubject() || "(No subject entered)"}</span></p>
                 </div>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: getRenderedPreviewHtml() || '<p style="text-align: center; color: #94a3b8; padding: 40px;">No HTML content written yet. Click "Template Gallery" to load a pre-made business template!</p>',
-                  }}
-                />
+                {htmlBody.trim() ? (
+                  <iframe
+                    key={`compose-preview-${previewDevice}-${previewPersonalized}`}
+                    title="Compose Email Visual Preview"
+                    sandbox="allow-same-origin allow-popups"
+                    srcDoc={getRenderedPreviewHtml()}
+                    onLoad={(e) => {
+                      try {
+                        const iframe = e.currentTarget;
+                        const doc = iframe.contentDocument;
+                        if (doc?.body) {
+                          const h = Math.max(420, doc.documentElement.scrollHeight || doc.body.scrollHeight || 500);
+                          iframe.style.height = `${h + 16}px`;
+                        }
+                      } catch {
+                        // Ignore
+                      }
+                    }}
+                    className="w-full min-h-[440px] border-0 rounded-lg bg-white block"
+                  />
+                ) : (
+                  <p className="text-center text-slate-400 py-10 text-xs">
+                    No HTML content written yet. Click &ldquo;Template Gallery&rdquo; or &ldquo;Generate with AI&rdquo;!
+                  </p>
+                )}
               </div>
             </div>
           ) : (
