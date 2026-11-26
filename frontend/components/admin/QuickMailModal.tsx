@@ -61,6 +61,7 @@ interface MailboxItem {
   id: string;
   name: string;
   email: string;
+  aliases?: string[];
   brand: string;
   brandName?: string;
   isDefault?: boolean;
@@ -205,7 +206,11 @@ export default function QuickMailModal({
   const [subject, setSubject] = useState("");
   const [messageText, setMessageText] = useState("");
   const [selectedMailboxId, setSelectedMailboxId] = useState("");
+  const [selectedSenderEmail, setSelectedSenderEmail] = useState("");
   const [updateStatus, setUpdateStatus] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const [aiError, setAiError] = useState("");
 
   // Server context state
   const [loadingContext, setLoadingContext] = useState(false);
@@ -271,8 +276,10 @@ export default function QuickMailModal({
           setCustomTemplates(json.data.customTemplates || []);
           if (json.data.defaultMailbox?.id) {
             setSelectedMailboxId(json.data.defaultMailbox.id);
+            setSelectedSenderEmail(json.data.defaultMailbox.email || "");
           } else if (json.data.mailboxes?.length > 0) {
             setSelectedMailboxId(json.data.mailboxes[0].id);
+            setSelectedSenderEmail(json.data.mailboxes[0].email || "");
           }
         }
       })
@@ -297,6 +304,7 @@ export default function QuickMailModal({
           messageText,
           brand: recipient.brand || "hipro",
           mailboxId: selectedMailboxId || undefined,
+          senderEmail: selectedSenderEmail || undefined,
           triggerKey: recipient.triggerKey,
         }),
       });
@@ -310,7 +318,7 @@ export default function QuickMailModal({
     } finally {
       setLoadingPreview(false);
     }
-  }, [recipient, subject, messageText, selectedMailboxId]);
+  }, [recipient, subject, messageText, selectedMailboxId, selectedSenderEmail]);
 
   useEffect(() => {
     if (activeTab === "preview" && isOpen && recipient) {
@@ -322,6 +330,69 @@ export default function QuickMailModal({
 
   const activeMailbox =
     mailboxes.find((m) => m.id === selectedMailboxId) || mailboxes[0];
+
+  const senderOptions = mailboxes.flatMap((mb) => {
+    const label = mb.brandName || mb.name;
+    const primary = [
+      {
+        mailboxId: mb.id,
+        email: mb.email,
+        label,
+        isAlias: false,
+      },
+    ];
+    const aliasItems = (mb.aliases || [])
+      .filter((alias) => alias && alias.toLowerCase() !== mb.email.toLowerCase())
+      .map((alias) => ({
+        mailboxId: mb.id,
+        email: alias,
+        label,
+        isAlias: true,
+      }));
+    return [...primary, ...aliasItems];
+  });
+
+  const activeSenderEmail = selectedSenderEmail || activeMailbox?.email || "info@hindustanprojects.in";
+
+  const handleAiDraft = async () => {
+    const promptToUse =
+      aiPrompt.trim() ||
+      `Write a polite, professional response to ${recipient.name}${
+        recipient.contextBadge ? ` regarding ${recipient.contextBadge}` : ""
+      }.`;
+    setAiDrafting(true);
+    setAiError("");
+    try {
+      const res = await fetch("/api/automail/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          prompt: promptToUse,
+          mode: "reply",
+          brand: recipient.brand || "hipro",
+          incomingSubject: subject || undefined,
+          recipientName: recipient.name,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to generate AI draft");
+      }
+      if (json.subject && !subject.trim()) {
+        setSubject(json.subject);
+      } else if (json.subject && aiPrompt.trim()) {
+        setSubject(json.subject);
+      }
+      if (json.bodyText) {
+        setMessageText(json.bodyText);
+      }
+    } catch (err: any) {
+      setAiError(err.message || "AI drafting failed");
+    } finally {
+      setAiDrafting(false);
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,6 +420,7 @@ export default function QuickMailModal({
           messageText: messageText.trim(),
           brand: recipient.brand || "hipro",
           mailboxId: selectedMailboxId || undefined,
+          senderEmail: selectedSenderEmail || undefined,
           triggerKey: recipient.triggerKey,
           leadId: recipient.leadId,
           leadType: recipient.leadType,
@@ -536,22 +608,26 @@ export default function QuickMailModal({
                     <span className="text-[11px] text-slate-400 font-mono flex items-center gap-1">
                       <Loader2 className="w-3 h-3 animate-spin" /> Resolving mailbox...
                     </span>
-                  ) : mailboxes.length > 1 ? (
+                  ) : senderOptions.length > 1 ? (
                     <select
-                      value={selectedMailboxId}
-                      onChange={(e) => setSelectedMailboxId(e.target.value)}
+                      value={`${selectedMailboxId}::${activeSenderEmail}`}
+                      onChange={(e) => {
+                        const [mbId, senderEmail] = e.target.value.split("::");
+                        setSelectedMailboxId(mbId || "");
+                        setSelectedSenderEmail(senderEmail || "");
+                      }}
                       className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-blue-500 truncate max-w-full cursor-pointer"
                     >
-                      {mailboxes.map((mb) => (
-                        <option key={mb.id} value={mb.id}>
-                          {mb.email} ({mb.brandName || mb.name})
+                      {senderOptions.map((opt) => (
+                        <option key={`${opt.mailboxId}::${opt.email}`} value={`${opt.mailboxId}::${opt.email}`}>
+                          {opt.email} ({opt.isAlias ? `Alias · ${opt.label}` : opt.label})
                         </option>
                       ))}
                     </select>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[11px] font-mono font-bold truncate">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      {activeMailbox?.email || "info@hindustanprojects.in"}
+                      {activeSenderEmail}
                     </span>
                   )}
                 </div>
@@ -629,6 +705,39 @@ export default function QuickMailModal({
                     </div>
                   )}
 
+                  {/* AI Draft Assistant */}
+                  <div className="p-2.5 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <div className="flex items-center gap-1.5 shrink-0 text-[11px] font-bold text-indigo-800">
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Write Reply with AI</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAiDraft();
+                          }
+                        }}
+                        placeholder="e.g. Quote shared, ask for site visit on Friday..."
+                        className="flex-1 px-3 py-1.5 bg-white border border-indigo-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAiDraft}
+                        disabled={aiDrafting}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 shrink-0 cursor-pointer transition-colors"
+                      >
+                        {aiDrafting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                        <span>{aiDrafting ? "Drafting..." : "AI Draft"}</span>
+                      </button>
+                    </div>
+                    {aiError && <p className="text-[11px] text-red-600 font-medium">{aiError}</p>}
+                  </div>
+
                   {/* Subject Input */}
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">
@@ -691,7 +800,7 @@ export default function QuickMailModal({
                     <p className="text-slate-600">
                       <span className="font-bold text-slate-400 font-mono uppercase text-[10px] mr-1.5">From:</span>
                       <span className="font-semibold text-slate-900">
-                        {activeMailbox?.name || "Hindustan Projects"} &lt;{activeMailbox?.email || "info@hindustanprojects.in"}&gt;
+                        {activeMailbox?.name || "Hindustan Projects"} &lt;{activeSenderEmail}&gt;
                       </span>
                     </p>
                     <p className="text-slate-600">
@@ -706,16 +815,18 @@ export default function QuickMailModal({
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-200 bg-slate-100 overflow-hidden min-h-[300px] max-h-[380px] overflow-y-auto">
+                  <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden min-h-[340px]">
                     {loadingPreview ? (
                       <div className="h-64 flex flex-col items-center justify-center gap-2 text-xs text-slate-500">
                         <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                         <span>Rendering official corporate template...</span>
                       </div>
                     ) : (
-                      <div
-                        className="p-2"
-                        dangerouslySetInnerHTML={{ __html: previewHtml }}
+                      <iframe
+                        title="CRM Email Preview"
+                        sandbox="allow-same-origin allow-popups"
+                        srcDoc={previewHtml}
+                        className="w-full h-[380px] border-0 bg-white"
                       />
                     )}
                   </div>
