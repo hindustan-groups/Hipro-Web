@@ -237,12 +237,17 @@ export default function AutoMailTemplatesPage() {
           <!-- Corporate Brand Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%); padding: 28px 24px 22px; text-align: center; border-bottom: 4px solid #dc2626;">
+              <div style="display: inline-block; background-color: #ffffff; border-radius: 10px; padding: 5px 10px; margin-bottom: 12px;">
+                <a href="https://www.hindustanprojects.in" target="_blank" style="text-decoration: none;">
+                  <img src="https://www.hindustanprojects.in/hipro-logo.jpg" alt="Hindustan Projects" height="32" style="display: block; height: 32px; width: auto; border: 0; border-radius: 4px;" />
+                </a>
+              </div>
               <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">Hindustan Projects</h1>
               <p style="color: #cbd5e1; font-size: 11px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
                 Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design
               </p>
               <div style="margin-top: 12px; font-size: 10px; color: #94a3b8; font-weight: 600;">
-                🏛️ Quality-First Civil Execution &bull; 🛡️ Turnkey EPC Contracting &bull; ⚡ 150+ Landmarks Built
+                &#10003; Quality-First Civil Execution &bull; &#10003; Turnkey EPC Contracting &bull; &#10003; 150+ Landmarks Built
               </div>
             </td>
           </tr>

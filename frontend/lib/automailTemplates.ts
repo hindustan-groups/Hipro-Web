@@ -41,8 +41,15 @@ export function getCorporateEmailHeader(
     ? "HINDUSTAN GROUP HQ"
     : "HiPRO CIVIL PORTAL";
 
-  const monogram = isHbs ? "HB" : isEmp ? "EP" : isAll ? "HG" : "HP";
-  const monogramBg = isHbs ? "#b91c1c" : isEmp ? "#b45309" : isAll ? "#2563eb" : "#1d4ed8";
+  const logoUrl = isHbs
+    ? "https://www.hindustanprojects.in/hibuild-brand-logo.png"
+    : "https://www.hindustanprojects.in/hipro-logo.jpg";
+  const logoAlt = isHbs ? "Hind Building Solutions (HiBUILD)" : "Hindustan Projects (HiPRO)";
+  const logoLink = isHbs
+    ? "https://hindbuilding.hindustanprojects.in"
+    : isEmp
+    ? "https://empanelment.hindustanprojects.in"
+    : "https://www.hindustanprojects.in";
 
   const brandTitle = isHbs
     ? "HIND BUILDING SOLUTIONS"
@@ -99,13 +106,15 @@ export function getCorporateEmailHeader(
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 12px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 14px;">
             <tr>
-              <td align="center" valign="middle" style="width: 34px; height: 34px; background-color: ${monogramBg}; border-radius: 9px; color: #ffffff; font-size: 13px; font-weight: 900; border: 1px solid rgba(255,255,255,0.22);">
-                ${monogram}
+              <td align="center" valign="middle" style="background-color: #ffffff; border-radius: 10px; padding: 5px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">
+                <a href="${logoLink}" target="_blank" style="text-decoration: none; display: inline-block;">
+                  <img src="${logoUrl}" alt="${logoAlt}" height="32" style="display: block; height: 32px; width: auto; max-width: 140px; border: 0; border-radius: 4px;" />
+                </a>
               </td>
               <td style="width: 10px;"></td>
-              <td align="center" style="background-color: ${badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 5px 14px;">
+              <td align="center" style="background-color: ${badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 6px 14px;">
                 <span style="color: ${badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;">
                   ${options.badge}
                 </span>
@@ -163,6 +172,27 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
     ? "empanelment@hindustanprojects.in"
     : "info@hindustanprojects.in";
 
+  const quickLinks = isHbs
+    ? [
+        { label: "HBS Portal", url: "https://hindbuilding.hindustanprojects.in" },
+        { label: "Services", url: "https://hindbuilding.hindustanprojects.in/services" },
+        { label: "Projects", url: "https://hindbuilding.hindustanprojects.in/projects" },
+        { label: "Free Inspection", url: "https://hindbuilding.hindustanprojects.in/contact" },
+      ]
+    : isEmp
+    ? [
+        { label: "Empanelment Hub", url: "https://empanelment.hindustanprojects.in" },
+        { label: "Live Tenders", url: "https://empanelment.hindustanprojects.in/tenders" },
+        { label: "Vendor Login", url: "https://empanelment.hindustanprojects.in/login" },
+        { label: "Gate Pass", url: "https://empanelment.hindustanprojects.in/gate-pass" },
+      ]
+    : [
+        { label: "Official Website", url: "https://www.hindustanprojects.in" },
+        { label: "Projects", url: "https://www.hindustanprojects.in/projects" },
+        { label: "Cost Estimator", url: "https://www.hindustanprojects.in/cost-estimator" },
+        { label: "Contact Us", url: "https://www.hindustanprojects.in/contact" },
+      ];
+
   const divisionName = isHbs
     ? "Hind Building Solutions (HiBUILD) • Specialized Structural Protection Division"
     : isEmp
@@ -208,6 +238,14 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
       </tr>
       <tr>
         <td align="center" style="padding: 12px 8px 8px;">
+          <p style="margin: 0 0 10px;">
+            ${quickLinks
+              .map(
+                (lnk) =>
+                  `<a href="${lnk.url}" target="_blank" style="display: inline-block; color: #93c5fd; font-size: 10.5px; font-weight: 700; text-decoration: none; margin: 2px 8px;">${lnk.label}</a>`
+              )
+              .join('<span style="color: #475569;">&bull;</span>')}
+          </p>
           <p style="margin: 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
             <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan
           </p>

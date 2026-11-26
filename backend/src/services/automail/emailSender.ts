@@ -447,6 +447,7 @@ export async function sendEmailViaHostingerApi({
   brand = "all",
   token,
   mailboxId,
+  inReplyTo,
 }: {
   to: string;
   subject: string;
@@ -457,6 +458,7 @@ export async function sendEmailViaHostingerApi({
   brand?: string;
   token?: string;
   mailboxId?: string;
+  inReplyTo?: string | null;
 }) {
   // ============================================================
   // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
@@ -516,7 +518,7 @@ export async function sendEmailViaHostingerApi({
     cc: [],
     bcc: [],
     attachments: [],
-    inReplyTo: undefined as any,
+    inReplyTo: (inReplyTo || undefined) as any,
     forwardOf: undefined as any,
   } as any);
 
@@ -644,6 +646,7 @@ export async function sendOneEmail({
   senderEmail,
   brand = "all",
   customConfig,
+  inReplyTo,
 }: {
   to: string;
   subject: string;
@@ -653,6 +656,7 @@ export async function sendOneEmail({
   senderEmail?: string | null;
   brand?: string;
   customConfig?: Partial<AutomailSettings>;
+  inReplyTo?: string | null;
 }) {
   // ============================================================
   // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
@@ -727,6 +731,7 @@ export async function sendOneEmail({
       brand,
       token: apiToken,
       mailboxId: resolvedConfig?.hostingerMailboxId || settings.hostingerMailboxId,
+      inReplyTo,
     });
   }
 
@@ -775,6 +780,7 @@ export async function sendOneEmail({
     replyTo: effectiveFrom !== authSender ? `"${fromName}" <${effectiveFrom}>` : undefined,
     to,
     subject,
+    ...(inReplyTo ? { inReplyTo, references: inReplyTo } : {}),
     text: textBody || (brandedHtml ? brandedHtml.replace(/<[^>]*>/g, "") : ""),
     html: brandedHtml,
   };

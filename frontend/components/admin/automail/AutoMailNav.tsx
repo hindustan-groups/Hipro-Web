@@ -17,6 +17,7 @@ import {
   ChevronDown,
   Check,
   ShieldCheck,
+  Inbox,
 } from "lucide-react";
 
 export default function AutoMailNav({
@@ -46,6 +47,7 @@ export default function AutoMailNav({
 
   const navLinks = [
     { href: "/admin/automail", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/automail/inbox", label: "Inbox & Reply", icon: Inbox },
     { href: "/admin/automail/settings", label: "Mailboxes & Control", icon: Settings },
     { href: "/admin/automail/templates", label: "3-Portal Templates", icon: Layers },
     { href: "/admin/automail/compose", label: "Compose Studio", icon: PenSquare },

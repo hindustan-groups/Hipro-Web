@@ -42,6 +42,12 @@ import {
   updateCustomTemplate,
   deleteCustomTemplate,
 } from "../services/automail/customTemplatesService";
+import {
+  fetchUnifiedInbox,
+  fetchInboxMessageDetail,
+  updateInboxMessageSeenFlag,
+  importContactsFromInboxMessages,
+} from "../services/automail/inboxService";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -702,6 +708,150 @@ router.post("/send-single", async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("[AUTOMAIL] Send single email error:", err);
     return res.status(500).json({ success: false, error: err.message || "Failed to deliver email" });
+  }
+});
+
+// ----------------------------------------------------
+// UNIFIED MULTI-MAILBOX INBOX (RECEIVE, READ, REPLY, IMPORT CONTACTS)
+// ----------------------------------------------------
+router.get("/inbox", async (req: Request, res: Response) => {
+  try {
+    const { mailboxId, recipientFilter, folder, unreadOnly, search, autoImport } = req.query;
+    const result = await fetchUnifiedInbox({
+      mailboxId: typeof mailboxId === "string" ? mailboxId : undefined,
+      recipientFilter: typeof recipientFilter === "string" ? recipientFilter : undefined,
+      folder: typeof folder === "string" ? folder : "INBOX",
+      unreadOnly: unreadOnly === "true",
+      search: typeof search === "string" ? search : undefined,
+      perMailbox: 25,
+    });
+
+    let importedSummary: { importedCount: number; skippedCount: number } | undefined;
+    if (autoImport === "true" && result.messages.length > 0) {
+      importedSummary = await importContactsFromInboxMessages(
+        result.messages.map((m) => ({
+          email: m.fromEmail,
+          name: m.fromName,
+          brand: m.brand,
+        }))
+      );
+    }
+
+    return res.json({
+      success: true,
+      ...result,
+      ...(importedSummary ? { importedSummary } : {}),
+    });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox fetch error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to load inbox" });
+  }
+});
+
+router.get("/inbox/:mailboxId/:uid", async (req: Request, res: Response) => {
+  try {
+    const mailboxId = Array.isArray(req.params.mailboxId) ? req.params.mailboxId[0] : req.params.mailboxId;
+    const uidRaw = Array.isArray(req.params.uid) ? req.params.uid[0] : req.params.uid;
+    const uid = parseInt(uidRaw, 10);
+    if (!uid || Number.isNaN(uid)) {
+      return res.status(400).json({ success: false, error: "Valid message UID is required" });
+    }
+    const folder = typeof req.query.folder === "string" ? req.query.folder : "INBOX";
+    const message = await fetchInboxMessageDetail({ mailboxId, uid, folder });
+    return res.json({ success: true, message });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox message detail error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to load message" });
+  }
+});
+
+router.post("/inbox/:mailboxId/:uid/flags", async (req: Request, res: Response) => {
+  try {
+    const mailboxId = Array.isArray(req.params.mailboxId) ? req.params.mailboxId[0] : req.params.mailboxId;
+    const uidRaw = Array.isArray(req.params.uid) ? req.params.uid[0] : req.params.uid;
+    const uid = parseInt(uidRaw, 10);
+    const { seen = true, folder = "INBOX" } = req.body || {};
+    await updateInboxMessageSeenFlag({ mailboxId, uid, folder, seen: Boolean(seen) });
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to update message flags" });
+  }
+});
+
+router.post("/inbox/import-contacts", async (req: Request, res: Response) => {
+  try {
+    const { contacts } = req.body || {};
+    if (!Array.isArray(contacts) || contacts.length === 0) {
+      return res.status(400).json({ success: false, error: "Contacts array is required" });
+    }
+    const summary = await importContactsFromInboxMessages(contacts);
+    return res.json({
+      success: true,
+      ...summary,
+      message: `Synced ${summary.importedCount} contact(s) into Audience & Leads!`,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to import inbox contacts" });
+  }
+});
+
+router.post("/inbox/reply", async (req: Request, res: Response) => {
+  try {
+    const { to, name, subject, messageText, htmlBody, mailboxId, senderEmail, inReplyTo, brand } = req.body || {};
+    if (!to || !String(to).includes("@")) {
+      return res.status(400).json({ success: false, error: "Valid recipient email is required" });
+    }
+    const rawBody = (htmlBody && String(htmlBody).trim()) || (messageText && String(messageText).trim());
+    if (!rawBody) {
+      return res.status(400).json({ success: false, error: "Reply message cannot be empty" });
+    }
+
+    const cleanEmail = String(to).trim().toLowerCase();
+    const replySubject = subject?.trim()
+      ? subject.trim().toLowerCase().startsWith("re:")
+        ? subject.trim()
+        : `Re: ${subject.trim()}`
+      : "Re: Hindustan Projects";
+
+    const resolved = await resolveEffectiveMailboxConfig({
+      mailboxId,
+      senderEmail,
+      brand,
+    });
+
+    const formattedHtml = htmlBody?.trim() ? String(htmlBody) : plainTextToEmailHtml(String(messageText));
+    const info = await sendOneEmail({
+      to: cleanEmail,
+      subject: replySubject,
+      htmlBody: formattedHtml,
+      textBody: messageText ? String(messageText) : undefined,
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      brand: brand || resolved.mailbox?.brand || "hipro",
+      customConfig: resolved.customConfig,
+      inReplyTo: inReplyTo || undefined,
+    });
+
+    await recordDirectDispatch({
+      to: cleanEmail,
+      name: name || undefined,
+      subject: replySubject,
+      brand: brand || resolved.mailbox?.brand || "hipro",
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      source: "inbox_reply",
+      success: true,
+    });
+
+    return res.json({
+      success: true,
+      message: `Reply delivered to ${cleanEmail} from ${resolved.senderEmail}!`,
+      messageId: (info as any).messageId,
+      senderEmail: resolved.senderEmail,
+    });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox reply error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to send reply" });
   }
 });
 
