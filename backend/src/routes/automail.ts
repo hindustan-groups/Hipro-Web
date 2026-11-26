@@ -500,7 +500,7 @@ router.get("/test-connection", async (req: Request, res: Response) => {
 // Send single test email
 router.post("/send-test", async (req: Request, res: Response) => {
   try {
-    const { to, subject, htmlBody, brand = "all", mailboxId, deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
+    const { to, subject, htmlBody, brand = "all", mailboxId, senderEmail, deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
     if (!to) {
       return res.status(400).json({ success: false, error: "Recipient email is required" });
     }
@@ -571,8 +571,11 @@ router.post("/send-test", async (req: Request, res: Response) => {
 
     const testSender = await resolveEffectiveMailboxConfig({
       mailboxId,
+      senderEmail,
       brand,
     });
+
+    const effectiveTestSenderEmail = senderEmail || smtpUser || testSender.senderEmail;
 
     const info = await sendOneEmail({
       to,
@@ -580,7 +583,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       htmlBody: testBody,
       brand,
       senderName: testSender.senderName,
-      senderEmail: smtpUser || testSender.senderEmail,
+      senderEmail: effectiveTestSenderEmail,
       customConfig: Object.keys(customConfig).length > 0 ? customConfig : testSender.customConfig,
     });
 
@@ -590,7 +593,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       subject: testSubject,
       brand,
       senderName: testSender.senderName,
-      senderEmail: smtpUser || testSender.senderEmail,
+      senderEmail: effectiveTestSenderEmail,
       source: "automail_test_send",
       success: true,
     }).catch(() => null);

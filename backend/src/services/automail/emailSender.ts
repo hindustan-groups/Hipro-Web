@@ -724,9 +724,21 @@ export async function sendOneEmail({
 
   const deliveryMethod = resolvedConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
   const apiToken = (resolvedConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  const effectiveSmtpPass = ((resolvedConfig?.smtpPass !== undefined ? resolvedConfig.smtpPass : settings.smtpPass) || "").trim();
+  const effectiveSmtpUser = (resolvedConfig?.smtpUser || settings.smtpUser || "").trim();
+  const isAliasDispatch = Boolean(
+    senderEmail &&
+      effectiveSmtpUser &&
+      senderEmail.toLowerCase().trim() !== effectiveSmtpUser.toLowerCase().trim()
+  );
 
-  // If Hostinger API is selected OR if SMTP pass is empty but API token exists
-  if (deliveryMethod === "hostinger_api" || (!((resolvedConfig?.smtpPass !== undefined ? resolvedConfig.smtpPass : settings.smtpPass) || "").trim() && apiToken)) {
+  // Hostinger Mail API (V1SendRequest) always stamps the primary mailbox address and has no `from` override.
+  // Therefore, when sending from an alias AND SMTP credentials are available, prefer SMTP so `From:` uses the alias.
+  const shouldUseHostingerApi =
+    !(isAliasDispatch && effectiveSmtpPass) &&
+    (deliveryMethod === "hostinger_api" || (!effectiveSmtpPass && Boolean(apiToken)));
+
+  if (shouldUseHostingerApi) {
     return await sendEmailViaHostingerApi({
       to,
       subject,
