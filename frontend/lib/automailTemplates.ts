@@ -16,6 +16,99 @@ export interface AutomailBusinessTemplate {
   html: string;
 }
 
+export function getBrandPreviewDefaults(brand?: string) {
+  const b = (brand || "hipro").toLowerCase();
+  if (b === "hbs") {
+    return {
+      brandName: "Hind Building Solutions",
+      website: "https://hindbuilding.hindustanprojects.in",
+      senderEmail: "hindbuild@hindustanprojects.in",
+      phone: "+91 75970 00601",
+    };
+  }
+  if (b === "empanelment") {
+    return {
+      brandName: "HiPRO Empanelment Desk",
+      website: "https://empanelment.hindustanprojects.in",
+      senderEmail: "empanel@hindustanprojects.in",
+      phone: "+91 75970 00601",
+    };
+  }
+  return {
+    brandName: "Hindustan Projects",
+    website: "https://www.hindustanprojects.in",
+    senderEmail: "info@hindustanprojects.in",
+    phone: "+91 75970 00601",
+  };
+}
+
+export function renderTemplatePreviewHtml(
+  rawHtml: string,
+  options?: {
+    brand?: string;
+    name?: string;
+    email?: string;
+    personalized?: boolean;
+  }
+): string {
+  if (!rawHtml) return "";
+  const defaults = getBrandPreviewDefaults(options?.brand);
+  const personalized = options?.personalized !== false;
+
+  let html = rawHtml;
+  if (personalized) {
+    const pName = (options?.name || "Ramesh Sharma").trim() || "Ramesh Sharma";
+    const pFirstName = pName.split(" ")[0] || "Ramesh";
+    const pEmail = (options?.email || "client@company.com").trim() || "client@company.com";
+    const pDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    const pYear = String(new Date().getFullYear());
+
+    html = html
+      .replace(/\{\{name\}\}/gi, pName)
+      .replace(/\{\{client_name\}\}/gi, pName)
+      .replace(/\{\{first_name\}\}/gi, pFirstName)
+      .replace(/\{\{firstName\}\}/gi, pFirstName)
+      .replace(/\{\{email\}\}/gi, pEmail)
+      .replace(/\{\{brand\}\}/gi, defaults.brandName)
+      .replace(/\{\{company\}\}/gi, defaults.brandName)
+      .replace(/\{\{website\}\}/gi, defaults.website)
+      .replace(/\{\{phone\}\}/gi, defaults.phone)
+      .replace(/\{\{date\}\}/gi, pDate)
+      .replace(/\{\{year\}\}/gi, pYear);
+  }
+
+  if (!/<html[\s>]/i.test(html)) {
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0;padding:20px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#1e293b;">${html}</body></html>`;
+  }
+  return html;
+}
+
+export function renderTemplatePreviewSubject(
+  rawSubject: string,
+  options?: {
+    brand?: string;
+    name?: string;
+    email?: string;
+    personalized?: boolean;
+  }
+): string {
+  if (!rawSubject) return "";
+  if (options?.personalized === false) return rawSubject;
+  const defaults = getBrandPreviewDefaults(options?.brand);
+  const pName = (options?.name || "Ramesh Sharma").trim() || "Ramesh Sharma";
+  const pFirstName = pName.split(" ")[0] || "Ramesh";
+  const pEmail = (options?.email || "client@company.com").trim() || "client@company.com";
+
+  return rawSubject
+    .replace(/\{\{name\}\}/gi, pName)
+    .replace(/\{\{client_name\}\}/gi, pName)
+    .replace(/\{\{first_name\}\}/gi, pFirstName)
+    .replace(/\{\{firstName\}\}/gi, pFirstName)
+    .replace(/\{\{email\}\}/gi, pEmail)
+    .replace(/\{\{brand\}\}/gi, defaults.brandName)
+    .replace(/\{\{company\}\}/gi, defaults.brandName);
+}
+
 interface HeaderOptions {
   badge: string;
   title?: string;
