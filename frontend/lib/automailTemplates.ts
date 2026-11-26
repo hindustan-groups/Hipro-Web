@@ -167,9 +167,9 @@ export function getCorporateEmailFooter(brand: "hipro" | "hbs" | "empanelment" |
   const ctaBg = isHbs ? "#991b1b" : isEmp ? "#b45309" : "#0f1f3d";
 
   const contactEmail = isHbs
-    ? "hbs@hindustanprojects.in"
+    ? "hindbuild@hindustanprojects.in"
     : isEmp
-    ? "empanelment@hindustanprojects.in"
+    ? "empanel@hindustanprojects.in"
     : "info@hindustanprojects.in";
 
   const quickLinks = isHbs

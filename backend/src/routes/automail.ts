@@ -48,6 +48,7 @@ import {
   updateInboxMessageSeenFlag,
   importContactsFromInboxMessages,
 } from "../services/automail/inboxService";
+import { generateAiEmailDraft } from "../services/automail/aiDraftService";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -852,6 +853,41 @@ router.post("/inbox/reply", async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("[AUTOMAIL] Inbox reply error:", err);
     return res.status(500).json({ success: false, error: err.message || "Failed to send reply" });
+  }
+});
+
+router.post("/ai-draft", async (req: Request, res: Response) => {
+  try {
+    const {
+      prompt,
+      mode = "compose",
+      brand = "hipro",
+      tone = "professional",
+      incomingSubject,
+      incomingBody,
+      incomingFromName,
+      recipientName,
+    } = req.body || {};
+
+    if (!prompt && !incomingSubject) {
+      return res.status(400).json({ success: false, error: "Please enter a brief prompt or instruction for AI." });
+    }
+
+    const draft = await generateAiEmailDraft({
+      prompt: String(prompt || ""),
+      mode: mode === "reply" ? "reply" : "compose",
+      brand: String(brand || "hipro"),
+      tone,
+      incomingSubject,
+      incomingBody,
+      incomingFromName,
+      recipientName,
+    });
+
+    return res.json({ success: true, ...draft });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] AI draft error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to generate AI draft" });
   }
 });
 

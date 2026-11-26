@@ -93,7 +93,7 @@ const MAILBOX_PRESETS: MailboxPreset[] = [
     key: "hbs",
     label: "HBS Waterproofing",
     name: "Hind Building Solutions Desk",
-    email: "hbs@hindustanprojects.in",
+    email: "hindbuild@hindustanprojects.in",
     brand: "hbs",
     brandName: "HBS Waterproofing & Structural Repair",
     description: "Terrace waterproofing, seepage audits, crack injection & repair BOQs.",
@@ -102,7 +102,7 @@ const MAILBOX_PRESETS: MailboxPreset[] = [
     key: "empanelment",
     label: "Empanelment Hub",
     name: "HiPRO Empanelment & Tenders Desk",
-    email: "empanelment@hindustanprojects.in",
+    email: "empanel@hindustanprojects.in",
     brand: "empanelment",
     brandName: "Vendor Procurement Hub",
     description: "Contractor KYC approvals, tender invitations, RA billing & digital gate passes.",
@@ -327,14 +327,31 @@ export default function AutoMailSettingsPage() {
   );
 
   const portalCoverage = useMemo(() => {
-    const pick = (brandKey: string) => {
+    const pick = (brandKey: string, aliasHints: string[]) => {
       const dedicated = mailboxes.find((m) => m.brand === brandKey && m.status === "active");
-      return { dedicated, effective: dedicated || defaultMailbox };
+      let aliasEmail: string | undefined;
+      for (const mb of mailboxes) {
+        if (mb.status !== "active") continue;
+        const foundAlias = (mb.aliases || []).find((a) =>
+          aliasHints.some((hint) => a.toLowerCase().includes(hint))
+        );
+        if (foundAlias) {
+          aliasEmail = foundAlias;
+          break;
+        }
+      }
+      const effectiveMb = dedicated || defaultMailbox;
+      return {
+        dedicated,
+        aliasEmail,
+        effective: effectiveMb,
+        effectiveEmail: dedicated?.email || aliasEmail || effectiveMb?.email || "",
+      };
     };
     return {
-      hipro: pick("hipro"),
-      hbs: pick("hbs"),
-      empanelment: pick("empanelment"),
+      hipro: pick("hipro", ["info@"]),
+      hbs: pick("hbs", ["hindbuild", "hbs@"]),
+      empanelment: pick("empanelment", ["empanel"]),
     };
   }, [mailboxes, defaultMailbox]);
 
@@ -882,13 +899,17 @@ export default function AutoMailSettingsPage() {
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1 truncate">{p.subtitle}</p>
                   <p className="text-[11px] font-mono font-bold text-slate-800 mt-1 truncate">
-                    {p.cov.effective ? p.cov.effective.email : "No active mailbox"}
+                    {p.cov.effectiveEmail || "No active mailbox"}
                   </p>
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
                   {p.cov.dedicated ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                       Dedicated
+                    </span>
+                  ) : p.cov.aliasEmail ? (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      Alias Active
                     </span>
                   ) : (
                     <>
@@ -900,7 +921,7 @@ export default function AutoMailSettingsPage() {
                         onClick={() => handleOpenAddModal(p.key)}
                         className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-0.5"
                       >
-                        <Plus className="w-3 h-3" /> Add {p.key}@
+                        <Plus className="w-3 h-3" /> Add {p.key === "hbs" ? "hindbuild@" : p.key === "empanelment" ? "empanel@" : `${p.key}@`}
                       </button>
                     </>
                   )}
@@ -2290,6 +2311,28 @@ export default function AutoMailSettingsPage() {
                   >
                     + Add Alias
                   </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "hindbuild@hindustanprojects.in",
+                    "empanel@hindustanprojects.in",
+                    "sales@hindustanprojects.in",
+                    "tenders@hindustanprojects.in",
+                    "careers@hindustanprojects.in",
+                    "support@hindustanprojects.in",
+                  ]
+                    .filter((s) => s !== formMbEmail.trim().toLowerCase() && !formMbAliases.includes(s))
+                    .map((suggested) => (
+                      <button
+                        key={suggested}
+                        type="button"
+                        onClick={() => setFormMbAliases((prev) => [...prev, suggested])}
+                        className="px-2 py-0.5 bg-white hover:bg-indigo-100 border border-indigo-200 text-indigo-800 rounded-md text-[10px] font-mono font-semibold transition-colors"
+                      >
+                        + {suggested}
+                      </button>
+                    ))}
                 </div>
 
                 {formMbAliases.length > 0 && (

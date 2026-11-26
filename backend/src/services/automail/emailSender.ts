@@ -46,6 +46,12 @@ export function getBrandConfigs(): Record<string, BrandConfig> {
   const hiproMb = mailboxes.find((m) => m.brand === "hipro" && m.status === "active");
   const hbsMb = mailboxes.find((m) => m.brand === "hbs" && m.status === "active");
   const empMb = mailboxes.find((m) => m.brand === "empanelment" && m.status === "active");
+  const hbsAlias = mailboxes
+    .flatMap((m) => m.aliases || [])
+    .find((a) => a.toLowerCase().includes("hindbuild") || a.toLowerCase().startsWith("hbs@"));
+  const empAlias = mailboxes
+    .flatMap((m) => m.aliases || [])
+    .find((a) => a.toLowerCase().includes("empanel"));
 
   return {
     hipro: {
@@ -57,13 +63,13 @@ export function getBrandConfigs(): Record<string, BrandConfig> {
     hbs: {
       key: "hbs",
       name: hbsMb?.name || settings.senderNameHbs || "Hind Building Solutions",
-      defaultEmail: hbsMb?.email || fallbackEmail,
+      defaultEmail: hbsMb?.email || hbsAlias || fallbackEmail,
       website: "https://hindbuilding.hindustanprojects.in",
     },
     empanelment: {
       key: "empanelment",
       name: empMb?.name || "HiPRO Empanelment Desk",
-      defaultEmail: empMb?.email || fallbackEmail,
+      defaultEmail: empMb?.email || empAlias || fallbackEmail,
       website: "https://empanelment.hindustanprojects.in",
     },
     all: {
@@ -85,13 +91,13 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   hbs: {
     key: "hbs",
     name: "Hind Building Solutions",
-    defaultEmail: process.env.HBS_SMTP_USER || process.env.SMTP_USER || "hbs@hindustanprojects.in",
+    defaultEmail: process.env.HBS_SMTP_USER || process.env.SMTP_USER || "hindbuild@hindustanprojects.in",
     website: "https://hindbuilding.hindustanprojects.in",
   },
   empanelment: {
     key: "empanelment",
     name: "HiPRO Empanelment Desk",
-    defaultEmail: process.env.EMPANELMENT_SMTP_USER || process.env.SMTP_USER || "empanelment@hindustanprojects.in",
+    defaultEmail: process.env.EMPANELMENT_SMTP_USER || process.env.SMTP_USER || "empanel@hindustanprojects.in",
     website: "https://empanelment.hindustanprojects.in",
   },
   all: {

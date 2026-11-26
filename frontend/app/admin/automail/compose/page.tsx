@@ -196,6 +196,11 @@ export default function AutoMailCompose() {
   const [testEmailRecipient, setTestEmailRecipient] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
 
+  // Write Email with AI state
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiTone, setAiTone] = useState<"professional" | "friendly" | "formal">("professional");
+  const [aiGenerating, setAiGenerating] = useState(false);
+
   // Load audience counts & custom templates
   useEffect(() => {
     async function loadStats() {
@@ -450,6 +455,44 @@ export default function AutoMailCompose() {
       message: `Workflow loaded: "${wf.title}". Formatted automatically for client!`,
       type: "success",
     });
+  };
+
+  // Write Email with AI
+  const handleGenerateWithAi = async () => {
+    if (!aiPrompt.trim()) {
+      setToast({ message: "Enter what you want to write (e.g. 'Bhilwara 2000 sqft terrace waterproofing quote')", type: "error" });
+      return;
+    }
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/automail/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: aiPrompt.trim(),
+          mode: "compose",
+          brand,
+          tone: aiTone,
+          recipientName: customClientName.trim() || previewTestName.trim() || "{{name}}",
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.bodyHtml) {
+        if (data.subject) setSubject(data.subject);
+        setHtmlBody(data.bodyHtml);
+        setShowPreview(true);
+        setToast({
+          message: `Email drafted with ${data.provider === "gemini" ? "Gemini AI" : "Smart Corporate AI"}! Review below & send.`,
+          type: "success",
+        });
+      } else {
+        setToast({ message: data.error || "Failed to generate email with AI", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error generating AI email", type: "error" });
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   // Render Real Client Visual Preview
@@ -1349,6 +1392,49 @@ export default function AutoMailCompose() {
               title="Today's Date"
             >
               + {"{{date}}"} <span className="font-sans text-[10px] font-normal text-slate-500">(Date)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Write Email With AI Box */}
+        <div className="p-4 bg-gradient-to-r from-indigo-50/90 via-blue-50/70 to-indigo-50/90 border border-indigo-200 rounded-2xl space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs font-black text-indigo-950 uppercase tracking-wider">
+              <Wand2 className="w-4 h-4 text-indigo-600" />
+              <span>Write Email with AI (English / Hinglish)</span>
+            </div>
+            <select
+              value={aiTone}
+              onChange={(e) => setAiTone(e.target.value as any)}
+              className="px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-[11px] font-bold text-indigo-900 outline-none self-start sm:self-auto"
+            >
+              <option value="professional">Tone: Professional</option>
+              <option value="friendly">Tone: Friendly</option>
+              <option value="formal">Tone: Formal Corporate</option>
+            </select>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleGenerateWithAi();
+                }
+              }}
+              placeholder="Batayein kya likhna hai — e.g. 'Client ko 2500 sqft terrace waterproofing ka 10-year warranty quote bhejna hai'..."
+              className="flex-1 px-3.5 py-2.5 bg-white border border-indigo-200 rounded-xl text-xs font-medium outline-none focus:border-indigo-500"
+            />
+            <button
+              type="button"
+              disabled={aiGenerating || !aiPrompt.trim()}
+              onClick={handleGenerateWithAi}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all disabled:opacity-50 shrink-0"
+            >
+              {aiGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              <span>{aiGenerating ? "Drafting..." : "Generate with AI"}</span>
             </button>
           </div>
         </div>
