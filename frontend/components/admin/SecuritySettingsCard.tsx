@@ -13,6 +13,8 @@ import {
   QrCode,
   Loader2,
   Trash2,
+  Mail,
+  BellRing,
 } from "lucide-react";
 import TwoFactorSetupModal from "./TwoFactorSetupModal";
 
@@ -21,6 +23,15 @@ export default function SecuritySettingsCard() {
   const [backupCodesCount, setBackupCodesCount] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [showSetupModal, setShowSetupModal] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("admin@hindustanprojects.in");
+  const [adminName, setAdminName] = useState("Master Admin");
+
+  // Update Login Email state
+  const [newLoginEmail, setNewLoginEmail] = useState("");
+  const [emailCurrentPassword, setEmailCurrentPassword] = useState("");
+  const [totpCodeForEmail, setTotpCodeForEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
+  const [emailMsg, setEmailMsg] = useState({ text: "", type: "" });
 
   // Disable 2FA modal / form state
   const [showDisableForm, setShowDisableForm] = useState(false);
@@ -40,11 +51,18 @@ export default function SecuritySettingsCard() {
 
   const fetch2FaStatus = async () => {
     try {
-      const res = await fetch("/api/auth/2fa/status");
-      const json = await res.json();
+      const [twoFaRes, meRes] = await Promise.all([
+        fetch("/api/auth/2fa/status"),
+        fetch("/api/auth/me"),
+      ]);
+      const [json, meJson] = await Promise.all([twoFaRes.json(), meRes.json()]);
       if (json.success && json.data) {
         setIs2FaEnabled(json.data.isTwoFactorEnabled);
         setBackupCodesCount(json.data.backupCodesCount || 0);
+      }
+      if (meJson.success && meJson.data) {
+        if (meJson.data.email) setAdminEmail(meJson.data.email);
+        if (meJson.data.name) setAdminName(meJson.data.name);
       }
     } catch (e) {
       console.error("Failed to fetch 2FA status:", e);
@@ -85,6 +103,46 @@ export default function SecuritySettingsCard() {
       setDisableError("Network error occurred");
     } finally {
       setDisabling(false);
+    }
+  };
+
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailMsg({ text: "", type: "" });
+    const cleanEmail = newLoginEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setEmailMsg({ text: "Please enter a valid login email address.", type: "error" });
+      return;
+    }
+
+    setChangingEmail(true);
+    try {
+      const res = await fetch("/api/auth/change-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newEmail: cleanEmail,
+          currentPassword: emailCurrentPassword,
+          twoFactorCode: is2FaEnabled ? totpCodeForEmail : undefined,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setAdminEmail(json.email || cleanEmail);
+        setEmailMsg({
+          text: `Master Admin login email updated to ${json.email || cleanEmail}! Security alert sent.`,
+          type: "success",
+        });
+        setNewLoginEmail("");
+        setEmailCurrentPassword("");
+        setTotpCodeForEmail("");
+      } else {
+        setEmailMsg({ text: json.error || "Failed to update login email", type: "error" });
+      }
+    } catch {
+      setEmailMsg({ text: "Network error occurred", type: "error" });
+    } finally {
+      setChangingEmail(false);
     }
   };
 
@@ -264,6 +322,108 @@ export default function SecuritySettingsCard() {
             </div>
           </form>
         )}
+      </div>
+
+      {/* Admin Login Email & Security Alerts Card */}
+      <div className="bg-white border border-slate-200 shadow-xs p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
+              <Mail className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-display">
+                Admin Login Email &amp; Security Alerts
+              </h3>
+              <p className="text-xs text-slate-500">
+                Active login email:{" "}
+                <strong className="font-mono text-slate-900">{adminEmail}</strong> ({adminName})
+              </p>
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto">
+            <BellRing className="w-3 h-3" />
+            <span>Login &amp; Password Alerts Active</span>
+          </span>
+        </div>
+
+        <p className="mt-3 text-[11px] text-slate-500 bg-slate-50 border border-slate-200/80 px-3.5 py-2.5 rounded-lg">
+          Har Admin Login, 2FA sign-in, aur Password Change par automatically security alert email{" "}
+          <strong className="font-mono text-slate-800">{adminEmail}</strong> par dispatch hota hai.
+        </p>
+
+        {emailMsg.text && (
+          <div
+            className={`mt-4 p-3.5 text-xs font-semibold flex items-center gap-2.5 ${
+              emailMsg.type === "success"
+                ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                : "bg-red-50 border border-red-200 text-red-600"
+            }`}
+          >
+            {emailMsg.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+            <span>{emailMsg.text}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleChangeEmail} className="mt-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
+                New Login Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={newLoginEmail}
+                onChange={(e) => setNewLoginEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-xs font-mono px-3 py-2 focus:outline-none focus:border-construction-navy"
+                placeholder="admin@hindustanprojects.in"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
+                Current Password
+              </label>
+              <input
+                type="password"
+                required
+                value={emailCurrentPassword}
+                onChange={(e) => setEmailCurrentPassword(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-xs px-3 py-2 focus:outline-none focus:border-construction-navy"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {is2FaEnabled && (
+              <div className="sm:col-span-2">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
+                  Google Authenticator Code (2FA)
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={totpCodeForEmail}
+                  onChange={(e) => setTotpCodeForEmail(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="w-full sm:w-48 bg-emerald-50/40 border border-emerald-300 text-slate-900 text-xs px-3 py-2 font-mono font-bold tracking-widest text-center focus:outline-none focus:border-emerald-600"
+                  placeholder="123456"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              disabled={changingEmail}
+              className="flex items-center gap-2 bg-slate-900 hover:bg-blue-600 text-white px-5 py-2 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+            >
+              {changingEmail ? "Updating Email..." : "Update Login Email"}
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* Change Password Card */}
