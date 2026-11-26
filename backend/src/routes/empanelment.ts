@@ -1180,7 +1180,7 @@ router.get("/admin/applications/:id/emails", async (req: Request, res: Response)
 router.post("/admin/applications/:id/send-email", async (req: Request, res: Response) => {
   try {
     const id = String(req.params.id);
-    const { subject, htmlBody, body } = req.body;
+    const { subject, htmlBody, body, mailboxId, senderEmail } = req.body;
     const rawContent = (htmlBody && String(htmlBody).trim()) || (body && String(body).trim());
 
     if (!subject?.trim() || !rawContent) {
@@ -1201,6 +1201,8 @@ router.post("/admin/applications/:id/send-email", async (req: Request, res: Resp
       subject: subject.trim(),
       htmlBody: formattedHtml,
       adminName,
+      mailboxId: typeof mailboxId === "string" ? mailboxId : undefined,
+      senderEmail: typeof senderEmail === "string" ? senderEmail : undefined,
     });
 
     await logVendorActivity({
