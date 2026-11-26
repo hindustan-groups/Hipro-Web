@@ -22,6 +22,8 @@ export interface BrandMetadata {
   portalCode: string;
   monogram: string;
   monogramBg: string;
+  logoUrl: string;
+  logoAlt: string;
   brandTitle: string;
   brandTagline: string;
   badgeLabel: string;
@@ -37,6 +39,7 @@ export interface BrandMetadata {
   helplinePhone: string;
   divisionLabel: string;
   trustPoints: [string, string, string];
+  quickLinks: Array<{ label: string; url: string }>;
 }
 
 export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
@@ -45,6 +48,8 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
     portalCode: "HiPRO CIVIL PORTAL",
     monogram: "HP",
     monogramBg: "#1d4ed8",
+    logoUrl: "https://www.hindustanprojects.in/hipro-logo.jpg",
+    logoAlt: "Hindustan Projects (HiPRO)",
     brandTitle: "HINDUSTAN PROJECTS",
     brandTagline: "Civil Engineering • Turnkey EPC • Architectural Design • Infrastructure",
     badgeLabel: "OFFICIAL CORPORATE DISPATCH",
@@ -64,12 +69,20 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
       "Transparent BOQ & Costing",
       "Pan-Rajasthan Project Delivery",
     ],
+    quickLinks: [
+      { label: "Official Website", url: "https://www.hindustanprojects.in" },
+      { label: "Projects", url: "https://www.hindustanprojects.in/projects" },
+      { label: "Cost Estimator", url: "https://www.hindustanprojects.in/cost-estimator" },
+      { label: "Contact Us", url: "https://www.hindustanprojects.in/contact" },
+    ],
   },
   hbs: {
     brandKey: "hbs",
     portalCode: "HiBUILD HBS CARE",
     monogram: "HB",
     monogramBg: "#b91c1c",
+    logoUrl: "https://www.hindustanprojects.in/hibuild-brand-logo.png",
+    logoAlt: "Hind Building Solutions (HiBUILD)",
     brandTitle: "HIND BUILDING SOLUTIONS",
     brandTagline: "Structural Rehabilitation • Guaranteed Waterproofing • PU Crack Injection",
     badgeLabel: "HiBUILD STRUCTURAL CARE DESK",
@@ -89,12 +102,20 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
       "Thermal Moisture Diagnostics",
       "German Polymer Chemical Systems",
     ],
+    quickLinks: [
+      { label: "HBS Portal", url: "https://hindbuilding.hindustanprojects.in" },
+      { label: "Services", url: "https://hindbuilding.hindustanprojects.in/services" },
+      { label: "Projects", url: "https://hindbuilding.hindustanprojects.in/projects" },
+      { label: "Free Inspection", url: "https://hindbuilding.hindustanprojects.in/contact" },
+    ],
   },
   empanelment: {
     brandKey: "empanelment",
     portalCode: "VENDOR EMPANELMENT HUB",
     monogram: "EP",
     monogramBg: "#b45309",
+    logoUrl: "https://www.hindustanprojects.in/hipro-logo.jpg",
+    logoAlt: "Hindustan Projects Empanelment Hub",
     brandTitle: "HINDUSTAN PROJECTS",
     brandTagline: "Procurement Directorate • Contractor Empanelment • Tenders & Gate Access",
     badgeLabel: "OFFICIAL PROCUREMENT & TENDER DESK",
@@ -114,12 +135,20 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
       "14-Day RA Bill Clearance",
       "QR Digital Site Gate Pass",
     ],
+    quickLinks: [
+      { label: "Empanelment Hub", url: "https://empanelment.hindustanprojects.in" },
+      { label: "Live Tenders", url: "https://empanelment.hindustanprojects.in/tenders" },
+      { label: "Vendor Login", url: "https://empanelment.hindustanprojects.in/login" },
+      { label: "Gate Pass", url: "https://empanelment.hindustanprojects.in/gate-pass" },
+    ],
   },
   all: {
     brandKey: "all",
     portalCode: "HINDUSTAN GROUP HQ",
     monogram: "HG",
     monogramBg: "#2563eb",
+    logoUrl: "https://www.hindustanprojects.in/hipro-logo.jpg",
+    logoAlt: "Hindustan Projects Group",
     brandTitle: "HINDUSTAN PROJECTS GROUP",
     brandTagline: "Civil Engineering • Turnkey Construction • Building Care • Procurement Hub",
     badgeLabel: "OFFICIAL EXECUTIVE DISPATCH",
@@ -138,6 +167,12 @@ export const CORPORATE_BRAND_METADATA: Record<string, BrandMetadata> = {
       "Quality-First Civil Execution",
       "Multi-Division Turnkey Delivery",
       "Pan-Rajasthan Project Footprint",
+    ],
+    quickLinks: [
+      { label: "HiPRO Civil", url: "https://www.hindustanprojects.in" },
+      { label: "Hind Build (HBS)", url: "https://hindbuilding.hindustanprojects.in" },
+      { label: "Vendor Hub", url: "https://empanelment.hindustanprojects.in" },
+      { label: "Contact HQ", url: "https://www.hindustanprojects.in/contact" },
     ],
   },
 };
@@ -290,13 +325,15 @@ export function wrapWithCorporateTemplate(
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 12px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 14px;">
                       <tr>
-                        <td align="center" valign="middle" style="width: 34px; height: 34px; background-color: ${meta.monogramBg}; border-radius: 9px; color: #ffffff; font-size: 13px; font-weight: 900; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.22);">
-                          ${escapeHtml(meta.monogram)}
+                        <td align="center" valign="middle" style="background-color: #ffffff; border-radius: 10px; padding: 5px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.18);">
+                          <a href="${meta.websiteUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
+                            <img src="${meta.logoUrl}" alt="${escapeHtml(meta.logoAlt)}" height="32" style="display: block; height: 32px; width: auto; max-width: 140px; border: 0; border-radius: 4px;" />
+                          </a>
                         </td>
                         <td style="width: 10px;"></td>
-                        <td align="center" style="background-color: ${meta.badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 5px 14px;">
+                        <td align="center" style="background-color: ${meta.badgeBg}; border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; padding: 6px 14px;">
                           <span style="color: ${meta.badgeColor}; font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase;">
                             ${escapeHtml(meta.badgeLabel)}
                           </span>
@@ -377,6 +414,14 @@ export function wrapWithCorporateTemplate(
 
                 <tr>
                   <td align="center" style="padding: 14px 8px 10px;">
+                    <p style="margin: 0 0 10px;">
+                      ${meta.quickLinks
+                        .map(
+                          (lnk) =>
+                            `<a href="${lnk.url}" target="_blank" style="display: inline-block; color: #93c5fd; font-size: 10.5px; font-weight: 700; text-decoration: none; margin: 2px 8px;">${escapeHtml(lnk.label)}</a>`
+                        )
+                        .join('<span style="color: #475569;">&bull;</span>')}
+                    </p>
                     <p style="margin: 0; color: #e2e8f0; font-size: 11px; font-weight: 600;">
                       <strong>Corporate HQ:</strong> Opposite Mukherji Park, Above Bhagwati Coffee House, Bhopal Ganj, Bhilwara - 311001, Rajasthan
                     </p>
