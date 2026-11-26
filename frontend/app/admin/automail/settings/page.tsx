@@ -2267,9 +2267,10 @@ export default function AutoMailSettingsPage() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-600">
-                  Hostinger me banaye gaye alias emails (jaise <code className="font-mono">sales@</code>,{" "}
-                  <code className="font-mono">support@</code>, <code className="font-mono">tenders@</code>) yahan add karein.
-                  Compose aur Routing me filter karke inse mail bhej sakte hain.
+                  Hostinger me banaye gaye alias emails (jaise <code className="font-mono">hindbuild@</code>,{" "}
+                  <code className="font-mono">empanel@</code>) yahan add karein.{" "}
+                  <strong className="text-indigo-900">Important:</strong> Alias se <code className="font-mono">From:</code> bhejne ke liye is mailbox me{" "}
+                  <strong>SMTP Password</strong> save hona zaroori hai (kyunki Hostinger Mail API sirf primary mailbox address se bhejta hai).
                 </p>
 
                 <div className="flex gap-2">
