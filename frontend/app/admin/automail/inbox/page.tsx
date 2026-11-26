@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Reply,
   Sparkles,
+  ExternalLink,
 } from "lucide-react";
 
 interface InboxMessageSummary {
@@ -60,6 +61,40 @@ interface MailboxOption {
   brand: string;
 }
 
+function getAddressStyle(email: string) {
+  const clean = (email || "").toLowerCase();
+  if (clean.includes("hindbuild") || clean.startsWith("hbs@")) {
+    return {
+      portal: "Hind Build",
+      badge: "bg-red-50 text-red-700 border-red-200",
+      activePill: "bg-red-600 text-white border-red-600",
+      brandKey: "hbs",
+    };
+  }
+  if (clean.includes("empanel") || clean.includes("tender")) {
+    return {
+      portal: "Empanelment",
+      badge: "bg-amber-50 text-amber-800 border-amber-200",
+      activePill: "bg-amber-600 text-white border-amber-600",
+      brandKey: "empanelment",
+    };
+  }
+  if (clean.includes("info@")) {
+    return {
+      portal: "HiPRO Civil",
+      badge: "bg-blue-50 text-blue-700 border-blue-200",
+      activePill: "bg-blue-600 text-white border-blue-600",
+      brandKey: "hipro",
+    };
+  }
+  return {
+    portal: "Alias",
+    badge: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    activePill: "bg-indigo-600 text-white border-indigo-600",
+    brandKey: "hipro",
+  };
+}
+
 export default function AutoMailInboxPage() {
   const [selectedBrand, setSelectedBrand] = useState("all");
   const [mailboxes, setMailboxes] = useState<MailboxOption[]>([]);
@@ -83,7 +118,9 @@ export default function AutoMailInboxPage() {
   const [replyText, setReplyText] = useState("");
   const [replyFromEmail, setReplyFromEmail] = useState("");
   const [replyMailboxId, setReplyMailboxId] = useState("");
+  const [matchedIncomingEmail, setMatchedIncomingEmail] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [lastSentNote, setLastSentNote] = useState<string | null>(null);
 
   // AI Draft Assistant
   const [aiPrompt, setAiPrompt] = useState("");
@@ -146,11 +183,32 @@ export default function AutoMailInboxPage() {
   }, [folder, recipientFilter, unreadOnly]);
 
   const senderAndAliasOptions = useMemo(() => {
-    const list: Array<{ email: string; label: string; mailboxId: string }> = [];
+    const list: Array<{ email: string; label: string; shortLabel: string; mailboxId: string; isAlias: boolean }> = [];
+    const seen = new Set<string>();
     for (const mb of mailboxes) {
-      list.push({ email: mb.email.toLowerCase(), label: `${mb.email} (Primary)`, mailboxId: mb.id });
+      const primary = mb.email.toLowerCase();
+      if (!seen.has(primary)) {
+        seen.add(primary);
+        list.push({
+          email: primary,
+          label: `${mb.email} (Primary)`,
+          shortLabel: mb.email,
+          mailboxId: mb.id,
+          isAlias: false,
+        });
+      }
       for (const alias of mb.aliases || []) {
-        list.push({ email: alias.toLowerCase(), label: `${alias} (Alias of ${mb.email})`, mailboxId: mb.id });
+        const cleanAlias = alias.toLowerCase();
+        if (!seen.has(cleanAlias)) {
+          seen.add(cleanAlias);
+          list.push({
+            email: cleanAlias,
+            label: `${alias} (Alias of ${mb.email})`,
+            shortLabel: alias,
+            mailboxId: mb.id,
+            isAlias: true,
+          });
+        }
       }
     }
     return list;
@@ -158,7 +216,11 @@ export default function AutoMailInboxPage() {
 
   const visibleMessages = useMemo(() => {
     return messages.filter((m) => {
-      if (selectedBrand !== "all" && m.brand !== selectedBrand) return false;
+      if (selectedBrand !== "all") {
+        const receivedAddr = m.toEmails[0] || m.mailboxEmail;
+        const style = getAddressStyle(receivedAddr);
+        if (m.brand !== selectedBrand && style.brandKey !== selectedBrand) return false;
+      }
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         return (
@@ -177,11 +239,12 @@ export default function AutoMailInboxPage() {
     setSelectedKey(key);
     setLoadingDetail(true);
     setReplyText("");
+    setLastSentNote(null);
 
-    // Default reply address: if message was sent to one of our aliases, reply from that exact alias!
     const allOwn = new Set(senderAndAliasOptions.map((o) => o.email));
-    const matchedRecipient = msg.toEmails.find((t) => allOwn.has(t.toLowerCase()));
-    setReplyFromEmail(matchedRecipient || msg.mailboxEmail);
+    const matchedRecipient = msg.toEmails.find((t) => allOwn.has(t.toLowerCase())) || msg.mailboxEmail;
+    setMatchedIncomingEmail(matchedRecipient);
+    setReplyFromEmail(matchedRecipient);
     setReplyMailboxId(msg.mailboxId);
 
     try {
@@ -229,6 +292,7 @@ export default function AutoMailInboxPage() {
       setToast({ message: "Write a short instruction for AI (e.g. 'Schedule site visit tomorrow at 11am').", type: "info" });
       return;
     }
+    const replyBrand = getAddressStyle(replyFromEmail || detail.mailboxEmail).brandKey;
     setAiGenerating(true);
     try {
       const res = await fetch("/api/automail/ai-draft", {
@@ -237,7 +301,7 @@ export default function AutoMailInboxPage() {
         body: JSON.stringify({
           prompt: promptToUse,
           mode: "reply",
-          brand: detail.brand,
+          brand: replyBrand,
           incomingSubject: detail.subject,
           incomingBody: detail.text || "",
           incomingFromName: detail.fromName,
@@ -266,6 +330,7 @@ export default function AutoMailInboxPage() {
     e.preventDefault();
     if (!detail || !replyText.trim()) return;
     setSendingReply(true);
+    const replyBrand = getAddressStyle(replyFromEmail || detail.mailboxEmail).brandKey;
     try {
       const res = await fetch("/api/automail/inbox/reply", {
         method: "POST",
@@ -278,12 +343,13 @@ export default function AutoMailInboxPage() {
           mailboxId: replyMailboxId || detail.mailboxId,
           senderEmail: replyFromEmail || detail.mailboxEmail,
           inReplyTo: detail.messageId,
-          brand: detail.brand,
+          brand: replyBrand,
         }),
       });
       const data = await res.json();
       if (data.success) {
         setToast({ message: data.message || "Reply sent cleanly!", type: "success" });
+        setLastSentNote(`Replied from ${data.senderEmail || replyFromEmail} to ${detail.fromEmail}`);
         setReplyText("");
       } else {
         setToast({ message: data.error || "Failed to send reply", type: "error" });
@@ -301,7 +367,7 @@ export default function AutoMailInboxPage() {
       : visibleMessages.map((m) => ({
           email: m.fromEmail,
           name: m.fromName,
-          brand: m.brand,
+          brand: getAddressStyle(m.toEmails[0] || m.mailboxEmail).brandKey || m.brand,
         }));
 
     if (payloadContacts.length === 0) {
@@ -329,8 +395,10 @@ export default function AutoMailInboxPage() {
     }
   };
 
+  const activeAddressStyle = detail ? getAddressStyle(matchedIncomingEmail || detail.mailboxEmail) : null;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <AutoMailNav activeBrand={selectedBrand} onBrandChange={setSelectedBrand} />
 
       {toast && (
@@ -372,89 +440,112 @@ export default function AutoMailInboxPage() {
         </div>
       )}
 
-      {/* Top Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-xs font-bold">
+      {/* Top Controls + 1-Click Mailbox/Alias Filter Pills */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setFolder("INBOX")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  folder === "INBOX" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Inbox
+              </button>
+              <button
+                type="button"
+                onClick={() => setFolder("INBOX.Sent")}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  folder === "INBOX.Sent" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                Sent Mail
+              </button>
+            </div>
+
             <button
               type="button"
-              onClick={() => setFolder("INBOX")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                folder === "INBOX" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
+              onClick={() => setUnreadOnly((u) => !u)}
+              className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                unreadOnly
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
               }`}
             >
-              Inbox
-            </button>
-            <button
-              type="button"
-              onClick={() => setFolder("INBOX.Sent")}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                folder === "INBOX.Sent" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-500 hover:text-slate-800"
-              }`}
-            >
-              Sent Mail
+              Unread Only
             </button>
           </div>
 
-          <select
-            value={recipientFilter}
-            onChange={(e) => setRecipientFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-semibold text-slate-800 outline-none focus:border-blue-500"
-            title="Filter by Receiving Mailbox or Alias"
-          >
-            <option value="all">All Mailboxes &amp; Aliases</option>
-            {senderAndAliasOptions.map((opt) => (
-              <option key={opt.email} value={opt.email}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 sm:w-56">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search sender, subject..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500 focus:bg-white font-medium"
+              />
+            </div>
 
+            <button
+              type="button"
+              onClick={() => handleImportSenders()}
+              disabled={syncingContacts || visibleMessages.length === 0}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+              title="Save all visible incoming senders into Audience & Leads"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>{syncingContacts ? "Syncing..." : "Import Senders to Contacts"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => loadInbox(false)}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span>Sync Inbox</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 1-Click Mailbox & Alias Filter Strip */}
+        <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-1">
+            Filter Mailbox / Alias:
+          </span>
           <button
             type="button"
-            onClick={() => setUnreadOnly((u) => !u)}
-            className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-              unreadOnly
-                ? "bg-blue-600 text-white border-blue-600"
+            onClick={() => setRecipientFilter("all")}
+            className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all ${
+              recipientFilter === "all"
+                ? "bg-slate-900 text-white border-slate-900"
                 : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
             }`}
           >
-            Unread Only
+            All Inbox ({messages.length})
           </button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 sm:w-56">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search sender, subject..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500 focus:bg-white font-medium"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => handleImportSenders()}
-            disabled={syncingContacts || visibleMessages.length === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-            title="Save all visible incoming senders into Audience & Leads"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>{syncingContacts ? "Syncing..." : "Import Senders to Contacts"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => loadInbox(false)}
-            disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Sync Inbox</span>
-          </button>
+          {senderAndAliasOptions.map((opt) => {
+            const st = getAddressStyle(opt.email);
+            const active = recipientFilter === opt.email;
+            return (
+              <button
+                key={opt.email}
+                type="button"
+                onClick={() => setRecipientFilter(opt.email)}
+                className={`px-3 py-1 rounded-full text-[11px] font-mono font-bold border transition-all inline-flex items-center gap-1.5 ${
+                  active ? st.activePill : `${st.badge} hover:opacity-85`
+                }`}
+              >
+                <span className="font-sans text-[10px] opacity-80">{st.portal}:</span>
+                <span>{opt.shortLabel}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -467,7 +558,7 @@ export default function AutoMailInboxPage() {
       )}
 
       {/* 2-Pane Unified Inbox */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[560px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[600px]">
         {/* Left Pane: Message List */}
         <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden flex flex-col">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
@@ -480,7 +571,7 @@ export default function AutoMailInboxPage() {
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[620px]">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[680px]">
             {loading ? (
               <div className="py-16 text-center text-slate-400">
                 <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
@@ -499,6 +590,7 @@ export default function AutoMailInboxPage() {
                 const key = `${msg.mailboxId}:${msg.uid}`;
                 const isSelected = selectedKey === key;
                 const receivedAtAddress = msg.toEmails[0] || msg.mailboxEmail;
+                const addrStyle = getAddressStyle(receivedAtAddress);
                 return (
                   <button
                     key={key}
@@ -525,11 +617,11 @@ export default function AutoMailInboxPage() {
                     </p>
 
                     <div className="flex items-center justify-between gap-2 pt-0.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 truncate max-w-[200px]">
-                        To: {receivedAtAddress}
+                      <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded border truncate max-w-[230px] ${addrStyle.badge}`}>
+                        {addrStyle.portal}: {receivedAtAddress}
                       </span>
                       {msg.hasAttachments && (
-                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 font-semibold">
+                        <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 font-semibold shrink-0">
                           <Paperclip className="w-3 h-3" /> {msg.attachmentCount}
                         </span>
                       )}
@@ -553,7 +645,7 @@ export default function AutoMailInboxPage() {
               <Sparkles className="w-9 h-9 text-slate-300" />
               <p className="text-sm font-bold text-slate-600">Select an Email to Read &amp; Reply</p>
               <p className="text-xs text-slate-400 max-w-sm">
-                Left list me se kisi bhi email par click karein — aap yahan se direct reply aur contact save kar sakte hain.
+                Left list me se kisi bhi email par click karein — system automatically sahi Mailbox/Alias (`info@`, `hindbuild@`, `empanel@`) select karke AI reply ready kar dega.
               </p>
             </div>
           ) : (
@@ -561,11 +653,33 @@ export default function AutoMailInboxPage() {
               {/* Header */}
               <div className="p-5 border-b border-slate-100 space-y-3 bg-slate-50/40">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <h3 className="text-base font-black text-slate-900 leading-snug">{detail.subject}</h3>
-                  <div className="flex items-center gap-1.5">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    {activeAddressStyle && (
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${activeAddressStyle.badge}`}>
+                        Received on {activeAddressStyle.portal}: <span className="font-mono">{matchedIncomingEmail || detail.mailboxEmail}</span>
+                      </span>
+                    )}
+                    <h3 className="text-base font-black text-slate-900 leading-snug">{detail.subject}</h3>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+                    <Link
+                      href={`/admin/automail/compose?to=${encodeURIComponent(detail.fromEmail)}&name=${encodeURIComponent(detail.fromName || "")}&subject=${encodeURIComponent(detail.subject.toLowerCase().startsWith("re:") ? detail.subject : `Re: ${detail.subject}`)}&brand=${getAddressStyle(replyFromEmail || detail.mailboxEmail).brandKey}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-lg text-[11px] font-bold"
+                      title="Reply using full template gallery in Compose Studio"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Template Reply</span>
+                    </Link>
                     <button
                       type="button"
-                      onClick={() => handleImportSenders({ email: detail.fromEmail, name: detail.fromName, brand: detail.brand })}
+                      onClick={() =>
+                        handleImportSenders({
+                          email: detail.fromEmail,
+                          name: detail.fromName,
+                          brand: getAddressStyle(matchedIncomingEmail || detail.mailboxEmail).brandKey,
+                        })
+                      }
                       className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-[11px] font-bold"
                     >
                       <UserPlus className="w-3 h-3" />
@@ -611,15 +725,17 @@ export default function AutoMailInboxPage() {
                 )}
               </div>
 
-              {/* Body */}
-              <div className="p-5 flex-1 overflow-y-auto max-h-[340px] bg-white">
+              {/* Body (Isolated iframe for HTML emails so external CSS never leaks) */}
+              <div className="p-4 flex-1 bg-white">
                 {detail.html ? (
-                  <div
-                    className="prose prose-sm max-w-none text-slate-800"
-                    dangerouslySetInnerHTML={{ __html: detail.html }}
+                  <iframe
+                    title="Email Content Preview"
+                    sandbox=""
+                    srcDoc={detail.html}
+                    className="w-full min-h-[260px] h-[300px] border border-slate-100 rounded-xl bg-white"
                   />
                 ) : (
-                  <pre className="whitespace-pre-wrap font-sans text-xs text-slate-700 leading-relaxed">
+                  <pre className="whitespace-pre-wrap font-sans text-xs text-slate-700 leading-relaxed p-2 max-h-[300px] overflow-y-auto">
                     {detail.text || "(Empty message body)"}
                   </pre>
                 )}
@@ -627,30 +743,55 @@ export default function AutoMailInboxPage() {
 
               {/* Direct Threaded Reply Box */}
               <form onSubmit={handleSendReply} className="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Reply className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Reply to {detail.fromEmail}</span>
-                  </span>
+                {lastSentNote && (
+                  <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{lastSentNote}</span>
+                  </div>
+                )}
 
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Reply From:</span>
-                    <select
-                      value={replyFromEmail}
-                      onChange={(e) => {
-                        const chosen = e.target.value;
-                        setReplyFromEmail(chosen);
-                        const match = senderAndAliasOptions.find((o) => o.email === chosen.toLowerCase());
-                        if (match) setReplyMailboxId(match.mailboxId);
-                      }}
-                      className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-[11px] font-mono font-bold text-slate-800 outline-none"
-                    >
-                      {senderAndAliasOptions.map((opt) => (
-                        <option key={opt.email} value={opt.email}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+                {/* 1-Click Reply From Mailbox / Alias Selector */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Reply className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Reply From (Choose Mailbox / Alias):</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      To: <strong className="font-mono text-slate-800">{detail.fromEmail}</strong>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {senderAndAliasOptions.map((opt) => {
+                      const st = getAddressStyle(opt.email);
+                      const isChosen = replyFromEmail.toLowerCase() === opt.email;
+                      const isMatched = matchedIncomingEmail.toLowerCase() === opt.email;
+                      return (
+                        <button
+                          key={opt.email}
+                          type="button"
+                          onClick={() => {
+                            setReplyFromEmail(opt.email);
+                            setReplyMailboxId(opt.mailboxId);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border transition-all inline-flex items-center gap-1.5 ${
+                            isChosen ? st.activePill : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span>{opt.shortLabel}</span>
+                          {isMatched && (
+                            <span
+                              className={`text-[9px] font-sans px-1 py-0.2 rounded ${
+                                isChosen ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700"
+                              }`}
+                            >
+                              Matched
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -726,7 +867,7 @@ export default function AutoMailInboxPage() {
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50"
                   >
                     {sendingReply ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    <span>{sendingReply ? "Sending Reply..." : "Send Reply"}</span>
+                    <span>{sendingReply ? "Sending Reply..." : `Send Reply (${replyFromEmail || detail.mailboxEmail})`}</span>
                   </button>
                 </div>
               </form>
