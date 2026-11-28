@@ -29,6 +29,32 @@ router.use((_req: Request, res: Response, next) => {
 });
 
 /**
+ * GET /api/vendor/auth/check-registered?phone=...
+ * Checks if a mobile number has a submitted vendor application before sending login OTP.
+ */
+router.get("/check-registered", async (req: Request, res: Response) => {
+  try {
+    const cleanPhone = normalizeIndianPhone(String(req.query.phone || ""));
+    if (!cleanPhone) {
+      return res.json({ success: true, registered: false });
+    }
+
+    const application = await prisma.vendorApplication.findFirst({
+      where: {
+        phone: cleanPhone,
+        status: { not: "DRAFT" },
+      },
+      orderBy: { submittedAt: "desc" },
+      select: { id: true },
+    });
+
+    return res.json({ success: true, registered: Boolean(application) });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
  * POST /api/vendor/auth/otp/send
  * Sends a 6-digit login OTP to a registered vendor's mobile number.
  */
@@ -40,7 +66,7 @@ router.post("/otp/send", async (req: Request, res: Response) => {
     }
 
     const application = await prisma.vendorApplication.findFirst({
-      where: { phone: cleanPhone },
+      where: { phone: cleanPhone, status: { not: "DRAFT" } },
       orderBy: { submittedAt: "desc" },
       select: { id: true, phone: true, contactName: true },
     });
