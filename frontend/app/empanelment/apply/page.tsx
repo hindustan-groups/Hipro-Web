@@ -462,7 +462,7 @@ export default function VendorRegistrationWizardPage() {
 
     setSendingOtp(true);
     try {
-      if (isMsg91WidgetConfigured()) {
+      if (await isMsg91WidgetConfigured()) {
         await sendWidgetOtp(cleanPhone);
         setPhone(cleanPhone);
         setOtpSent(true);
@@ -503,7 +503,7 @@ export default function VendorRegistrationWizardPage() {
 
     setVerifyingOtp(true);
     try {
-      if (isMsg91WidgetConfigured()) {
+      if (await isMsg91WidgetConfigured()) {
         const accessToken = await verifyWidgetOtp(otpInput.trim());
         const res = await fetch("/api/empanelment/otp/verify-widget", {
           method: "POST",

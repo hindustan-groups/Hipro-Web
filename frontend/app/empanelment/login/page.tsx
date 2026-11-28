@@ -110,7 +110,7 @@ function LoginForm() {
 
     setSendingOtp(true);
     try {
-      if (isMsg91WidgetConfigured()) {
+      if (await isMsg91WidgetConfigured()) {
         await sendWidgetOtp(cleanPhone);
         setPhone(cleanPhone);
         setOtpSent(true);
@@ -149,7 +149,7 @@ function LoginForm() {
     setVerifying(true);
     try {
       let data: any;
-      if (isMsg91WidgetConfigured()) {
+      if (await isMsg91WidgetConfigured()) {
         const accessToken = await verifyWidgetOtp(otpInput.trim());
         const res = await fetch("/api/vendor/auth/otp/verify-widget", {
           method: "POST",

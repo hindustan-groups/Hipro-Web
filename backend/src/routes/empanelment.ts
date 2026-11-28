@@ -199,6 +199,21 @@ router.post("/gst-verify", (req: Request, res: Response) => {
 });
 
 /**
+ * 1.0 Public MSG91 Widget Public Config (never exposes MSG91_AUTH_KEY)
+ * GET /api/empanelment/otp/config
+ */
+router.get("/otp/config", (_req: Request, res: Response) => {
+  const widgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+  const tokenAuth = process.env.MSG91_TOKEN_AUTH?.trim() || "";
+  return res.json({
+    success: true,
+    enabled: Boolean(widgetId && tokenAuth),
+    widgetId,
+    tokenAuth,
+  });
+});
+
+/**
  * 1A. Send Mobile OTP for Vendor Registration
  * POST /api/empanelment/otp/send
  */

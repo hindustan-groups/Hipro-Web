@@ -23,25 +23,61 @@ declare global {
   }
 }
 
-const WIDGET_ID =
-  process.env.NEXT_PUBLIC_MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
-const TOKEN_AUTH = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH?.trim() || "";
-
-let loadPromise: Promise<void> | null = null;
-
-export function isMsg91WidgetConfigured(): boolean {
-  return Boolean(WIDGET_ID && TOKEN_AUTH);
+interface WidgetConfig {
+  enabled: boolean;
+  widgetId: string;
+  tokenAuth: string;
 }
 
-export function initMsg91Widget(): Promise<void> {
+const ENV_WIDGET_ID =
+  process.env.NEXT_PUBLIC_MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+const ENV_TOKEN_AUTH = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH?.trim() || "";
+
+let cachedConfig: WidgetConfig | null = ENV_TOKEN_AUTH
+  ? { enabled: true, widgetId: ENV_WIDGET_ID, tokenAuth: ENV_TOKEN_AUTH }
+  : null;
+let configPromise: Promise<WidgetConfig> | null = null;
+let loadPromise: Promise<void> | null = null;
+
+export async function resolveMsg91WidgetConfig(): Promise<WidgetConfig> {
+  if (cachedConfig) return cachedConfig;
+  if (configPromise) return configPromise;
+
+  configPromise = fetch("/api/empanelment/otp/config", { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((json) => {
+      const cfg: WidgetConfig = {
+        enabled: Boolean(json?.enabled && json?.widgetId && json?.tokenAuth),
+        widgetId: json?.widgetId || ENV_WIDGET_ID,
+        tokenAuth: json?.tokenAuth || "",
+      };
+      cachedConfig = cfg;
+      return cfg;
+    })
+    .catch(() => {
+      const cfg: WidgetConfig = { enabled: false, widgetId: ENV_WIDGET_ID, tokenAuth: "" };
+      cachedConfig = cfg;
+      return cfg;
+    });
+
+  return configPromise;
+}
+
+export async function isMsg91WidgetConfigured(): Promise<boolean> {
+  const cfg = await resolveMsg91WidgetConfig();
+  return cfg.enabled;
+}
+
+export async function initMsg91Widget(): Promise<void> {
   if (typeof window === "undefined") {
-    return Promise.reject(new Error("MSG91 widget can only run in browser."));
+    throw new Error("MSG91 widget can only run in browser.");
   }
-  if (!isMsg91WidgetConfigured()) {
-    return Promise.reject(new Error("MSG91 widget tokenAuth is not configured."));
+  const cfg = await resolveMsg91WidgetConfig();
+  if (!cfg.enabled) {
+    throw new Error("MSG91 widget tokenAuth is not configured.");
   }
   if (typeof window.sendOtp === "function" && typeof window.verifyOtp === "function") {
-    return Promise.resolve();
+    return;
   }
   if (loadPromise) return loadPromise;
 
@@ -59,13 +95,12 @@ export function initMsg91Widget(): Promise<void> {
       script.onload = () => {
         if (typeof window.initSendOTP === "function") {
           window.initSendOTP({
-            widgetId: WIDGET_ID,
-            tokenAuth: TOKEN_AUTH,
+            widgetId: cfg.widgetId,
+            tokenAuth: cfg.tokenAuth,
             exposeMethods: true,
             success: () => {},
             failure: () => {},
           });
-          // Give widget script a tick to expose sendOtp / verifyOtp
           setTimeout(() => resolve(), 150);
         } else {
           reject(new Error("MSG91 initSendOTP not available after script load."));
