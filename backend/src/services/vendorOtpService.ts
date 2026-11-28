@@ -60,6 +60,7 @@ export function verifyOtpToken(token: string, expectedPhone: string): boolean {
 export async function sendPhoneOtp(rawPhone: string): Promise<{
   phone: string;
   smsMode: "LIVE" | "DEMO";
+  provider?: "MSG91" | "FAST2SMS" | "DEMO";
   demoOtp?: string;
   cooldownSeconds: number;
 }> {
@@ -83,8 +84,40 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
     attempts: 0,
   });
 
-  // Live SMS dispatch if Fast2SMS API key is configured in production
-  const fast2SmsKey = process.env.FAST2SMS_API_KEY;
+  const canSendLive =
+    process.env.NODE_ENV === "production" || process.env.MSG91_SEND_IN_DEV === "true";
+
+  // 1. Primary Provider: MSG91 OTP v5 API
+  const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
+  const msg91TemplateId = process.env.MSG91_TEMPLATE_ID?.trim();
+  if (msg91AuthKey && msg91TemplateId && canSendLive) {
+    try {
+      const url = new URL("https://control.msg91.com/api/v5/otp");
+      url.searchParams.set("template_id", msg91TemplateId);
+      url.searchParams.set("mobile", `91${phone}`);
+      url.searchParams.set("otp", otp);
+      url.searchParams.set("otp_expiry", "5");
+
+      const resp = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          authkey: msg91AuthKey,
+          "Content-Type": "application/json",
+        },
+      });
+      const json: any = await resp.json().catch(() => ({}));
+      if (resp.ok && json?.type === "success") {
+        console.log(`[VENDOR OTP] MSG91 SMS dispatched to 91${phone}`);
+        return { phone, smsMode: "LIVE", provider: "MSG91", cooldownSeconds: 30 };
+      }
+      console.warn("[VENDOR OTP] MSG91 API non-success:", json);
+    } catch (err) {
+      console.warn("[VENDOR OTP] MSG91 dispatch failed, falling back:", err);
+    }
+  }
+
+  // 2. Fallback Provider: Fast2SMS (if configured in production)
+  const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
   if (fast2SmsKey && process.env.NODE_ENV === "production") {
     try {
       const resp = await fetch("https://www.fast2sms.com/dev/bulkV2", {
@@ -100,7 +133,7 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
         }),
       });
       if (resp.ok) {
-        return { phone, smsMode: "LIVE", cooldownSeconds: 30 };
+        return { phone, smsMode: "LIVE", provider: "FAST2SMS", cooldownSeconds: 30 };
       }
     } catch (err) {
       console.warn("[VENDOR OTP] Live SMS dispatch failed, falling back:", err);
@@ -111,6 +144,7 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
   return {
     phone,
     smsMode: "DEMO",
+    provider: "DEMO",
     demoOtp: otp,
     cooldownSeconds: 30,
   };
