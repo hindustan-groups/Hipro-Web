@@ -34,6 +34,7 @@ import {
 import {
   sendPhoneOtp,
   verifyPhoneOtp,
+  verifyMsg91WidgetToken,
   verifyOtpToken,
   normalizeIndianPhone,
 } from "../services/vendorOtpService";
@@ -231,6 +232,24 @@ router.post("/otp/verify", (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(400).json({ success: false, error: err.message || "Invalid OTP" });
+  }
+});
+
+/**
+ * 1C. Verify MSG91 Widget Access Token for Registration
+ * POST /api/empanelment/otp/verify-widget
+ */
+router.post("/otp/verify-widget", async (req: Request, res: Response) => {
+  try {
+    const { phone, accessToken } = req.body || {};
+    const result = await verifyMsg91WidgetToken(accessToken, phone);
+    return res.json({
+      success: true,
+      message: "Mobile number verified via MSG91 successfully.",
+      ...result,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message || "MSG91 verification failed" });
   }
 });
 

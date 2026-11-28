@@ -25,6 +25,11 @@ import {
   Lock,
   Languages,
 } from "lucide-react";
+import {
+  isMsg91WidgetConfigured,
+  sendWidgetOtp,
+  verifyWidgetOtp,
+} from "@/lib/msg91Widget";
 
 type Lang = "en" | "hi";
 
@@ -457,21 +462,31 @@ export default function VendorRegistrationWizardPage() {
 
     setSendingOtp(true);
     try {
-      const res = await fetch("/api/empanelment/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: cleanPhone }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to send OTP.");
+      if (isMsg91WidgetConfigured()) {
+        await sendWidgetOtp(cleanPhone);
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setOtpVerified(false);
+        setOtpToken("");
+        setResendCooldown(30);
+        setDemoOtpHint("");
+      } else {
+        const res = await fetch("/api/empanelment/otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Failed to send OTP.");
+        }
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setOtpVerified(false);
+        setOtpToken("");
+        setResendCooldown(json.cooldownSeconds || 30);
+        setDemoOtpHint(json.demoOtp || "");
       }
-      setPhone(cleanPhone);
-      setOtpSent(true);
-      setOtpVerified(false);
-      setOtpToken("");
-      setResendCooldown(json.cooldownSeconds || 30);
-      setDemoOtpHint(json.demoOtp || "");
     } catch (err: any) {
       setError(err.message || "Could not send OTP.");
     } finally {
@@ -488,19 +503,36 @@ export default function VendorRegistrationWizardPage() {
 
     setVerifyingOtp(true);
     try {
-      const res = await fetch("/api/empanelment/otp/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, otp: otpInput.trim() }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Invalid OTP.");
+      if (isMsg91WidgetConfigured()) {
+        const accessToken = await verifyWidgetOtp(otpInput.trim());
+        const res = await fetch("/api/empanelment/otp/verify-widget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, accessToken }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "MSG91 verification failed.");
+        }
+        setOtpVerified(true);
+        setOtpToken(json.otpToken || "");
+        setDemoOtpHint("");
+        setStep(2);
+      } else {
+        const res = await fetch("/api/empanelment/otp/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, otp: otpInput.trim() }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Invalid OTP.");
+        }
+        setOtpVerified(true);
+        setOtpToken(json.otpToken || "");
+        setDemoOtpHint("");
+        setStep(2);
       }
-      setOtpVerified(true);
-      setOtpToken(json.otpToken || "");
-      setDemoOtpHint("");
-      setStep(2);
     } catch (err: any) {
       setError(err.message || "OTP verification failed.");
     } finally {

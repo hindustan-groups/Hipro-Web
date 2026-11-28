@@ -12,6 +12,11 @@ import {
   CheckCircle2,
   Languages,
 } from "lucide-react";
+import {
+  isMsg91WidgetConfigured,
+  sendWidgetOtp,
+  verifyWidgetOtp,
+} from "@/lib/msg91Widget";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
@@ -105,19 +110,27 @@ function LoginForm() {
 
     setSendingOtp(true);
     try {
-      const res = await fetch("/api/vendor/auth/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: cleanPhone }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to send OTP.");
+      if (isMsg91WidgetConfigured()) {
+        await sendWidgetOtp(cleanPhone);
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setResendCooldown(30);
+        setDemoOtpHint("");
+      } else {
+        const res = await fetch("/api/vendor/auth/otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Failed to send OTP.");
+        }
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setResendCooldown(json.cooldownSeconds || 30);
+        setDemoOtpHint(json.demoOtp || "");
       }
-      setPhone(cleanPhone);
-      setOtpSent(true);
-      setResendCooldown(json.cooldownSeconds || 30);
-      setDemoOtpHint(json.demoOtp || "");
     } catch (err: any) {
       setError(err.message || "Could not send OTP.");
     } finally {
@@ -135,15 +148,30 @@ function LoginForm() {
 
     setVerifying(true);
     try {
-      const res = await fetch("/api/vendor/auth/otp/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ phone, otp: otpInput.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Invalid OTP. Please try again.");
+      let data: any;
+      if (isMsg91WidgetConfigured()) {
+        const accessToken = await verifyWidgetOtp(otpInput.trim());
+        const res = await fetch("/api/vendor/auth/otp/verify-widget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ phone, accessToken }),
+        });
+        data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "MSG91 login failed.");
+        }
+      } else {
+        const res = await fetch("/api/vendor/auth/otp/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ phone, otp: otpInput.trim() }),
+        });
+        data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Invalid OTP. Please try again.");
+        }
       }
 
       if (data.data?.token) {

@@ -194,3 +194,65 @@ export function verifyPhoneOtp(rawPhone: string, rawOtp: string): {
     otpToken: signVerificationToken(phone),
   };
 }
+
+/**
+ * Verifies a JWT access-token returned by the MSG91 OTP Widget on the client
+ * using MSG91's server-side verifyAccessToken API (keeps authkey secret on backend).
+ */
+export async function verifyMsg91WidgetToken(
+  accessToken: string,
+  expectedPhone?: string
+): Promise<{ phone: string; otpToken: string }> {
+  const authkey = process.env.MSG91_AUTH_KEY?.trim();
+  if (!authkey) {
+    throw new Error("MSG91_AUTH_KEY is not configured on the backend.");
+  }
+
+  const cleanToken = String(accessToken || "").trim();
+  if (!cleanToken) {
+    throw new Error("MSG91 access-token is required.");
+  }
+
+  const resp = await fetch("https://control.msg91.com/api/v5/widget/verifyAccessToken", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      authkey,
+      "access-token": cleanToken,
+    }),
+  });
+
+  const json: any = await resp.json().catch(() => ({}));
+  if (!resp.ok || json?.type !== "success") {
+    throw new Error(json?.message || "MSG91 OTP token verification failed.");
+  }
+
+  const rawIdentifier =
+    json?.data?.identifier || json?.identifier || json?.message || "";
+  const verifiedPhoneFromMsg91 = normalizeIndianPhone(String(rawIdentifier));
+  const cleanExpected = expectedPhone ? normalizeIndianPhone(expectedPhone) : "";
+
+  if (
+    cleanExpected &&
+    isValidIndianPhone(verifiedPhoneFromMsg91) &&
+    verifiedPhoneFromMsg91 !== cleanExpected
+  ) {
+    throw new Error("Verified mobile number does not match the entered number.");
+  }
+
+  const finalPhone = isValidIndianPhone(verifiedPhoneFromMsg91)
+    ? verifiedPhoneFromMsg91
+    : cleanExpected;
+
+  if (!isValidIndianPhone(finalPhone)) {
+    throw new Error("Could not determine a valid verified Indian mobile number.");
+  }
+
+  return {
+    phone: finalPhone,
+    otpToken: signVerificationToken(finalPhone),
+  };
+}
