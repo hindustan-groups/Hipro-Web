@@ -50,6 +50,14 @@ export async function ensureEmpanelmentSchema(): Promise<void> {
     );`,
     `CREATE UNIQUE INDEX IF NOT EXISTS "VendorCategory_slug_key" ON "VendorCategory"("slug");`,
     `CREATE UNIQUE INDEX IF NOT EXISTS "VendorApplicationSubcategory_applicationId_subcategoryId_key" ON "VendorApplicationSubcategory"("applicationId", "subcategoryId");`,
+    `INSERT INTO "VendorCategory" ("id", "slug", "name", "sortOrder", "isActive") VALUES
+      ('cat-civil-construction', 'civil-construction', 'Civil Construction', 1, true),
+      ('cat-electrical-mep', 'electrical-mep', 'Electrical & MEP', 2, true),
+      ('cat-plumbing-sanitation', 'plumbing-sanitation', 'Plumbing & Sanitation', 3, true),
+      ('cat-fabrication-peb', 'fabrication-peb', 'Fabrication & PEB', 4, true),
+      ('cat-flooring-finishing', 'flooring-finishing', 'Flooring & Finishing', 5, true),
+      ('cat-material-supply', 'material-supply', 'Material Supply', 6, true)
+    ON CONFLICT ("slug") DO NOTHING;`,
   ];
 
   for (const sql of statements) {

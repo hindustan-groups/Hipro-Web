@@ -610,12 +610,26 @@ export async function resolveTradeCategory(
         (c) => c.name.toLowerCase() === rawName.toLowerCase() || c.slug === rawName.toLowerCase()
       );
       if (canonical) {
-        dbRecord = {
-          id: `cat-${canonical.slug}`,
-          slug: canonical.slug,
-          name: canonical.name,
-          isActive: true,
-        };
+        try {
+          dbRecord = await prisma.vendorCategory.upsert({
+            where: { slug: canonical.slug },
+            create: {
+              id: `cat-${canonical.slug}`,
+              slug: canonical.slug,
+              name: canonical.name,
+              nameHindi: (canonical as any).nameHindi || null,
+              isActive: true,
+            },
+            update: {},
+          });
+        } catch {
+          dbRecord = {
+            id: null,
+            slug: canonical.slug,
+            name: canonical.name,
+            isActive: true,
+          };
+        }
       }
     }
 
