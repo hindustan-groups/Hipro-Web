@@ -22,6 +22,7 @@ import {
 import {
   createOrGetVendorAccount,
   generateActivationToken,
+  getSessionVendor,
   requestPasswordReset,
 } from "../services/vendorAccountService";
 import {
@@ -649,11 +650,19 @@ router.get("/categories", async (_req: Request, res: Response) => {
 });
 
 /**
- * 4. Active Public Tenders
+ * 4. Active Tenders (Registered & Logged-In Vendors Only)
  * GET /api/empanelment/tenders
  */
 router.get("/tenders", async (req: Request, res: Response) => {
   try {
+    const session = await getSessionVendor(req);
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        error: "Vendor portal login required to view active tenders.",
+      });
+    }
+
     const tenders = await prisma.empanelmentTender.findMany({
       where: { status: "ACTIVE" },
       orderBy: { dueDate: "asc" },
