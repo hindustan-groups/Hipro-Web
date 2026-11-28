@@ -107,7 +107,7 @@ const COPY = {
     sendOtp: "Send OTP",
     resendOtp: "Resend OTP",
     sending: "Sending...",
-    enterOtp: "Enter 6-Digit OTP",
+    enterOtp: "Enter OTP",
     verifyOtp: "Verify with OTP",
     verifying: "Verifying...",
     verifiedMsg: "verified!",
@@ -180,7 +180,7 @@ const COPY = {
     sendOtp: "OTP भेजें",
     resendOtp: "OTP दोबारा भेजें",
     sending: "भेजा जा रहा है...",
-    enterOtp: "6-अंकों का OTP दर्ज करें",
+    enterOtp: "OTP दर्ज करें",
     verifyOtp: "OTP सत्यापित करें",
     verifying: "जाँच हो रही है...",
     verifiedMsg: "सत्यापित हो गया!",
@@ -488,8 +488,8 @@ export default function VendorRegistrationWizardPage() {
 
   const handleVerifyOtp = async () => {
     setError("");
-    if (!/^\d{6}$/.test(otpInput.trim())) {
-      setError(lang === "hi" ? "कृपया 6-अंकों का OTP दर्ज करें।" : "Please enter the 6-digit OTP.");
+    if (!/^\d{4,6}$/.test(otpInput.trim())) {
+      setError(lang === "hi" ? "कृपया सही OTP दर्ज करें।" : "Please enter the 4–6 digit OTP.");
       return;
     }
 
@@ -972,13 +972,13 @@ export default function VendorRegistrationWizardPage() {
                       maxLength={6}
                       value={otpInput}
                       onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="6-digit OTP"
+                      placeholder="4-digit OTP"
                       className="flex-1 px-4 py-3 rounded-xl border border-slate-300 bg-white text-center font-mono text-base font-black tracking-[0.35em] text-slate-900 focus:outline-none focus:border-slate-900"
                     />
                     <button
                       type="button"
                       onClick={handleVerifyOtp}
-                      disabled={verifyingOtp || otpInput.length !== 6}
+                      disabled={verifyingOtp || otpInput.length < 4}
                       className="px-6 py-3 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold transition-colors disabled:opacity-50"
                     >
                       {verifyingOtp ? t.verifying : t.verifyOtp}
