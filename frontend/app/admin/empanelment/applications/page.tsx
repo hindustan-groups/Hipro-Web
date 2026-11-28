@@ -266,6 +266,11 @@ export default function ApplicationsPipelinePage() {
                             <span>{app.contactName}</span>
                             <span>•</span>
                             <span>{app.phone}</span>
+                            {app.phoneVerified && (
+                              <span className="text-[9.5px] font-mono font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                OTP ✓
+                              </span>
+                            )}
                             {app.gstin && (
                               <span className="text-[9.5px] font-mono font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
                                 GSTIN ✓
@@ -279,7 +284,11 @@ export default function ApplicationsPipelinePage() {
                     <td className="px-3.5 py-3.5">
                       <span className="font-medium text-slate-700 block truncate">
                         {app.category || (
-                          <span className="italic text-slate-400 font-normal text-[11px]">Unassigned</span>
+                          app.primaryRole ? (
+                            <span className="text-amber-700 font-semibold">{app.primaryRole}</span>
+                          ) : (
+                            <span className="italic text-slate-400 font-normal text-[11px]">Unassigned</span>
+                          )
                         )}
                       </span>
                     </td>
