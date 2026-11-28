@@ -282,27 +282,27 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
   processSteps: JSON.stringify([
     {
       step: "01",
-      title: "Create Profile",
-      description: "Fill in your business details and category information.",
+      title: "Verify Mobile OTP",
+      description: "Enter your 10-digit mobile number and verify instantly with a 4-digit OTP.",
       iconName: "UserPlus",
     },
     {
       step: "02",
-      title: "Submit Documents",
-      description: "Upload required documents for verification.",
-      iconName: "FileUp",
+      title: "Contact & Work Details",
+      description: "Choose Worker, Team, or Business, add your address, work category, experience, and team size.",
+      iconName: "Briefcase",
     },
     {
       step: "03",
-      title: "Verification",
-      description: "Our team will review your details and documents.",
-      iconName: "CheckCircle",
+      title: "Upload Aadhaar & PAN",
+      description: "Upload Aadhaar Card (Front & Back) and PAN Card (optional for individual workers), then preview and submit.",
+      iconName: "FileUp",
     },
     {
       step: "04",
-      title: "Get Listed",
-      description: "Once approved, you will be listed in our vendor network and can receive opportunities.",
-      iconName: "Award",
+      title: "Portal Access & Approval",
+      description: "Log in anytime using your Mobile Number + OTP to track status and bid on tenders once approved.",
+      iconName: "CheckCircle",
     },
   ]),
 
@@ -372,39 +372,27 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
   docsList: JSON.stringify([
     {
       id: "d1",
-      title: "GST Details",
-      description: "GST registration certificate",
+      title: "Active Mobile Number",
+      description: "10-digit mobile number for OTP verification and portal login",
       iconName: "FileCheck",
     },
     {
       id: "d2",
-      title: "PAN Details",
-      description: "PAN card of the business",
+      title: "Aadhaar Card (Front & Back)",
+      description: "Clear photo or PDF of both sides of your Aadhaar Card",
       iconName: "CreditCard",
     },
     {
       id: "d3",
-      title: "Bank Details",
-      description: "Cancelled cheque or bank statement",
+      title: "PAN Card (If Available)",
+      description: "PAN number and card photo; optional for individual workers",
       iconName: "Building2",
     },
     {
       id: "d4",
-      title: "Business Profile",
-      description: "Company profile and work experience",
+      title: "Work & Team Details",
+      description: "Your trade category, years of experience, team size, and project scale",
       iconName: "Briefcase",
-    },
-    {
-      id: "d5",
-      title: "Relevant Certifications",
-      description: "Quality, safety or industry-specific certificates",
-      iconName: "Award",
-    },
-    {
-      id: "d6",
-      title: "Other Documents",
-      description: "Any additional documents as per category",
-      iconName: "FolderOpen",
     },
   ]),
 
@@ -412,37 +400,37 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
   faqBadge: "FREQUENTLY ASKED QUESTIONS",
   faqTitle: "Quick Answers",
   faqSubtitle:
-    "Find answers to common questions about vendor registration, procurement and working with Hindustan Projects.",
+    "Find answers to common questions about vendor registration, login, and working with Hindustan Projects.",
   faqsList: JSON.stringify([
     {
       id: "f1",
-      question: "Who can register as a vendor?",
+      question: "Who can register as a vendor or contractor?",
       answer:
-        "Any registered manufacturer, authorized distributor, raw material supplier, civil/structural contractor, or plant equipment provider possessing valid GSTIN and business credentials can register.",
+        "Individual workers, trade contractors with teams, material suppliers, and registered businesses/firms can all register. You do not need a registered company or GSTIN to apply.",
     },
     {
       id: "f2",
       question: "What documents are required for registration?",
       answer:
-        "Standard documentation includes GST registration certificate, business PAN card, bank details (cancelled cheque), MSME/Udyam certificate (if applicable), and past work experience profile.",
+        "You only need an active mobile number for OTP verification and your Aadhaar Card (Front & Back). PAN Card is required if you have one, and optional for individual workers.",
     },
     {
       id: "f3",
-      question: "How will I get procurement opportunities?",
+      question: "How do I log in to the Vendor Portal?",
       answer:
-        "Once verified and empanelled into your respective category, you will receive real-time Request for Quotations (RFQs), site purchase intents, and tender invitations directly via SMS, WhatsApp, and portal notifications.",
+        "There is no password to remember. After submitting your registration, you are logged in automatically, and anytime later you can log in using your registered Mobile Number and a 4-digit OTP.",
     },
     {
       id: "f4",
-      question: "What is the payment process?",
+      question: "When can I view and bid on active tenders?",
       answer:
-        "Payments are disbursed transparently via direct RTGS/NEFT against verified measurement sheets and tax invoices, adhering strictly to agreed milestones and MSME statutory terms.",
+        "Once our procurement team reviews your profile and marks your application as Approved, active tenders matching your trade category and bidding access unlock inside your Vendor Portal.",
     },
     {
       id: "f5",
       question: "Is there any registration fee?",
       answer:
-        "No. Vendor registration on Hindustan Projects Empanelment Portal is 100% free of charge. We never charge any processing or registration fees.",
+        "No. Vendor registration on Hindustan Projects is 100% free of charge.",
     },
   ]),
 
