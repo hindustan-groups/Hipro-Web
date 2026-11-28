@@ -46,6 +46,13 @@ export interface VendorApplicationDetail {
   pincode?: string | null;
   gstin?: string | null;
   pan: string;
+  phoneVerified?: boolean;
+  entityType?: string | null;
+  primaryRole?: string | null;
+  experienceYears?: string | null;
+  projectScale?: string | null;
+  aadharFrontUrl?: string | null;
+  aadharBackUrl?: string | null;
   bankName?: string | null;
   accountNumber?: string | null;
   bankAccountNumber?: string | null;
@@ -586,7 +593,15 @@ export default function ApplicationReviewDrawer({
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">Vendor Type</span>
-                    <span className="font-bold text-slate-900">{appAny.entityType || "—"}</span>
+                    <span className="font-bold text-slate-900">
+                      {appAny.entityType === "INDIVIDUAL_WORKER"
+                        ? "Individual / Only Worker"
+                        : appAny.entityType === "RUN_SMALL_TEAM"
+                        ? "Contractor with Team"
+                        : appAny.entityType === "OWN_BUSINESS"
+                        ? "Business / Registered Firm"
+                        : appAny.entityType || "—"}
+                    </span>
                   </div>
                   {appAny.primaryRole && (
                     <div className="col-span-2">
