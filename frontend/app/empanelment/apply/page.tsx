@@ -313,6 +313,7 @@ export default function VendorRegistrationWizardPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpToken, setOtpToken] = useState("");
+  const [otpMode, setOtpMode] = useState<"WIDGET" | "BACKEND">("BACKEND");
   const [demoOtpHint, setDemoOtpHint] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
@@ -462,12 +463,23 @@ export default function VendorRegistrationWizardPage() {
 
     setSendingOtp(true);
     try {
+      let sentViaWidget = false;
       if (await isMsg91WidgetConfigured()) {
-        await sendWidgetOtp(cleanPhone);
+        try {
+          await sendWidgetOtp(cleanPhone);
+          sentViaWidget = true;
+        } catch (_widgetErr) {
+          // Graceful fallback to backend OTP if widget is IPBlocked on localhost or rate-limited
+          sentViaWidget = false;
+        }
+      }
+
+      if (sentViaWidget) {
         setPhone(cleanPhone);
         setOtpSent(true);
         setOtpVerified(false);
         setOtpToken("");
+        setOtpMode("WIDGET");
         setResendCooldown(30);
         setDemoOtpHint("");
       } else {
@@ -484,6 +496,7 @@ export default function VendorRegistrationWizardPage() {
         setOtpSent(true);
         setOtpVerified(false);
         setOtpToken("");
+        setOtpMode("BACKEND");
         setResendCooldown(json.cooldownSeconds || 30);
         setDemoOtpHint(json.demoOtp || "");
       }
@@ -503,7 +516,7 @@ export default function VendorRegistrationWizardPage() {
 
     setVerifyingOtp(true);
     try {
-      if (await isMsg91WidgetConfigured()) {
+      if (otpMode === "WIDGET") {
         const accessToken = await verifyWidgetOtp(otpInput.trim());
         const res = await fetch("/api/empanelment/otp/verify-widget", {
           method: "POST",

@@ -64,6 +64,7 @@ function LoginForm() {
   const [phone, setPhone] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [otpMode, setOtpMode] = useState<"WIDGET" | "BACKEND">("BACKEND");
   const [demoOtpHint, setDemoOtpHint] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -110,10 +111,20 @@ function LoginForm() {
 
     setSendingOtp(true);
     try {
+      let sentViaWidget = false;
       if (await isMsg91WidgetConfigured()) {
-        await sendWidgetOtp(cleanPhone);
+        try {
+          await sendWidgetOtp(cleanPhone);
+          sentViaWidget = true;
+        } catch (_widgetErr) {
+          sentViaWidget = false;
+        }
+      }
+
+      if (sentViaWidget) {
         setPhone(cleanPhone);
         setOtpSent(true);
+        setOtpMode("WIDGET");
         setResendCooldown(30);
         setDemoOtpHint("");
       } else {
@@ -128,6 +139,7 @@ function LoginForm() {
         }
         setPhone(cleanPhone);
         setOtpSent(true);
+        setOtpMode("BACKEND");
         setResendCooldown(json.cooldownSeconds || 30);
         setDemoOtpHint(json.demoOtp || "");
       }
@@ -149,7 +161,7 @@ function LoginForm() {
     setVerifying(true);
     try {
       let data: any;
-      if (await isMsg91WidgetConfigured()) {
+      if (otpMode === "WIDGET") {
         const accessToken = await verifyWidgetOtp(otpInput.trim());
         const res = await fetch("/api/vendor/auth/otp/verify-widget", {
           method: "POST",

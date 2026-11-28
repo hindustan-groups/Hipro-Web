@@ -161,7 +161,7 @@ export async function sendWidgetOtp(phone10Digits: string): Promise<void> {
         resolve();
       },
       (err: any) => {
-        console.error("[MSG91 sendOtp error]", err);
+        console.warn("[MSG91 sendOtp fallback]", err);
         reject(new Error(extractMsg91Error(err, "Failed to send OTP via MSG91.")));
       }
     );
@@ -191,7 +191,7 @@ export async function verifyWidgetOtp(otp: string): Promise<string> {
         resolve(token);
       },
       (err: any) => {
-        console.error("[MSG91 verifyOtp error]", err);
+        console.warn("[MSG91 verifyOtp warning]", err);
         reject(new Error(extractMsg91Error(err, "Incorrect OTP.")));
       },
       lastReqId
