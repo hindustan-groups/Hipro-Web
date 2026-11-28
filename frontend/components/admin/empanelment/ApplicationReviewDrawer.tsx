@@ -386,6 +386,16 @@ export default function ApplicationReviewDrawer({
   const appAny = application as any;
   const docs = [
     {
+      label: "Aadhaar Card (Front)",
+      url: appAny.aadharFrontUrl,
+      required: false,
+    },
+    {
+      label: "Aadhaar Card (Back)",
+      url: appAny.aadharBackUrl,
+      required: false,
+    },
+    {
       label: "GST Certificate",
       url: appAny.gstCertificateUrl || application.gstDocUrl,
       required: true,
@@ -564,6 +574,40 @@ export default function ApplicationReviewDrawer({
                   </button>
                 </div>
               </div>
+
+              {/* Mobile OTP & Work Profile (from 5-Step Registration) */}
+              {(appAny.phoneVerified || appAny.experienceYears || appAny.projectScale || appAny.primaryRole) && (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Mobile Verification</span>
+                    <span className="font-bold text-slate-900">
+                      {appAny.phoneVerified ? "OTP Verified ✓" : "Unverified"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Vendor Type</span>
+                    <span className="font-bold text-slate-900">{appAny.entityType || "—"}</span>
+                  </div>
+                  {appAny.primaryRole && (
+                    <div className="col-span-2">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Custom / Primary Work</span>
+                      <span className="font-bold text-slate-900">{appAny.primaryRole}</span>
+                    </div>
+                  )}
+                  {appAny.experienceYears && (
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Experience</span>
+                      <span className="font-bold text-slate-900">{appAny.experienceYears}</span>
+                    </div>
+                  )}
+                  {appAny.projectScale && (
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Project Scale</span>
+                      <span className="font-bold text-slate-900">{appAny.projectScale}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {inviteSuccess && (
                 <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 space-y-2">

@@ -298,9 +298,9 @@ export default function VendorRegistrationWizardPage() {
 
   const t = COPY[lang];
 
-  const [categories, setCategories] = useState<Array<{ id: string; name: string; hi?: string }>>(
-    FALLBACK_CATEGORIES
-  );
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string; hi?: string; subcategories?: Array<{ id: string; name: string }> }>
+  >(FALLBACK_CATEGORIES);
 
   // Tab 1: Mobile & OTP State
   const [phone, setPhone] = useState("");
@@ -325,6 +325,7 @@ export default function VendorRegistrationWizardPage() {
 
   // Tab 3: Work Details
   const [category, setCategory] = useState("");
+  const [subcategoryId, setSubcategoryId] = useState("");
   const [customWorkType, setCustomWorkType] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [teamSize, setTeamSize] = useState("");
@@ -345,6 +346,25 @@ export default function VendorRegistrationWizardPage() {
     try {
       const saved = localStorage.getItem("hipro_vendor_lang");
       if (saved === "hi" || saved === "en") setLang(saved);
+
+      const draftRaw = localStorage.getItem("hipro_vendor_apply_draft");
+      if (draftRaw) {
+        const d = JSON.parse(draftRaw);
+        if (d.entityType) setEntityType(d.entityType);
+        if (d.contactName) setContactName(d.contactName);
+        if (d.companyName) setCompanyName(d.companyName);
+        if (d.email) setEmail(d.email);
+        if (d.address) setAddress(d.address);
+        if (d.pincode) setPincode(d.pincode);
+        if (d.district) setDistrict(d.district);
+        if (d.stateName) setStateName(d.stateName);
+        if (d.category) setCategory(d.category);
+        if (d.subcategoryId) setSubcategoryId(d.subcategoryId);
+        if (d.customWorkType) setCustomWorkType(d.customWorkType);
+        if (d.experienceYears) setExperienceYears(d.experienceYears);
+        if (d.teamSize) setTeamSize(d.teamSize);
+        if (Array.isArray(d.projectScale)) setProjectScale(d.projectScale);
+      }
     } catch (_e) {}
 
     async function loadCategories() {
@@ -358,6 +378,7 @@ export default function VendorRegistrationWizardPage() {
                 id: c.id || c.slug || c.name,
                 name: c.name,
                 hi: c.name,
+                subcategories: Array.isArray(c.subcategories) ? c.subcategories : [],
               }))
             );
           }
@@ -366,6 +387,46 @@ export default function VendorRegistrationWizardPage() {
     }
     loadCategories();
   }, []);
+
+  // Auto-save form draft dynamically on mobile/desktop
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "hipro_vendor_apply_draft",
+        JSON.stringify({
+          entityType,
+          contactName,
+          companyName,
+          email,
+          address,
+          pincode,
+          district,
+          stateName,
+          category,
+          subcategoryId,
+          customWorkType,
+          experienceYears,
+          teamSize,
+          projectScale,
+        })
+      );
+    } catch (_e) {}
+  }, [
+    entityType,
+    contactName,
+    companyName,
+    email,
+    address,
+    pincode,
+    district,
+    stateName,
+    category,
+    subcategoryId,
+    customWorkType,
+    experienceYears,
+    teamSize,
+    projectScale,
+  ]);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -621,6 +682,7 @@ export default function VendorRegistrationWizardPage() {
           city: district.trim(),
           state: stateName.trim(),
           category: isCustomCategory ? undefined : category,
+          subcategoryIds: !isCustomCategory && subcategoryId ? [subcategoryId] : undefined,
           primaryRole: isCustomCategory ? customWorkType.trim() : category,
           skillsDetails: isCustomCategory ? customWorkType.trim() : "",
           experienceYears,
@@ -643,6 +705,7 @@ export default function VendorRegistrationWizardPage() {
         try {
           localStorage.setItem("vendor_token", json.token);
           localStorage.setItem("hipro_vendor_token", json.token);
+          localStorage.removeItem("hipro_vendor_apply_draft");
         } catch (_e) {}
       }
       setSuccessData(json.application || { trackingId: json.trackingId });
@@ -1115,7 +1178,10 @@ export default function VendorRegistrationWizardPage() {
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setSubcategoryId("");
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 >
                   <option value="">{t.catPlaceholder}</option>
@@ -1127,6 +1193,36 @@ export default function VendorRegistrationWizardPage() {
                   <option value="__OTHER__">{t.otherCat}</option>
                 </select>
               </div>
+
+              {/* Dynamic Subcategory Dropdown when category has subcategories */}
+              {(() => {
+                const activeCat = categories.find((c) => c.name === category);
+                const subs = activeCat?.subcategories || [];
+                if (category !== "__OTHER__" && subs.length > 0) {
+                  return (
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700">
+                        {lang === "hi" ? "विशिष्ट कार्य चुनें (वैकल्पिक)" : "Specialization (Optional)"}
+                      </label>
+                      <select
+                        value={subcategoryId}
+                        onChange={(e) => setSubcategoryId(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                      >
+                        <option value="">
+                          {lang === "hi" ? "-- सभी / सामान्य --" : "-- All / General --"}
+                        </option>
+                        {subs.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            {sub.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Custom Work Type Input when Other is selected */}
               {category === "__OTHER__" && (
