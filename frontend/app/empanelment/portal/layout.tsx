@@ -156,7 +156,7 @@ export default function VendorPortalLayout({
         <header className="md:hidden sticky top-0 z-40 bg-white border-b border-slate-200/80 px-4 py-3 flex items-center justify-between shadow-2xs">
           <Link href="/empanelment/portal" className="flex flex-col min-w-0">
             <span className="font-black text-sm text-slate-950 tracking-tight leading-none">
-              HiPRO <span className="text-[#dc2626]">PORTAL</span>
+              HiPRO <span className="text-[#dc2626]">VENDOR</span>
             </span>
             <span className="text-[10px] text-slate-500 truncate max-w-[190px] mt-0.5">
               {app?.companyName || vendor?.email}
@@ -292,7 +292,7 @@ export default function VendorPortalLayout({
                 </div>
                 <div className="flex flex-col">
                   <span className="font-black text-sm lg:text-base text-slate-950 tracking-tight leading-tight">
-                    HiPRO <span className="text-[#dc2626]">PORTAL</span>
+                    HiPRO <span className="text-[#dc2626]">VENDOR</span>
                   </span>
                   <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">
                     Vendor Partner System
