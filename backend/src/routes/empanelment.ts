@@ -20,6 +20,8 @@ import {
 } from "../services/automail/emailSender";
 import {
   createOrGetVendorAccount,
+  createVendorSession,
+  ensureActiveVendorAccount,
   generateActivationToken,
   requestPasswordReset,
 } from "../services/vendorAccountService";
@@ -537,12 +539,27 @@ router.post("/apply", async (req: Request, res: Response) => {
       details: `Empanelment application submitted online. Tracking ID: ${application.trackingId}`,
     }).catch(() => null);
 
+    let portalToken: string | null = null;
+    try {
+      const account = await ensureActiveVendorAccount(application.id, application.email);
+      portalToken = await createVendorSession(account.id, res, req);
+    } catch (sessionErr: any) {
+      console.warn("[EMPANELMENT] Auto-login provisioning warning:", sessionErr?.message || sessionErr);
+    }
+
     return res.status(201).json({
       success: true,
       trackingId,
       tier,
       score,
       status: application.status,
+      token: portalToken,
+      application: {
+        id: application.id,
+        trackingId: application.trackingId,
+        status: application.status,
+        companyName: application.companyName,
+      },
       message: "Application submitted successfully to Hindustan Projects Procurement Board.",
     });
   } catch (err: any) {

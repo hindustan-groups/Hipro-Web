@@ -1,62 +1,97 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Building2,
-  Lock,
-  Mail,
+  Phone,
   ArrowRight,
   ShieldCheck,
   AlertCircle,
-  Eye,
-  EyeOff,
   UserCheck,
-  FileText,
-  KeyRound,
   CheckCircle2,
 } from "lucide-react";
+
+const PHONE_REGEX = /^[6-9]\d{9}$/;
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/empanelment/portal";
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otpInput, setOtpInput] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [demoOtpHint, setDemoOtpHint] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setError("Please enter your registered email and password.");
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 1 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setError("");
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!PHONE_REGEX.test(cleanPhone)) {
+      setError("Please enter your valid 10-digit registered mobile number.");
       return;
     }
 
-    setLoading(true);
-    setError("");
-
+    setSendingOtp(true);
     try {
-      const res = await fetch("/api/vendor/auth/login", {
+      const res = await fetch("/api/vendor/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: cleanPhone }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to send OTP.");
+      }
+      setPhone(cleanPhone);
+      setOtpSent(true);
+      setResendCooldown(json.cooldownSeconds || 30);
+      setDemoOtpHint(json.demoOtp || "");
+    } catch (err: any) {
+      setError(err.message || "Could not send OTP.");
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleVerifyLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!/^\d{6}$/.test(otpInput.trim())) {
+      setError("Please enter the 6-digit OTP.");
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const res = await fetch("/api/vendor/auth/otp/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ phone, otp: otpInput.trim() }),
       });
-
       const data = await res.json();
-
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Invalid credentials. Please check your email and password.");
+        throw new Error(data.error || "Invalid OTP. Please try again.");
       }
 
-      // Store token in localStorage as well for universal client usage
       if (data.data?.token) {
         localStorage.setItem("vendor_token", data.data.token);
+        localStorage.setItem("hipro_vendor_token", data.data.token);
       }
       if (data.data?.account) {
         localStorage.setItem("vendor_account", JSON.stringify(data.data.account));
@@ -65,150 +100,149 @@ function LoginForm() {
       setSuccess(true);
       setTimeout(() => {
         router.push(redirectUrl);
-      }, 600);
+      }, 400);
     } catch (err: any) {
-      const msg = err.message || "An error occurred during login. Please try again.";
-      if (msg.includes("not been activated") || msg.includes("PENDING_ACTIVATION")) {
-        setError("Your account is approved, but your password is not set yet. Please check your approval email or click 'Set Password' below.");
-      } else {
-        setError(msg);
-      }
+      setError(err.message || "Login failed. Please try again.");
     } finally {
-      setLoading(false);
+      setVerifying(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/40 p-6 sm:p-8">
+    <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/40 p-5 sm:p-8">
       {/* Header */}
       <div className="text-center space-y-2 mb-6">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-red-50 text-[#dc2626] mb-1">
           <ShieldCheck className="w-6 h-6 stroke-[2]" />
         </div>
-        <h1 className="text-2xl font-black text-slate-950 tracking-tight">Vendor Portal Login</h1>
+        <h1 className="text-2xl font-black text-slate-950 tracking-tight">
+          Vendor Portal Login
+        </h1>
         <p className="text-xs sm:text-sm text-slate-500">
-          Sign in to manage empanelment, tenders, gate passes, and document compliance.
+          Enter your registered mobile number to log in with a quick 6-digit OTP.
         </p>
       </div>
 
-      {/* Error Alert */}
       {error && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start gap-2.5 animate-in fade-in">
-          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-          <div className="leading-relaxed">{error}</div>
+        <div className="mb-4 p-3.5 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-700 text-xs">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#dc2626]" />
+          <span className="font-medium leading-relaxed">{error}</span>
         </div>
       )}
 
-      {/* Success Alert */}
       {success && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2.5 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-          <div className="leading-relaxed font-semibold">Login successful! Redirecting to portal...</div>
+        <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-emerald-700 text-xs font-bold">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+          <span>OTP Verified! Opening your Vendor Dashboard...</span>
         </div>
       )}
 
-      {/* Login Form */}
-      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Registered Email Address
+      <form onSubmit={otpSent ? handleVerifyLogin : handleSendOtp} className="space-y-4">
+        {/* Mobile Number */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-700 block">
+            Registered Mobile Number
           </label>
-          <div className="relative">
-            <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50/70 focus-within:bg-white focus-within:border-[#dc2626] transition-all overflow-hidden">
+            <span className="px-3 py-3 text-xs font-bold text-slate-500 border-r border-slate-200 bg-slate-100/70">
+              +91
+            </span>
             <input
-              type="email"
-              name="vendor_login_id"
-              autoComplete="off"
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. procurement@vendor.com"
-              className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#dc2626]/20 focus:border-[#dc2626] transition-all bg-slate-50/50 hover:bg-white text-slate-900"
+              disabled={otpSent}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+              placeholder="e.g. 9829012345"
+              className="w-full px-3.5 py-3 bg-transparent text-sm font-semibold text-slate-900 focus:outline-none disabled:opacity-60"
             />
+            {otpSent && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpSent(false);
+                  setOtpInput("");
+                  setDemoOtpHint("");
+                  setError("");
+                }}
+                className="px-3 text-[11px] font-bold text-[#dc2626] shrink-0"
+              >
+                Change
+              </button>
+            )}
           </div>
         </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-              Password
-            </label>
-            <Link
-              href="/empanelment/forgot-password"
-              className="text-xs font-semibold text-[#dc2626] hover:text-[#b91c1c] transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        {/* OTP Input (after Send OTP) */}
+        {otpSent && (
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <label className="text-xs font-bold text-slate-800">
+                Enter 6-Digit OTP
+              </label>
+              {demoOtpHint && (
+                <span className="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-mono font-bold">
+                  Test OTP: {demoOtpHint}
+                </span>
+              )}
+            </div>
             <input
-              type={showPassword ? "text" : "password"}
-              name="vendor_login_key"
-              autoComplete="new-password"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
               required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#dc2626]/20 focus:border-[#dc2626] transition-all bg-slate-50/50 hover:bg-white text-slate-900"
+              value={otpInput}
+              onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="6-digit OTP"
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-center font-mono text-base font-black tracking-[0.35em] text-slate-900 focus:outline-none focus:border-slate-900"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleSendOtp()}
+                disabled={sendingOtp || resendCooldown > 0}
+                className="text-[11px] font-bold text-slate-600 hover:text-slate-900 disabled:opacity-50"
+              >
+                {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        <button
-          type="submit"
-          disabled={loading || success}
-          className="w-full py-3.5 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-red-600/20 disabled:opacity-50 disabled:cursor-not-allowed group"
-        >
-          {loading ? (
-            <span>Signing in...</span>
-          ) : (
-            <>
-              <span>Sign In to Vendor Portal</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </>
-          )}
-        </button>
+        {/* Primary Action Button */}
+        {!otpSent ? (
+          <button
+            type="submit"
+            disabled={sendingOtp}
+            className="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+          >
+            <Phone className="w-4 h-4" />
+            <span>{sendingOtp ? "Sending OTP..." : "Send Login OTP"}</span>
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={verifying || success || otpInput.length !== 6}
+            className="w-full py-3.5 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+          >
+            <span>{verifying ? "Verifying..." : "Verify & Login"}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        )}
       </form>
 
-      {/* Helpful Activation & Onboarding links */}
-      <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
-        <div className="flex items-center justify-between text-xs text-slate-600">
-          <span>Approved partner setting password?</span>
-          <Link
-            href="/empanelment/activate"
-            className="font-bold text-[#dc2626] hover:underline flex items-center gap-1"
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>Set Password</span>
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-between text-xs text-slate-600">
-          <span>Applied recently?</span>
-          <Link
-            href="/empanelment/track"
-            className="font-bold text-slate-900 hover:underline flex items-center gap-1"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Track Application</span>
-          </Link>
-        </div>
-
-        <div className="pt-2 text-center text-xs text-slate-500">
-          Not empanelled yet?{" "}
-          <Link href="/empanelment/apply" className="font-bold text-[#dc2626] hover:underline">
-            Register as a Vendor &rarr;
-          </Link>
-        </div>
+      {/* Register Footer */}
+      <div className="mt-6 pt-5 border-t border-slate-100 text-center space-y-2.5">
+        <p className="text-xs text-slate-500">New contractor or supplier?</p>
+        <Link
+          href="/empanelment/apply"
+          className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs transition-colors"
+        >
+          <UserCheck className="w-3.5 h-3.5 text-[#dc2626]" />
+          <span>Register as Vendor</span>
+        </Link>
       </div>
     </div>
   );
@@ -216,12 +250,10 @@ function LoginForm() {
 
 export default function VendorLoginPage() {
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-slate-50/70 flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100vh-140px)] bg-slate-50/70 flex flex-col items-center justify-center px-4 py-10">
       <Suspense
         fallback={
-          <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-8 text-center text-slate-500 text-sm">
-            Loading portal login...
-          </div>
+          <div className="w-full max-w-md h-80 bg-white rounded-3xl border border-slate-200 animate-pulse" />
         }
       >
         <LoginForm />
@@ -229,4 +261,3 @@ export default function VendorLoginPage() {
     </div>
   );
 }
-

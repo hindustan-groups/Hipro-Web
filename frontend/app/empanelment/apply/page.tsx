@@ -413,7 +413,13 @@ export default function VendorRegistrationWizardPage() {
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to submit registration.");
       }
-      setSuccessData(json.application);
+      if (json.token) {
+        try {
+          localStorage.setItem("vendor_token", json.token);
+          localStorage.setItem("hipro_vendor_token", json.token);
+        } catch (_e) {}
+      }
+      setSuccessData(json.application || { trackingId: json.trackingId });
     } catch (err: any) {
       setError(err.message || "Submission failed. Please try again.");
     } finally {
@@ -478,17 +484,17 @@ export default function VendorRegistrationWizardPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
-              href={`/empanelment/track?id=${encodeURIComponent(successData.trackingId)}`}
+              href="/empanelment/portal"
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
             >
-              <span>Track Application Status</span>
+              <span>Go to Vendor Dashboard</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/empanelment"
+              href={`/empanelment/track?id=${encodeURIComponent(successData.trackingId)}`}
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
             >
-              Back to Home
+              Track Status
             </Link>
           </div>
         </div>
