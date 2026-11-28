@@ -78,8 +78,10 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
     throw new Error(`Please wait ${waitSec} seconds before requesting a new OTP.`);
   }
 
-  const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
-  const msg91WidgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+  const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim().replace(/^["']|["']$/g, "");
+  const msg91WidgetId =
+    process.env.MSG91_WIDGET_ID?.trim().replace(/^["']|["']$/g, "") ||
+    "366b426d6d35343439373933";
 
   // 100% Server-Side MSG91 Widget API (keeps authkey secret on backend, no browser widget issues)
   if (msg91AuthKey && msg91WidgetId) {
@@ -169,8 +171,10 @@ export async function verifyPhoneOtp(rawPhone: string, rawOtp: string): Promise<
   entry.attempts += 1;
 
   if (entry.mode === "MSG91_WIDGET") {
-    const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
-    const msg91WidgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+    const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim().replace(/^["']|["']$/g, "");
+    const msg91WidgetId =
+      process.env.MSG91_WIDGET_ID?.trim().replace(/^["']|["']$/g, "") ||
+      "366b426d6d35343439373933";
     if (!msg91AuthKey) {
       throw new Error("MSG91_AUTH_KEY is not configured on backend.");
     }
