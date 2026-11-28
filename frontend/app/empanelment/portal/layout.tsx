@@ -154,25 +154,16 @@ export default function VendorPortalLayout({
         {/* MOBILE HEADER (Fixed top for 360px - 768px) */}
         {/* ============================================================== */}
         <header className="md:hidden sticky top-0 z-40 bg-white border-b border-slate-200/80 px-4 py-3 flex items-center justify-between shadow-2xs">
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 -ml-1 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
-              aria-label="Toggle Navigation Menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <Link href="/empanelment/portal" className="flex flex-col">
-              <span className="font-black text-sm text-slate-950 tracking-tight leading-none">
-                HiPRO <span className="text-[#dc2626]">PORTAL</span>
-              </span>
-              <span className="text-[10px] text-slate-500 truncate max-w-[170px] mt-0.5">
-                {app?.companyName || vendor?.email}
-              </span>
-            </Link>
-          </div>
+          <Link href="/empanelment/portal" className="flex flex-col min-w-0">
+            <span className="font-black text-sm text-slate-950 tracking-tight leading-none">
+              HiPRO <span className="text-[#dc2626]">PORTAL</span>
+            </span>
+            <span className="text-[10px] text-slate-500 truncate max-w-[190px] mt-0.5">
+              {app?.companyName || vendor?.email}
+            </span>
+          </Link>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <span
               className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
                 app?.status === "APPROVED"
@@ -185,11 +176,11 @@ export default function VendorPortalLayout({
               {app?.status || "ACTIVE"}
             </span>
             <button
-              onClick={handleLogout}
-              className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
-              title="Sign Out"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 -mr-1 rounded-xl text-slate-700 hover:bg-slate-100 border border-slate-200/80 transition-colors"
+              aria-label="Toggle Navigation Menu"
             >
-              <LogOut className="w-4 h-4" />
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </header>
@@ -201,7 +192,7 @@ export default function VendorPortalLayout({
             onClick={() => setMobileMenuOpen(false)}
           >
             <div
-              className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-white shadow-2xl p-5 flex flex-col justify-between"
+              className="fixed inset-y-0 right-0 w-72 max-w-[82vw] bg-white shadow-2xl p-5 flex flex-col justify-between"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="space-y-6">
