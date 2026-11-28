@@ -3,6 +3,7 @@ import { getSessionVendor } from "../services/vendorAccountService";
 import { logVendorActivity, getVendorActivityLogs } from "../services/vendorActivityService";
 import { sendBidConfirmationEmail, sendSiteGatePassEmail } from "../services/empanelmentMailer";
 import { prisma } from "../lib/db";
+import { isGatePassEnabled } from "../lib/empanelmentFlags";
 
 const router = Router();
 
@@ -78,10 +79,12 @@ router.get("/dashboard", async (req: Request, res: Response) => {
     }
 
     const recentActivity = await getVendorActivityLogs(application.id).catch(() => []);
+    const gatePassEnabled = await isGatePassEnabled();
 
     return res.json({
       success: true,
       data: {
+        gatePassEnabled,
         application,
         account,
         companyName: application.companyName,
@@ -453,6 +456,14 @@ router.get("/bids", async (req: Request, res: Response) => {
  */
 router.post("/gate-passes", async (req: Request, res: Response) => {
   try {
+    if (!(await isGatePassEnabled())) {
+      return res.status(403).json({
+        success: false,
+        gatePassEnabled: false,
+        error: "Site Gate Pass module is currently disabled by administration.",
+      });
+    }
+
     const { application } = (req as any).vendorSession;
 
     if (application.status !== "APPROVED") {
@@ -552,6 +563,17 @@ router.post("/gate-passes", async (req: Request, res: Response) => {
  */
 router.get("/gate-passes", async (req: Request, res: Response) => {
   try {
+    const gatePassEnabled = await isGatePassEnabled();
+    if (!gatePassEnabled) {
+      return res.json({
+        success: true,
+        gatePassEnabled: false,
+        count: 0,
+        data: [],
+        passes: [],
+      });
+    }
+
     const { application } = (req as any).vendorSession;
     let passes: any[] = [];
     try {
@@ -573,7 +595,7 @@ router.get("/gate-passes", async (req: Request, res: Response) => {
       isExpired: new Date(p.validTill) < now,
     }));
 
-    return res.json({ success: true, count: formatted.length, data: formatted, passes: formatted });
+    return res.json({ success: true, gatePassEnabled: true, count: formatted.length, data: formatted, passes: formatted });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }

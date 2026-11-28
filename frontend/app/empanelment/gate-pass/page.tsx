@@ -23,7 +23,7 @@ import {
 
 function GatePassContent() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
-
+  const [cmsLoaded, setCmsLoaded] = useState(false);
 
   useEffect(() => {
     async function fetchCms() {
@@ -35,10 +35,48 @@ function GatePassContent() {
             setContent({ ...DEFAULT_EMPANELMENT_CONTENT, ...json.content });
           }
         }
-      } catch (_e) {}
+      } catch (_e) {
+      } finally {
+        setCmsLoaded(true);
+      }
     }
     fetchCms();
   }, []);
+
+  if (cmsLoaded && !content.gatePassEnabled) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+        <div className="bg-white rounded-3xl border border-amber-200/90 p-8 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto">
+            <Clock className="w-6 h-6" />
+          </div>
+          <span className="inline-block text-[11px] font-mono font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+            TEMPORARILY UNAVAILABLE
+          </span>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight">
+            Site Gate Pass Module is Currently Disabled
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-md mx-auto">
+            Daily 24-hour site gate pass self-service is temporarily turned off by Hindustan Projects administration while the site access workflow is being finalized. Please coordinate with your site engineer or procurement desk.
+          </p>
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/empanelment/tenders"
+              className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs transition-colors"
+            >
+              Browse Active Tenders
+            </Link>
+            <Link
+              href="/empanelment"
+              className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
+            >
+              Back to Portal Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16 space-y-8 text-xs">

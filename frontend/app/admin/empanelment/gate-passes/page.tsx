@@ -26,6 +26,8 @@ export default function GatePassesSecurityLogPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [selectedPass, setSelectedPass] = useState<any | null>(null);
+  const [gatePassEnabled, setGatePassEnabled] = useState(false);
+  const [toggling, setToggling] = useState(false);
 
   const fetchPasses = async () => {
     setLoading(true);
@@ -50,10 +52,33 @@ export default function GatePassesSecurityLogPage() {
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to load gate passes");
       setPasses(json.passes || []);
+      setGatePassEnabled(Boolean(json.gatePassEnabled));
     } catch (err: any) {
       setError(err.message || "Failed to load gate passes");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleModule = async () => {
+    setToggling(true);
+    setError("");
+    try {
+      const res = await fetch("/api/empanelment/admin/gate-passes/toggle", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !gatePassEnabled }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to update Gate Pass module status");
+      }
+      setGatePassEnabled(Boolean(json.gatePassEnabled));
+    } catch (err: any) {
+      setError(err.message || "Failed to toggle Gate Pass module");
+    } finally {
+      setToggling(false);
     }
   };
 
@@ -120,6 +145,65 @@ export default function GatePassesSecurityLogPage() {
           <span className="font-medium">{error}</span>
         </div>
       )}
+
+      {/* Module Availability Toggle Card */}
+      <div
+        className={`rounded-3xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
+          gatePassEnabled
+            ? "bg-emerald-50/70 border-emerald-200/80"
+            : "bg-amber-50/70 border-amber-200/80"
+        }`}
+      >
+        <div className="flex items-start sm:items-center gap-3">
+          <div
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+              gatePassEnabled
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            <QrCode className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900">
+                Site / Gate Pass Module
+              </h2>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  gatePassEnabled
+                    ? "bg-emerald-600 text-white"
+                    : "bg-amber-600 text-white"
+                }`}
+              >
+                {gatePassEnabled ? "Enabled (Live)" : "Disabled"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 mt-0.5">
+              {gatePassEnabled
+                ? "Vendors and public guard scanners can currently access and generate 24-hour site gate passes."
+                : "Currently turned off for vendors and public pages until the site pass workflow is finalized."}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleToggleModule}
+          disabled={toggling || loading}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-xs shrink-0 disabled:opacity-50 ${
+            gatePassEnabled
+              ? "bg-rose-600 hover:bg-rose-700 text-white"
+              : "bg-emerald-600 hover:bg-emerald-700 text-white"
+          }`}
+        >
+          {toggling
+            ? "Updating..."
+            : gatePassEnabled
+            ? "Disable Gate Pass"
+            : "Enable Gate Pass"}
+        </button>
+      </div>
 
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
