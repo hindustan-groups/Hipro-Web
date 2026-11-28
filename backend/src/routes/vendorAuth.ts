@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import {
   authenticateVendor,
   createVendorSession,
+  ensureActiveVendorAccount,
   getSessionVendor,
   logoutVendor,
   activateVendorAccount,
@@ -11,6 +12,8 @@ import {
 } from "../services/vendorAccountService";
 import { logVendorActivity } from "../services/vendorActivityService";
 import { sendPasswordResetEmail } from "../services/empanelmentMailer";
+import { sendPhoneOtp, verifyPhoneOtp, normalizeIndianPhone } from "../services/vendorOtpService";
+import { prisma } from "../lib/db";
 
 const router = Router();
 
@@ -18,6 +21,96 @@ const router = Router();
 router.use((_req: Request, res: Response, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
   next();
+});
+
+/**
+ * POST /api/vendor/auth/otp/send
+ * Sends a 6-digit login OTP to a registered vendor's mobile number.
+ */
+router.post("/otp/send", async (req: Request, res: Response) => {
+  try {
+    const cleanPhone = normalizeIndianPhone(req.body?.phone);
+    if (!cleanPhone) {
+      return res.status(400).json({ success: false, error: "Valid 10-digit mobile number is required." });
+    }
+
+    const application = await prisma.vendorApplication.findFirst({
+      where: { phone: cleanPhone },
+      orderBy: { submittedAt: "desc" },
+      select: { id: true, phone: true, contactName: true },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        error: "No vendor account found for this mobile number. Please register first.",
+      });
+    }
+
+    const result = await sendPhoneOtp(cleanPhone);
+    return res.json({
+      success: true,
+      message:
+        result.smsMode === "LIVE"
+          ? `Login OTP sent to +91 ${result.phone}`
+          : `Login OTP generated for +91 ${result.phone}`,
+      ...result,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message || "Failed to send OTP" });
+  }
+});
+
+/**
+ * POST /api/vendor/auth/otp/verify
+ * Verifies login OTP and creates a vendor portal session immediately.
+ */
+router.post("/otp/verify", async (req: Request, res: Response) => {
+  try {
+    const { phone, otp } = req.body || {};
+    const verified = verifyPhoneOtp(phone, otp);
+
+    const application = await prisma.vendorApplication.findFirst({
+      where: { phone: verified.phone },
+      orderBy: { submittedAt: "desc" },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        error: "Vendor application not found for this mobile number.",
+      });
+    }
+
+    const account = await ensureActiveVendorAccount(application.id, application.email);
+    const token = await createVendorSession(account.id, res, req);
+
+    await logVendorActivity({
+      applicationId: application.id,
+      vendorAccountId: account.id,
+      actorType: "VENDOR",
+      actorName: application.contactName || application.phone,
+      action: "VENDOR_LOGGED_IN",
+      details: `Logged in via Mobile OTP from IP: ${req.ip || "unknown"}`,
+    }).catch(() => null);
+
+    return res.json({
+      success: true,
+      message: "Logged in successfully",
+      data: {
+        token,
+        account: {
+          id: account.id,
+          email: account.email,
+          status: account.status,
+          applicationId: account.applicationId,
+        },
+        application,
+      },
+    });
+  } catch (err: any) {
+    return res.status(401).json({ success: false, error: err.message || "OTP verification failed" });
+  }
 });
 
 /**

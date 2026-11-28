@@ -634,3 +634,43 @@ export async function resetPasswordWithToken(token: string, newPassword: string)
     return account;
   }
 }
+
+
+/**
+ * Ensures a VendorAccount exists and is ACTIVE for OTP / instant portal login.
+ */
+export async function ensureActiveVendorAccount(applicationId: string, email: string): Promise<VendorAccountRecord> {
+  const account = await createOrGetVendorAccount(applicationId, email);
+  if (account.status === "SUSPENDED") {
+    throw new Error("Your vendor account is suspended. Please contact administration.");
+  }
+  if (account.status === "ACTIVE") {
+    return account;
+  }
+
+  try {
+    const updated = await (prisma as any).vendorAccount.update({
+      where: { id: account.id },
+      data: { status: "ACTIVE", lastLoginAt: new Date() },
+    });
+    return {
+      ...updated,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+      activationExpiry: updated.activationExpiry?.toISOString() || null,
+      resetExpiry: updated.resetExpiry?.toISOString() || null,
+      lastLoginAt: updated.lastLoginAt?.toISOString() || null,
+    };
+  } catch {
+    const store = loadFallbackStore();
+    const found = store.accounts.find((a) => a.id === account.id);
+    if (found) {
+      found.status = "ACTIVE";
+      found.lastLoginAt = new Date().toISOString();
+      found.updatedAt = new Date().toISOString();
+      saveFallbackStore(store);
+      return found;
+    }
+    return { ...account, status: "ACTIVE" };
+  }
+}
