@@ -158,18 +158,13 @@ function getCategoryBadge(title: string): string {
 export default function EmpanelmentPortalHomePage() {
   const [content, setContent] = useState<EmpanelmentContent>(DEFAULT_EMPANELMENT_CONTENT);
   const [openFaqId, setOpenFaqId] = useState<string | null>("f1");
-  const [tenders, setTenders] = useState<any[]>([]);
-
 
   useEffect(() => {
     async function loadData() {
       try {
         const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
         const cleanUrl = rawUrl.replace(/\/+$/, "");
-        const [contentRes, tendersRes] = await Promise.all([
-          fetch(`${cleanUrl}/api/empanelment/content`),
-          fetch(`${cleanUrl}/api/empanelment/tenders`),
-        ]);
+        const contentRes = await fetch(`${cleanUrl}/api/empanelment/content`);
 
         if (contentRes.ok) {
           const json = await contentRes.json();
@@ -210,13 +205,6 @@ export default function EmpanelmentPortalHomePage() {
                 ? DEFAULT_EMPANELMENT_CONTENT.faqsList
                 : c.faqsList,
             }));
-          }
-        }
-
-        if (tendersRes.ok) {
-          const tendersJson = await tendersRes.json();
-          if (tendersJson.success && Array.isArray(tendersJson.tenders)) {
-            setTenders(tendersJson.tenders);
           }
         }
       } catch (_e) {
@@ -684,140 +672,44 @@ export default function EmpanelmentPortalHomePage() {
               </p>
             </div>
             <Link
-              href="/empanelment/tenders"
+              href="/empanelment/login?redirect=/empanelment/portal/tenders"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#dc2626] hover:text-[#b91c1c] transition-colors whitespace-nowrap self-start md:self-end group"
             >
-              <span>View All Tenders Radar</span>
+              <span>Partner Login for Tenders</span>
               <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          {/* Tenders Display */}
-          {tenders.length === 0 ? (
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 sm:p-10 text-center max-w-2xl mx-auto space-y-4">
-              <Briefcase className="w-8 h-8 mx-auto text-slate-400" />
-              <div className="space-y-1">
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base">
-                  Upcoming Procurement Cycles in Progress
-                </h4>
-                <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
-                  New site procurement packages for our Jaipur and Rajasthan projects are posted regularly. Register today to receive instant notifications when packages matching your trade are published.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                <Link
-                  href="/empanelment/apply"
-                  className="px-5 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Register as Vendor</span>
-                </Link>
-                <Link
-                  href="/empanelment/login"
-                  className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-white text-slate-800 font-bold text-xs flex items-center gap-1.5"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#dc2626]" />
-                  <span>Partner Portal Login</span>
-                </Link>
-              </div>
+          {/* Registered Vendors Only Gate */}
+          <div className="bg-slate-50 rounded-2xl border border-slate-200 p-8 sm:p-10 text-center max-w-2xl mx-auto space-y-4">
+            <div className="w-11 h-11 rounded-2xl bg-red-50 text-[#dc2626] border border-red-200 flex items-center justify-center mx-auto">
+              <Lock className="w-5 h-5" />
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tenders.slice(0, 3).map((tender) => (
-                  <div
-                    key={tender.id}
-                    className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs hover:shadow-lg hover:border-slate-300 transition-all flex flex-col justify-between space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-200">
-                          {tender.tenderNo || tender.tenderNumber}
-                        </span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                            ACTIVE
-                          </span>
-                          <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200 flex items-center gap-1">
-                            <Lock className="w-2.5 h-2.5 text-amber-600" />
-                            <span>Portal Bidding</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <h3 className="font-bold text-slate-900 text-sm tracking-tight leading-snug line-clamp-2">
-                        {tender.title}
-                      </h3>
-
-                      <div className="text-[11px] text-slate-500 font-medium">
-                        Category: <span className="text-slate-800 font-bold">{tender.category}</span>
-                      </div>
-
-                      <div className="pt-2 border-t border-slate-100 space-y-1.5 text-[11px] text-slate-600">
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Site Location:</span>
-                          <span className="font-semibold text-slate-800">{tender.location || "Jaipur, RJ"}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Est. Value:</span>
-                          <span className="font-bold text-slate-900 font-mono">{tender.estimatedBudget || "Competitive"}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400">Due Date:</span>
-                          <span className="font-bold text-amber-700 font-mono">
-                            {tender.dueDate || tender.deadline
-                              ? new Date(tender.dueDate || tender.deadline).toLocaleDateString("en-IN", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "Open Package"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-start gap-1.5">
-                        <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
-                        <span className="leading-tight">Technical drawings, BOQ and commercial bidding restricted to empanelled vendors.</span>
-                      </div>
-                    </div>
-
-                    {/* Action Gating */}
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                        <Link
-                          href="/empanelment/login?redirect=/empanelment/portal/tenders"
-                          className="py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold flex items-center justify-center gap-1 shadow-xs text-xs text-center transition-colors"
-                        >
-                          <Lock className="w-3 h-3 text-amber-400" />
-                          <span>Login to Bid</span>
-                        </Link>
-                        <Link
-                          href="/empanelment/apply"
-                          className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-800 font-bold flex items-center justify-center gap-1 text-xs text-center transition-colors"
-                        >
-                          <span>Register</span>
-                          <ArrowRight className="w-3 h-3 text-slate-400" />
-                        </Link>
-                      </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-slate-700 font-medium text-center sm:text-left">
-                  <ShieldCheck className="w-4 h-4 text-[#dc2626] shrink-0" />
-                  <span>Looking for more active packages across civil, electrical, plumbing, fabrication and materials?</span>
-                </div>
-                <Link
-                  href="/empanelment/tenders"
-                  className="font-bold text-[#dc2626] hover:text-[#b91c1c] flex items-center gap-1 shrink-0"
-                >
-                  <span>Explore Full Procurement Radar</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+            <div className="space-y-1">
+              <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                Registered Vendors Only — Exclusive Procurement Portal
+              </h4>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-md mx-auto">
+                Active construction tenders, BOQ specifications, and commercial bidding are visible exclusively to registered &amp; approved Hindustan Projects partners inside the Vendor Portal.
+              </p>
             </div>
-          )}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <Link
+                href="/empanelment/apply"
+                className="px-5 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center gap-1.5 shadow-xs"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Register as Vendor</span>
+              </Link>
+              <Link
+                href="/empanelment/login?redirect=/empanelment/portal/tenders"
+                className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-white text-slate-800 font-bold text-xs flex items-center gap-1.5"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#dc2626]" />
+                <span>Partner Portal Login</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

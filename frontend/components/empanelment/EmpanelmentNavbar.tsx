@@ -46,7 +46,6 @@ export default function EmpanelmentNavbar() {
   const navLinks = [
     { href: "/empanelment", label: "Home" },
     { href: "/empanelment/guidelines", label: "Guidelines" },
-    { href: "/empanelment/tenders", label: "Tenders" },
     { href: "/empanelment/track", label: "Track Application" },
     { href: "/empanelment/gate-pass", label: "Gate Pass" },
     { href: "/empanelment#faqs", label: "FAQs" },
@@ -181,7 +180,7 @@ export default function EmpanelmentNavbar() {
               </Link>
 
               <Link
-                href="/empanelment/tenders"
+                href="/empanelment/portal/tenders"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-3 rounded-xl bg-violet-50/70 border border-violet-200/80 hover:bg-violet-100/70 transition-colors flex flex-col justify-between"
               >
@@ -189,8 +188,8 @@ export default function EmpanelmentNavbar() {
                   <Briefcase className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">Active Tenders</h4>
-                  <p className="text-[10px] text-slate-500 mt-0.5">चालू टेंडर व कोटेशन</p>
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">Vendor Tenders</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Login Required • चालू टेंडर</p>
                 </div>
               </Link>
 

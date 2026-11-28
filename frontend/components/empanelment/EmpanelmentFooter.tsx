@@ -119,8 +119,8 @@ export default function EmpanelmentFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/empanelment/tenders" className="hover:text-white transition-colors">
-                  Active Tenders Radar (चालू टेंडर)
+                <Link href="/empanelment/portal/tenders" className="hover:text-white transition-colors">
+                  Vendor Tenders Portal (Login Required)
                 </Link>
               </li>
               <li>
