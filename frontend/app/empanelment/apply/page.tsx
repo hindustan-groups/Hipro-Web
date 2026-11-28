@@ -497,19 +497,16 @@ export default function VendorRegistrationWizardPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-3 sm:px-6 py-6 sm:py-12 space-y-6">
+    <div className="max-w-2xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-4">
       {/* Header */}
-      <div className="text-center space-y-1.5">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-[#dc2626] border border-red-200 text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Vendor Registration Form</span>
+      <div className="text-center space-y-1">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 text-[#dc2626] border border-red-200 text-[10px] font-mono font-bold uppercase tracking-wider">
+          <ShieldCheck className="w-3 h-3" />
+          <span>Vendor Registration</span>
         </span>
-        <h1 className="text-xl sm:text-3xl font-black text-slate-950 tracking-tight">
+        <h1 className="text-lg sm:text-2xl font-black text-slate-950 tracking-tight">
           Partner with Hindustan Projects
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Complete the 5 quick steps below to register as an approved vendor or contractor.
-        </p>
       </div>
 
       {/* Responsive 5-Tab Stepper */}
@@ -551,7 +548,7 @@ export default function VendorRegistrationWizardPage() {
       )}
 
       {/* Main Form Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-7 shadow-xs space-y-4">
         {/* ============================================================ */}
         {/* TAB 1: MOBILE NUMBER & OTP VERIFICATION */}
         {/* ============================================================ */}
@@ -702,8 +699,8 @@ export default function VendorRegistrationWizardPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5 sm:col-span-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
                   Full Name <span className="text-rose-600">*</span>
                 </label>
@@ -712,50 +709,50 @@ export default function VendorRegistrationWizardPage() {
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="e.g. Ramesh Kumar Sharma"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1 col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  Firm / Company Name <span className="text-slate-400 font-normal">(Optional)</span>
+                  Firm Name <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="e.g. Sharma Civil Works"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1 col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+                  Email <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. ramesh@company.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
                   Full Address <span className="text-rose-600">*</span>
                 </label>
-                <textarea
-                  rows={2}
+                <input
+                  type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="House / Plot No, Street, Area / Village"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
                   PIN Code <span className="text-rose-600">*</span>
                 </label>
@@ -766,11 +763,11 @@ export default function VendorRegistrationWizardPage() {
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   placeholder="e.g. 311001"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-mono text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
                   District / City <span className="text-rose-600">*</span>
                 </label>
@@ -779,18 +776,18 @@ export default function VendorRegistrationWizardPage() {
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                   placeholder="e.g. Bhilwara"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
-              <div className="space-y-1.5 sm:col-span-2">
+              <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
                   State <span className="text-rose-600">*</span>
                 </label>
                 <select
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 >
                   {INDIAN_STATES.map((st) => (
                     <option key={st} value={st}>
@@ -826,107 +823,84 @@ export default function VendorRegistrationWizardPage() {
         {/* TAB 3: WORK DETAILS */}
         {/* ============================================================ */}
         {step === 3 && (
-          <div className="space-y-6">
-            <div className="space-y-1">
+          <div className="space-y-4">
+            <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
                 Tab 3 • Work Details
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950">
-                Your Work, Experience &amp; Capacity
+              <h2 className="text-base sm:text-xl font-black text-slate-950">
+                Work Category, Experience &amp; Capacity
               </h2>
-              <p className="text-xs text-slate-500">
-                Tell us what kind of work you do, your experience, team size, and project scale.
-              </p>
             </div>
 
-            {/* Category */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700">
-                What work do you do? (Category) <span className="text-rose-600">*</span>
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {categories.map((cat) => {
-                  const selected = category === cat.name;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setCategory(cat.name)}
-                      className={`p-3 rounded-2xl border text-left text-xs font-bold transition-all flex items-center justify-between gap-2 ${
-                        selected
-                          ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                          : "bg-slate-50/70 text-slate-800 border-slate-200 hover:border-slate-400"
-                      }`}
-                    >
-                      <span>{cat.label || cat.name}</span>
-                      {selected && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
-                    </button>
-                  );
-                })}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Category Dropdown */}
+              <div className="space-y-1 sm:col-span-2">
+                <label className="block text-xs font-bold text-slate-700">
+                  What work do you do? (Category) <span className="text-rose-600">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                >
+                  <option value="">-- Select Work Category --</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.label || cat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {/* Experience */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
-                <span>How long have you been doing this work? <span className="text-rose-600">*</span></span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {EXPERIENCE_OPTIONS.map((exp) => {
-                  const selected = experienceYears === exp;
-                  return (
-                    <button
-                      key={exp}
-                      type="button"
-                      onClick={() => setExperienceYears(exp)}
-                      className={`px-3.5 py-2 rounded-xl border text-xs font-bold transition-all ${
-                        selected
-                          ? "bg-[#dc2626] text-white border-[#dc2626]"
-                          : "bg-white text-slate-700 border-slate-300 hover:border-slate-500"
-                      }`}
-                    >
+              {/* Experience Dropdown */}
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Experience <span className="text-rose-600">*</span></span>
+                </label>
+                <select
+                  value={experienceYears}
+                  onChange={(e) => setExperienceYears(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                >
+                  <option value="">-- Select Experience --</option>
+                  {EXPERIENCE_OPTIONS.map((exp) => (
+                    <option key={exp} value={exp}>
                       {exp}
-                    </button>
-                  );
-                })}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {/* Team Size */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                <Users className="w-3.5 h-3.5 text-slate-400" />
-                <span>Team Size <span className="text-rose-600">*</span></span>
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {TEAM_SIZE_OPTIONS.map((opt) => {
-                  const selected = teamSize === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setTeamSize(opt.value)}
-                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all ${
-                        selected
-                          ? "bg-slate-900 text-white border-slate-900"
-                          : "bg-white text-slate-700 border-slate-300 hover:border-slate-500"
-                      }`}
-                    >
+              {/* Team Size Dropdown */}
+              <div className="space-y-1">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <Users className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Team Size <span className="text-rose-600">*</span></span>
+                </label>
+                <select
+                  value={teamSize}
+                  onChange={(e) => setTeamSize(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                >
+                  <option value="">-- Select Team Size --</option>
+                  {TEAM_SIZE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
                       {opt.label}
-                    </button>
-                  );
-                })}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            {/* Project / Service Scale */}
-            <div className="space-y-2">
+            {/* Project / Service Scale (Compact 2x2 Grid) */}
+            <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                 <Layers className="w-3.5 h-3.5 text-slate-400" />
-                <span>What type of projects / services can you handle? (Select all that apply) <span className="text-rose-600">*</span></span>
+                <span>Projects / Services You Handle <span className="text-rose-600">*</span></span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-2">
                 {PROJECT_SCALE_OPTIONS.map((sc) => {
                   const selected = projectScale.includes(sc.value);
                   return (
@@ -934,16 +908,16 @@ export default function VendorRegistrationWizardPage() {
                       key={sc.value}
                       type="button"
                       onClick={() => toggleProjectScale(sc.value)}
-                      className={`p-3.5 rounded-2xl border text-left transition-all ${
+                      className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all ${
                         selected
                           ? "bg-red-50/80 border-[#dc2626] ring-1 ring-[#dc2626]"
                           : "bg-slate-50/70 border-slate-200 hover:border-slate-400"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-1">
                         <span className="text-xs font-black text-slate-900">{sc.label}</span>
                         <span
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center ${
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                             selected
                               ? "bg-[#dc2626] border-[#dc2626] text-white"
                               : "border-slate-300 bg-white"
@@ -952,7 +926,6 @@ export default function VendorRegistrationWizardPage() {
                           {selected && <Check className="w-3 h-3" />}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1">{sc.desc}</p>
                     </button>
                   );
                 })}
@@ -997,46 +970,44 @@ export default function VendorRegistrationWizardPage() {
               </p>
             </div>
 
-            {/* Aadhaar Front & Back */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Aadhaar Front & Back (Side-by-side even on mobile for compact UX) */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Aadhaar Front */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800">
-                    Aadhaar Card — Front <span className="text-rose-600">*</span>
+              <div className="p-2.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
+                    Aadhaar Front <span className="text-rose-600">*</span>
                   </span>
                   {aadharFrontUrl && (
                     <button
                       type="button"
                       onClick={() => setAadharFrontUrl("")}
-                      className="text-rose-600 hover:text-rose-700 text-[11px] font-bold flex items-center gap-1"
+                      className="text-rose-600 hover:text-rose-700 text-[10px] font-bold flex items-center gap-0.5 shrink-0"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
                 {aadharFrontUrl ? (
                   aadharFrontUrl.startsWith("data:application/pdf") ? (
-                    <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Aadhaar Front PDF Uploaded</span>
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>PDF Ready</span>
                     </div>
                   ) : (
                     <img
                       src={aadharFrontUrl}
                       alt="Aadhaar Front"
-                      className="w-full h-36 object-cover rounded-xl border border-slate-200"
+                      className="w-full h-24 sm:h-32 object-cover rounded-xl border border-slate-200"
                     />
                   )
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-36 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-4 text-center">
-                    <Upload className="w-6 h-6 text-slate-400 mb-1.5" />
-                    <span className="text-xs font-bold text-slate-700">
-                      {uploadingField === "aadharFront" ? "Processing..." : "Tap to Upload Front"}
+                  <label className="flex flex-col items-center justify-center h-24 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-2 text-center">
+                    <Upload className="w-5 h-5 text-slate-400 mb-1" />
+                    <span className="text-[11px] font-bold text-slate-700">
+                      {uploadingField === "aadharFront" ? "Wait..." : "Upload Front"}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, or PDF</span>
                     <input
                       type="file"
                       accept="image/*,application/pdf"
@@ -1048,43 +1019,41 @@ export default function VendorRegistrationWizardPage() {
               </div>
 
               {/* Aadhaar Back */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800">
-                    Aadhaar Card — Back <span className="text-rose-600">*</span>
+              <div className="p-2.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
+                    Aadhaar Back <span className="text-rose-600">*</span>
                   </span>
                   {aadharBackUrl && (
                     <button
                       type="button"
                       onClick={() => setAadharBackUrl("")}
-                      className="text-rose-600 hover:text-rose-700 text-[11px] font-bold flex items-center gap-1"
+                      className="text-rose-600 hover:text-rose-700 text-[10px] font-bold flex items-center gap-0.5 shrink-0"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
+                      <Trash2 className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
                 {aadharBackUrl ? (
                   aadharBackUrl.startsWith("data:application/pdf") ? (
-                    <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Aadhaar Back PDF Uploaded</span>
+                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>PDF Ready</span>
                     </div>
                   ) : (
                     <img
                       src={aadharBackUrl}
                       alt="Aadhaar Back"
-                      className="w-full h-36 object-cover rounded-xl border border-slate-200"
+                      className="w-full h-24 sm:h-32 object-cover rounded-xl border border-slate-200"
                     />
                   )
                 ) : (
-                  <label className="flex flex-col items-center justify-center h-36 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-4 text-center">
-                    <Upload className="w-6 h-6 text-slate-400 mb-1.5" />
-                    <span className="text-xs font-bold text-slate-700">
-                      {uploadingField === "aadharBack" ? "Processing..." : "Tap to Upload Back"}
+                  <label className="flex flex-col items-center justify-center h-24 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-2 text-center">
+                    <Upload className="w-5 h-5 text-slate-400 mb-1" />
+                    <span className="text-[11px] font-bold text-slate-700">
+                      {uploadingField === "aadharBack" ? "Wait..." : "Upload Back"}
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, or PDF</span>
                     <input
                       type="file"
                       accept="image/*,application/pdf"
