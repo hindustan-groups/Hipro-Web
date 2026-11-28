@@ -38,6 +38,13 @@ let cachedConfig: WidgetConfig | null = ENV_TOKEN_AUTH
   : null;
 let configPromise: Promise<WidgetConfig> | null = null;
 let loadPromise: Promise<void> | null = null;
+let lastReqId: string | undefined;
+
+function extractMsg91Error(err: any, fallback: string): string {
+  if (!err) return fallback;
+  if (typeof err === "string") return err;
+  return err?.message || err?.reason || err?.error || JSON.stringify(err) || fallback;
+}
 
 export async function resolveMsg91WidgetConfig(): Promise<WidgetConfig> {
   if (cachedConfig) return cachedConfig;
@@ -88,6 +95,21 @@ export async function initMsg91Widget(): Promise<void> {
     ];
     let idx = 0;
 
+    const waitForMethods = () => {
+      let elapsed = 0;
+      const timer = setInterval(() => {
+        if (typeof window.sendOtp === "function" && typeof window.verifyOtp === "function") {
+          clearInterval(timer);
+          resolve();
+        } else if (elapsed >= 3000) {
+          clearInterval(timer);
+          loadPromise = null;
+          reject(new Error("MSG91 OTP methods did not initialize in time."));
+        }
+        elapsed += 50;
+      }, 50);
+    };
+
     const attempt = () => {
       const script = document.createElement("script");
       script.src = urls[idx];
@@ -101,8 +123,9 @@ export async function initMsg91Widget(): Promise<void> {
             success: () => {},
             failure: () => {},
           });
-          setTimeout(() => resolve(), 150);
+          waitForMethods();
         } else {
+          loadPromise = null;
           reject(new Error("MSG91 initSendOTP not available after script load."));
         }
       };
@@ -133,8 +156,14 @@ export async function sendWidgetOtp(phone10Digits: string): Promise<void> {
     }
     window.sendOtp(
       `91${phone10Digits}`,
-      () => resolve(),
-      (err: any) => reject(new Error(err?.message || "Failed to send OTP via MSG91."))
+      (data: any) => {
+        lastReqId = typeof data === "string" ? data : data?.message || data?.reqId;
+        resolve();
+      },
+      (err: any) => {
+        console.error("[MSG91 sendOtp error]", err);
+        reject(new Error(extractMsg91Error(err, "Failed to send OTP via MSG91.")));
+      }
     );
   });
 }
@@ -161,7 +190,11 @@ export async function verifyWidgetOtp(otp: string): Promise<string> {
         }
         resolve(token);
       },
-      (err: any) => reject(new Error(err?.message || "Incorrect OTP."))
+      (err: any) => {
+        console.error("[MSG91 verifyOtp error]", err);
+        reject(new Error(extractMsg91Error(err, "Incorrect OTP.")));
+      },
+      lastReqId
     );
   });
 }
