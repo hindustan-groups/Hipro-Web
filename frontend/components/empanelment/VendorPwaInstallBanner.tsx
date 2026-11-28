@@ -14,13 +14,14 @@ export default function VendorPwaInstallBanner() {
   const [isStandalone, setIsStandalone] = useState(true);
   const [dismissed, setDismissed] = useState(true);
   const [installing, setInstalling] = useState(false);
+  const [showManualHint, setShowManualHint] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     // Register Vendor PWA service worker
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/vendor-sw.js", { scope: "/empanelment" }).catch(() => {});
+      navigator.serviceWorker.register("/vendor-sw.js").catch(() => {});
     }
 
     const standalone =
@@ -47,7 +48,10 @@ export default function VendorPwaInstallBanner() {
   if (isStandalone || dismissed) return null;
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      setShowManualHint((prev) => !prev);
+      return;
+    }
     setInstalling(true);
     try {
       await deferredPrompt.prompt();
@@ -57,6 +61,7 @@ export default function VendorPwaInstallBanner() {
         setIsStandalone(true);
       }
     } catch (_e) {
+      setShowManualHint(true);
     } finally {
       setInstalling(false);
     }
@@ -101,17 +106,15 @@ export default function VendorPwaInstallBanner() {
       </div>
 
       <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-        {deferredPrompt && (
-          <button
-            type="button"
-            onClick={handleInstallClick}
-            disabled={installing}
-            className="px-4 py-2 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{installing ? "Installing..." : "Install App"}</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleInstallClick}
+          disabled={installing}
+          className="px-4 py-2 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>{installing ? "Installing..." : "Install Now"}</span>
+        </button>
         <button
           type="button"
           onClick={handleDismiss}
@@ -121,6 +124,13 @@ export default function VendorPwaInstallBanner() {
           <X className="w-4 h-4" />
         </button>
       </div>
+      {showManualHint && !deferredPrompt && (
+        <div className="w-full sm:hidden mt-1 p-2.5 rounded-xl bg-white/10 border border-white/15 text-[11px] text-slate-200">
+          {isIos
+            ? 'Tap Share ↑ at the bottom, then select "Add to Home Screen".'
+            : 'Tap the ⋮ menu at top-right of Chrome and select "Add to Home screen" / "Install app".'}
+        </div>
+      )}
     </div>
   );
 }
