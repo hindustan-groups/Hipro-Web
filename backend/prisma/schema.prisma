@@ -723,6 +723,9 @@ model VendorApplication {
   designation           String?
   email                 String
   phone                 String
+  phoneVerified         Boolean           @default(false)
+  experienceYears       String?
+  projectScale          String?           // Comma-separated: Day to Day, Small, Medium, Large
   
   // Registered Office & Local Grounding
   address               String            @db.Text
@@ -752,6 +755,8 @@ model VendorApplication {
   // Paperless Document Vault (Cloudinary / Storage Secure URLs)
   gstCertificateUrl     String?
   panCardUrl            String?
+  aadharFrontUrl        String?           @db.Text
+  aadharBackUrl         String?           @db.Text
   bankChequeUrl         String?
   msmeDocUrl            String?
   workExperienceDocUrl  String?
