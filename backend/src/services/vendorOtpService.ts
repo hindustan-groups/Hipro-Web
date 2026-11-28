@@ -79,27 +79,43 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
   }
 
   const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim().replace(/^["']|["']$/g, "");
+  const msg91TokenAuth = process.env.MSG91_TOKEN_AUTH?.trim().replace(/^["']|["']$/g, "");
   const msg91WidgetId =
     process.env.MSG91_WIDGET_ID?.trim().replace(/^["']|["']$/g, "") ||
     "366b426d6d35343439373933";
 
   // 100% Server-Side MSG91 Widget API (keeps authkey secret on backend, no browser widget issues)
-  if (msg91AuthKey && msg91WidgetId) {
-    const resp = await fetch("https://api.msg91.com/api/v5/widget/sendOtp", {
+  if ((msg91AuthKey || msg91TokenAuth) && msg91WidgetId) {
+    let resp = await fetch("https://api.msg91.com/api/v5/widget/sendOtp", {
       method: "POST",
       headers: {
-        authkey: msg91AuthKey,
+        ...(msg91AuthKey ? { authkey: msg91AuthKey } : {}),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         widgetId: msg91WidgetId,
         identifier: `91${phone}`,
+        ...(msg91TokenAuth && !msg91AuthKey ? { tokenAuth: msg91TokenAuth } : {}),
       }),
     });
 
-    const json: any = await resp.json().catch(() => ({}));
+    let json: any = await resp.json().catch(() => ({}));
+    if ((!resp.ok || json?.type !== "success") && msg91TokenAuth && msg91AuthKey) {
+      // Retry using tokenAuth in payload if authkey header was rejected
+      resp = await fetch("https://api.msg91.com/api/v5/widget/sendOtp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          widgetId: msg91WidgetId,
+          tokenAuth: msg91TokenAuth,
+          identifier: `91${phone}`,
+        }),
+      });
+      json = await resp.json().catch(() => ({}));
+    }
+
     if (!resp.ok || json?.type !== "success") {
-      console.error("[VENDOR OTP] MSG91 sendOtp failed:", json);
+      console.error("[VENDOR OTP] MSG91 sendOtp failed:", resp.status, json);
       throw new Error(json?.message || "Failed to send SMS OTP via MSG91.");
     }
 
@@ -172,27 +188,42 @@ export async function verifyPhoneOtp(rawPhone: string, rawOtp: string): Promise<
 
   if (entry.mode === "MSG91_WIDGET") {
     const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim().replace(/^["']|["']$/g, "");
+    const msg91TokenAuth = process.env.MSG91_TOKEN_AUTH?.trim().replace(/^["']|["']$/g, "");
     const msg91WidgetId =
       process.env.MSG91_WIDGET_ID?.trim().replace(/^["']|["']$/g, "") ||
       "366b426d6d35343439373933";
-    if (!msg91AuthKey) {
+    if (!msg91AuthKey && !msg91TokenAuth) {
       throw new Error("MSG91_AUTH_KEY is not configured on backend.");
     }
 
-    const resp = await fetch("https://api.msg91.com/api/v5/widget/verifyOtp", {
+    let resp = await fetch("https://api.msg91.com/api/v5/widget/verifyOtp", {
       method: "POST",
       headers: {
-        authkey: msg91AuthKey,
+        ...(msg91AuthKey ? { authkey: msg91AuthKey } : {}),
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         widgetId: msg91WidgetId,
         reqId: entry.reqId,
         otp,
+        ...(msg91TokenAuth && !msg91AuthKey ? { tokenAuth: msg91TokenAuth } : {}),
       }),
     });
 
-    const json: any = await resp.json().catch(() => ({}));
+    let json: any = await resp.json().catch(() => ({}));
+    if ((!resp.ok || json?.type !== "success") && msg91TokenAuth && msg91AuthKey) {
+      resp = await fetch("https://api.msg91.com/api/v5/widget/verifyOtp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          widgetId: msg91WidgetId,
+          tokenAuth: msg91TokenAuth,
+          reqId: entry.reqId,
+          otp,
+        }),
+      });
+      json = await resp.json().catch(() => ({}));
+    }
     if (!resp.ok || json?.type !== "success") {
       throw new Error(json?.message || "Incorrect OTP. Please check and try again.");
     }
