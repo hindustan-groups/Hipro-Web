@@ -28,6 +28,12 @@ import {
   getVendorActivityLogs,
 } from "../services/vendorActivityService";
 import {
+  sendPhoneOtp,
+  verifyPhoneOtp,
+  verifyOtpToken,
+  normalizeIndianPhone,
+} from "../services/vendorOtpService";
+import {
   getPublicCategories,
   getAdminCategories,
   createAdminCategory,
@@ -104,7 +110,16 @@ export const APPROVED_VENDOR_CATEGORIES = [
   "Material Supply",
 ] as const;
 
-export const ALLOWED_TEAM_SIZE_BRACKETS = ["1-10", "11-50", "51-200", "200+"] as const;
+export const ALLOWED_TEAM_SIZE_BRACKETS = [
+  "1-5",
+  "6-15",
+  "16-50",
+  "50+",
+  "1-10",
+  "11-50",
+  "51-200",
+  "200+",
+] as const;
 
 export const ALLOWED_TURNOVER_BRACKETS = [
   "Under ₹10 Lakh",
@@ -179,6 +194,43 @@ router.post("/gst-verify", (req: Request, res: Response) => {
 });
 
 /**
+ * 1A. Send Mobile OTP for Vendor Registration
+ * POST /api/empanelment/otp/send
+ */
+router.post("/otp/send", async (req: Request, res: Response) => {
+  try {
+    const result = await sendPhoneOtp(req.body?.phone);
+    return res.json({
+      success: true,
+      message:
+        result.smsMode === "LIVE"
+          ? `OTP sent to +91 ${result.phone}`
+          : `OTP generated for +91 ${result.phone}`,
+      ...result,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message || "Failed to send OTP" });
+  }
+});
+
+/**
+ * 1B. Verify Mobile OTP for Vendor Registration
+ * POST /api/empanelment/otp/verify
+ */
+router.post("/otp/verify", (req: Request, res: Response) => {
+  try {
+    const result = verifyPhoneOtp(req.body?.phone, req.body?.otp);
+    return res.json({
+      success: true,
+      message: "Mobile number verified successfully.",
+      ...result,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message || "Invalid OTP" });
+  }
+});
+
+/**
  * 2. Submit New Vendor Empanelment Application (5-Step Wizard)
  * POST /api/empanelment/apply
  */
@@ -187,18 +239,32 @@ router.post("/apply", async (req: Request, res: Response) => {
     const data = req.body;
 
     // Validate mandatory registration fields
-    const companyName = typeof data.companyName === "string" ? data.companyName.trim() : "";
     const contactName = typeof data.contactName === "string" ? data.contactName.trim() : "";
-    const phone = typeof data.phone === "string" ? data.phone.trim() : "";
-    const email = typeof data.email === "string" ? data.email.trim() : "";
+    const companyName =
+      typeof data.companyName === "string" && data.companyName.trim().length > 0
+        ? data.companyName.trim()
+        : contactName;
+    const rawPhone = typeof data.phone === "string" ? data.phone.trim() : "";
+    const phone = normalizeIndianPhone(rawPhone) || rawPhone;
+    const email =
+      typeof data.email === "string" && data.email.trim().length > 0
+        ? data.email.trim()
+        : phone
+        ? `${phone}@vendor.hindustanprojects.in`
+        : "";
     const pan = typeof data.pan === "string" ? data.pan.trim().toUpperCase() : "";
 
-    if (!companyName || !contactName || !phone || !email || !pan) {
+    if (!contactName || !phone || !pan) {
       return res.status(400).json({
         success: false,
-        error: "Mandatory fields missing (Company Name, Contact Person, Phone, Email, PAN)",
+        error: "Mandatory fields missing (Vendor Name, Mobile Number, PAN Number)",
       });
     }
+
+    const phoneVerified =
+      typeof data.otpToken === "string" && data.otpToken.trim().length > 0
+        ? verifyOtpToken(data.otpToken.trim(), phone)
+        : false;
 
     // Structural PAN format validation (Standard 10-char Indian PAN: 5 uppercase letters, 4 digits, 1 uppercase letter)
     if (!PAN_REGEX.test(pan)) {
@@ -392,8 +458,18 @@ router.post("/apply", async (req: Request, res: Response) => {
       designation: data.designation || "Director / Proprietor",
       email: email.toLowerCase().trim(),
       phone: phone.trim(),
+      phoneVerified,
+      experienceYears:
+        typeof data.experienceYears === "string" && data.experienceYears.trim().length > 0
+          ? data.experienceYears.trim()
+          : null,
+      projectScale: Array.isArray(data.projectScale)
+        ? data.projectScale.filter(Boolean).join(", ")
+        : typeof data.projectScale === "string" && data.projectScale.trim().length > 0
+        ? data.projectScale.trim()
+        : null,
       address: data.address || "",
-      city: data.city || "Bhilwara",
+      city: data.city || data.district || "Bhilwara",
       district: data.district || "",
       state: data.state || "Rajasthan",
       pincode: data.pincode || "311001",
@@ -413,6 +489,8 @@ router.post("/apply", async (req: Request, res: Response) => {
       existingEmpanelments: data.existingEmpanelments || "",
       gstCertificateUrl: resolvedGstCertificateUrl,
       panCardUrl: typeof data.panCardUrl === "string" && data.panCardUrl.trim().length > 0 ? data.panCardUrl.trim() : null,
+      aadharFrontUrl: typeof data.aadharFrontUrl === "string" && data.aadharFrontUrl.trim().length > 0 ? data.aadharFrontUrl.trim() : null,
+      aadharBackUrl: typeof data.aadharBackUrl === "string" && data.aadharBackUrl.trim().length > 0 ? data.aadharBackUrl.trim() : null,
       bankChequeUrl: typeof data.bankChequeUrl === "string" && data.bankChequeUrl.trim().length > 0 ? data.bankChequeUrl.trim() : null,
       msmeDocUrl: resolvedMsmeDocUrl,
       workExperienceDocUrl: resolvedWorkExperienceDocUrl,
