@@ -1,0 +1,25 @@
+{
+  "name": "HiPRO Vendor Portal",
+  "short_name": "HiPRO Vendor",
+  "description": "Hindustan Projects Vendor & Contractor Portal — Tenders, Documents, and Onboarding",
+  "start_url": "/empanelment/portal",
+  "scope": "/empanelment",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

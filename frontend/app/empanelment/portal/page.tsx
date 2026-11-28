@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useVendorPortal, vendorFetch } from "./context";
 import SmartCardPreviewModal from "@/components/admin/empanelment/SmartCardPreviewModal";
+import VendorPwaInstallBanner from "@/components/empanelment/VendorPwaInstallBanner";
 
 export default function VendorDashboardPage() {
   const { vendor, refreshVendor } = useVendorPortal();
@@ -67,6 +68,9 @@ export default function VendorDashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* PWA Install Prompt (shown only in web browser, hidden when already installed) */}
+      <VendorPwaInstallBanner />
+
       {/* ============================================================== */}
       {/* 1. WELCOME BANNER & STATUS */}
       {/* ============================================================== */}
