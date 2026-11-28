@@ -217,10 +217,12 @@ router.get("/otp/config", (_req: Request, res: Response) => {
  * 1.1 Check if a Mobile Number already has a submitted Vendor Application
  * GET /api/empanelment/check-phone?phone=...
  */
+const TEST_UNLIMITED_PHONES = new Set(["7742467106"]);
+
 router.get("/check-phone", async (req: Request, res: Response) => {
   try {
     const cleanPhone = normalizeIndianPhone(String(req.query.phone || ""));
-    if (!cleanPhone) {
+    if (!cleanPhone || TEST_UNLIMITED_PHONES.has(cleanPhone)) {
       return res.json({ success: true, alreadyRegistered: false });
     }
 
