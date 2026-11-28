@@ -12,7 +12,12 @@ import {
 } from "../services/vendorAccountService";
 import { logVendorActivity } from "../services/vendorActivityService";
 import { sendPasswordResetEmail } from "../services/empanelmentMailer";
-import { sendPhoneOtp, verifyPhoneOtp, normalizeIndianPhone } from "../services/vendorOtpService";
+import {
+  sendPhoneOtp,
+  verifyPhoneOtp,
+  verifyMsg91WidgetToken,
+  normalizeIndianPhone,
+} from "../services/vendorOtpService";
 import { prisma } from "../lib/db";
 
 const router = Router();
@@ -68,7 +73,7 @@ router.post("/otp/send", async (req: Request, res: Response) => {
 router.post("/otp/verify", async (req: Request, res: Response) => {
   try {
     const { phone, otp } = req.body || {};
-    const verified = verifyPhoneOtp(phone, otp);
+    const verified = await verifyPhoneOtp(phone, otp);
 
     const application = await prisma.vendorApplication.findFirst({
       where: { phone: verified.phone },
@@ -110,6 +115,58 @@ router.post("/otp/verify", async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     return res.status(401).json({ success: false, error: err.message || "OTP verification failed" });
+  }
+});
+
+/**
+ * POST /api/vendor/auth/otp/verify-widget
+ * Verifies MSG91 Widget JWT access-token on backend and creates vendor session.
+ */
+router.post("/otp/verify-widget", async (req: Request, res: Response) => {
+  try {
+    const { phone, accessToken } = req.body || {};
+    const verified = await verifyMsg91WidgetToken(accessToken, phone);
+
+    const application = await prisma.vendorApplication.findFirst({
+      where: { phone: verified.phone },
+      orderBy: { submittedAt: "desc" },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        error: "No vendor registration found for this mobile number. Please register first.",
+      });
+    }
+
+    const account = await ensureActiveVendorAccount(application.id, application.email);
+    const token = await createVendorSession(account.id, res, req);
+
+    await logVendorActivity({
+      applicationId: application.id,
+      vendorAccountId: account.id,
+      actorType: "VENDOR",
+      actorName: application.contactName || application.phone,
+      action: "VENDOR_LOGGED_IN",
+      details: `Logged in via MSG91 OTP Widget from IP: ${req.ip || "unknown"}`,
+    }).catch(() => null);
+
+    return res.json({
+      success: true,
+      message: "Logged in successfully",
+      data: {
+        token,
+        account: {
+          id: account.id,
+          email: account.email,
+          status: account.status,
+          applicationId: account.applicationId,
+        },
+        application,
+      },
+    });
+  } catch (err: any) {
+    return res.status(401).json({ success: false, error: err.message || "MSG91 login failed" });
   }
 });
 

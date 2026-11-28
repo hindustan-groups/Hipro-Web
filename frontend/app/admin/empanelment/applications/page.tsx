@@ -115,6 +115,7 @@ export default function ApplicationsPipelinePage() {
 
   const statusTabs = [
     { label: "All Pipeline", value: "ALL" },
+    { label: "OTP Leads (Draft)", value: "DRAFT" },
     { label: "Pending Review", value: "PENDING" },
     { label: "Submitted", value: "SUBMITTED" },
     { label: "Under Review", value: "UNDER_REVIEW" },

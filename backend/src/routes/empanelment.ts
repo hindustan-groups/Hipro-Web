@@ -34,6 +34,7 @@ import {
 import {
   sendPhoneOtp,
   verifyPhoneOtp,
+  verifyMsg91WidgetToken,
   verifyOtpToken,
   normalizeIndianPhone,
 } from "../services/vendorOtpService";
@@ -198,6 +199,21 @@ router.post("/gst-verify", (req: Request, res: Response) => {
 });
 
 /**
+ * 1.0 Public MSG91 Widget Public Config (never exposes MSG91_AUTH_KEY)
+ * GET /api/empanelment/otp/config
+ */
+router.get("/otp/config", (_req: Request, res: Response) => {
+  const widgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+  const tokenAuth = process.env.MSG91_TOKEN_AUTH?.trim() || "";
+  return res.json({
+    success: true,
+    enabled: Boolean(widgetId && tokenAuth),
+    widgetId,
+    tokenAuth,
+  });
+});
+
+/**
  * 1A. Send Mobile OTP for Vendor Registration
  * POST /api/empanelment/otp/send
  */
@@ -217,20 +233,89 @@ router.post("/otp/send", async (req: Request, res: Response) => {
   }
 });
 
+async function ensureOtpDraftLead(phone: string): Promise<{ id: string; trackingId: string } | null> {
+  try {
+    const existing = await prisma.vendorApplication.findFirst({
+      where: { phone },
+      orderBy: { submittedAt: "desc" },
+      select: { id: true, trackingId: true, status: true },
+    });
+    if (existing) {
+      if (existing.status === "DRAFT") {
+        await prisma.vendorApplication.update({
+          where: { id: existing.id },
+          data: { phoneVerified: true },
+        }).catch(() => null);
+      }
+      return { id: existing.id, trackingId: existing.trackingId };
+    }
+
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000).toString();
+    const trackingId = `HP-EMP-${randomSuffix}`;
+    const created = await prisma.vendorApplication.create({
+      data: {
+        trackingId,
+        status: "DRAFT",
+        currentStage: "Mobile OTP Verified — Incomplete Form",
+        tier: "PROVISIONAL",
+        companyName: `OTP Lead (${phone})`,
+        contactName: "OTP Verified Lead",
+        email: `${phone}@vendor.hindustanprojects.in`,
+        phone,
+        phoneVerified: true,
+        address: "",
+        city: "Pending",
+        state: "Rajasthan",
+        pincode: "",
+        pan: "NOT_PROVIDED",
+      },
+      select: { id: true, trackingId: true },
+    });
+    return created;
+  } catch (err) {
+    console.warn("[EMPANELMENT] Draft lead capture warning:", err);
+    return null;
+  }
+}
+
 /**
  * 1B. Verify Mobile OTP for Vendor Registration
  * POST /api/empanelment/otp/verify
  */
-router.post("/otp/verify", (req: Request, res: Response) => {
+router.post("/otp/verify", async (req: Request, res: Response) => {
   try {
-    const result = verifyPhoneOtp(req.body?.phone, req.body?.otp);
+    const result = await verifyPhoneOtp(req.body?.phone, req.body?.otp);
+    const draft = await ensureOtpDraftLead(result.phone);
     return res.json({
       success: true,
       message: "Mobile number verified successfully.",
       ...result,
+      draftApplicationId: draft?.id || null,
+      trackingId: draft?.trackingId || null,
     });
   } catch (err: any) {
     return res.status(400).json({ success: false, error: err.message || "Invalid OTP" });
+  }
+});
+
+/**
+ * 1C. Verify MSG91 Widget Access Token for Registration
+ * POST /api/empanelment/otp/verify-widget
+ */
+router.post("/otp/verify-widget", async (req: Request, res: Response) => {
+  try {
+    const { phone, accessToken } = req.body || {};
+    const result = await verifyMsg91WidgetToken(accessToken, phone);
+    const draft = await ensureOtpDraftLead(result.phone);
+    return res.json({
+      success: true,
+      message: "Mobile number verified via MSG91 successfully.",
+      ...result,
+      draftApplicationId: draft?.id || null,
+      trackingId: draft?.trackingId || null,
+    });
+  } catch (err: any) {
+    return res.status(400).json({ success: false, error: err.message || "MSG91 verification failed" });
   }
 });
 
@@ -507,18 +592,43 @@ router.post("/apply", async (req: Request, res: Response) => {
       ipAddress: req.ip || req.socket.remoteAddress || "",
     };
 
-    const application = await prisma.vendorApplication.create({
-      data: {
-        ...createData,
-        ...(resolvedSubcategoryIds.length > 0
-          ? {
-              subcategories: {
-                create: resolvedSubcategoryIds.map((subId) => ({ subcategoryId: subId })),
-              },
-            }
-          : {}),
+    const existingDraft = await prisma.vendorApplication.findFirst({
+      where: {
+        phone: phone.trim(),
+        status: "DRAFT",
       },
+      orderBy: { submittedAt: "desc" },
     });
+
+    const application = existingDraft
+      ? await prisma.vendorApplication.update({
+          where: { id: existingDraft.id },
+          data: {
+            ...createData,
+            trackingId: existingDraft.trackingId,
+            submittedAt: new Date(),
+            ...(resolvedSubcategoryIds.length > 0
+              ? {
+                  subcategories: {
+                    deleteMany: {},
+                    create: resolvedSubcategoryIds.map((subId) => ({ subcategoryId: subId })),
+                  },
+                }
+              : {}),
+          },
+        })
+      : await prisma.vendorApplication.create({
+          data: {
+            ...createData,
+            ...(resolvedSubcategoryIds.length > 0
+              ? {
+                  subcategories: {
+                    create: resolvedSubcategoryIds.map((subId) => ({ subcategoryId: subId })),
+                  },
+                }
+              : {}),
+          },
+        });
 
     // Asynchronously dispatch transactional acknowledgment email
     sendApplicationReceivedEmail({

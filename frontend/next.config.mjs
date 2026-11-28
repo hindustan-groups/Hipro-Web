@@ -116,11 +116,11 @@ rawBackendUrl = url.replace(/\/+$/, "");
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://verify.msg91.com https://verify.phone91.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://i.pravatar.cc https://api.qrserver.com https://www.google-analytics.com https://*.google-analytics.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  "connect-src 'self' https://hipro-backend-749v.onrender.com https://*.onrender.com https://res.cloudinary.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com ws: wss: http://localhost:* http://127.0.0.1:*",
+  "connect-src 'self' https://hipro-backend-749v.onrender.com https://*.onrender.com https://res.cloudinary.com https://control.msg91.com https://verify.msg91.com https://verify.phone91.com https://www.google-analytics.com https://analytics.google.com https://*.google-analytics.com ws: wss: http://localhost:* http://127.0.0.1:*",
   "frame-src 'self' https://maps.google.com https://www.google.com",
   "frame-ancestors 'self'",
   "media-src 'self' https://res.cloudinary.com",

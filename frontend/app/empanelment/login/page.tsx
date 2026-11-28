@@ -12,16 +12,21 @@ import {
   CheckCircle2,
   Languages,
 } from "lucide-react";
+import {
+  isMsg91WidgetConfigured,
+  sendWidgetOtp,
+  verifyWidgetOtp,
+} from "@/lib/msg91Widget";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 
 const LOGIN_COPY = {
   en: {
     title: "Vendor Portal Login",
-    subtitle: "Enter your registered mobile number to log in with a quick 6-digit OTP.",
+    subtitle: "Enter your registered mobile number to log in with a quick OTP.",
     mobileLabel: "Registered Mobile Number",
     change: "Change",
-    enterOtp: "Enter 6-Digit OTP",
+    enterOtp: "Enter OTP",
     resendIn: "Resend OTP in",
     resend: "Resend OTP",
     sending: "Sending OTP...",
@@ -34,10 +39,10 @@ const LOGIN_COPY = {
   },
   hi: {
     title: "वेंडर पोर्टल लॉगिन",
-    subtitle: "लॉगिन करने के लिए अपना रजिस्टर्ड मोबाइल नंबर दर्ज करें और 6-अंकों का OTP डालें।",
+    subtitle: "लॉगिन करने के लिए अपना रजिस्टर्ड मोबाइल नंबर दर्ज करें और OTP डालें।",
     mobileLabel: "रजिस्टर्ड मोबाइल नंबर",
     change: "बदलें",
-    enterOtp: "6-अंकों का OTP दर्ज करें",
+    enterOtp: "OTP दर्ज करें",
     resendIn: "OTP दोबारा भेजें",
     resend: "OTP दोबारा भेजें",
     sending: "OTP भेजा जा रहा है...",
@@ -59,6 +64,7 @@ function LoginForm() {
   const [phone, setPhone] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [otpMode, setOtpMode] = useState<"WIDGET" | "BACKEND">("BACKEND");
   const [demoOtpHint, setDemoOtpHint] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const [sendingOtp, setSendingOtp] = useState(false);
@@ -116,6 +122,7 @@ function LoginForm() {
       }
       setPhone(cleanPhone);
       setOtpSent(true);
+      setOtpMode("BACKEND");
       setResendCooldown(json.cooldownSeconds || 30);
       setDemoOtpHint(json.demoOtp || "");
     } catch (err: any) {
@@ -128,22 +135,37 @@ function LoginForm() {
   const handleVerifyLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(otpInput.trim())) {
-      setError(lang === "hi" ? "कृपया 6-अंकों का OTP दर्ज करें।" : "Please enter the 6-digit OTP.");
+    if (!/^\d{4,6}$/.test(otpInput.trim())) {
+      setError(lang === "hi" ? "कृपया सही OTP दर्ज करें।" : "Please enter the 4–6 digit OTP.");
       return;
     }
 
     setVerifying(true);
     try {
-      const res = await fetch("/api/vendor/auth/otp/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ phone, otp: otpInput.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Invalid OTP. Please try again.");
+      let data: any;
+      if (otpMode === "WIDGET") {
+        const accessToken = await verifyWidgetOtp(otpInput.trim());
+        const res = await fetch("/api/vendor/auth/otp/verify-widget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ phone, accessToken }),
+        });
+        data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "MSG91 login failed.");
+        }
+      } else {
+        const res = await fetch("/api/vendor/auth/otp/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ phone, otp: otpInput.trim() }),
+        });
+        data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Invalid OTP. Please try again.");
+        }
       }
 
       if (data.data?.token) {
@@ -267,7 +289,7 @@ function LoginForm() {
               required
               value={otpInput}
               onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="6-digit OTP"
+              placeholder="4-digit OTP"
               className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-center font-mono text-base font-black tracking-[0.35em] text-slate-900 focus:outline-none focus:border-slate-900"
             />
             <div className="flex justify-end">
@@ -295,7 +317,7 @@ function LoginForm() {
         ) : (
           <button
             type="submit"
-            disabled={verifying || success || otpInput.length !== 6}
+            disabled={verifying || success || otpInput.length < 4}
             className="w-full py-3.5 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
           >
             <span>{verifying ? t.verifying : t.verifyLogin}</span>
