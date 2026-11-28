@@ -256,9 +256,11 @@ router.post("/apply", async (req: Request, res: Response) => {
         : phone
         ? `${phone}@vendor.hindustanprojects.in`
         : "";
-    const pan = typeof data.pan === "string" ? data.pan.trim().toUpperCase() : "";
+    const rawPan = typeof data.pan === "string" ? data.pan.trim().toUpperCase() : "";
+    const hasPan = data.hasPan !== false && rawPan !== "NOT_PROVIDED";
+    const pan = hasPan ? rawPan : "NOT_PROVIDED";
 
-    if (!contactName || !phone || !pan) {
+    if (!contactName || !phone || (hasPan && !pan)) {
       return res.status(400).json({
         success: false,
         error: "Mandatory fields missing (Vendor Name, Mobile Number, PAN Number)",
@@ -271,7 +273,7 @@ router.post("/apply", async (req: Request, res: Response) => {
         : false;
 
     // Structural PAN format validation (Standard 10-char Indian PAN: 5 uppercase letters, 4 digits, 1 uppercase letter)
-    if (!PAN_REGEX.test(pan)) {
+    if (hasPan && !PAN_REGEX.test(pan)) {
       return res.status(400).json({
         success: false,
         error: "Invalid PAN number format. Permanent Account Number must be 10 characters (e.g. ABCDE1234F).",

@@ -85,6 +85,12 @@ const INDIAN_STATES = [
   "Other",
 ];
 
+const VENDOR_TYPE_OPTIONS = [
+  { value: "INDIVIDUAL_WORKER", label: "Individual / Only Worker (मैं अकेला वर्कर/कारीगर हूँ)" },
+  { value: "RUN_SMALL_TEAM", label: "Contractor with Team (मैं टीम के साथ काम करता हूँ)" },
+  { value: "OWN_BUSINESS", label: "I Own a Business / Firm (मेरा खुद का बिजनेस/फर्म है)" },
+];
+
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 const PHONE_REGEX = /^[6-9]\d{9}$/;
 const PIN_REGEX = /^\d{6}$/;
@@ -158,6 +164,7 @@ export default function VendorRegistrationWizardPage() {
   const [resendCooldown, setResendCooldown] = useState(0);
 
   // Tab 2: Vendor Contact Details
+  const [entityType, setEntityType] = useState("INDIVIDUAL_WORKER");
   const [contactName, setContactName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
@@ -175,6 +182,7 @@ export default function VendorRegistrationWizardPage() {
   // Tab 4: Upload Documents
   const [aadharFrontUrl, setAadharFrontUrl] = useState("");
   const [aadharBackUrl, setAadharBackUrl] = useState("");
+  const [hasPan, setHasPan] = useState(true);
   const [pan, setPan] = useState("");
   const [panCardUrl, setPanCardUrl] = useState("");
   const [uploadingField, setUploadingField] = useState<string | null>(null);
@@ -317,6 +325,10 @@ export default function VendorRegistrationWizardPage() {
         setError("Please enter your full name.");
         return;
       }
+      if (entityType === "OWN_BUSINESS" && !companyName.trim()) {
+        setError("Please enter your Business / Firm name.");
+        return;
+      }
       if (!address.trim()) {
         setError("Please enter your complete address.");
         return;
@@ -361,14 +373,16 @@ export default function VendorRegistrationWizardPage() {
         setError("Please upload both Front and Back sides of your Aadhaar Card.");
         return;
       }
-      const cleanPan = pan.trim().toUpperCase();
-      if (!PAN_REGEX.test(cleanPan)) {
-        setError("Please enter a valid 10-character PAN number (e.g. ABCDE1234F).");
-        return;
-      }
-      if (!panCardUrl) {
-        setError("Please upload your PAN Card photo or PDF.");
-        return;
+      if (hasPan) {
+        const cleanPan = pan.trim().toUpperCase();
+        if (!PAN_REGEX.test(cleanPan)) {
+          setError("Please enter a valid 10-character PAN number (e.g. ABCDE1234F), or uncheck PAN if you don't have one.");
+          return;
+        }
+        if (!panCardUrl) {
+          setError("Please upload your PAN Card photo or PDF, or check 'I don't have a PAN Card'.");
+          return;
+        }
       }
       setStep(5);
     }
@@ -389,8 +403,12 @@ export default function VendorRegistrationWizardPage() {
         body: JSON.stringify({
           phone,
           otpToken,
+          entityType,
           contactName: contactName.trim(),
-          companyName: companyName.trim() || contactName.trim(),
+          companyName:
+            entityType === "INDIVIDUAL_WORKER"
+              ? contactName.trim()
+              : companyName.trim() || contactName.trim(),
           email: email.trim() || undefined,
           address: address.trim(),
           pincode: pincode.trim(),
@@ -403,8 +421,9 @@ export default function VendorRegistrationWizardPage() {
           projectScale,
           aadharFrontUrl,
           aadharBackUrl,
-          pan: pan.trim().toUpperCase(),
-          panCardUrl,
+          hasPan,
+          pan: hasPan ? pan.trim().toUpperCase() : "NOT_PROVIDED",
+          panCardUrl: hasPan ? panCardUrl : undefined,
           termsAgreed: true,
         }),
       });
@@ -708,6 +727,23 @@ export default function VendorRegistrationWizardPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
+                  Vendor Type / Business Profile <span className="text-rose-600">*</span>
+                </label>
+                <select
+                  value={entityType}
+                  onChange={(e) => setEntityType(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
+                >
+                  {VENDOR_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1 col-span-2">
+                <label className="block text-xs font-bold text-slate-700">
                   Full Name <span className="text-rose-600">*</span>
                 </label>
                 <input
@@ -719,20 +755,27 @@ export default function VendorRegistrationWizardPage() {
                 />
               </div>
 
-              <div className="space-y-1 col-span-2 sm:col-span-1">
-                <label className="block text-xs font-bold text-slate-700">
-                  Firm Name <span className="text-slate-400 font-normal">(Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="e.g. Sharma Civil Works"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
-                />
-              </div>
+              {entityType !== "INDIVIDUAL_WORKER" && (
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Business / Firm Name{" "}
+                    {entityType === "OWN_BUSINESS" ? (
+                      <span className="text-rose-600">*</span>
+                    ) : (
+                      <span className="text-slate-400 font-normal">(Optional)</span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="e.g. Sharma Civil Works"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+              )}
 
-              <div className="space-y-1 col-span-2 sm:col-span-1">
+              <div className={`space-y-1 col-span-2 ${entityType !== "INDIVIDUAL_WORKER" ? "sm:col-span-1" : ""}`}>
                 <label className="block text-xs font-bold text-slate-700">
                   Email <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
@@ -1071,9 +1114,23 @@ export default function VendorRegistrationWizardPage() {
               </div>
             </div>
 
-            {/* PAN Number & PAN Card Upload */}
+            {/* PAN Number & PAN Card Upload (Optional for workers without PAN) */}
             <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4">
-              <div className="space-y-1.5">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={!hasPan}
+                  onChange={(e) => setHasPan(!e.target.checked)}
+                  className="w-4 h-4 accent-[#dc2626] rounded"
+                />
+                <span className="text-xs font-bold text-slate-700">
+                  I don&apos;t have a PAN Card right now (मेरे पास पैन कार्ड नहीं है)
+                </span>
+              </label>
+
+              {hasPan && (
+                <>
+                  <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                     <CreditCard className="w-3.5 h-3.5 text-slate-400" />
@@ -1147,6 +1204,8 @@ export default function VendorRegistrationWizardPage() {
                   </label>
                 )}
               </div>
+                </>
+              )}
             </div>
 
             <div className="pt-2 flex flex-col-reverse sm:flex-row justify-between gap-2.5">
@@ -1285,7 +1344,7 @@ export default function VendorRegistrationWizardPage() {
               <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Uploaded Documents (PAN: {pan})
+                    Uploaded Documents (PAN: {hasPan ? pan : "Not Provided"})
                   </div>
                   <button
                     type="button"
@@ -1303,8 +1362,12 @@ export default function VendorRegistrationWizardPage() {
                   <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
                     Aadhaar Back ✓
                   </span>
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
-                    PAN Card ✓
+                  <span
+                    className={`px-2.5 py-1 rounded-lg ${
+                      hasPan ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {hasPan ? "PAN Card ✓" : "PAN Skipped"}
                   </span>
                 </div>
               </div>
