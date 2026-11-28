@@ -10,15 +10,52 @@ import {
   AlertCircle,
   UserCheck,
   CheckCircle2,
+  Languages,
 } from "lucide-react";
 
 const PHONE_REGEX = /^[6-9]\d{9}$/;
+
+const LOGIN_COPY = {
+  en: {
+    title: "Vendor Portal Login",
+    subtitle: "Enter your registered mobile number to log in with a quick 6-digit OTP.",
+    mobileLabel: "Registered Mobile Number",
+    change: "Change",
+    enterOtp: "Enter 6-Digit OTP",
+    resendIn: "Resend OTP in",
+    resend: "Resend OTP",
+    sending: "Sending OTP...",
+    sendOtp: "Send Login OTP",
+    verifying: "Verifying...",
+    verifyLogin: "Verify & Login",
+    verifiedToast: "OTP Verified! Opening your Vendor Dashboard...",
+    newVendor: "New contractor or supplier?",
+    registerBtn: "Register as Vendor",
+  },
+  hi: {
+    title: "वेंडर पोर्टल लॉगिन",
+    subtitle: "लॉगिन करने के लिए अपना रजिस्टर्ड मोबाइल नंबर दर्ज करें और 6-अंकों का OTP डालें।",
+    mobileLabel: "रजिस्टर्ड मोबाइल नंबर",
+    change: "बदलें",
+    enterOtp: "6-अंकों का OTP दर्ज करें",
+    resendIn: "OTP दोबारा भेजें",
+    resend: "OTP दोबारा भेजें",
+    sending: "OTP भेजा जा रहा है...",
+    sendOtp: "लॉगिन OTP भेजें",
+    verifying: "जाँच हो रही है...",
+    verifyLogin: "सत्यापित करें और लॉगिन करें",
+    verifiedToast: "OTP सत्यापित! आपका डैशबोर्ड खुल रहा है...",
+    newVendor: "नए ठेकेदार या सप्लायर हैं?",
+    registerBtn: "नया रजिस्ट्रेशन करें",
+  },
+} as const;
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/empanelment/portal";
 
+  const [lang, setLang] = useState<"en" | "hi">("en");
   const [phone, setPhone] = useState("");
   const [otpInput, setOtpInput] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -29,6 +66,15 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  const t = LOGIN_COPY[lang];
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hipro_vendor_lang");
+      if (saved === "hi" || saved === "en") setLang(saved);
+    } catch (_e) {}
+  }, []);
+
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setInterval(() => {
@@ -37,12 +83,23 @@ function LoginForm() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  const toggleLanguage = (nextLang: "en" | "hi") => {
+    setLang(nextLang);
+    try {
+      localStorage.setItem("hipro_vendor_lang", nextLang);
+    } catch (_e) {}
+  };
+
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError("");
     const cleanPhone = phone.replace(/\D/g, "");
     if (!PHONE_REGEX.test(cleanPhone)) {
-      setError("Please enter your valid 10-digit registered mobile number.");
+      setError(
+        lang === "hi"
+          ? "कृपया अपना 10-अंकों का सही मोबाइल नंबर दर्ज करें।"
+          : "Please enter your valid 10-digit registered mobile number."
+      );
       return;
     }
 
@@ -72,7 +129,7 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     if (!/^\d{6}$/.test(otpInput.trim())) {
-      setError("Please enter the 6-digit OTP.");
+      setError(lang === "hi" ? "कृपया 6-अंकों का OTP दर्ज करें।" : "Please enter the 6-digit OTP.");
       return;
     }
 
@@ -110,17 +167,38 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/40 p-5 sm:p-8">
+      {/* Top Language Toggle */}
+      <div className="flex justify-end mb-2">
+        <div className="inline-flex items-center p-0.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] font-bold">
+          <button
+            type="button"
+            onClick={() => toggleLanguage("en")}
+            className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all ${
+              lang === "en" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
+            }`}
+          >
+            <Languages className="w-3 h-3" />
+            <span>English</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleLanguage("hi")}
+            className={`px-2.5 py-1 rounded-lg transition-all ${
+              lang === "hi" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
+            }`}
+          >
+            <span>हिन्दी</span>
+          </button>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="text-center space-y-2 mb-6">
         <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-red-50 text-[#dc2626] mb-1">
           <ShieldCheck className="w-6 h-6 stroke-[2]" />
         </div>
-        <h1 className="text-2xl font-black text-slate-950 tracking-tight">
-          Vendor Portal Login
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Enter your registered mobile number to log in with a quick 6-digit OTP.
-        </p>
+        <h1 className="text-2xl font-black text-slate-950 tracking-tight">{t.title}</h1>
+        <p className="text-xs sm:text-sm text-slate-500">{t.subtitle}</p>
       </div>
 
       {error && (
@@ -133,16 +211,13 @@ function LoginForm() {
       {success && (
         <div className="mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center gap-2.5 text-emerald-700 text-xs font-bold">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-          <span>OTP Verified! Opening your Vendor Dashboard...</span>
+          <span>{t.verifiedToast}</span>
         </div>
       )}
 
       <form onSubmit={otpSent ? handleVerifyLogin : handleSendOtp} className="space-y-4">
-        {/* Mobile Number */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-slate-700 block">
-            Registered Mobile Number
-          </label>
+          <label className="text-xs font-bold text-slate-700 block">{t.mobileLabel}</label>
           <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50/70 focus-within:bg-white focus-within:border-[#dc2626] transition-all overflow-hidden">
             <span className="px-3 py-3 text-xs font-bold text-slate-500 border-r border-slate-200 bg-slate-100/70">
               +91
@@ -169,19 +244,16 @@ function LoginForm() {
                 }}
                 className="px-3 text-[11px] font-bold text-[#dc2626] shrink-0"
               >
-                Change
+                {t.change}
               </button>
             )}
           </div>
         </div>
 
-        {/* OTP Input (after Send OTP) */}
         {otpSent && (
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              <label className="text-xs font-bold text-slate-800">
-                Enter 6-Digit OTP
-              </label>
+              <label className="text-xs font-bold text-slate-800">{t.enterOtp}</label>
               {demoOtpHint && (
                 <span className="px-2 py-0.5 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-mono font-bold">
                   Test OTP: {demoOtpHint}
@@ -205,13 +277,12 @@ function LoginForm() {
                 disabled={sendingOtp || resendCooldown > 0}
                 className="text-[11px] font-bold text-slate-600 hover:text-slate-900 disabled:opacity-50"
               >
-                {resendCooldown > 0 ? `Resend OTP in ${resendCooldown}s` : "Resend OTP"}
+                {resendCooldown > 0 ? `${t.resendIn} ${resendCooldown}s` : t.resend}
               </button>
             </div>
           </div>
         )}
 
-        {/* Primary Action Button */}
         {!otpSent ? (
           <button
             type="submit"
@@ -219,7 +290,7 @@ function LoginForm() {
             className="w-full py-3.5 px-4 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
           >
             <Phone className="w-4 h-4" />
-            <span>{sendingOtp ? "Sending OTP..." : "Send Login OTP"}</span>
+            <span>{sendingOtp ? t.sending : t.sendOtp}</span>
           </button>
         ) : (
           <button
@@ -227,21 +298,20 @@ function LoginForm() {
             disabled={verifying || success || otpInput.length !== 6}
             className="w-full py-3.5 px-4 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
           >
-            <span>{verifying ? "Verifying..." : "Verify & Login"}</span>
+            <span>{verifying ? t.verifying : t.verifyLogin}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         )}
       </form>
 
-      {/* Register Footer */}
       <div className="mt-6 pt-5 border-t border-slate-100 text-center space-y-2.5">
-        <p className="text-xs text-slate-500">New contractor or supplier?</p>
+        <p className="text-xs text-slate-500">{t.newVendor}</p>
         <Link
           href="/empanelment/apply"
           className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs transition-colors"
         >
           <UserCheck className="w-3.5 h-3.5 text-[#dc2626]" />
-          <span>Register as Vendor</span>
+          <span>{t.registerBtn}</span>
         </Link>
       </div>
     </div>

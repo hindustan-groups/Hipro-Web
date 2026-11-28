@@ -23,52 +23,57 @@ import {
   CreditCard,
   MapPin,
   Lock,
+  Languages,
 } from "lucide-react";
 
+type Lang = "en" | "hi";
+
 const FALLBACK_CATEGORIES = [
-  { id: "civil", name: "Civil Construction", label: "Civil Construction (आरसीसी एवं चिनाई)" },
-  { id: "mep", name: "Electrical & MEP", label: "Electrical & MEP (विद्युत एवं सबस्टेशन)" },
-  { id: "plumbing", name: "Plumbing & Sanitation", label: "Plumbing & Sanitation (प्लंबिंग कार्य)" },
-  { id: "fabrication", name: "Fabrication & PEB", label: "Fabrication & PEB (फैब्रिकेशन एवं स्टील)" },
-  { id: "finishing", name: "Flooring & Finishing", label: "Flooring & Finishing (फ्लोरिंग एवं फिनिशिंग)" },
-  { id: "material", name: "Material Supply", label: "Material Supply (निर्माण सामग्री)" },
+  { id: "civil", name: "Civil Construction", hi: "सिविल निर्माण (आरसीसी एवं चिनाई)" },
+  { id: "mep", name: "Electrical & MEP", hi: "इलेक्ट्रिकल एवं सबस्टेशन कार्य" },
+  { id: "plumbing", name: "Plumbing & Sanitation", hi: "प्लंबिंग एवं सैनिटेशन कार्य" },
+  { id: "fabrication", name: "Fabrication & PEB", hi: "फैब्रिकेशन एवं स्टील कार्य" },
+  { id: "finishing", name: "Flooring & Finishing", hi: "फ्लोरिंग, टाइल्स एवं फिनिशिंग" },
+  { id: "material", name: "Material Supply", hi: "निर्माण सामग्री सप्लाई" },
 ];
 
 const EXPERIENCE_OPTIONS = [
-  "Less than 1 Year",
-  "1–3 Years",
-  "3–5 Years",
-  "5–10 Years",
-  "10+ Years",
+  { value: "Less than 1 Year", en: "Less than 1 Year", hi: "1 साल से कम" },
+  { value: "1–3 Years", en: "1–3 Years", hi: "1–3 साल" },
+  { value: "3–5 Years", en: "3–5 Years", hi: "3–5 साल" },
+  { value: "5–10 Years", en: "5–10 Years", hi: "5–10 साल" },
+  { value: "10+ Years", en: "10+ Years", hi: "10+ साल" },
 ];
 
 const TEAM_SIZE_OPTIONS = [
-  { value: "1-5", label: "1–5 Workers" },
-  { value: "6-15", label: "6–15 Workers" },
-  { value: "16-50", label: "16–50 Workers" },
-  { value: "50+", label: "50+ Workers" },
+  { value: "1-5", en: "1–5 Workers", hi: "1–5 कारीगर/वर्कर" },
+  { value: "6-15", en: "6–15 Workers", hi: "6–15 कारीगर/वर्कर" },
+  { value: "16-50", en: "16–50 Workers", hi: "16–50 कारीगर/वर्कर" },
+  { value: "50+", en: "50+ Workers", hi: "50+ कारीगर/वर्कर" },
 ];
 
 const PROJECT_SCALE_OPTIONS = [
+  { value: "Day to Day", en: "Day to Day", hi: "रोज़मर्रा के छोटे काम (Day to Day)" },
+  { value: "Small", en: "Small", hi: "छोटे प्रोजेक्ट (Small)" },
+  { value: "Medium", en: "Medium", hi: "मध्यम प्रोजेक्ट (Medium)" },
+  { value: "Large", en: "Large", hi: "बड़े प्रोजेक्ट (Large)" },
+];
+
+const VENDOR_TYPE_OPTIONS = [
   {
-    value: "Day to Day",
-    label: "Day to Day",
-    desc: "Daily maintenance, repairs & quick site jobs",
+    value: "INDIVIDUAL_WORKER",
+    en: "Individual / Only Worker",
+    hi: "मैं अकेला वर्कर / कारीगर हूँ",
   },
   {
-    value: "Small",
-    label: "Small",
-    desc: "Small residential / commercial work packages",
+    value: "RUN_SMALL_TEAM",
+    en: "Contractor with Team",
+    hi: "मैं टीम के साथ काम करता हूँ (ठेकेदार)",
   },
   {
-    value: "Medium",
-    label: "Medium",
-    desc: "Mid-scale building & infrastructure contracts",
-  },
-  {
-    value: "Large",
-    label: "Large",
-    desc: "Full-scale EPC / multi-crore project execution",
+    value: "OWN_BUSINESS",
+    en: "I Own a Business / Firm",
+    hi: "मेरा खुद का बिजनेस / फर्म है",
   },
 ];
 
@@ -85,11 +90,154 @@ const INDIAN_STATES = [
   "Other",
 ];
 
-const VENDOR_TYPE_OPTIONS = [
-  { value: "INDIVIDUAL_WORKER", label: "Individual / Only Worker (मैं अकेला वर्कर/कारीगर हूँ)" },
-  { value: "RUN_SMALL_TEAM", label: "Contractor with Team (मैं टीम के साथ काम करता हूँ)" },
-  { value: "OWN_BUSINESS", label: "I Own a Business / Firm (मेरा खुद का बिजनेस/फर्म है)" },
-];
+const COPY = {
+  en: {
+    badge: "Vendor Registration",
+    title: "Partner with Hindustan Projects",
+    tabs: ["Mobile OTP", "Contact", "Work Details", "Documents", "Preview"],
+    t1Tag: "Tab 1 • Mobile Verification",
+    t1Title: "Verify Your Mobile Number",
+    t1Sub: "Enter your 10-digit mobile number to receive a 6-digit OTP.",
+    mobileLabel: "Mobile Number",
+    sendOtp: "Send OTP",
+    resendOtp: "Resend OTP",
+    sending: "Sending...",
+    enterOtp: "Enter 6-Digit OTP",
+    verifyOtp: "Verify with OTP",
+    verifying: "Verifying...",
+    verifiedMsg: "verified!",
+    change: "Change",
+    nextContact: "Next: Contact Details",
+    t2Tag: "Tab 2 • Vendor Contact Details",
+    t2Title: "Your Name & Address",
+    t2Sub: "Select your vendor type and enter your address details.",
+    vendorType: "Vendor Type / Business Profile",
+    fullName: "Full Name",
+    firmName: "Business / Firm Name",
+    optional: "(Optional)",
+    email: "Email",
+    address: "Full Address",
+    pin: "PIN Code",
+    district: "District / City",
+    state: "State",
+    nextWork: "Next: Work Details",
+    t3Tag: "Tab 3 • Work Details",
+    t3Title: "Work Category, Experience & Capacity",
+    catLabel: "What work do you do? (Category)",
+    catPlaceholder: "-- Select Work Category --",
+    otherCat: "Other (Type your work)",
+    customWorkLabel: "Type Your Work / Trade",
+    customWorkPh: "e.g. Painting, Tiles, Welding, Borewell, Waterproofing",
+    expLabel: "Experience (How long?)",
+    expPh: "-- Select Experience --",
+    teamLabel: "Team Size",
+    teamPh: "-- Select Team Size --",
+    scaleLabel: "Projects / Services You Handle",
+    nextDocs: "Next: Upload Documents",
+    t4Tag: "Tab 4 • Upload Documents",
+    t4Title: "Aadhaar Card & PAN Card",
+    t4Sub: "Upload clear photos or PDFs of your Aadhaar Card (Front & Back) and PAN Card.",
+    aadharFront: "Aadhaar Front",
+    aadharBack: "Aadhaar Back",
+    uploadFront: "Upload Front",
+    uploadBack: "Upload Back",
+    noPanLabel: "I don't have a PAN Card right now",
+    panNumber: "PAN Number",
+    panPhoto: "PAN Card Photo / PDF",
+    uploadPan: "Tap to Upload PAN Card",
+    nextPreview: "Next: Preview Form",
+    t5Tag: "Step 5 • Preview & User Consent",
+    t5Title: "Review Your Details Before Submitting",
+    t5Sub: "Verify all information below. Click Edit on any section to make changes.",
+    edit: "Edit",
+    consentPrefix: "User Consent & Declaration:",
+    consentText:
+      "I confirm that all personal, work, and document details submitted above are true and authentic. I authorize Hindustan Projects to verify my credentials for vendor empanelment.",
+    submitBtn: "Submit Registration",
+    submitting: "Submitting...",
+    back: "Back",
+    successBadge: "Registration Submitted",
+    thankYou: "Thank You,",
+    successMsg:
+      "Your vendor registration has been received. Your account is active — open your dashboard or save your Tracking ID below.",
+    trackingLabel: "Application Tracking ID",
+    goDashboard: "Go to Vendor Dashboard",
+    trackStatus: "Track Status",
+  },
+  hi: {
+    badge: "वेंडर रजिस्ट्रेशन",
+    title: "हिन्दुस्तान प्रोजेक्ट्स से जुड़ें",
+    tabs: ["मोबाइल OTP", "संपर्क", "काम की जानकारी", "दस्तावेज़", "प्रीव्यू"],
+    t1Tag: "स्टेप 1 • मोबाइल सत्यापन",
+    t1Title: "अपना मोबाइल नंबर सत्यापित करें",
+    t1Sub: "6-अंकों का OTP प्राप्त करने के लिए अपना 10-अंकों का मोबाइल नंबर दर्ज करें।",
+    mobileLabel: "मोबाइल नंबर",
+    sendOtp: "OTP भेजें",
+    resendOtp: "OTP दोबारा भेजें",
+    sending: "भेजा जा रहा है...",
+    enterOtp: "6-अंकों का OTP दर्ज करें",
+    verifyOtp: "OTP सत्यापित करें",
+    verifying: "जाँच हो रही है...",
+    verifiedMsg: "सत्यापित हो गया!",
+    change: "बदलें",
+    nextContact: "आगे: संपर्क जानकारी",
+    t2Tag: "स्टेप 2 • संपर्क एवं पता",
+    t2Title: "आपका नाम और पता",
+    t2Sub: "अपनी श्रेणी चुनें और पूरा पता भरें।",
+    vendorType: "आप किस तरह काम करते हैं?",
+    fullName: "पूरा नाम",
+    firmName: "बिजनेस / फर्म का नाम",
+    optional: "(वैकल्पिक)",
+    email: "ईमेल",
+    address: "पूरा पता",
+    pin: "पिन कोड",
+    district: "जिला / शहर",
+    state: "राज्य",
+    nextWork: "आगे: काम की जानकारी",
+    t3Tag: "स्टेप 3 • काम की जानकारी",
+    t3Title: "काम की श्रेणी, अनुभव और टीम",
+    catLabel: "आप क्या काम करते हैं? (श्रेणी)",
+    catPlaceholder: "-- अपने काम की श्रेणी चुनें --",
+    otherCat: "अन्य (अपना काम खुद लिखें)",
+    customWorkLabel: "अपना काम लिखें",
+    customWorkPh: "जैसे: पेंटिंग, टाइल्स, वेल्डिंग, बोरवेल, वाटरप्रूफिंग",
+    expLabel: "कितने समय से काम कर रहे हैं?",
+    expPh: "-- अनुभव चुनें --",
+    teamLabel: "टीम साइज (कितने लोग हैं)",
+    teamPh: "-- टीम साइज चुनें --",
+    scaleLabel: "आप किस तरह के प्रोजेक्ट संभाल सकते हैं?",
+    nextDocs: "आगे: दस्तावेज़ अपलोड करें",
+    t4Tag: "स्टेप 4 • दस्तावेज़ अपलोड",
+    t4Title: "आधार कार्ड और पैन कार्ड",
+    t4Sub: "अपने आधार कार्ड (आगे और पीछे) और पैन कार्ड की साफ फोटो या PDF अपलोड करें।",
+    aadharFront: "आधार (आगे)",
+    aadharBack: "आधार (पीछे)",
+    uploadFront: "आगे की फोटो",
+    uploadBack: "पीछे की फोटो",
+    noPanLabel: "मेरे पास अभी पैन कार्ड नहीं है",
+    panNumber: "पैन नंबर",
+    panPhoto: "पैन कार्ड फोटो / PDF",
+    uploadPan: "पैन कार्ड अपलोड करें",
+    nextPreview: "आगे: फॉर्म प्रीव्यू देखें",
+    t5Tag: "स्टेप 5 • प्रीव्यू और सहमति",
+    t5Title: "सबमिट करने से पहले जानकारी जांचें",
+    t5Sub: "नीचे दी गई जानकारी जांच लें। किसी भी हिस्से को बदलने के लिए Edit दबाएं।",
+    edit: "बदलें",
+    consentPrefix: "सहमति एवं घोषणा:",
+    consentText:
+      "मैं पुष्टि करता हूँ कि ऊपर दी गई सभी जानकारी और दस्तावेज़ बिल्कुल सही हैं। मैं हिन्दुस्तान प्रोजेक्ट्स को सत्यापन की अनुमति देता हूँ।",
+    submitBtn: "रजिस्ट्रेशन सबमिट करें",
+    submitting: "सबमिट हो रहा है...",
+    back: "पीछे",
+    successBadge: "रजिस्ट्रेशन सफल",
+    thankYou: "धन्यवाद,",
+    successMsg:
+      "आपका रजिस्ट्रेशन प्राप्त हो गया है। आपका अकाउंट सक्रिय है — नीचे से डैशबोर्ड खोलें या ट्रैकिंग ID सेव करें।",
+    trackingLabel: "एप्लीकेशन ट्रैकिंग ID",
+    goDashboard: "वेंडर डैशबोर्ड खोलें",
+    trackStatus: "स्टेटस देखें",
+  },
+} as const;
 
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 const PHONE_REGEX = /^[6-9]\d{9}$/;
@@ -141,14 +289,16 @@ async function compressFileToDataUrl(file: File): Promise<string> {
 }
 
 export default function VendorRegistrationWizardPage() {
+  const [lang, setLang] = useState<Lang>("en");
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [successData, setSuccessData] = useState<any | null>(null);
   const [copiedId, setCopiedId] = useState(false);
 
-  // Categories from backend
-  const [categories, setCategories] = useState<Array<{ id: string; name: string; label?: string }>>(
+  const t = COPY[lang];
+
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; hi?: string }>>(
     FALLBACK_CATEGORIES
   );
 
@@ -175,6 +325,7 @@ export default function VendorRegistrationWizardPage() {
 
   // Tab 3: Work Details
   const [category, setCategory] = useState("");
+  const [customWorkType, setCustomWorkType] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [teamSize, setTeamSize] = useState("");
   const [projectScale, setProjectScale] = useState<string[]>([]);
@@ -191,6 +342,11 @@ export default function VendorRegistrationWizardPage() {
   const [termsAgreed, setTermsAgreed] = useState(false);
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hipro_vendor_lang");
+      if (saved === "hi" || saved === "en") setLang(saved);
+    } catch (_e) {}
+
     async function loadCategories() {
       try {
         const res = await fetch("/api/empanelment/categories", { cache: "no-store" });
@@ -201,7 +357,7 @@ export default function VendorRegistrationWizardPage() {
               json.categories.map((c: any) => ({
                 id: c.id || c.slug || c.name,
                 name: c.name,
-                label: c.name,
+                hi: c.name,
               }))
             );
           }
@@ -219,11 +375,22 @@ export default function VendorRegistrationWizardPage() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  const toggleLanguage = (nextLang: Lang) => {
+    setLang(nextLang);
+    try {
+      localStorage.setItem("hipro_vendor_lang", nextLang);
+    } catch (_e) {}
+  };
+
   const handleSendOtp = async () => {
     setError("");
     const cleanPhone = phone.replace(/\D/g, "");
     if (!PHONE_REGEX.test(cleanPhone)) {
-      setError("Please enter a valid 10-digit Indian mobile number.");
+      setError(
+        lang === "hi"
+          ? "कृपया 10-अंकों का सही मोबाइल नंबर दर्ज करें।"
+          : "Please enter a valid 10-digit Indian mobile number."
+      );
       return;
     }
 
@@ -254,7 +421,7 @@ export default function VendorRegistrationWizardPage() {
   const handleVerifyOtp = async () => {
     setError("");
     if (!/^\d{6}$/.test(otpInput.trim())) {
-      setError("Please enter the 6-digit OTP.");
+      setError(lang === "hi" ? "कृपया 6-अंकों का OTP दर्ज करें।" : "Please enter the 6-digit OTP.");
       return;
     }
 
@@ -287,7 +454,7 @@ export default function VendorRegistrationWizardPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
-      setError("File size must be under 8 MB.");
+      setError(lang === "hi" ? "फ़ाइल 8 MB से कम होनी चाहिए।" : "File size must be under 8 MB.");
       return;
     }
     setError("");
@@ -314,7 +481,11 @@ export default function VendorRegistrationWizardPage() {
     setError("");
     if (currentStep === 1) {
       if (!otpVerified) {
-        setError("Please verify your mobile number with OTP first.");
+        setError(
+          lang === "hi"
+            ? "कृपया पहले OTP से मोबाइल नंबर सत्यापित करें।"
+            : "Please verify your mobile number with OTP first."
+        );
         return;
       }
       setStep(2);
@@ -322,27 +493,29 @@ export default function VendorRegistrationWizardPage() {
     }
     if (currentStep === 2) {
       if (!contactName.trim()) {
-        setError("Please enter your full name.");
+        setError(lang === "hi" ? "कृपया अपना पूरा नाम लिखें।" : "Please enter your full name.");
         return;
       }
       if (entityType === "OWN_BUSINESS" && !companyName.trim()) {
-        setError("Please enter your Business / Firm name.");
+        setError(
+          lang === "hi" ? "कृपया अपने बिजनेस/फर्म का नाम लिखें।" : "Please enter your Business / Firm name."
+        );
         return;
       }
       if (!address.trim()) {
-        setError("Please enter your complete address.");
+        setError(lang === "hi" ? "कृपया अपना पूरा पता लिखें।" : "Please enter your complete address.");
         return;
       }
       if (!PIN_REGEX.test(pincode.trim())) {
-        setError("Please enter a valid 6-digit PIN code.");
+        setError(lang === "hi" ? "कृपया 6-अंकों का सही पिन कोड डालें।" : "Please enter a valid 6-digit PIN code.");
         return;
       }
       if (!district.trim()) {
-        setError("Please enter your District / City.");
+        setError(lang === "hi" ? "कृपया अपना जिला / शहर लिखें।" : "Please enter your District / City.");
         return;
       }
       if (!stateName.trim()) {
-        setError("Please select your State.");
+        setError(lang === "hi" ? "कृपया अपना राज्य चुनें।" : "Please select your State.");
         return;
       }
       setStep(3);
@@ -350,19 +523,33 @@ export default function VendorRegistrationWizardPage() {
     }
     if (currentStep === 3) {
       if (!category) {
-        setError("Please select what work/service you do (Category).");
+        setError(
+          lang === "hi"
+            ? "कृपया अपने काम की श्रेणी चुनें।"
+            : "Please select what work/service you do (Category)."
+        );
+        return;
+      }
+      if (category === "__OTHER__" && !customWorkType.trim()) {
+        setError(
+          lang === "hi" ? "कृपया अपना काम लिखें।" : "Please type/describe the work you do."
+        );
         return;
       }
       if (!experienceYears) {
-        setError("Please select how long you have been doing this work.");
+        setError(lang === "hi" ? "कृपया अपना अनुभव चुनें।" : "Please select your experience.");
         return;
       }
       if (!teamSize) {
-        setError("Please select your team size.");
+        setError(lang === "hi" ? "कृपया अपनी टीम साइज चुनें।" : "Please select your team size.");
         return;
       }
       if (projectScale.length === 0) {
-        setError("Please select at least one project/service type you can handle.");
+        setError(
+          lang === "hi"
+            ? "कृपया कम से कम एक प्रोजेक्ट प्रकार चुनें।"
+            : "Please select at least one project/service type you can handle."
+        );
         return;
       }
       setStep(4);
@@ -370,17 +557,29 @@ export default function VendorRegistrationWizardPage() {
     }
     if (currentStep === 4) {
       if (!aadharFrontUrl || !aadharBackUrl) {
-        setError("Please upload both Front and Back sides of your Aadhaar Card.");
+        setError(
+          lang === "hi"
+            ? "कृपया आधार कार्ड की आगे और पीछे दोनों फोटो अपलोड करें।"
+            : "Please upload both Front and Back sides of your Aadhaar Card."
+        );
         return;
       }
       if (hasPan) {
         const cleanPan = pan.trim().toUpperCase();
         if (!PAN_REGEX.test(cleanPan)) {
-          setError("Please enter a valid 10-character PAN number (e.g. ABCDE1234F), or uncheck PAN if you don't have one.");
+          setError(
+            lang === "hi"
+              ? "कृपया सही 10-अक्षरों का पैन नंबर डालें (या पैन नहीं है पर टिक करें)।"
+              : "Please enter a valid 10-character PAN number (e.g. ABCDE1234F), or check 'I don't have a PAN Card'."
+          );
           return;
         }
         if (!panCardUrl) {
-          setError("Please upload your PAN Card photo or PDF, or check 'I don't have a PAN Card'.");
+          setError(
+            lang === "hi"
+              ? "कृपया पैन कार्ड अपलोड करें या 'मेरे पास पैन कार्ड नहीं है' चुनें।"
+              : "Please upload your PAN Card photo or PDF, or check 'I don't have a PAN Card'."
+          );
           return;
         }
       }
@@ -391,15 +590,21 @@ export default function VendorRegistrationWizardPage() {
   const handleSubmit = async () => {
     setError("");
     if (!termsAgreed) {
-      setError("Please accept the user consent & declaration before submitting.");
+      setError(
+        lang === "hi"
+          ? "कृपया सबमिट करने से पहले सहमति बॉक्स पर टिक करें।"
+          : "Please accept the user consent & declaration before submitting."
+      );
       return;
     }
 
+    const isCustomCategory = category === "__OTHER__";
     setSubmitting(true);
     try {
       const res = await fetch("/api/empanelment/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           phone,
           otpToken,
@@ -415,7 +620,9 @@ export default function VendorRegistrationWizardPage() {
           district: district.trim(),
           city: district.trim(),
           state: stateName.trim(),
-          category,
+          category: isCustomCategory ? undefined : category,
+          primaryRole: isCustomCategory ? customWorkType.trim() : category,
+          skillsDetails: isCustomCategory ? customWorkType.trim() : "",
           experienceYears,
           teamSize,
           projectScale,
@@ -454,17 +661,17 @@ export default function VendorRegistrationWizardPage() {
   };
 
   const tabs = [
-    { num: 1, label: "Mobile OTP", icon: Phone },
-    { num: 2, label: "Contact", icon: User },
-    { num: 3, label: "Work Details", icon: Briefcase },
-    { num: 4, label: "Documents", icon: Upload },
-    { num: 5, label: "Preview", icon: FileCheck2 },
+    { num: 1, label: t.tabs[0], icon: Phone },
+    { num: 2, label: t.tabs[1], icon: User },
+    { num: 3, label: t.tabs[2], icon: Briefcase },
+    { num: 4, label: t.tabs[3], icon: Upload },
+    { num: 5, label: t.tabs[4], icon: FileCheck2 },
   ];
 
   // Success Screen
   if (successData) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-16">
+      <div className="max-w-2xl mx-auto px-4 py-10 sm:py-16">
         <div className="bg-white rounded-3xl border border-emerald-200 p-6 sm:p-10 text-center space-y-6 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-9 h-9" />
@@ -472,20 +679,20 @@ export default function VendorRegistrationWizardPage() {
 
           <div className="space-y-2">
             <span className="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider">
-              Registration Submitted
+              {t.successBadge}
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-              Thank You, {contactName}!
+              {t.thankYou} {contactName}!
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-              Your vendor registration has been received by Hindustan Projects. Save your Tracking ID below to check verification status anytime.
+              {t.successMsg}
             </p>
           </div>
 
           <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 max-w-md mx-auto">
             <div className="text-left">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Application Tracking ID
+                {t.trackingLabel}
               </div>
               <div className="text-lg sm:text-xl font-mono font-black text-slate-950">
                 {successData.trackingId}
@@ -506,14 +713,14 @@ export default function VendorRegistrationWizardPage() {
               href="/empanelment/portal"
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
             >
-              <span>Go to Vendor Dashboard</span>
+              <span>{t.goDashboard}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href={`/empanelment/track?id=${encodeURIComponent(successData.trackingId)}`}
               className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors"
             >
-              Track Status
+              {t.trackStatus}
             </Link>
           </div>
         </div>
@@ -523,31 +730,57 @@ export default function VendorRegistrationWizardPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-3 sm:px-6 py-4 sm:py-10 space-y-4">
-      {/* Header */}
-      <div className="text-center space-y-1">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 text-[#dc2626] border border-red-200 text-[10px] font-mono font-bold uppercase tracking-wider">
-          <ShieldCheck className="w-3 h-3" />
-          <span>Vendor Registration</span>
-        </span>
+      {/* Header + 1-Tap Language Switcher */}
+      <div className="flex flex-col items-center text-center space-y-2">
+        <div className="w-full flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 text-[#dc2626] border border-red-200 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <ShieldCheck className="w-3 h-3" />
+            <span>{t.badge}</span>
+          </span>
+
+          {/* English / Hindi Switcher */}
+          <div className="inline-flex items-center p-0.5 rounded-xl bg-slate-200/70 border border-slate-300/70 text-[11px] font-bold">
+            <button
+              type="button"
+              onClick={() => toggleLanguage("en")}
+              className={`px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                lang === "en" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
+              }`}
+            >
+              <Languages className="w-3 h-3" />
+              <span>English</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => toggleLanguage("hi")}
+              className={`px-2.5 py-1 rounded-lg transition-all ${
+                lang === "hi" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600"
+              }`}
+            >
+              <span>हिन्दी</span>
+            </button>
+          </div>
+        </div>
+
         <h1 className="text-lg sm:text-2xl font-black text-slate-950 tracking-tight">
-          Partner with Hindustan Projects
+          {t.title}
         </h1>
       </div>
 
       {/* Responsive 5-Tab Stepper */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-2 sm:p-3 shadow-xs overflow-x-auto">
         <div className="grid grid-cols-5 gap-1 sm:gap-2 min-w-[320px]">
-          {tabs.map((t) => {
-            const Icon = t.icon;
-            const isActive = step === t.num;
-            const isDone = step > t.num;
-            const canClick = t.num <= step || (t.num === 2 && otpVerified);
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = step === tab.num;
+            const isDone = step > tab.num;
+            const canClick = tab.num <= step || (tab.num === 2 && otpVerified);
             return (
               <button
-                key={t.num}
+                key={tab.num}
                 type="button"
                 disabled={!canClick}
-                onClick={() => canClick && setStep(t.num)}
+                onClick={() => canClick && setStep(tab.num)}
                 className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 px-1 sm:px-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all ${
                   isActive
                     ? "bg-slate-900 text-white shadow-xs"
@@ -557,7 +790,7 @@ export default function VendorRegistrationWizardPage() {
                 } disabled:cursor-not-allowed`}
               >
                 <Icon className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate max-w-full">{t.label}</span>
+                <span className="truncate max-w-full">{tab.label}</span>
               </button>
             );
           })}
@@ -578,23 +811,19 @@ export default function VendorRegistrationWizardPage() {
         {/* TAB 1: MOBILE NUMBER & OTP VERIFICATION */}
         {/* ============================================================ */}
         {step === 1 && (
-          <div className="space-y-5">
-            <div className="space-y-1">
+          <div className="space-y-4">
+            <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
-                Tab 1 • Mobile Verification
+                {t.t1Tag}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950">
-                Verify Your Mobile Number
-              </h2>
-              <p className="text-xs text-slate-500">
-                Enter your 10-digit mobile number to receive a one-time verification code (OTP).
-              </p>
+              <h2 className="text-base sm:text-xl font-black text-slate-950">{t.t1Title}</h2>
+              <p className="text-xs text-slate-500">{t.t1Sub}</p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-slate-700">
-                  Mobile Number <span className="text-rose-600">*</span>
+                  {t.mobileLabel} <span className="text-rose-600">*</span>
                 </label>
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <div className="flex items-center flex-1 rounded-xl border border-slate-300 bg-slate-50/60 focus-within:border-slate-900 focus-within:bg-white transition-colors overflow-hidden">
@@ -625,12 +854,12 @@ export default function VendorRegistrationWizardPage() {
                       className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-colors shrink-0 disabled:opacity-50"
                     >
                       {sendingOtp
-                        ? "Sending..."
+                        ? t.sending
                         : resendCooldown > 0
-                        ? `Resend (${resendCooldown}s)`
+                        ? `${resendCooldown}s`
                         : otpSent
-                        ? "Resend OTP"
-                        : "Send OTP"}
+                        ? t.resendOtp
+                        : t.sendOtp}
                     </button>
                   )}
                 </div>
@@ -640,7 +869,7 @@ export default function VendorRegistrationWizardPage() {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <label className="text-xs font-bold text-slate-800">
-                      Enter 6-Digit OTP <span className="text-rose-600">*</span>
+                      {t.enterOtp} <span className="text-rose-600">*</span>
                     </label>
                     {demoOtpHint && (
                       <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-mono font-bold">
@@ -665,7 +894,7 @@ export default function VendorRegistrationWizardPage() {
                       disabled={verifyingOtp || otpInput.length !== 6}
                       className="px-6 py-3 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold transition-colors disabled:opacity-50"
                     >
-                      {verifyingOtp ? "Verifying..." : "Verify with OTP"}
+                      {verifyingOtp ? t.verifying : t.verifyOtp}
                     </button>
                   </div>
                 </div>
@@ -675,7 +904,9 @@ export default function VendorRegistrationWizardPage() {
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 text-emerald-800 text-xs font-bold">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                    <span>Mobile number +91 {phone} verified!</span>
+                    <span>
+                      +91 {phone} {t.verifiedMsg}
+                    </span>
                   </div>
                   <button
                     type="button"
@@ -687,7 +918,7 @@ export default function VendorRegistrationWizardPage() {
                     }}
                     className="text-[11px] font-bold text-emerald-700 underline"
                   >
-                    Change
+                    {t.change}
                   </button>
                 </div>
               )}
@@ -700,7 +931,7 @@ export default function VendorRegistrationWizardPage() {
                 disabled={!otpVerified}
                 className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 disabled:opacity-40 transition-all"
               >
-                <span>Next: Contact Details</span>
+                <span>{t.nextContact}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -711,23 +942,19 @@ export default function VendorRegistrationWizardPage() {
         {/* TAB 2: VENDOR CONTACT DETAILS */}
         {/* ============================================================ */}
         {step === 2 && (
-          <div className="space-y-5">
-            <div className="space-y-1">
+          <div className="space-y-4">
+            <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
-                Tab 2 • Vendor Contact Details
+                {t.t2Tag}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950">
-                Your Name &amp; Address
-              </h2>
-              <p className="text-xs text-slate-500">
-                Provide your contact name and full workshop/office/residential address.
-              </p>
+              <h2 className="text-base sm:text-xl font-black text-slate-950">{t.t2Title}</h2>
+              <p className="text-xs text-slate-500">{t.t2Sub}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
-                  Vendor Type / Business Profile <span className="text-rose-600">*</span>
+                  {t.vendorType} <span className="text-rose-600">*</span>
                 </label>
                 <select
                   value={entityType}
@@ -736,7 +963,7 @@ export default function VendorRegistrationWizardPage() {
                 >
                   {VENDOR_TYPE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {lang === "hi" ? opt.hi : opt.en}
                     </option>
                   ))}
                 </select>
@@ -744,7 +971,7 @@ export default function VendorRegistrationWizardPage() {
 
               <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
-                  Full Name <span className="text-rose-600">*</span>
+                  {t.fullName} <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -758,11 +985,11 @@ export default function VendorRegistrationWizardPage() {
               {entityType !== "INDIVIDUAL_WORKER" && (
                 <div className="space-y-1 col-span-2 sm:col-span-1">
                   <label className="block text-xs font-bold text-slate-700">
-                    Business / Firm Name{" "}
+                    {t.firmName}{" "}
                     {entityType === "OWN_BUSINESS" ? (
                       <span className="text-rose-600">*</span>
                     ) : (
-                      <span className="text-slate-400 font-normal">(Optional)</span>
+                      <span className="text-slate-400 font-normal">{t.optional}</span>
                     )}
                   </label>
                   <input
@@ -777,7 +1004,7 @@ export default function VendorRegistrationWizardPage() {
 
               <div className={`space-y-1 col-span-2 ${entityType !== "INDIVIDUAL_WORKER" ? "sm:col-span-1" : ""}`}>
                 <label className="block text-xs font-bold text-slate-700">
-                  Email <span className="text-slate-400 font-normal">(Optional)</span>
+                  {t.email} <span className="text-slate-400 font-normal">{t.optional}</span>
                 </label>
                 <input
                   type="email"
@@ -790,20 +1017,20 @@ export default function VendorRegistrationWizardPage() {
 
               <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
-                  Full Address <span className="text-rose-600">*</span>
+                  {t.address} <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  placeholder="House / Plot No, Street, Area / Village"
+                  placeholder={lang === "hi" ? "मकान/प्लॉट नं., गली, मोहल्ला / गांव" : "House / Plot No, Street, Area / Village"}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  PIN Code <span className="text-rose-600">*</span>
+                  {t.pin} <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
@@ -811,27 +1038,27 @@ export default function VendorRegistrationWizardPage() {
                   maxLength={6}
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="e.g. 311001"
+                  placeholder="311001"
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-mono text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">
-                  District / City <span className="text-rose-600">*</span>
+                  {t.district} <span className="text-rose-600">*</span>
                 </label>
                 <input
                   type="text"
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
-                  placeholder="e.g. Bhilwara"
+                  placeholder={lang === "hi" ? "जैसे: भीलवाड़ा" : "e.g. Bhilwara"}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
                 />
               </div>
 
               <div className="space-y-1 col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
-                  State <span className="text-rose-600">*</span>
+                  {t.state} <span className="text-rose-600">*</span>
                 </label>
                 <select
                   value={stateName}
@@ -854,14 +1081,14 @@ export default function VendorRegistrationWizardPage() {
                 className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t.back}</span>
               </button>
               <button
                 type="button"
                 onClick={() => validateAndNext(2)}
                 className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2"
               >
-                <span>Next: Work Details</span>
+                <span>{t.nextWork}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -875,48 +1102,65 @@ export default function VendorRegistrationWizardPage() {
           <div className="space-y-4">
             <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
-                Tab 3 • Work Details
+                {t.t3Tag}
               </div>
-              <h2 className="text-base sm:text-xl font-black text-slate-950">
-                Work Category, Experience &amp; Capacity
-              </h2>
+              <h2 className="text-base sm:text-xl font-black text-slate-950">{t.t3Title}</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Category Dropdown */}
+              {/* Category Dropdown with Other (Custom) */}
               <div className="space-y-1 sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700">
-                  What work do you do? (Category) <span className="text-rose-600">*</span>
+                  {t.catLabel} <span className="text-rose-600">*</span>
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 >
-                  <option value="">-- Select Work Category --</option>
+                  <option value="">{t.catPlaceholder}</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.name}>
-                      {cat.label || cat.name}
+                      {lang === "hi" ? cat.hi || cat.name : cat.name}
                     </option>
                   ))}
+                  <option value="__OTHER__">{t.otherCat}</option>
                 </select>
               </div>
+
+              {/* Custom Work Type Input when Other is selected */}
+              {category === "__OTHER__" && (
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {t.customWorkLabel} <span className="text-rose-600">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customWorkType}
+                    onChange={(e) => setCustomWorkType(e.target.value)}
+                    placeholder={t.customWorkPh}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-slate-900"
+                  />
+                </div>
+              )}
 
               {/* Experience Dropdown */}
               <div className="space-y-1">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Experience <span className="text-rose-600">*</span></span>
+                  <span>
+                    {t.expLabel} <span className="text-rose-600">*</span>
+                  </span>
                 </label>
                 <select
                   value={experienceYears}
                   onChange={(e) => setExperienceYears(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 >
-                  <option value="">-- Select Experience --</option>
+                  <option value="">{t.expPh}</option>
                   {EXPERIENCE_OPTIONS.map((exp) => (
-                    <option key={exp} value={exp}>
-                      {exp}
+                    <option key={exp.value} value={exp.value}>
+                      {lang === "hi" ? exp.hi : exp.en}
                     </option>
                   ))}
                 </select>
@@ -926,17 +1170,19 @@ export default function VendorRegistrationWizardPage() {
               <div className="space-y-1">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                   <Users className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Team Size <span className="text-rose-600">*</span></span>
+                  <span>
+                    {t.teamLabel} <span className="text-rose-600">*</span>
+                  </span>
                 </label>
                 <select
                   value={teamSize}
                   onChange={(e) => setTeamSize(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm font-semibold text-slate-900 bg-white focus:outline-none focus:border-slate-900"
                 >
-                  <option value="">-- Select Team Size --</option>
+                  <option value="">{t.teamPh}</option>
                   {TEAM_SIZE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                      {lang === "hi" ? opt.hi : opt.en}
                     </option>
                   ))}
                 </select>
@@ -947,7 +1193,9 @@ export default function VendorRegistrationWizardPage() {
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
                 <Layers className="w-3.5 h-3.5 text-slate-400" />
-                <span>Projects / Services You Handle <span className="text-rose-600">*</span></span>
+                <span>
+                  {t.scaleLabel} <span className="text-rose-600">*</span>
+                </span>
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {PROJECT_SCALE_OPTIONS.map((sc) => {
@@ -964,7 +1212,9 @@ export default function VendorRegistrationWizardPage() {
                       }`}
                     >
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-black text-slate-900">{sc.label}</span>
+                        <span className="text-xs font-black text-slate-900">
+                          {lang === "hi" ? sc.hi : sc.en}
+                        </span>
                         <span
                           className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                             selected
@@ -988,14 +1238,14 @@ export default function VendorRegistrationWizardPage() {
                 className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t.back}</span>
               </button>
               <button
                 type="button"
                 onClick={() => validateAndNext(3)}
                 className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2"
               >
-                <span>Next: Upload Documents</span>
+                <span>{t.nextDocs}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -1003,29 +1253,25 @@ export default function VendorRegistrationWizardPage() {
         )}
 
         {/* ============================================================ */}
-        {/* TAB 4: UPLOAD DOCUMENTS (AADHAAR FRONT/BACK & PAN CARD) */}
+        {/* TAB 4: UPLOAD DOCUMENTS (AADHAAR FRONT/BACK & OPTIONAL PAN) */}
         {/* ============================================================ */}
         {step === 4 && (
-          <div className="space-y-6">
-            <div className="space-y-1">
+          <div className="space-y-4">
+            <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
-                Tab 4 • Upload Documents
+                {t.t4Tag}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950">
-                Aadhaar Card &amp; PAN Card
-              </h2>
-              <p className="text-xs text-slate-500">
-                Upload clear photos or PDFs of your Aadhaar Card (Front &amp; Back) and PAN Card.
-              </p>
+              <h2 className="text-base sm:text-xl font-black text-slate-950">{t.t4Title}</h2>
+              <p className="text-xs text-slate-500">{t.t4Sub}</p>
             </div>
 
-            {/* Aadhaar Front & Back (Side-by-side even on mobile for compact UX) */}
+            {/* Aadhaar Front & Back */}
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Aadhaar Front */}
               <div className="p-2.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
-                    Aadhaar Front <span className="text-rose-600">*</span>
+                    {t.aadharFront} <span className="text-rose-600">*</span>
                   </span>
                   {aadharFrontUrl && (
                     <button
@@ -1055,7 +1301,7 @@ export default function VendorRegistrationWizardPage() {
                   <label className="flex flex-col items-center justify-center h-24 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-2 text-center">
                     <Upload className="w-5 h-5 text-slate-400 mb-1" />
                     <span className="text-[11px] font-bold text-slate-700">
-                      {uploadingField === "aadharFront" ? "Wait..." : "Upload Front"}
+                      {uploadingField === "aadharFront" ? "..." : t.uploadFront}
                     </span>
                     <input
                       type="file"
@@ -1071,7 +1317,7 @@ export default function VendorRegistrationWizardPage() {
               <div className="p-2.5 sm:p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[11px] sm:text-xs font-bold text-slate-800 truncate">
-                    Aadhaar Back <span className="text-rose-600">*</span>
+                    {t.aadharBack} <span className="text-rose-600">*</span>
                   </span>
                   {aadharBackUrl && (
                     <button
@@ -1101,7 +1347,7 @@ export default function VendorRegistrationWizardPage() {
                   <label className="flex flex-col items-center justify-center h-24 sm:h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-2 text-center">
                     <Upload className="w-5 h-5 text-slate-400 mb-1" />
                     <span className="text-[11px] font-bold text-slate-700">
-                      {uploadingField === "aadharBack" ? "Wait..." : "Upload Back"}
+                      {uploadingField === "aadharBack" ? "..." : t.uploadBack}
                     </span>
                     <input
                       type="file"
@@ -1114,8 +1360,8 @@ export default function VendorRegistrationWizardPage() {
               </div>
             </div>
 
-            {/* PAN Number & PAN Card Upload (Optional for workers without PAN) */}
-            <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4">
+            {/* PAN Number & PAN Card Upload */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3.5">
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1123,87 +1369,85 @@ export default function VendorRegistrationWizardPage() {
                   onChange={(e) => setHasPan(!e.target.checked)}
                   className="w-4 h-4 accent-[#dc2626] rounded"
                 />
-                <span className="text-xs font-bold text-slate-700">
-                  I don&apos;t have a PAN Card right now (मेरे पास पैन कार्ड नहीं है)
-                </span>
+                <span className="text-xs font-bold text-slate-700">{t.noPanLabel}</span>
               </label>
 
               {hasPan && (
                 <>
-                  <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
-                    <CreditCard className="w-3.5 h-3.5 text-slate-400" />
-                    <span>PAN Number <span className="text-rose-600">*</span></span>
-                  </label>
-                  {pan.length > 0 && (
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        PAN_REGEX.test(pan.trim().toUpperCase())
-                          ? "bg-emerald-100 text-emerald-800"
-                          : "bg-rose-100 text-rose-700"
-                      }`}
-                    >
-                      {PAN_REGEX.test(pan.trim().toUpperCase()) ? "Valid PAN Format ✓" : "Format: ABCDE1234F"}
-                    </span>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  maxLength={10}
-                  value={pan}
-                  onChange={(e) => setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-                  placeholder="e.g. ABCDE1234F"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-xs sm:text-sm font-bold uppercase text-slate-900 focus:outline-none focus:border-slate-900"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800">
-                    PAN Card Photo / PDF <span className="text-rose-600">*</span>
-                  </span>
-                  {panCardUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setPanCardUrl("")}
-                      className="text-rose-600 hover:text-rose-700 text-[11px] font-bold flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
-                    </button>
-                  )}
-                </div>
-
-                {panCardUrl ? (
-                  panCardUrl.startsWith("data:application/pdf") ? (
-                    <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>PAN Card PDF Uploaded</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                        <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                        <span>
+                          {t.panNumber} <span className="text-rose-600">*</span>
+                        </span>
+                      </label>
+                      {pan.length > 0 && (
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            PAN_REGEX.test(pan.trim().toUpperCase())
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-rose-100 text-rose-700"
+                          }`}
+                        >
+                          {PAN_REGEX.test(pan.trim().toUpperCase()) ? "Valid ✓" : "ABCDE1234F"}
+                        </span>
+                      )}
                     </div>
-                  ) : (
-                    <img
-                      src={panCardUrl}
-                      alt="PAN Card"
-                      className="w-full max-w-sm h-36 object-cover rounded-xl border border-slate-200"
-                    />
-                  )
-                ) : (
-                  <label className="flex flex-col items-center justify-center h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-4 text-center">
-                    <Upload className="w-6 h-6 text-slate-400 mb-1.5" />
-                    <span className="text-xs font-bold text-slate-700">
-                      {uploadingField === "panCard" ? "Processing..." : "Tap to Upload PAN Card"}
-                    </span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">JPG, PNG, or PDF</span>
                     <input
-                      type="file"
-                      accept="image/*,application/pdf"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e, "panCard")}
+                      type="text"
+                      maxLength={10}
+                      value={pan}
+                      onChange={(e) => setPan(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
+                      placeholder="e.g. ABCDE1234F"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-mono text-xs sm:text-sm font-bold uppercase text-slate-900 focus:outline-none focus:border-slate-900"
                     />
-                  </label>
-                )}
-              </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">
+                        {t.panPhoto} <span className="text-rose-600">*</span>
+                      </span>
+                      {panCardUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setPanCardUrl("")}
+                          className="text-rose-600 hover:text-rose-700 text-[11px] font-bold flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {panCardUrl ? (
+                      panCardUrl.startsWith("data:application/pdf") ? (
+                        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>PAN Card PDF Uploaded</span>
+                        </div>
+                      ) : (
+                        <img
+                          src={panCardUrl}
+                          alt="PAN Card"
+                          className="w-full max-w-sm h-28 object-cover rounded-xl border border-slate-200"
+                        />
+                      )
+                    ) : (
+                      <label className="flex flex-col items-center justify-center h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-slate-500 bg-white cursor-pointer transition-colors p-3 text-center">
+                        <Upload className="w-5 h-5 text-slate-400 mb-1" />
+                        <span className="text-xs font-bold text-slate-700">
+                          {uploadingField === "panCard" ? "..." : t.uploadPan}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, "panCard")}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -1215,14 +1459,14 @@ export default function VendorRegistrationWizardPage() {
                 className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t.back}</span>
               </button>
               <button
                 type="button"
                 onClick={() => validateAndNext(4)}
                 className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2"
               >
-                <span>Next: Preview Form</span>
+                <span>{t.nextPreview}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -1233,30 +1477,26 @@ export default function VendorRegistrationWizardPage() {
         {/* STEP 5: PREVIEW FORM & USER CONSENT */}
         {/* ============================================================ */}
         {step === 5 && (
-          <div className="space-y-6">
-            <div className="space-y-1">
+          <div className="space-y-4">
+            <div className="space-y-0.5">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#dc2626]">
-                Step 5 • Preview &amp; User Consent
+                {t.t5Tag}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-950">
-                Review Your Details Before Submitting
-              </h2>
-              <p className="text-xs text-slate-500">
-                Verify all information below. You can click Edit on any section to make changes.
-              </p>
+              <h2 className="text-base sm:text-xl font-black text-slate-950">{t.t5Title}</h2>
+              <p className="text-xs text-slate-500">{t.t5Sub}</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {/* Summary 1: Mobile */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Mobile Number
+                    {t.mobileLabel}
                   </div>
                   <div className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2 mt-0.5">
                     <span>+91 {phone}</span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                      OTP Verified ✓
+                      OTP ✓
                     </span>
                   </div>
                 </div>
@@ -1266,15 +1506,15 @@ export default function VendorRegistrationWizardPage() {
                   className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
-                  <span>Edit</span>
+                  <span>{t.edit}</span>
                 </button>
               </div>
 
               {/* Summary 2: Contact Details */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Contact &amp; Address Details
+                    {t.tabs[1]}
                   </div>
                   <button
                     type="button"
@@ -1282,17 +1522,17 @@ export default function VendorRegistrationWizardPage() {
                     className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
+                    <span>{t.edit}</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
                   <div>
-                    <span className="text-slate-400">Name:</span>{" "}
+                    <span className="text-slate-400">{t.fullName}:</span>{" "}
                     <span className="font-bold text-slate-900">{contactName}</span>
                   </div>
-                  {companyName && (
+                  {entityType !== "INDIVIDUAL_WORKER" && companyName && (
                     <div>
-                      <span className="text-slate-400">Firm:</span>{" "}
+                      <span className="text-slate-400">{t.firmName}:</span>{" "}
                       <span className="font-bold text-slate-900">{companyName}</span>
                     </div>
                   )}
@@ -1306,10 +1546,10 @@ export default function VendorRegistrationWizardPage() {
               </div>
 
               {/* Summary 3: Work Details */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Work Details
+                    {t.tabs[2]}
                   </div>
                   <button
                     type="button"
@@ -1317,34 +1557,36 @@ export default function VendorRegistrationWizardPage() {
                     className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
+                    <span>{t.edit}</span>
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
                   <div>
-                    <span className="text-slate-400">Category:</span>{" "}
-                    <span className="font-bold text-slate-900">{category}</span>
+                    <span className="text-slate-400">Work:</span>{" "}
+                    <span className="font-bold text-slate-900">
+                      {category === "__OTHER__" ? customWorkType : category}
+                    </span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Experience:</span>{" "}
+                    <span className="text-slate-400">Exp:</span>{" "}
                     <span className="font-bold text-slate-900">{experienceYears}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Team Size:</span>{" "}
-                    <span className="font-bold text-slate-900">{teamSize} Workers</span>
+                    <span className="text-slate-400">Team:</span>{" "}
+                    <span className="font-bold text-slate-900">{teamSize}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Project Scale:</span>{" "}
+                    <span className="text-slate-400">Scale:</span>{" "}
                     <span className="font-bold text-slate-900">{projectScale.join(", ")}</span>
                   </div>
                 </div>
               </div>
 
               {/* Summary 4: Documents */}
-              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-2">
+              <div className="p-3.5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Uploaded Documents (PAN: {hasPan ? pan : "Not Provided"})
+                    {t.tabs[3]} (PAN: {hasPan ? pan : "Not Provided"})
                   </div>
                   <button
                     type="button"
@@ -1352,29 +1594,29 @@ export default function VendorRegistrationWizardPage() {
                     className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
+                    <span>{t.edit}</span>
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2 text-[11px] font-bold">
                   <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
-                    Aadhaar Front ✓
+                    {t.aadharFront} ✓
                   </span>
                   <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">
-                    Aadhaar Back ✓
+                    {t.aadharBack} ✓
                   </span>
                   <span
                     className={`px-2.5 py-1 rounded-lg ${
                       hasPan ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
                     }`}
                   >
-                    {hasPan ? "PAN Card ✓" : "PAN Skipped"}
+                    {hasPan ? "PAN ✓" : "PAN Skipped"}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* User Consent */}
-            <label className="p-4 rounded-2xl border border-slate-200 bg-amber-50/60 flex items-start gap-3 cursor-pointer">
+            <label className="p-3.5 rounded-2xl border border-slate-200 bg-amber-50/60 flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={termsAgreed}
@@ -1382,7 +1624,7 @@ export default function VendorRegistrationWizardPage() {
                 className="mt-0.5 w-4 h-4 accent-[#dc2626] rounded shrink-0"
               />
               <span className="text-xs text-slate-700 leading-relaxed">
-                <strong>User Consent &amp; Declaration:</strong> I confirm that all personal, work, and document details submitted above are true and authentic. I authorize Hindustan Projects to verify my Aadhaar, PAN, and work credentials for vendor empanelment.
+                <strong>{t.consentPrefix}</strong> {t.consentText}
               </span>
             </label>
 
@@ -1393,7 +1635,7 @@ export default function VendorRegistrationWizardPage() {
                 className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t.back}</span>
               </button>
               <button
                 type="button"
@@ -1402,7 +1644,7 @@ export default function VendorRegistrationWizardPage() {
                 className="px-7 py-3 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 transition-all"
               >
                 <Lock className="w-3.5 h-3.5" />
-                <span>{submitting ? "Submitting..." : "Submit Registration"}</span>
+                <span>{submitting ? t.submitting : t.submitBtn}</span>
               </button>
             </div>
           </div>
