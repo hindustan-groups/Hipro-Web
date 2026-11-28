@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AutoMailNav from "@/components/admin/automail/AutoMailNav";
+import AutoMailConfirmModal from "@/components/admin/automail/AutoMailConfirmModal";
 import {
   Users,
   Search,
@@ -78,6 +79,15 @@ export default function AutoMailContacts() {
 
   // Toast
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  // Cupertino Confirm Dialog state
+  const [confirmState, setConfirmState] = useState<
+    | { kind: "single"; id: string; email: string }
+    | { kind: "batch"; count: number }
+    | { kind: "wipe"; count: number; brand: string }
+    | null
+  >(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const fetchContacts = async () => {
     setLoading(true);
@@ -238,39 +248,64 @@ export default function AutoMailContacts() {
     }
   };
 
-  const deleteContact = async (id: string, email: string) => {
-    if (!confirm(`Remove ${email} from audience?`)) return;
-    try {
-      const res = await fetch(`/api/automail/contacts/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) {
-        setToast({ message: `Removed ${email}`, type: "success" });
-        setSelectedIds((prev) => prev.filter((item) => item !== id));
-        fetchContacts();
-      }
-    } catch {
-      setToast({ message: "Failed to delete contact", type: "error" });
-    }
+  const deleteContact = (id: string, email: string) => {
+    setConfirmState({ kind: "single", id, email });
   };
 
-  const deleteAll = async () => {
-    const promptMsg =
-      brandFilter === "all"
-        ? `Are you sure you want to permanently delete ALL ${total} contacts across all brands? This cannot be undone.`
-        : `Are you sure you want to permanently delete all ${total} ${brandFilter.toUpperCase()} contacts?`;
-    if (!confirm(promptMsg)) return;
+  const deleteAll = () => {
+    setConfirmState({ kind: "wipe", count: total, brand: brandFilter });
+  };
 
+  const deleteSelectedBatch = () => {
+    if (selectedIds.length === 0) return;
+    setConfirmState({ kind: "batch", count: selectedIds.length });
+  };
+
+  const executeConfirmedDelete = async () => {
+    if (!confirmState) return;
+    setConfirmLoading(true);
     try {
-      const brandParam = brandFilter !== "all" ? `?brand=${brandFilter}` : "";
-      const res = await fetch(`/api/automail/contacts${brandParam}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) {
-        setToast({ message: data.message || "Audience wiped", type: "success" });
-        setSelectedIds([]);
-        fetchContacts();
+      if (confirmState.kind === "single") {
+        const res = await fetch(`/api/automail/contacts/${confirmState.id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) {
+          setToast({ message: `Removed ${confirmState.email}`, type: "success" });
+          setSelectedIds((prev) => prev.filter((item) => item !== confirmState.id));
+          fetchContacts();
+        } else {
+          setToast({ message: data.error || "Failed to delete contact", type: "error" });
+        }
+      } else if (confirmState.kind === "batch") {
+        const res = await fetch("/api/automail/contacts/delete-batch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setToast({ message: `Deleted ${data.count || selectedIds.length} contacts!`, type: "success" });
+          setSelectedIds([]);
+          fetchContacts();
+        } else {
+          setToast({ message: data.error || "Failed to delete contacts", type: "error" });
+        }
+      } else if (confirmState.kind === "wipe") {
+        const brandParam = confirmState.brand !== "all" ? `?brand=${confirmState.brand}` : "";
+        const res = await fetch(`/api/automail/contacts${brandParam}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) {
+          setToast({ message: data.message || "Audience wiped", type: "success" });
+          setSelectedIds([]);
+          fetchContacts();
+        } else {
+          setToast({ message: data.error || "Failed to wipe audience", type: "error" });
+        }
       }
+      setConfirmState(null);
     } catch {
-      setToast({ message: "Failed to wipe audience", type: "error" });
+      setToast({ message: "Network error deleting contacts", type: "error" });
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
@@ -290,29 +325,6 @@ export default function AutoMailContacts() {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
-  };
-
-  const deleteSelectedBatch = async () => {
-    if (selectedIds.length === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected contacts?`)) return;
-
-    try {
-      const res = await fetch("/api/automail/contacts/delete-batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setToast({ message: `Deleted ${data.count || selectedIds.length} contacts!`, type: "success" });
-        setSelectedIds([]);
-        fetchContacts();
-      } else {
-        setToast({ message: data.error || "Failed to delete contacts", type: "error" });
-      }
-    } catch {
-      setToast({ message: "Network error deleting contacts", type: "error" });
-    }
   };
 
   const composeToSelected = () => {
@@ -474,28 +486,55 @@ export default function AutoMailContacts() {
       </div>
 
       {/* Search Bar & Table Controls Row */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search audience by email or name..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500 focus:bg-white font-medium"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => { setSearch(""); setPage(1); }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
-            >
-              ✕
-            </button>
-          )}
+      <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search audience by email or name..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-blue-500 focus:bg-white font-medium"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => { setSearch(""); setPage(1); }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-[11px] font-bold self-start sm:self-auto">
+            {[
+              { id: "all", label: "All" },
+              { id: "hipro", label: "HiPRO" },
+              { id: "hbs", label: "Hind Build" },
+              { id: "empanelment", label: "Empanelment" },
+            ].map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => {
+                  setBrandFilter(b.id);
+                  setPage(1);
+                }}
+                className={`px-2.5 py-1 rounded-lg transition-all ${
+                  brandFilter === b.id
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 text-xs text-slate-500 font-medium">
@@ -964,6 +1003,36 @@ export default function AutoMailContacts() {
           </div>
         </div>
       )}
+      <AutoMailConfirmModal
+        open={Boolean(confirmState)}
+        title={
+          confirmState?.kind === "wipe"
+            ? "Wipe Audience List?"
+            : confirmState?.kind === "batch"
+            ? `Delete ${confirmState.count} Contacts?`
+            : "Remove Contact?"
+        }
+        description={
+          confirmState?.kind === "wipe"
+            ? confirmState.brand === "all"
+              ? `Permanently delete ALL ${confirmState.count} contacts across all brands. Yeh action undo nahi ho sakta.`
+              : `Permanently delete all ${confirmState.count} ${confirmState.brand.toUpperCase()} contacts.`
+            : confirmState?.kind === "batch"
+            ? `Selected ${confirmState.count} contacts audience list se permanently delete ho jayenge.`
+            : `${confirmState?.kind === "single" ? confirmState.email : ""} audience list se remove ho jayega.`
+        }
+        confirmLabel={
+          confirmState?.kind === "wipe"
+            ? "Yes, Wipe List"
+            : confirmState?.kind === "batch"
+            ? "Delete Selected"
+            : "Remove Contact"
+        }
+        tone="danger"
+        loading={confirmLoading}
+        onConfirm={executeConfirmedDelete}
+        onCancel={() => !confirmLoading && setConfirmState(null)}
+      />
     </div>
   );
 }

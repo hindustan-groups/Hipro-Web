@@ -14,6 +14,7 @@ import {
   Building2,
   Hammer,
   Globe2,
+  ShieldCheck,
   Loader2,
   RefreshCw,
 } from "lucide-react";
@@ -25,6 +26,7 @@ export default function CampaignReportPage() {
 
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [logStatusFilter, setLogStatusFilter] = useState<"all" | "sent" | "failed" | "queued">("all");
 
   const fetchReport = async () => {
     if (!id) return;
@@ -100,6 +102,11 @@ export default function CampaignReportPage() {
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
                 <Hammer className="w-3 h-3" />
                 Hind Build
+              </span>
+            ) : campaign.brand === "empanelment" ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                <ShieldCheck className="w-3 h-3" />
+                Empanelment
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
@@ -182,13 +189,32 @@ export default function CampaignReportPage() {
 
       {/* Transmission Logs Table */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <BarChart2 className="w-4 h-4" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <BarChart2 className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Transmission Log Details</h3>
+              <p className="text-xs text-slate-500">Live recipient status, delivery times & server error codes</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Transmission Log Details</h3>
-            <p className="text-xs text-slate-500">Live recipient status, delivery times & server error codes</p>
+
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80 text-[11px] font-bold self-start sm:self-auto">
+            {(["all", "sent", "failed", "queued"] as const).map((st) => (
+              <button
+                key={st}
+                type="button"
+                onClick={() => setLogStatusFilter(st)}
+                className={`px-2.5 py-1 rounded-lg transition-all capitalize ${
+                  logStatusFilter === st
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {st === "all" ? `All (${logs.length})` : st === "sent" ? "Delivered" : st === "failed" ? "Failed" : "Queued"}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -204,7 +230,17 @@ export default function CampaignReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {logs.map((log: any) => (
+              {logs
+                .filter((l: any) =>
+                  logStatusFilter === "all"
+                    ? true
+                    : logStatusFilter === "sent"
+                    ? l.status === "sent"
+                    : logStatusFilter === "failed"
+                    ? l.status === "failed"
+                    : l.status !== "sent" && l.status !== "failed"
+                )
+                .map((log: any) => (
                 <tr key={log.id} className="hover:bg-slate-50/50">
                   <td className="py-3 px-4 font-semibold text-slate-900">{log.contactEmail}</td>
                   <td className="py-3 px-4 text-slate-600">{log.contactName || "—"}</td>

@@ -1067,6 +1067,9 @@ model EmpanelmentContent {
   noticeAlertBanner      String?   @default("📢 FY 2026-27 Vendor & Contractor Empanelment is now open for Civil, MEP, Plant & Raw Material suppliers across Rajasthan.")
   noticeAlertActive      Boolean   @default(true)
 
+  // Feature Flag: Site / Gate Pass Module (Disabled by default until flow is finalized)
+  gatePassEnabled        Boolean   @default(false)
+
   // Section Visibility Toggles (JSON encoded)
   sectionVisibility      String?   @db.Text
 

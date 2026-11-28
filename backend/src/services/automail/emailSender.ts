@@ -46,6 +46,12 @@ export function getBrandConfigs(): Record<string, BrandConfig> {
   const hiproMb = mailboxes.find((m) => m.brand === "hipro" && m.status === "active");
   const hbsMb = mailboxes.find((m) => m.brand === "hbs" && m.status === "active");
   const empMb = mailboxes.find((m) => m.brand === "empanelment" && m.status === "active");
+  const hbsAlias = mailboxes
+    .flatMap((m) => m.aliases || [])
+    .find((a) => a.toLowerCase().includes("hindbuild") || a.toLowerCase().startsWith("hbs@"));
+  const empAlias = mailboxes
+    .flatMap((m) => m.aliases || [])
+    .find((a) => a.toLowerCase().includes("empanel"));
 
   return {
     hipro: {
@@ -57,13 +63,13 @@ export function getBrandConfigs(): Record<string, BrandConfig> {
     hbs: {
       key: "hbs",
       name: hbsMb?.name || settings.senderNameHbs || "Hind Building Solutions",
-      defaultEmail: hbsMb?.email || fallbackEmail,
+      defaultEmail: hbsMb?.email || hbsAlias || fallbackEmail,
       website: "https://hindbuilding.hindustanprojects.in",
     },
     empanelment: {
       key: "empanelment",
       name: empMb?.name || "HiPRO Empanelment Desk",
-      defaultEmail: empMb?.email || fallbackEmail,
+      defaultEmail: empMb?.email || empAlias || fallbackEmail,
       website: "https://empanelment.hindustanprojects.in",
     },
     all: {
@@ -85,13 +91,13 @@ export const BRAND_CONFIGS: Record<string, BrandConfig> = {
   hbs: {
     key: "hbs",
     name: "Hind Building Solutions",
-    defaultEmail: process.env.HBS_SMTP_USER || process.env.SMTP_USER || "hbs@hindustanprojects.in",
+    defaultEmail: process.env.HBS_SMTP_USER || process.env.SMTP_USER || "hindbuild@hindustanprojects.in",
     website: "https://hindbuilding.hindustanprojects.in",
   },
   empanelment: {
     key: "empanelment",
     name: "HiPRO Empanelment Desk",
-    defaultEmail: process.env.EMPANELMENT_SMTP_USER || process.env.SMTP_USER || "empanelment@hindustanprojects.in",
+    defaultEmail: process.env.EMPANELMENT_SMTP_USER || process.env.SMTP_USER || "empanel@hindustanprojects.in",
     website: "https://empanelment.hindustanprojects.in",
   },
   all: {
@@ -447,6 +453,7 @@ export async function sendEmailViaHostingerApi({
   brand = "all",
   token,
   mailboxId,
+  inReplyTo,
 }: {
   to: string;
   subject: string;
@@ -457,6 +464,7 @@ export async function sendEmailViaHostingerApi({
   brand?: string;
   token?: string;
   mailboxId?: string;
+  inReplyTo?: string | null;
 }) {
   // ============================================================
   // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
@@ -516,7 +524,7 @@ export async function sendEmailViaHostingerApi({
     cc: [],
     bcc: [],
     attachments: [],
-    inReplyTo: undefined as any,
+    inReplyTo: (inReplyTo || undefined) as any,
     forwardOf: undefined as any,
   } as any);
 
@@ -644,6 +652,7 @@ export async function sendOneEmail({
   senderEmail,
   brand = "all",
   customConfig,
+  inReplyTo,
 }: {
   to: string;
   subject: string;
@@ -653,6 +662,7 @@ export async function sendOneEmail({
   senderEmail?: string | null;
   brand?: string;
   customConfig?: Partial<AutomailSettings>;
+  inReplyTo?: string | null;
 }) {
   // ============================================================
   // STRICT FAIL-CLOSED EMAIL SAFETY GUARD: Real Delivery Prohibited in Non-Production
@@ -689,11 +699,15 @@ export async function sendOneEmail({
   }
   const settings = await getAutomailSettingsAsync().catch(() => getAutomailSettings());
 
-  // Automatically resolve per-mailbox settings if caller supplied a senderEmail matching a configured mailbox
+  // Automatically resolve per-mailbox settings if caller supplied a senderEmail matching a configured mailbox or its aliases
   let resolvedConfig = customConfig;
   if (!resolvedConfig && senderEmail && Array.isArray(settings.mailboxes)) {
+    const cleanSender = senderEmail.toLowerCase().trim();
     const matchedMb = settings.mailboxes.find(
-      (mb: CorporateMailbox) => mb.email?.toLowerCase().trim() === senderEmail.toLowerCase().trim() && mb.status === "active"
+      (mb: CorporateMailbox) =>
+        mb.status === "active" &&
+        (mb.email?.toLowerCase().trim() === cleanSender ||
+          (mb.aliases || []).some((a) => a.toLowerCase().trim() === cleanSender))
     );
     if (matchedMb) {
       resolvedConfig = {
@@ -710,9 +724,21 @@ export async function sendOneEmail({
 
   const deliveryMethod = resolvedConfig?.deliveryMethod || settings.deliveryMethod || "smtp";
   const apiToken = (resolvedConfig?.hostingerApiToken || settings.hostingerApiToken || process.env.HOSTINGER_MAIL_API_TOKEN || "").trim();
+  const effectiveSmtpPass = ((resolvedConfig?.smtpPass !== undefined ? resolvedConfig.smtpPass : settings.smtpPass) || "").trim();
+  const effectiveSmtpUser = (resolvedConfig?.smtpUser || settings.smtpUser || "").trim();
+  const isAliasDispatch = Boolean(
+    senderEmail &&
+      effectiveSmtpUser &&
+      senderEmail.toLowerCase().trim() !== effectiveSmtpUser.toLowerCase().trim()
+  );
 
-  // If Hostinger API is selected OR if SMTP pass is empty but API token exists
-  if (deliveryMethod === "hostinger_api" || (!((resolvedConfig?.smtpPass !== undefined ? resolvedConfig.smtpPass : settings.smtpPass) || "").trim() && apiToken)) {
+  // Hostinger Mail API (V1SendRequest) always stamps the primary mailbox address and has no `from` override.
+  // Therefore, when sending from an alias AND SMTP credentials are available, prefer SMTP so `From:` uses the alias.
+  const shouldUseHostingerApi =
+    !(isAliasDispatch && effectiveSmtpPass) &&
+    (deliveryMethod === "hostinger_api" || (!effectiveSmtpPass && Boolean(apiToken)));
+
+  if (shouldUseHostingerApi) {
     return await sendEmailViaHostingerApi({
       to,
       subject,
@@ -723,6 +749,7 @@ export async function sendOneEmail({
       brand,
       token: apiToken,
       mailboxId: resolvedConfig?.hostingerMailboxId || settings.hostingerMailboxId,
+      inReplyTo,
     });
   }
 
@@ -765,11 +792,13 @@ export async function sendOneEmail({
   });
 
   const authSender = user || fromEmail;
+  const effectiveFrom = fromEmail || authSender;
   const mailOptions = {
-    from: `"${fromName}" <${authSender}>`,
-    replyTo: fromEmail && fromEmail !== authSender ? `"${fromName}" <${fromEmail}>` : undefined,
+    from: `"${fromName}" <${effectiveFrom}>`,
+    replyTo: effectiveFrom !== authSender ? `"${fromName}" <${effectiveFrom}>` : undefined,
     to,
     subject,
+    ...(inReplyTo ? { inReplyTo, references: inReplyTo } : {}),
     text: textBody || (brandedHtml ? brandedHtml.replace(/<[^>]*>/g, "") : ""),
     html: brandedHtml,
   };
@@ -956,18 +985,24 @@ export async function resolveEffectiveMailboxConfig(params: {
   const pool = activeMailboxes.length > 0 ? activeMailboxes : mailboxes;
 
   let chosen: CorporateMailbox | undefined;
+  let routedSenderEmail: string | undefined;
 
   if (params.mailboxId) {
     chosen = pool.find((m) => m.id === params.mailboxId);
   }
   if (!chosen && params.senderEmail) {
     const clean = params.senderEmail.toLowerCase().trim();
-    chosen = pool.find((m) => m.email?.toLowerCase().trim() === clean);
+    chosen = pool.find(
+      (m) =>
+        m.email?.toLowerCase().trim() === clean ||
+        (m.aliases || []).some((a) => a.toLowerCase().trim() === clean)
+    );
   }
   if (!chosen && params.triggerKey) {
     const routed = resolveSenderForTrigger(params.triggerKey);
     if (routed?.mailbox) {
       chosen = pool.find((m) => m.id === routed.mailbox.id) || routed.mailbox;
+      routedSenderEmail = routed.senderEmail;
     }
   }
   if (!chosen && params.brand && params.brand !== "all") {
@@ -980,8 +1015,20 @@ export async function resolveEffectiveMailboxConfig(params: {
   const brandKey = params.brand || chosen?.brand || "hipro";
   const brandDefaults = getBrandConfigs()[brandKey] || getBrandConfigs().all;
 
+  const requestedEmail = params.senderEmail?.trim().toLowerCase();
+  const matchesChosenOrAlias =
+    requestedEmail &&
+    chosen &&
+    (chosen.email?.toLowerCase().trim() === requestedEmail ||
+      (chosen.aliases || []).some((a) => a.toLowerCase().trim() === requestedEmail));
+
   const finalSenderName = params.senderName?.trim() || chosen?.name || brandDefaults.name;
-  const finalSenderEmail = chosen?.email || params.senderEmail?.trim() || brandDefaults.defaultEmail;
+  const finalSenderEmail =
+    (matchesChosenOrAlias ? requestedEmail : undefined) ||
+    routedSenderEmail ||
+    chosen?.email ||
+    params.senderEmail?.trim() ||
+    brandDefaults.defaultEmail;
 
   const customConfig: Partial<AutomailSettings> | undefined = chosen
     ? {

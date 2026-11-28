@@ -937,8 +937,10 @@ export async function sendCustomVendorEmail(params: {
   subject: string;
   htmlBody: string;
   adminName: string;
+  mailboxId?: string;
+  senderEmail?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const { applicationId, recipientEmail, recipientName, subject, htmlBody, adminName } = params;
+  const { applicationId, recipientEmail, recipientName, subject, htmlBody, adminName, mailboxId, senderEmail } = params;
 
   let success = false;
   let errorMessage: string | undefined;
@@ -946,6 +948,8 @@ export async function sendCustomVendorEmail(params: {
   let resolved: any = null;
   try {
     resolved = await resolveEffectiveMailboxConfig({
+      mailboxId,
+      senderEmail,
       triggerKey: "vendor_kyc_approvals",
       brand: "empanelment",
       senderName: adminName ? `${adminName} (HiPRO Procurement)` : "HiPRO Empanelment Desk",

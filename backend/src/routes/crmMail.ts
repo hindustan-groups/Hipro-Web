@@ -43,6 +43,7 @@ function sanitizeMailboxList(mailboxes: CorporateMailbox[]) {
       id: m.id,
       name: m.name,
       email: m.email,
+      aliases: Array.isArray(m.aliases) ? m.aliases : [],
       brand: m.brand,
       brandName: m.brandName || "Corporate",
       isDefault: Boolean(m.isDefault),
@@ -113,6 +114,7 @@ router.post("/preview", async (req: Request, res: Response) => {
       htmlBody = "",
       brand = "hipro",
       mailboxId,
+      senderEmail,
       triggerKey,
     } = req.body;
 
@@ -120,7 +122,7 @@ router.post("/preview", async (req: Request, res: Response) => {
     const { fullName } = extractCleanContactName(name, cleanEmail);
     const contactInfo = { name: fullName, email: cleanEmail };
 
-    const resolved = await resolveEffectiveMailboxConfig({ mailboxId, triggerKey, brand });
+    const resolved = await resolveEffectiveMailboxConfig({ mailboxId, senderEmail, triggerKey, brand });
 
     const baseContent = htmlBody?.trim()
       ? String(htmlBody)
@@ -245,6 +247,7 @@ router.post("/send", async (req: Request, res: Response) => {
       htmlBody,
       brand = "hipro",
       mailboxId,
+      senderEmail,
       triggerKey,
       leadId,
       leadType,
@@ -268,6 +271,7 @@ router.post("/send", async (req: Request, res: Response) => {
 
     const resolved = await resolveEffectiveMailboxConfig({
       mailboxId,
+      senderEmail,
       triggerKey,
       brand,
     });
