@@ -214,6 +214,37 @@ router.get("/otp/config", (_req: Request, res: Response) => {
 });
 
 /**
+ * 1.1 Check if a Mobile Number already has a submitted Vendor Application
+ * GET /api/empanelment/check-phone?phone=...
+ */
+router.get("/check-phone", async (req: Request, res: Response) => {
+  try {
+    const cleanPhone = normalizeIndianPhone(String(req.query.phone || ""));
+    if (!cleanPhone) {
+      return res.json({ success: true, alreadyRegistered: false });
+    }
+
+    const existing = await prisma.vendorApplication.findFirst({
+      where: {
+        phone: cleanPhone,
+        status: { not: "DRAFT" },
+      },
+      orderBy: { submittedAt: "desc" },
+      select: { id: true, trackingId: true, status: true },
+    });
+
+    return res.json({
+      success: true,
+      alreadyRegistered: Boolean(existing),
+      status: existing?.status || null,
+      trackingId: existing?.trackingId || null,
+    });
+  } catch (err: any) {
+    return res.json({ success: true, alreadyRegistered: false });
+  }
+});
+
+/**
  * 1A. Send Mobile OTP for Vendor Registration
  * POST /api/empanelment/otp/send
  */

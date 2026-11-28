@@ -116,22 +116,34 @@ export default function DocumentVaultPage() {
     const d = docData?.documents || {};
     return [
       {
-        name: "GST Registration Certificate",
-        url: d.gstCertificateUrl || app?.gstCertificateUrl || null,
+        name: "Aadhaar Card (Front)",
+        url: d.aadharFrontUrl || app?.aadharFrontUrl || null,
         required: true,
-        status: (d.gstCertificateUrl || app?.gstCertificateUrl) ? "VERIFIED" : "PENDING",
+        status: (d.aadharFrontUrl || app?.aadharFrontUrl) ? "UPLOADED" : "PENDING",
       },
       {
-        name: "Company / Authorized PAN Card",
-        url: d.panCardUrl || app?.panCardUrl || null,
+        name: "Aadhaar Card (Back)",
+        url: d.aadharBackUrl || app?.aadharBackUrl || null,
         required: true,
-        status: (d.panCardUrl || app?.panCardUrl) ? "VERIFIED" : "PENDING",
+        status: (d.aadharBackUrl || app?.aadharBackUrl) ? "UPLOADED" : "PENDING",
+      },
+      {
+        name: "PAN Card",
+        url: d.panCardUrl || app?.panCardUrl || null,
+        required: false,
+        status: (d.panCardUrl || app?.panCardUrl) ? "UPLOADED" : "OPTIONAL",
+      },
+      {
+        name: "GST Registration Certificate",
+        url: d.gstCertificateUrl || app?.gstCertificateUrl || null,
+        required: false,
+        status: (d.gstCertificateUrl || app?.gstCertificateUrl) ? "UPLOADED" : "OPTIONAL",
       },
       {
         name: "Cancelled Bank Cheque / Statement",
         url: d.bankChequeUrl || app?.bankChequeUrl || null,
-        required: true,
-        status: (d.bankChequeUrl || app?.bankChequeUrl) ? "VERIFIED" : "PENDING",
+        required: false,
+        status: (d.bankChequeUrl || app?.bankChequeUrl) ? "UPLOADED" : "OPTIONAL",
       },
       {
         name: "MSME / Udyam Certificate",

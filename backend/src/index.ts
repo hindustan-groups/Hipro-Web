@@ -147,8 +147,11 @@ async function ensureDefaultAdmin() {
   }
 }
 
+import { ensureEmpanelmentSchema } from "./lib/ensureEmpanelmentSchema";
+
 app.listen(PORT, async () => {
   console.log(`Standalone Express backend is running on port ${PORT}`);
+  await ensureEmpanelmentSchema();
   await ensureDefaultAdmin();
   // Start self-pinging keep-alive service
   startKeepAlive();

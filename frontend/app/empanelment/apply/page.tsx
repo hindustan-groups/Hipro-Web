@@ -314,6 +314,7 @@ export default function VendorRegistrationWizardPage() {
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpToken, setOtpToken] = useState("");
   const [otpMode, setOtpMode] = useState<"WIDGET" | "BACKEND">("BACKEND");
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [demoOtpHint, setDemoOtpHint] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
@@ -352,25 +353,7 @@ export default function VendorRegistrationWizardPage() {
     try {
       const saved = localStorage.getItem("hipro_vendor_lang");
       if (saved === "hi" || saved === "en") setLang(saved);
-
-      const draftRaw = localStorage.getItem("hipro_vendor_apply_draft");
-      if (draftRaw) {
-        const d = JSON.parse(draftRaw);
-        if (d.entityType) setEntityType(d.entityType);
-        if (d.contactName) setContactName(d.contactName);
-        if (d.companyName) setCompanyName(d.companyName);
-        if (d.email) setEmail(d.email);
-        if (d.address) setAddress(d.address);
-        if (d.pincode) setPincode(d.pincode);
-        if (d.district) setDistrict(d.district);
-        if (d.stateName) setStateName(d.stateName);
-        if (d.category) setCategory(d.category);
-        if (d.subcategoryId) setSubcategoryId(d.subcategoryId);
-        if (d.customWorkType) setCustomWorkType(d.customWorkType);
-        if (d.experienceYears) setExperienceYears(d.experienceYears);
-        if (d.teamSize) setTeamSize(d.teamSize);
-        if (Array.isArray(d.projectScale)) setProjectScale(d.projectScale);
-      }
+      localStorage.removeItem("hipro_vendor_apply_draft");
     } catch (_e) {}
 
     async function loadCategories() {
@@ -394,46 +377,6 @@ export default function VendorRegistrationWizardPage() {
     loadCategories();
   }, []);
 
-  // Auto-save form draft dynamically on mobile/desktop
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "hipro_vendor_apply_draft",
-        JSON.stringify({
-          entityType,
-          contactName,
-          companyName,
-          email,
-          address,
-          pincode,
-          district,
-          stateName,
-          category,
-          subcategoryId,
-          customWorkType,
-          experienceYears,
-          teamSize,
-          projectScale,
-        })
-      );
-    } catch (_e) {}
-  }, [
-    entityType,
-    contactName,
-    companyName,
-    email,
-    address,
-    pincode,
-    district,
-    stateName,
-    category,
-    subcategoryId,
-    customWorkType,
-    experienceYears,
-    teamSize,
-    projectScale,
-  ]);
-
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const timer = setInterval(() => {
@@ -451,6 +394,7 @@ export default function VendorRegistrationWizardPage() {
 
   const handleSendOtp = async () => {
     setError("");
+    setAlreadyRegistered(false);
     const cleanPhone = phone.replace(/\D/g, "");
     if (!PHONE_REGEX.test(cleanPhone)) {
       setError(
@@ -463,6 +407,21 @@ export default function VendorRegistrationWizardPage() {
 
     setSendingOtp(true);
     try {
+      // Check if this mobile number is already registered — skip OTP & prompt login
+      const checkRes = await fetch(
+        `/api/empanelment/check-phone?phone=${encodeURIComponent(cleanPhone)}`,
+        { cache: "no-store" }
+      );
+      if (checkRes.ok) {
+        const checkJson = await checkRes.json();
+        if (checkJson.alreadyRegistered) {
+          setPhone(cleanPhone);
+          setAlreadyRegistered(true);
+          setSendingOtp(false);
+          return;
+        }
+      }
+
       if (await isMsg91WidgetConfigured()) {
         await sendWidgetOtp(cleanPhone);
         setPhone(cleanPhone);
@@ -962,6 +921,23 @@ export default function VendorRegistrationWizardPage() {
                   )}
                 </div>
               </div>
+
+              {alreadyRegistered && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-3">
+                  <div className="text-xs font-bold text-amber-900">
+                    {lang === "hi"
+                      ? `मोबाइल नंबर +91 ${phone} पहले से रजिस्टर्ड है! कृपया अपने वेंडर पोर्टल में लॉगिन करें।`
+                      : `Mobile number +91 ${phone} is already registered! Please log in to your Vendor Portal.`}
+                  </div>
+                  <Link
+                    href="/empanelment/login"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-colors"
+                  >
+                    <span>{lang === "hi" ? "लॉगिन पेज पर जाएं" : "Go to Vendor Login"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )}
 
               {otpSent && !otpVerified && (
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">

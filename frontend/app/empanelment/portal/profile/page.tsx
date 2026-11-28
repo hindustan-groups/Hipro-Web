@@ -146,15 +146,32 @@ export default function VendorProfilePage() {
             </div>
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
               <p className="text-xs text-slate-500 font-medium">Primary Work Classification</p>
-              <p className="text-sm font-semibold text-[#ea580c] mt-1">{app?.category || "General Contractor"}</p>
+              <p className="text-sm font-semibold text-[#ea580c] mt-1">
+                {app?.category || (app as any)?.primaryRole || "General Contractor"}
+              </p>
+            </div>
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+              <p className="text-xs text-slate-500 font-medium">Vendor Type &amp; Experience</p>
+              <p className="text-sm font-semibold text-slate-900 mt-1">
+                {(app as any)?.entityType === "INDIVIDUAL_WORKER"
+                  ? "Individual / Only Worker"
+                  : (app as any)?.entityType === "RUN_SMALL_TEAM"
+                  ? "Contractor with Team"
+                  : (app as any)?.entityType === "OWN_BUSINESS"
+                  ? "Business / Firm"
+                  : (app as any)?.entityType || "Vendor"}
+                {(app as any)?.experienceYears ? ` • ${(app as any).experienceYears}` : ""}
+              </p>
             </div>
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
               <p className="text-xs text-slate-500 font-medium">Empanelment Status / Tier</p>
-              <p className="text-sm font-semibold text-slate-900 mt-1">{app?.tier || "CLASS B"} • {app?.status || "APPROVED"}</p>
+              <p className="text-sm font-semibold text-slate-900 mt-1">{app?.tier || "CLASS B"} • {app?.status || "SUBMITTED"}</p>
             </div>
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-              <p className="text-xs text-slate-500 font-medium">Account Email</p>
-              <p className="text-sm font-semibold text-slate-900 mt-1">{vendor?.email || "—"}</p>
+              <p className="text-xs text-slate-500 font-medium">Project Scale &amp; Mobile</p>
+              <p className="text-sm font-semibold text-slate-900 mt-1">
+                {(app as any)?.projectScale || "Standard"} • {app?.phone || vendor?.email || "—"}
+              </p>
             </div>
           </div>
         </div>

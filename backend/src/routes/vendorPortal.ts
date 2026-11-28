@@ -147,7 +147,20 @@ router.get("/profile", async (req: Request, res: Response) => {
 router.put("/profile", async (req: Request, res: Response) => {
   try {
     const { application } = (req as any).vendorSession;
-    const { contactName, phone, ownerName, ownerContact, address, city, state, pincode } = req.body;
+    const {
+      contactName,
+      companyName,
+      phone,
+      ownerName,
+      ownerContact,
+      address,
+      city,
+      district,
+      state,
+      pincode,
+      experienceYears,
+      projectScale,
+    } = req.body;
 
     let updated: any = null;
     try {
@@ -155,13 +168,19 @@ router.put("/profile", async (req: Request, res: Response) => {
         where: { id: application.id },
         data: {
           contactName: contactName?.trim() || undefined,
+          companyName: companyName?.trim() || undefined,
           phone: phone?.trim() || undefined,
           ownerName: ownerName?.trim() || undefined,
           ownerContact: ownerContact?.trim() || undefined,
           address: address?.trim() || undefined,
-          city: city?.trim() || undefined,
+          city: city?.trim() || district?.trim() || undefined,
+          district: district?.trim() || undefined,
           state: state?.trim() || undefined,
           pincode: pincode?.trim() || undefined,
+          experienceYears: experienceYears?.trim() || undefined,
+          projectScale: Array.isArray(projectScale)
+            ? projectScale.join(", ")
+            : projectScale?.trim() || undefined,
         },
       });
     } catch {
@@ -205,6 +224,8 @@ router.get("/documents", async (req: Request, res: Response) => {
         status: application.status,
         adminRemarks: application.adminRemarks,
         documents: {
+          aadharFrontUrl: application.aadharFrontUrl,
+          aadharBackUrl: application.aadharBackUrl,
           gstCertificateUrl: application.gstCertificateUrl,
           panCardUrl: application.panCardUrl,
           bankChequeUrl: application.bankChequeUrl,
@@ -226,20 +247,23 @@ router.get("/documents", async (req: Request, res: Response) => {
 router.post("/documents/reupload", async (req: Request, res: Response) => {
   try {
     const { application } = (req as any).vendorSession;
-    const {
-      gstCertificateUrl,
-      panCardUrl,
-      bankChequeUrl,
-      msmeDocUrl,
-      workExperienceDocUrl,
-      remarks,
-    } = req.body;
+    const nested = req.body?.documents && typeof req.body.documents === "object" ? req.body.documents : {};
+    const aadharFrontUrl = req.body.aadharFrontUrl || nested.aadharFrontUrl;
+    const aadharBackUrl = req.body.aadharBackUrl || nested.aadharBackUrl;
+    const gstCertificateUrl = req.body.gstCertificateUrl || nested.gstCertificateUrl;
+    const panCardUrl = req.body.panCardUrl || nested.panCardUrl;
+    const bankChequeUrl = req.body.bankChequeUrl || nested.bankChequeUrl;
+    const msmeDocUrl = req.body.msmeDocUrl || nested.msmeDocUrl || nested.msmeCertificateUrl;
+    const workExperienceDocUrl = req.body.workExperienceDocUrl || nested.workExperienceDocUrl;
+    const remarks = req.body.remarks || req.body.comments;
 
     const updateData: any = {
       status: "UNDER_VERIFICATION",
       currentStage: "Document Re-audit",
     };
 
+    if (aadharFrontUrl) updateData.aadharFrontUrl = aadharFrontUrl;
+    if (aadharBackUrl) updateData.aadharBackUrl = aadharBackUrl;
     if (gstCertificateUrl) updateData.gstCertificateUrl = gstCertificateUrl;
     if (panCardUrl) updateData.panCardUrl = panCardUrl;
     if (bankChequeUrl) updateData.bankChequeUrl = bankChequeUrl;
