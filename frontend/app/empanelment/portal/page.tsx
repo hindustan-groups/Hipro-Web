@@ -65,6 +65,7 @@ export default function VendorDashboardPage() {
 
   const isApproved = app?.status === "APPROVED";
   const isDocsRequested = app?.status === "DOCS_REQUESTED";
+  const gatePassEnabled = Boolean(dashboardData?.gatePassEnabled);
 
   return (
     <div className="space-y-6">
@@ -112,13 +113,15 @@ export default function VendorDashboardPage() {
               </button>
             )}
 
-            <Link
-              href="/empanelment/portal/gate-pass"
-              className="px-4 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-xs shadow-red-600/20"
-            >
-              <QrCode className="w-4 h-4" />
-              <span>Generate Gate Pass</span>
-            </Link>
+            {gatePassEnabled && (
+              <Link
+                href="/empanelment/portal/gate-pass"
+                className="px-4 py-2.5 rounded-xl bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-xs shadow-red-600/20"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Generate Gate Pass</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -196,27 +199,29 @@ export default function VendorDashboardPage() {
         </Link>
 
         {/* Metric 4: Active Gate Passes */}
-        <Link
-          href="/empanelment/portal/gate-pass"
-          className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-red-300 transition-colors group"
-        >
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              Active Passes
-            </span>
-            <QrCode className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div>
-            <div className="text-xl sm:text-2xl font-black text-slate-950">
-              {metrics.activeGatePassesCount}
+        {gatePassEnabled && (
+          <Link
+            href="/empanelment/portal/gate-pass"
+            className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between space-y-3 hover:border-red-300 transition-colors group"
+          >
+            <div className="flex items-center justify-between text-slate-400">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Active Passes
+              </span>
+              <QrCode className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">24-hr site entries</p>
-          </div>
-          <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
-            <span>Pass Management</span>
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-          </div>
-        </Link>
+            <div>
+              <div className="text-xl sm:text-2xl font-black text-slate-950">
+                {metrics.activeGatePassesCount}
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">24-hr site entries</p>
+            </div>
+            <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+              <span>Pass Management</span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* ============================================================== */}
@@ -248,22 +253,24 @@ export default function VendorDashboardPage() {
                 </div>
               </Link>
 
-              <Link
-                href="/empanelment/portal/gate-pass"
-                className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100 hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <QrCode className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs text-slate-900 group-hover:text-[#dc2626] transition-colors">
-                    Site Gate Pass
-                  </h3>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    Generate instant 24-hr worker entry authorization.
-                  </p>
-                </div>
-              </Link>
+              {gatePassEnabled && (
+                <Link
+                  href="/empanelment/portal/gate-pass"
+                  className="p-4 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-slate-100 hover:border-slate-300 transition-all flex flex-col justify-between space-y-3 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <QrCode className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-xs text-slate-900 group-hover:text-[#dc2626] transition-colors">
+                      Site Gate Pass
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Generate instant 24-hr worker entry authorization.
+                    </p>
+                  </div>
+                </Link>
+              )}
 
               <Link
                 href="/empanelment/portal/documents"

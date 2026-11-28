@@ -25,6 +25,24 @@ function VerifyPassContent() {
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<any | null>(null);
   const [error, setError] = useState("");
+  const [gatePassEnabled, setGatePassEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkFlag() {
+      try {
+        const res = await fetch("/api/empanelment/content", { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          setGatePassEnabled(Boolean(json?.content?.gatePassEnabled));
+        } else {
+          setGatePassEnabled(false);
+        }
+      } catch {
+        setGatePassEnabled(false);
+      }
+    }
+    checkFlag();
+  }, []);
 
   const handleVerify = useCallback(async (codeToUse?: string) => {
     const raw = (codeToUse || passCodeInput).trim().toUpperCase();
@@ -62,10 +80,28 @@ function VerifyPassContent() {
   }, [passCodeInput]);
 
   useEffect(() => {
-    if (initialPassCode) {
+    if (initialPassCode && gatePassEnabled) {
       handleVerify(initialPassCode);
     }
-  }, [initialPassCode, handleVerify]);
+  }, [initialPassCode, gatePassEnabled, handleVerify]);
+
+  if (gatePassEnabled === false) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-16 md:py-24 text-center">
+        <div className="bg-white rounded-3xl border border-amber-200/80 p-8 shadow-sm space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h1 className="text-xl font-black text-slate-900 tracking-tight font-display">
+            Gate Pass Verification Disabled
+          </h1>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            The Site Gate Pass verification scanner is currently disabled by Hindustan Projects administration.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto px-4 py-12 md:py-20 space-y-6 text-xs text-center">

@@ -7,6 +7,9 @@ import AutoMailNav from "@/components/admin/automail/AutoMailNav";
 import {
   BUSINESS_TEMPLATES,
   AutomailBusinessTemplate,
+  getBrandPreviewDefaults,
+  renderTemplatePreviewHtml,
+  renderTemplatePreviewSubject,
 } from "@/lib/automailTemplates";
 import {
   Layers,
@@ -237,12 +240,17 @@ export default function AutoMailTemplatesPage() {
           <!-- Corporate Brand Header -->
           <tr>
             <td style="background: linear-gradient(135deg, #090e1a 0%, #0f172a 60%, #1e293b 100%); padding: 28px 24px 22px; text-align: center; border-bottom: 4px solid #dc2626;">
+              <div style="display: inline-block; background-color: #ffffff; border-radius: 10px; padding: 5px 10px; margin-bottom: 12px;">
+                <a href="https://www.hindustanprojects.in" target="_blank" style="text-decoration: none;">
+                  <img src="https://www.hindustanprojects.in/hipro-logo.jpg" alt="Hindustan Projects" height="32" style="display: block; height: 32px; width: auto; border: 0; border-radius: 4px;" />
+                </a>
+              </div>
               <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px;">Hindustan Projects</h1>
               <p style="color: #cbd5e1; font-size: 11px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">
                 Civil Engineering • Turnkey Construction • Infrastructure • Architectural Design
               </p>
               <div style="margin-top: 12px; font-size: 10px; color: #94a3b8; font-weight: 600;">
-                🏛️ Quality-First Civil Execution &bull; 🛡️ Turnkey EPC Contracting &bull; ⚡ 150+ Landmarks Built
+                &#10003; Quality-First Civil Execution &bull; &#10003; Turnkey EPC Contracting &bull; &#10003; 150+ Landmarks Built
               </div>
             </td>
           </tr>
@@ -365,17 +373,18 @@ export default function AutoMailTemplatesPage() {
     }
     setSendingPreviewTest(true);
     try {
-      const renderedHtml = previewTemplate.html
-        .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
-        .replace(/\{\{first_name\}\}/gi, "Ramesh")
-        .replace(/\{\{email\}\}/gi, previewTestEmail.trim())
-        .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects")
-        .replace(/\{\{date\}\}/gi, new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }))
-        .replace(/\{\{year\}\}/gi, String(new Date().getFullYear()));
-      const renderedSubject = previewTemplate.subject
-        .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
-        .replace(/\{\{first_name\}\}/gi, "Ramesh")
-        .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects");
+      const renderedHtml = renderTemplatePreviewHtml(previewTemplate.html, {
+        brand: previewTemplate.brand,
+        name: "Ramesh Sharma",
+        email: previewTestEmail.trim(),
+        personalized: true,
+      });
+      const renderedSubject = renderTemplatePreviewSubject(previewTemplate.subject, {
+        brand: previewTemplate.brand,
+        name: "Ramesh Sharma",
+        email: previewTestEmail.trim(),
+        personalized: true,
+      });
 
       const res = await fetch("/api/automail/send-test", {
         method: "POST",
@@ -1045,7 +1054,12 @@ export default function AutoMailTemplatesPage() {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono mt-0.5">
-                  Subject: {previewTemplate.subject}
+                  Subject:{" "}
+                  {renderTemplatePreviewSubject(previewTemplate.subject, {
+                    brand: previewTemplate.brand,
+                    name: "Ramesh Sharma",
+                    email: "client@company.com",
+                  })}
                 </p>
               </div>
 
@@ -1085,7 +1099,12 @@ export default function AutoMailTemplatesPage() {
             <div className="px-5 py-3 bg-white border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
               <div className="space-y-0.5 min-w-0">
                 <p className="text-slate-600 truncate">
-                  <strong className="text-slate-900">From:</strong> {previewTemplate.senderName || "Hindustan Projects"} &lt;configured portal mailbox&gt;
+                  <strong className="text-slate-900">From:</strong>{" "}
+                  {previewTemplate.senderName || getBrandPreviewDefaults(previewTemplate.brand).brandName} &lt;
+                  <span className="font-mono text-blue-700">
+                    {previewTemplate.senderEmail || getBrandPreviewDefaults(previewTemplate.brand).senderEmail}
+                  </span>
+                  &gt;
                 </p>
                 <p className="text-slate-600 truncate">
                   <strong className="text-slate-900">To:</strong> Ramesh Sharma &lt;client@company.com&gt;
@@ -1110,23 +1129,35 @@ export default function AutoMailTemplatesPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-100/80 flex justify-center">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/80 flex justify-center">
               <div
                 className={`transition-all bg-white shadow-lg rounded-2xl overflow-hidden border border-slate-200 ${
-                  previewDevice === "mobile" ? "max-w-sm w-full" : "max-w-2xl w-full"
+                  previewDevice === "mobile" ? "w-[375px] max-w-full" : "w-full max-w-2xl"
                 }`}
               >
-                <div
-                  className="max-w-none"
-                  dangerouslySetInnerHTML={{
-                    __html: previewTemplate.html
-                      .replace(/\{\{name\}\}/gi, "Ramesh Sharma")
-                      .replace(/\{\{first_name\}\}/gi, "Ramesh")
-                      .replace(/\{\{email\}\}/gi, "client@company.com")
-                      .replace(/\{\{brand\}\}/gi, previewTemplate.brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects")
-                      .replace(/\{\{date\}\}/gi, new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }))
-                      .replace(/\{\{year\}\}/gi, String(new Date().getFullYear())),
+                <iframe
+                  key={`${previewTemplate.id}-${previewDevice}`}
+                  title={`Preview ${previewTemplate.title}`}
+                  sandbox="allow-same-origin allow-popups"
+                  srcDoc={renderTemplatePreviewHtml(previewTemplate.html, {
+                    brand: previewTemplate.brand,
+                    name: "Ramesh Sharma",
+                    email: "client@company.com",
+                    personalized: true,
+                  })}
+                  onLoad={(e) => {
+                    try {
+                      const iframe = e.currentTarget;
+                      const doc = iframe.contentDocument;
+                      if (doc?.body) {
+                        const h = Math.max(460, doc.documentElement.scrollHeight || doc.body.scrollHeight || 560);
+                        iframe.style.height = `${h + 16}px`;
+                      }
+                    } catch {
+                      // Ignore cross-origin fallback
+                    }
                   }}
+                  className="w-full min-h-[500px] border-0 bg-white block"
                 />
               </div>
             </div>
@@ -1307,14 +1338,17 @@ export default function AutoMailTemplatesPage() {
                   <label className="block text-[11px] font-bold text-slate-600 uppercase mb-1">
                     Live HTML Preview
                   </label>
-                  <div className="border border-slate-200 rounded-xl p-3 bg-slate-50 h-[335px] overflow-y-auto">
-                    <div
-                      className="bg-white rounded-lg p-4 shadow-xs"
-                      dangerouslySetInnerHTML={{
-                        __html: editorHtml
-                          .replace(/\{\{name\}\}/g, "Valued Client")
-                          .replace(/\{\{email\}\}/g, "client@company.com"),
-                      }}
+                  <div className="border border-slate-200 rounded-xl bg-slate-50 h-[335px] overflow-hidden">
+                    <iframe
+                      title="Custom Template Live Preview"
+                      sandbox="allow-same-origin allow-popups"
+                      srcDoc={renderTemplatePreviewHtml(editorHtml, {
+                        brand: editorBrand,
+                        name: "Valued Client",
+                        email: "client@company.com",
+                        personalized: true,
+                      })}
+                      className="w-full h-full border-0 bg-white"
                     />
                   </div>
                 </div>

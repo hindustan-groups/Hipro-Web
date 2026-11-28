@@ -33,6 +33,7 @@ export default function VendorPortalLayout({
   const [vendor, setVendor] = useState<VendorPortalUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [gatePassEnabled, setGatePassEnabled] = useState(false);
 
   const fetchVendorProfile = async () => {
     try {
@@ -62,6 +63,10 @@ export default function VendorPortalLayout({
 
   useEffect(() => {
     fetchVendorProfile();
+    fetch("/api/empanelment/content", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => setGatePassEnabled(Boolean(j?.content?.gatePassEnabled)))
+      .catch(() => setGatePassEnabled(false));
   }, []);
 
   // Close mobile drawer on route change
@@ -93,11 +98,15 @@ export default function VendorPortalLayout({
       label: "Live Tenders & Bids",
       icon: FileCheck2,
     },
-    {
-      href: "/empanelment/portal/gate-pass",
-      label: "Daily Site Gate Pass",
-      icon: QrCode,
-    },
+    ...(gatePassEnabled
+      ? [
+          {
+            href: "/empanelment/portal/gate-pass",
+            label: "Daily Site Gate Pass",
+            icon: QrCode,
+          },
+        ]
+      : []),
     {
       href: "/empanelment/portal/documents",
       label: "Document Vault",

@@ -25,6 +25,7 @@ export default function VendorGatePassPage() {
   const [passes, setPasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [gatePassEnabled, setGatePassEnabled] = useState<boolean | null>(null);
 
   // New Pass Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +47,7 @@ export default function VendorGatePassPage() {
         const json = await res.json();
         const passList = json.data || json.passes || [];
         setPasses(passList);
+        setGatePassEnabled(json.gatePassEnabled !== false);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load site gate passes");
@@ -103,6 +105,22 @@ export default function VendorGatePassPage() {
   const activePass = passes.find(
     (p) => p.status === "ACTIVE" && new Date(p.validTill) > now
   );
+
+  if (!loading && gatePassEnabled === false) {
+    return (
+      <div className="bg-white rounded-3xl border border-amber-200/90 p-8 text-center space-y-3 shadow-xs">
+        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center mx-auto">
+          <Clock className="w-6 h-6" />
+        </div>
+        <h1 className="text-xl font-black text-slate-950 tracking-tight">
+          Daily Site Gate Pass is Currently Disabled
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+          Site Gate Pass generation has been temporarily turned off by Hindustan Projects administration while the site access workflow is being updated.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

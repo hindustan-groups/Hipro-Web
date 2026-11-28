@@ -25,6 +25,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Loader2,
 } from "lucide-react";
 
 export interface VendorApplicationDetail {
@@ -101,6 +102,15 @@ export default function ApplicationReviewDrawer({
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailModalSuccess, setEmailModalSuccess] = useState("");
   const [emailModalError, setEmailModalError] = useState("");
+  const [mailboxes, setMailboxes] = useState<
+    Array<{ id: string; name: string; email: string; aliases?: string[]; brandName?: string }>
+  >([]);
+  const [selectedMailboxId, setSelectedMailboxId] = useState("");
+  const [selectedSenderEmail, setSelectedSenderEmail] = useState("");
+  const [loadingMailContext, setLoadingMailContext] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const [aiError, setAiError] = useState("");
 
   // Portal invite state
   const [inviting, setInviting] = useState(false);
@@ -150,6 +160,29 @@ export default function ApplicationReviewDrawer({
       setLoadingLogs(false);
     }
   };
+
+  useEffect(() => {
+    if (!isEmailModalOpen) return;
+    setLoadingMailContext(true);
+    fetch("/api/mail/context?triggerKey=vendor_kyc_approvals&brand=empanelment", {
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setMailboxes(json.data.mailboxes || []);
+          if (json.data.defaultMailbox?.id) {
+            setSelectedMailboxId(json.data.defaultMailbox.id);
+            setSelectedSenderEmail(json.data.defaultMailbox.email || "");
+          } else if (json.data.mailboxes?.length > 0) {
+            setSelectedMailboxId(json.data.mailboxes[0].id);
+            setSelectedSenderEmail(json.data.mailboxes[0].email || "");
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingMailContext(false));
+  }, [isEmailModalOpen]);
 
   if (!isOpen || !application) return null;
 
@@ -262,6 +295,8 @@ export default function ApplicationReviewDrawer({
           subject: emailSubject.trim(),
           htmlBody: emailBody.trim(),
           template: emailTemplate,
+          mailboxId: selectedMailboxId || undefined,
+          senderEmail: selectedSenderEmail || undefined,
         }),
       });
 
@@ -276,11 +311,58 @@ export default function ApplicationReviewDrawer({
         setIsEmailModalOpen(false);
         setEmailSubject("");
         setEmailBody("");
+        setAiPrompt("");
+        setAiError("");
       }, 1500);
     } catch (err: any) {
       setEmailModalError(err.message || "Failed to send email");
     } finally {
       setSendingEmail(false);
+    }
+  };
+
+  const senderOptions = mailboxes.flatMap((mb) => {
+    const label = mb.brandName || mb.name;
+    const primary = [{ mailboxId: mb.id, email: mb.email, label, isAlias: false }];
+    const aliasItems = (mb.aliases || [])
+      .filter((alias) => alias && alias.toLowerCase() !== mb.email.toLowerCase())
+      .map((alias) => ({ mailboxId: mb.id, email: alias, label, isAlias: true }));
+    return [...primary, ...aliasItems];
+  });
+
+  const activeSenderEmail =
+    selectedSenderEmail || mailboxes[0]?.email || "empanel@hindustanprojects.in";
+
+  const handleAiDraftEmail = async () => {
+    if (!application) return;
+    const promptToUse =
+      aiPrompt.trim() ||
+      `Write a professional vendor empanelment update to ${application.contactName} (${application.companyName}, Tracking ID ${application.trackingId}).`;
+    setAiDrafting(true);
+    setAiError("");
+    try {
+      const res = await fetch("/api/automail/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          prompt: promptToUse,
+          mode: "reply",
+          brand: "empanelment",
+          incomingSubject: emailSubject || undefined,
+          recipientName: application.contactName,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to generate AI draft");
+      }
+      if (json.subject) setEmailSubject(json.subject);
+      if (json.bodyText) setEmailBody(json.bodyText);
+    } catch (err: any) {
+      setAiError(err.message || "AI drafting failed");
+    } finally {
+      setAiDrafting(false);
     }
   };
 
@@ -889,6 +971,37 @@ export default function ApplicationReviewDrawer({
             <form onSubmit={handleSendManualEmail} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  From Mailbox / Alias
+                </label>
+                {loadingMailContext ? (
+                  <div className="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-500 flex items-center gap-1.5">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading mailboxes &amp; aliases...
+                  </div>
+                ) : senderOptions.length > 1 ? (
+                  <select
+                    value={`${selectedMailboxId}::${activeSenderEmail}`}
+                    onChange={(e) => {
+                      const [mbId, senderEmail] = e.target.value.split("::");
+                      setSelectedMailboxId(mbId || "");
+                      setSelectedSenderEmail(senderEmail || "");
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-slate-50 text-slate-800 font-mono font-semibold"
+                  >
+                    {senderOptions.map((opt) => (
+                      <option key={`${opt.mailboxId}::${opt.email}`} value={`${opt.mailboxId}::${opt.email}`}>
+                        {opt.email} ({opt.isAlias ? `Alias · ${opt.label}` : opt.label})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-xs font-mono font-bold text-emerald-800">
+                    {activeSenderEmail}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Email Template
                 </label>
                 <select
@@ -914,6 +1027,39 @@ export default function ApplicationReviewDrawer({
                   <option value="INVITATION">Vendor Portal Account Invitation</option>
                   <option value="APPROVED">Empanelment Approval Notification</option>
                 </select>
+              </div>
+
+              {/* AI Draft Assistant */}
+              <div className="p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-200 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-800 shrink-0">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Draft with AI</span>
+                  </div>
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAiDraftEmail();
+                      }
+                    }}
+                    placeholder="e.g. Ask for updated GST & cancelled cheque..."
+                    className="flex-1 px-2.5 py-1.5 rounded-lg border border-indigo-200 bg-white text-xs text-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAiDraftEmail}
+                    disabled={aiDrafting}
+                    className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 shrink-0"
+                  >
+                    {aiDrafting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                    <span>{aiDrafting ? "Drafting..." : "AI Draft"}</span>
+                  </button>
+                </div>
+                {aiError && <p className="text-[11px] text-red-600">{aiError}</p>}
               </div>
 
               <div>

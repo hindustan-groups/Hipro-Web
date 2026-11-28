@@ -9,8 +9,116 @@ import {
   sign2FaTempToken,
   verify2FaTempToken,
 } from "../lib/totp";
+import {
+  sendOneEmail,
+  resolveEffectiveMailboxConfig,
+  recordDirectDispatch,
+} from "../services/automail/emailSender";
+import { getAutomailSettings, resolveSenderForTrigger } from "../services/automail/settingsService";
+import { escapeHtml } from "../services/automail/emailTemplateWrapper";
 
 const router = Router();
+
+function getClientIp(req: Request): string {
+  const fwd = req.headers["x-forwarded-for"];
+  if (typeof fwd === "string" && fwd.trim()) {
+    return fwd.split(",")[0].trim();
+  }
+  return req.ip || req.socket?.remoteAddress || "Unknown IP";
+}
+
+async function dispatchAdminSecurityEmail(params: {
+  to: string;
+  adminName?: string | null;
+  eventTitle: string;
+  eventSummary: string;
+  req: Request;
+}) {
+  try {
+    const cleanEmail = (params.to || "").trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) return;
+
+    const settings = getAutomailSettings();
+    const secRule = settings.dispatchRouting?.security_alerts;
+    if (secRule && secRule.active === false) return;
+
+    const routed = resolveSenderForTrigger("security_alerts");
+    const resolved = await resolveEffectiveMailboxConfig({
+      mailboxId: routed.mailbox?.id,
+      senderEmail: (routed as any).senderEmail || routed.mailbox?.email,
+      triggerKey: "security_alerts",
+      brand: "all",
+    });
+
+    const ipAddress = getClientIp(params.req);
+    const userAgent = String(params.req.headers["user-agent"] || "Unknown Device").slice(0, 140);
+    const timestampIst = new Date().toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "medium",
+      timeStyle: "medium",
+    });
+
+    const subject = `[Security Alert] ${params.eventTitle} — HiPRO Master Cockpit`;
+    const htmlBody = `
+      <div style="padding: 4px 0;">
+        <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 18px; margin-bottom: 18px;">
+          <h2 style="margin: 0 0 6px; font-size: 16px; font-weight: 800; color: #1e3a8a;">
+            ${escapeHtml(params.eventTitle)}
+          </h2>
+          <p style="margin: 0; font-size: 13px; color: #1e40af; line-height: 1.5;">
+            ${escapeHtml(params.eventSummary)}
+          </p>
+        </div>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; margin-bottom: 16px;">
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 9px 14px; font-weight: bold; color: #64748b; width: 34%;">Admin Account:</td>
+            <td style="padding: 9px 14px; font-weight: 700; color: #0f172a;">${escapeHtml(cleanEmail)}</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 9px 14px; font-weight: bold; color: #64748b;">Time (IST):</td>
+            <td style="padding: 9px 14px; color: #0f172a;">${escapeHtml(timestampIst)} IST</td>
+          </tr>
+          <tr style="border-bottom: 1px solid #e2e8f0;">
+            <td style="padding: 9px 14px; font-weight: bold; color: #64748b;">IP Address:</td>
+            <td style="padding: 9px 14px; font-family: monospace; color: #0f172a;">${escapeHtml(ipAddress)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 9px 14px; font-weight: bold; color: #64748b;">Device / Agent:</td>
+            <td style="padding: 9px 14px; color: #475569;">${escapeHtml(userAgent)}</td>
+          </tr>
+        </table>
+
+        <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin: 0;">
+          If this activity was authorized by you, no further action is needed. If you do not recognize this activity, please change your Master Admin password immediately and verify 2FA in Security Settings.
+        </p>
+      </div>
+    `;
+
+    await sendOneEmail({
+      to: cleanEmail,
+      subject,
+      htmlBody,
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      brand: "all",
+      customConfig: resolved.customConfig,
+    });
+
+    await recordDirectDispatch({
+      to: cleanEmail,
+      name: params.adminName || "Master Admin",
+      subject,
+      brand: "all",
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      source: "admin_security_alert",
+      success: true,
+    });
+  } catch (err: any) {
+    console.warn("[AUTH SECURITY MAIL] Non-blocking security alert dispatch failed:", err?.message || err);
+  }
+}
 
 // Explicitly prevent caching of sensitive authentication and session endpoints
 router.use((_req: Request, res: Response, next) => {
@@ -83,6 +191,14 @@ router.post("/login", authLoginLimiter, async (req: Request, res: Response) => {
 
     // If 2FA not enabled, create session cookie directly
     await createSession(user.id, res);
+
+    void dispatchAdminSecurityEmail({
+      to: user.email,
+      adminName: user.name,
+      eventTitle: "Master Admin Login Detected",
+      eventSummary: `Your admin account (${user.email}) signed in to the HiPRO Master Cockpit.`,
+      req,
+    });
 
     return res.json({
       success: true,
@@ -159,6 +275,14 @@ router.post("/login/verify-2fa", authLoginLimiter, async (req: Request, res: Res
 
     // 2FA passed! Issue session cookie
     await createSession(user.id, res);
+
+    void dispatchAdminSecurityEmail({
+      to: user.email,
+      adminName: user.name,
+      eventTitle: "Master Admin Login Verified (2FA)",
+      eventSummary: `Your admin account (${user.email}) completed Google Authenticator 2FA sign-in${backupCodeUsed ? " using a backup code" : ""}.`,
+      req,
+    });
 
     return res.json({
       success: true,
@@ -423,6 +547,14 @@ router.post("/change-password", async (req: Request, res: Response) => {
       },
     });
 
+    void dispatchAdminSecurityEmail({
+      to: user.email,
+      adminName: user.name,
+      eventTitle: "Admin Password Changed",
+      eventSummary: `The password for your Master Admin account (${user.email}) was successfully updated.`,
+      req,
+    });
+
     return res.json({
       success: true,
       message: "Password updated successfully",
@@ -430,6 +562,91 @@ router.post("/change-password", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Change password error:", error);
     return res.status(500).json({ success: false, error: "Failed to change password" });
+  }
+});
+
+// POST /api/auth/change-email — Update Admin login email (Protected with password + 2FA check)
+router.post("/change-email", async (req: Request, res: Response) => {
+  try {
+    const user = await getSessionUser(req, res);
+    if (!user) {
+      return res.status(401).json({ success: false, error: "Not authenticated" });
+    }
+
+    const { newEmail, currentPassword, twoFactorCode } = req.body;
+    const cleanNewEmail = (newEmail || "").trim().toLowerCase();
+
+    if (!cleanNewEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanNewEmail)) {
+      return res.status(400).json({ success: false, error: "Please enter a valid email address" });
+    }
+    if (!currentPassword) {
+      return res.status(400).json({ success: false, error: "Current password is required" });
+    }
+    if (cleanNewEmail === user.email.toLowerCase()) {
+      return res.status(400).json({ success: false, error: "New email is the same as your current login email" });
+    }
+
+    const isPasswordValid = verifyPassword(currentPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ success: false, error: "Current password is incorrect" });
+    }
+
+    if (user.isTwoFactorEnabled && user.twoFactorSecret) {
+      if (!twoFactorCode) {
+        return res.status(400).json({
+          success: false,
+          error: "Google Authenticator 2FA code is required to change login email",
+        });
+      }
+      const isTotpValid = verifyTotp(twoFactorCode, user.twoFactorSecret);
+      if (!isTotpValid) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid Google Authenticator code. Email change rejected.",
+        });
+      }
+    }
+
+    const existing = await prisma.adminUser.findFirst({
+      where: { email: cleanNewEmail },
+    });
+    if (existing && existing.id !== user.id) {
+      return res.status(409).json({
+        success: false,
+        error: "Another admin user already uses this email address",
+      });
+    }
+
+    const previousEmail = user.email;
+    await prisma.adminUser.update({
+      where: { id: user.id },
+      data: { email: cleanNewEmail },
+    });
+
+    // Notify both previous and new login email addresses
+    void dispatchAdminSecurityEmail({
+      to: previousEmail,
+      adminName: user.name,
+      eventTitle: "Admin Login Email Changed",
+      eventSummary: `Your Master Admin login email was changed from ${previousEmail} to ${cleanNewEmail}.`,
+      req,
+    });
+    void dispatchAdminSecurityEmail({
+      to: cleanNewEmail,
+      adminName: user.name,
+      eventTitle: "Master Admin Login Email Activated",
+      eventSummary: `${cleanNewEmail} is now your active Master Admin login & security alert email.`,
+      req,
+    });
+
+    return res.json({
+      success: true,
+      message: `Login email updated to ${cleanNewEmail}`,
+      email: cleanNewEmail,
+    });
+  } catch (error) {
+    console.error("Change email error:", error);
+    return res.status(500).json({ success: false, error: "Failed to update login email" });
   }
 });
 

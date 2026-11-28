@@ -171,6 +171,9 @@ export interface EmpanelmentContent {
   noticeAlertBanner?: string | null;
   noticeAlertActive?: boolean;
 
+  // Feature Flag: Site / Gate Pass Module
+  gatePassEnabled?: boolean;
+
   // Section Visibility Toggles (JSON encoded)
   sectionVisibility?: string | null;
 
@@ -587,6 +590,7 @@ export const DEFAULT_EMPANELMENT_CONTENT: EmpanelmentContent = {
   noticeAlertBanner:
     "📢 FY 2026-27 Vendor & Contractor Empanelment is now open for Civil, MEP, Plant & Raw Material suppliers across Rajasthan.",
   noticeAlertActive: true,
+  gatePassEnabled: false,
 
   // Section Visibility Toggles (JSON encoded)
   sectionVisibility: JSON.stringify({
