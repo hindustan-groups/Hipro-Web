@@ -111,20 +111,29 @@ function LoginForm() {
 
     setSendingOtp(true);
     try {
-      const res = await fetch("/api/vendor/auth/otp/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: cleanPhone }),
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to send OTP.");
+      if (await isMsg91WidgetConfigured()) {
+        await sendWidgetOtp(cleanPhone);
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setOtpMode("WIDGET");
+        setResendCooldown(30);
+        setDemoOtpHint("");
+      } else {
+        const res = await fetch("/api/vendor/auth/otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: cleanPhone }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Failed to send OTP.");
+        }
+        setPhone(cleanPhone);
+        setOtpSent(true);
+        setOtpMode("BACKEND");
+        setResendCooldown(json.cooldownSeconds || 30);
+        setDemoOtpHint(json.demoOtp || "");
       }
-      setPhone(cleanPhone);
-      setOtpSent(true);
-      setOtpMode("BACKEND");
-      setResendCooldown(json.cooldownSeconds || 30);
-      setDemoOtpHint(json.demoOtp || "");
     } catch (err: any) {
       setError(err.message || "Could not send OTP.");
     } finally {
