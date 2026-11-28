@@ -463,43 +463,22 @@ export default function VendorRegistrationWizardPage() {
 
     setSendingOtp(true);
     try {
-      let sentViaWidget = false;
-      if (await isMsg91WidgetConfigured()) {
-        try {
-          await sendWidgetOtp(cleanPhone);
-          sentViaWidget = true;
-        } catch (_widgetErr) {
-          // Graceful fallback to backend OTP if widget is IPBlocked on localhost or rate-limited
-          sentViaWidget = false;
-        }
+      const res = await fetch("/api/empanelment/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: cleanPhone }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to send OTP.");
       }
-
-      if (sentViaWidget) {
-        setPhone(cleanPhone);
-        setOtpSent(true);
-        setOtpVerified(false);
-        setOtpToken("");
-        setOtpMode("WIDGET");
-        setResendCooldown(30);
-        setDemoOtpHint("");
-      } else {
-        const res = await fetch("/api/empanelment/otp/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: cleanPhone }),
-        });
-        const json = await res.json();
-        if (!res.ok || !json.success) {
-          throw new Error(json.error || "Failed to send OTP.");
-        }
-        setPhone(cleanPhone);
-        setOtpSent(true);
-        setOtpVerified(false);
-        setOtpToken("");
-        setOtpMode("BACKEND");
-        setResendCooldown(json.cooldownSeconds || 30);
-        setDemoOtpHint(json.demoOtp || "");
-      }
+      setPhone(cleanPhone);
+      setOtpSent(true);
+      setOtpVerified(false);
+      setOtpToken("");
+      setOtpMode("BACKEND");
+      setResendCooldown(json.cooldownSeconds || 30);
+      setDemoOtpHint(json.demoOtp || "");
     } catch (err: any) {
       setError(err.message || "Could not send OTP.");
     } finally {

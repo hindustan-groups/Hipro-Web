@@ -73,7 +73,7 @@ router.post("/otp/send", async (req: Request, res: Response) => {
 router.post("/otp/verify", async (req: Request, res: Response) => {
   try {
     const { phone, otp } = req.body || {};
-    const verified = verifyPhoneOtp(phone, otp);
+    const verified = await verifyPhoneOtp(phone, otp);
 
     const application = await prisma.vendorApplication.findFirst({
       where: { phone: verified.phone },

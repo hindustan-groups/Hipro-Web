@@ -237,9 +237,9 @@ router.post("/otp/send", async (req: Request, res: Response) => {
  * 1B. Verify Mobile OTP for Vendor Registration
  * POST /api/empanelment/otp/verify
  */
-router.post("/otp/verify", (req: Request, res: Response) => {
+router.post("/otp/verify", async (req: Request, res: Response) => {
   try {
-    const result = verifyPhoneOtp(req.body?.phone, req.body?.otp);
+    const result = await verifyPhoneOtp(req.body?.phone, req.body?.otp);
     return res.json({
       success: true,
       message: "Mobile number verified successfully.",

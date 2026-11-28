@@ -1,7 +1,9 @@
 import crypto from "crypto";
 
 interface OtpEntry {
-  otpHash: string;
+  otpHash?: string;
+  reqId?: string;
+  mode: "MSG91_WIDGET" | "DEMO";
   expiresAt: number;
   lastSentAt: number;
   attempts: number;
@@ -60,7 +62,7 @@ export function verifyOtpToken(token: string, expectedPhone: string): boolean {
 export async function sendPhoneOtp(rawPhone: string): Promise<{
   phone: string;
   smsMode: "LIVE" | "DEMO";
-  provider?: "MSG91" | "FAST2SMS" | "DEMO";
+  provider: "MSG91" | "DEMO";
   demoOtp?: string;
   cooldownSeconds: number;
 }> {
@@ -76,71 +78,58 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
     throw new Error(`Please wait ${waitSec} seconds before requesting a new OTP.`);
   }
 
+  const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
+  const msg91WidgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+
+  // 100% Server-Side MSG91 Widget API (keeps authkey secret on backend, no browser widget issues)
+  if (msg91AuthKey && msg91WidgetId) {
+    const resp = await fetch("https://api.msg91.com/api/v5/widget/sendOtp", {
+      method: "POST",
+      headers: {
+        authkey: msg91AuthKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        widgetId: msg91WidgetId,
+        identifier: `91${phone}`,
+      }),
+    });
+
+    const json: any = await resp.json().catch(() => ({}));
+    if (!resp.ok || json?.type !== "success") {
+      console.error("[VENDOR OTP] MSG91 sendOtp failed:", json);
+      throw new Error(json?.message || "Failed to send SMS OTP via MSG91.");
+    }
+
+    const reqId = typeof json?.message === "string" ? json.message : json?.reqId || "";
+    otpStore.set(phone, {
+      reqId,
+      mode: "MSG91_WIDGET",
+      expiresAt: now + OTP_TTL_MS,
+      lastSentAt: now,
+      attempts: 0,
+    });
+
+    console.log(`[VENDOR OTP] MSG91 live SMS sent to 91${phone} (reqId: ${reqId})`);
+    return {
+      phone,
+      smsMode: "LIVE",
+      provider: "MSG91",
+      cooldownSeconds: 30,
+    };
+  }
+
+  // Fallback only when MSG91_AUTH_KEY is not configured at all
   const otp = String(Math.floor(100000 + Math.random() * 900000));
   otpStore.set(phone, {
     otpHash: hashOtp(phone, otp),
+    mode: "DEMO",
     expiresAt: now + OTP_TTL_MS,
     lastSentAt: now,
     attempts: 0,
   });
 
-  const canSendLive =
-    process.env.NODE_ENV === "production" || process.env.MSG91_SEND_IN_DEV === "true";
-
-  // 1. Primary Provider: MSG91 OTP v5 API
-  const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
-  const msg91TemplateId = process.env.MSG91_TEMPLATE_ID?.trim();
-  if (msg91AuthKey && msg91TemplateId && canSendLive) {
-    try {
-      const url = new URL("https://control.msg91.com/api/v5/otp");
-      url.searchParams.set("template_id", msg91TemplateId);
-      url.searchParams.set("mobile", `91${phone}`);
-      url.searchParams.set("otp", otp);
-      url.searchParams.set("otp_expiry", "5");
-
-      const resp = await fetch(url.toString(), {
-        method: "POST",
-        headers: {
-          authkey: msg91AuthKey,
-          "Content-Type": "application/json",
-        },
-      });
-      const json: any = await resp.json().catch(() => ({}));
-      if (resp.ok && json?.type === "success") {
-        console.log(`[VENDOR OTP] MSG91 SMS dispatched to 91${phone}`);
-        return { phone, smsMode: "LIVE", provider: "MSG91", cooldownSeconds: 30 };
-      }
-      console.warn("[VENDOR OTP] MSG91 API non-success:", json);
-    } catch (err) {
-      console.warn("[VENDOR OTP] MSG91 dispatch failed, falling back:", err);
-    }
-  }
-
-  // 2. Fallback Provider: Fast2SMS (if configured in production)
-  const fast2SmsKey = process.env.FAST2SMS_API_KEY?.trim();
-  if (fast2SmsKey && process.env.NODE_ENV === "production") {
-    try {
-      const resp = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-        method: "POST",
-        headers: {
-          authorization: fast2SmsKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          route: "otp",
-          variables_values: otp,
-          numbers: phone,
-        }),
-      });
-      if (resp.ok) {
-        return { phone, smsMode: "LIVE", provider: "FAST2SMS", cooldownSeconds: 30 };
-      }
-    } catch (err) {
-      console.warn("[VENDOR OTP] Live SMS dispatch failed, falling back:", err);
-    }
-  }
-
-  console.log(`[VENDOR OTP] Phone ${phone} -> OTP: ${otp}`);
+  console.log(`[VENDOR OTP DEMO] Phone ${phone} -> OTP: ${otp}`);
   return {
     phone,
     smsMode: "DEMO",
@@ -150,18 +139,18 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
   };
 }
 
-export function verifyPhoneOtp(rawPhone: string, rawOtp: string): {
+export async function verifyPhoneOtp(rawPhone: string, rawOtp: string): Promise<{
   phone: string;
   otpToken: string;
-} {
+}> {
   const phone = normalizeIndianPhone(rawPhone);
   const otp = String(rawOtp || "").trim();
 
   if (!isValidIndianPhone(phone)) {
     throw new Error("Invalid mobile number.");
   }
-  if (!/^\d{6}$/.test(otp)) {
-    throw new Error("Please enter the 6-digit OTP.");
+  if (!/^\d{4,8}$/.test(otp)) {
+    throw new Error("Please enter the valid numeric OTP.");
   }
 
   const entry = otpStore.get(phone);
@@ -178,11 +167,44 @@ export function verifyPhoneOtp(rawPhone: string, rawOtp: string): {
   }
 
   entry.attempts += 1;
+
+  if (entry.mode === "MSG91_WIDGET") {
+    const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim();
+    const msg91WidgetId = process.env.MSG91_WIDGET_ID?.trim() || "366b426d6d35343439373933";
+    if (!msg91AuthKey) {
+      throw new Error("MSG91_AUTH_KEY is not configured on backend.");
+    }
+
+    const resp = await fetch("https://api.msg91.com/api/v5/widget/verifyOtp", {
+      method: "POST",
+      headers: {
+        authkey: msg91AuthKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        widgetId: msg91WidgetId,
+        reqId: entry.reqId,
+        otp,
+      }),
+    });
+
+    const json: any = await resp.json().catch(() => ({}));
+    if (!resp.ok || json?.type !== "success") {
+      throw new Error(json?.message || "Incorrect OTP. Please check and try again.");
+    }
+
+    otpStore.delete(phone);
+    return {
+      phone,
+      otpToken: signVerificationToken(phone),
+    };
+  }
+
+  // DEMO fallback verification
   const candidateHash = hashOtp(phone, otp);
-  const match = crypto.timingSafeEqual(
-    Buffer.from(candidateHash, "hex"),
-    Buffer.from(entry.otpHash, "hex")
-  );
+  const match =
+    entry.otpHash &&
+    crypto.timingSafeEqual(Buffer.from(candidateHash, "hex"), Buffer.from(entry.otpHash, "hex"));
 
   if (!match) {
     throw new Error("Incorrect OTP. Please check and try again.");
