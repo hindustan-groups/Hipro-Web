@@ -111,6 +111,22 @@ function LoginForm() {
 
     setSendingOtp(true);
     try {
+      // Never send login OTP if no submitted vendor account exists for this mobile number
+      const checkRes = await fetch(
+        `/api/vendor/auth/check-registered?phone=${encodeURIComponent(cleanPhone)}`,
+        { cache: "no-store" }
+      );
+      if (checkRes.ok) {
+        const checkJson = await checkRes.json();
+        if (!checkJson.registered) {
+          throw new Error(
+            lang === "hi"
+              ? `मोबाइल नंबर +91 ${cleanPhone} से कोई अकाउंट नहीं बना है। कृपया पहले नया रजिस्ट्रेशन करें।`
+              : `No vendor account found for +91 ${cleanPhone}. Please register first.`
+          );
+        }
+      }
+
       if (await isMsg91WidgetConfigured()) {
         await sendWidgetOtp(cleanPhone);
         setPhone(cleanPhone);
