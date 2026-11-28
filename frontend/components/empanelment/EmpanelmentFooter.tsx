@@ -128,11 +128,13 @@ export default function EmpanelmentFooter() {
                   Track Application Status (आवेदन स्थिति)
                 </Link>
               </li>
-              <li>
-                <Link href="/empanelment/gate-pass" className="hover:text-white transition-colors">
-                  Daily Site Gate Pass (साइट गेट पास)
-                </Link>
-              </li>
+              {content.gatePassEnabled && (
+                <li>
+                  <Link href="/empanelment/gate-pass" className="hover:text-white transition-colors">
+                    Daily Site Gate Pass (साइट गेट पास)
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link href="/empanelment/guidelines" className="hover:text-white transition-colors">
                   Capacity Guidelines (पात्रता व क्लास)

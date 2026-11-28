@@ -48,7 +48,7 @@ export default function EmpanelmentNavbar() {
     { href: "/empanelment/guidelines", label: "Guidelines" },
     { href: "/empanelment/tenders", label: "Tenders" },
     { href: "/empanelment/track", label: "Track Application" },
-    { href: "/empanelment/gate-pass", label: "Gate Pass" },
+    ...(content.gatePassEnabled ? [{ href: "/empanelment/gate-pass", label: "Gate Pass" }] : []),
     { href: "/empanelment#faqs", label: "FAQs" },
   ];
 

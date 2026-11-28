@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../lib/db";
+import { isGatePassEnabled } from "../lib/empanelmentFlags";
 import { requirePermission } from "../middleware/authGuard";
 import crypto from "crypto";
 import {
@@ -705,6 +706,15 @@ router.post("/gate-pass/generate", async (_req: Request, res: Response) => {
  */
 router.get("/gate-pass/verify/:passCode", async (req: Request, res: Response) => {
   try {
+    if (!(await isGatePassEnabled())) {
+      return res.status(503).json({
+        success: false,
+        valid: false,
+        gatePassEnabled: false,
+        error: "Site Gate Pass verification is currently disabled by administration.",
+      });
+    }
+
     const raw = String(req.params.passCode || "").trim().toUpperCase();
     const pass = await prisma.siteGatePass.findUnique({
       where: { passCode: raw },
@@ -1656,7 +1666,39 @@ router.get("/admin/gate-passes", async (req: Request, res: Response) => {
       purpose: "Authorized Site Work & Execution",
     }));
 
-    return res.json({ success: true, passes });
+    const gatePassEnabled = await isGatePassEnabled();
+    return res.json({ success: true, gatePassEnabled, passes });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * Admin: Enable or Disable Site Gate Pass Module
+ * PATCH /api/empanelment/admin/gate-passes/toggle
+ */
+router.patch("/admin/gate-passes/toggle", async (req: Request, res: Response) => {
+  try {
+    const enabled = Boolean(req.body?.enabled);
+    const updated = await prisma.empanelmentContent.upsert({
+      where: { id: "singleton" },
+      create: {
+        id: "singleton",
+        categoriesList: DEFAULT_EMPANELMENT_CATEGORIES_STR,
+        gatePassEnabled: enabled,
+      },
+      update: {
+        gatePassEnabled: enabled,
+      },
+    });
+
+    return res.json({
+      success: true,
+      gatePassEnabled: Boolean(updated.gatePassEnabled),
+      message: enabled
+        ? "Site Gate Pass module has been enabled."
+        : "Site Gate Pass module has been disabled.",
+    });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
   }
@@ -2064,6 +2106,7 @@ router.get("/content", async (_req: Request, res: Response) => {
 
     const sanitizedContent = {
       ...content,
+      gatePassEnabled: Boolean(content.gatePassEnabled),
       categoriesList: fallbackIfEmptyArray(content.categoriesList, DEFAULT_EMPANELMENT_CATEGORIES_STR),
     };
 
