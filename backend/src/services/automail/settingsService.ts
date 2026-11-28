@@ -6,6 +6,7 @@ export interface CorporateMailbox {
   id: string;
   name: string;
   email: string;
+  aliases?: string[];
   brand: "hipro" | "hbs" | "empanelment" | "all" | string;
   brandName?: string;
   deliveryMethod: "smtp" | "hostinger_api";
@@ -28,6 +29,7 @@ export interface DispatchRoutingRule {
   portal: string;
   description: string;
   mailboxId: string;
+  senderAlias?: string;
   fallbackMailboxId?: string;
   ccEmail?: string;
   active: boolean;
@@ -67,6 +69,7 @@ export function getDefaultMailboxes(): CorporateMailbox[] {
       id: "mb_hp_primary",
       name: "Hindustan Projects Corporate & HiPRO Civil",
       email: process.env.SMTP_USER || "info@hindustanprojects.in",
+      aliases: ["hindbuild@hindustanprojects.in", "empanel@hindustanprojects.in"],
       brand: "hipro",
       brandName: "HiPRO Civil & Holding HQ",
       deliveryMethod: "smtp",
@@ -118,6 +121,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       portal: "Hind Building (HBS)",
       description: "Inbound leads for terrace waterproofing, basement dampness, PU grouting & HBS repair quotes.",
       mailboxId: "mb_hp_primary",
+      senderAlias: "hindbuild@hindustanprojects.in",
       ccEmail: "",
       active: true,
     },
@@ -127,6 +131,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       portal: "Vendor Procurement Hub",
       description: "Application receipt, KYC approval/revision emails, activation invites & password resets.",
       mailboxId: "mb_hp_primary",
+      senderAlias: "empanel@hindustanprojects.in",
       ccEmail: "",
       active: true,
     },
@@ -136,6 +141,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       portal: "Vendor Procurement Hub",
       description: "Commercial tender bid confirmations, RA billing notifications & vendor helpdesk ticket replies.",
       mailboxId: "mb_hp_primary",
+      senderAlias: "empanel@hindustanprojects.in",
       ccEmail: "",
       active: true,
     },
@@ -145,6 +151,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       portal: "Vendor Procurement Hub",
       description: "Courier dispatch notifications for physical NFC contractor ID cards.",
       mailboxId: "mb_hp_primary",
+      senderAlias: "empanel@hindustanprojects.in",
       ccEmail: "",
       active: true,
     },
@@ -154,6 +161,7 @@ export function getDefaultRoutingRules(): Record<string, DispatchRoutingRule> {
       portal: "Vendor Procurement Hub",
       description: "QR-coded daily site entry clearances issued to verified contractors and workers.",
       mailboxId: "mb_hp_primary",
+      senderAlias: "empanel@hindustanprojects.in",
       ccEmail: "",
       active: true,
     },
@@ -190,7 +198,7 @@ export function getDefaultSettings(): AutomailSettings {
     senderNameHipro: "Hindustan Projects",
     senderEmailHipro: process.env.SMTP_USER || "info@hindustanprojects.in",
     senderNameHbs: "Hind Building Solutions",
-    senderEmailHbs: process.env.HBS_SMTP_USER || "hbs@hindustanprojects.in",
+    senderEmailHbs: process.env.HBS_SMTP_USER || "hindbuild@hindustanprojects.in",
     dailyLimit: parseInt(process.env.DAILY_LIMIT || "200", 10),
     rateLimitPerMinute: parseInt(process.env.RATE_LIMIT_PER_MINUTE || "15", 10),
     replyTo: process.env.SMTP_USER || "info@hindustanprojects.in",
@@ -499,6 +507,23 @@ const BRAND_TRIGGER_MAP: Record<string, string[]> = {
   all: ["newsletter_campaigns", "security_alerts"],
 };
 
+export function normalizeMailboxAliases(rawAliases?: unknown, primaryEmail?: string): string[] {
+  if (!Array.isArray(rawAliases)) return [];
+  const primary = (primaryEmail || "").trim().toLowerCase();
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const entry of rawAliases) {
+    if (typeof entry !== "string") continue;
+    const clean = entry.trim().toLowerCase();
+    if (!clean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean) || clean === primary || seen.has(clean)) {
+      continue;
+    }
+    seen.add(clean);
+    result.push(clean);
+  }
+  return result;
+}
+
 /**
  * Manage Corporate Mailboxes
  */
@@ -525,10 +550,18 @@ export async function saveCorporateMailbox(
           ? mailboxFields.hostingerApiToken
           : existing.hostingerApiToken;
 
+      const resolvedEmail = (mailboxFields.email || existing.email || "info@hindustanprojects.in").trim().toLowerCase();
+      const resolvedAliases =
+        mailboxFields.aliases !== undefined
+          ? normalizeMailboxAliases(mailboxFields.aliases, resolvedEmail)
+          : normalizeMailboxAliases(existing.aliases, resolvedEmail);
+
       savedMailbox = {
         ...existing,
         ...mailboxFields,
         id: existing.id,
+        email: resolvedEmail,
+        aliases: resolvedAliases,
         smtpPass: pass,
         smtpPassConfigured: Boolean(pass),
         hostingerApiToken: apiToken || "",
@@ -585,10 +618,12 @@ export async function saveCorporateMailbox(
 function createMailboxObject(input: Partial<CorporateMailbox>): CorporateMailbox {
   const id = input.id || `mb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const pass = input.smtpPass && input.smtpPass !== "••••••••••••" ? input.smtpPass : "";
+  const primaryEmail = (input.email || "info@hindustanprojects.in").trim().toLowerCase();
   return {
     id,
     name: input.name || "Corporate Outgoing Mailbox",
-    email: input.email || "info@hindustanprojects.in",
+    email: primaryEmail,
+    aliases: normalizeMailboxAliases(input.aliases, primaryEmail),
     brand: input.brand || "hipro",
     brandName: input.brandName || "HiPRO Flagship Civil",
     deliveryMethod: input.deliveryMethod || "smtp",
@@ -646,6 +681,7 @@ export async function saveDispatchRouting(routing: Record<string, DispatchRoutin
  */
 export function resolveSenderForTrigger(triggerKey: string): {
   mailbox: CorporateMailbox;
+  senderEmail: string;
   ccEmail?: string;
 } {
   const settings = getAutomailSettings();
@@ -660,8 +696,18 @@ export function resolveSenderForTrigger(triggerKey: string): {
     mailbox = mailboxes.find((m: CorporateMailbox) => m.isDefault && m.status === "active") || mailboxes[0];
   }
 
+  const requestedAlias = (rule?.senderAlias || "").trim().toLowerCase();
+  const validAlias =
+    requestedAlias &&
+    mailbox &&
+    (mailbox.email.toLowerCase() === requestedAlias ||
+      (mailbox.aliases || []).some((a) => a.toLowerCase() === requestedAlias))
+      ? requestedAlias
+      : mailbox?.email || "info@hindustanprojects.in";
+
   return {
     mailbox,
+    senderEmail: validAlias,
     ccEmail: rule?.ccEmail,
   };
 }

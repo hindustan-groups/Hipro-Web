@@ -42,6 +42,13 @@ import {
   updateCustomTemplate,
   deleteCustomTemplate,
 } from "../services/automail/customTemplatesService";
+import {
+  fetchUnifiedInbox,
+  fetchInboxMessageDetail,
+  updateInboxMessageSeenFlag,
+  importContactsFromInboxMessages,
+} from "../services/automail/inboxService";
+import { generateAiEmailDraft } from "../services/automail/aiDraftService";
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -326,6 +333,7 @@ router.get("/routing", async (req: Request, res: Response) => {
         id: m.id,
         name: m.name,
         email: m.email,
+        aliases: m.aliases || [],
         brand: m.brand,
         brandName: m.brandName,
         isDefault: m.isDefault,
@@ -492,7 +500,7 @@ router.get("/test-connection", async (req: Request, res: Response) => {
 // Send single test email
 router.post("/send-test", async (req: Request, res: Response) => {
   try {
-    const { to, subject, htmlBody, brand = "all", mailboxId, deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
+    const { to, subject, htmlBody, brand = "all", mailboxId, senderEmail, deliveryMethod, hostingerApiToken, hostingerMailboxId, smtpHost, smtpPort, smtpUser, smtpPass } = req.body;
     if (!to) {
       return res.status(400).json({ success: false, error: "Recipient email is required" });
     }
@@ -563,8 +571,11 @@ router.post("/send-test", async (req: Request, res: Response) => {
 
     const testSender = await resolveEffectiveMailboxConfig({
       mailboxId,
+      senderEmail,
       brand,
     });
+
+    const effectiveTestSenderEmail = senderEmail || smtpUser || testSender.senderEmail;
 
     const info = await sendOneEmail({
       to,
@@ -572,7 +583,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       htmlBody: testBody,
       brand,
       senderName: testSender.senderName,
-      senderEmail: smtpUser || testSender.senderEmail,
+      senderEmail: effectiveTestSenderEmail,
       customConfig: Object.keys(customConfig).length > 0 ? customConfig : testSender.customConfig,
     });
 
@@ -582,7 +593,7 @@ router.post("/send-test", async (req: Request, res: Response) => {
       subject: testSubject,
       brand,
       senderName: testSender.senderName,
-      senderEmail: smtpUser || testSender.senderEmail,
+      senderEmail: effectiveTestSenderEmail,
       source: "automail_test_send",
       success: true,
     }).catch(() => null);
@@ -704,15 +715,199 @@ router.post("/send-single", async (req: Request, res: Response) => {
   }
 });
 
+// ----------------------------------------------------
+// UNIFIED MULTI-MAILBOX INBOX (RECEIVE, READ, REPLY, IMPORT CONTACTS)
+// ----------------------------------------------------
+router.get("/inbox", async (req: Request, res: Response) => {
+  try {
+    const { mailboxId, recipientFilter, folder, unreadOnly, search, autoImport } = req.query;
+    const result = await fetchUnifiedInbox({
+      mailboxId: typeof mailboxId === "string" ? mailboxId : undefined,
+      recipientFilter: typeof recipientFilter === "string" ? recipientFilter : undefined,
+      folder: typeof folder === "string" ? folder : "INBOX",
+      unreadOnly: unreadOnly === "true",
+      search: typeof search === "string" ? search : undefined,
+      perMailbox: 25,
+    });
+
+    let importedSummary: { importedCount: number; skippedCount: number } | undefined;
+    if (autoImport === "true" && result.messages.length > 0) {
+      importedSummary = await importContactsFromInboxMessages(
+        result.messages.map((m) => ({
+          email: m.fromEmail,
+          name: m.fromName,
+          brand: m.brand,
+        }))
+      );
+    }
+
+    return res.json({
+      success: true,
+      ...result,
+      ...(importedSummary ? { importedSummary } : {}),
+    });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox fetch error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to load inbox" });
+  }
+});
+
+router.get("/inbox/:mailboxId/:uid", async (req: Request, res: Response) => {
+  try {
+    const mailboxId = Array.isArray(req.params.mailboxId) ? req.params.mailboxId[0] : req.params.mailboxId;
+    const uidRaw = Array.isArray(req.params.uid) ? req.params.uid[0] : req.params.uid;
+    const uid = parseInt(uidRaw, 10);
+    if (!uid || Number.isNaN(uid)) {
+      return res.status(400).json({ success: false, error: "Valid message UID is required" });
+    }
+    const folder = typeof req.query.folder === "string" ? req.query.folder : "INBOX";
+    const message = await fetchInboxMessageDetail({ mailboxId, uid, folder });
+    return res.json({ success: true, message });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox message detail error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to load message" });
+  }
+});
+
+router.post("/inbox/:mailboxId/:uid/flags", async (req: Request, res: Response) => {
+  try {
+    const mailboxId = Array.isArray(req.params.mailboxId) ? req.params.mailboxId[0] : req.params.mailboxId;
+    const uidRaw = Array.isArray(req.params.uid) ? req.params.uid[0] : req.params.uid;
+    const uid = parseInt(uidRaw, 10);
+    const { seen = true, folder = "INBOX" } = req.body || {};
+    await updateInboxMessageSeenFlag({ mailboxId, uid, folder, seen: Boolean(seen) });
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to update message flags" });
+  }
+});
+
+router.post("/inbox/import-contacts", async (req: Request, res: Response) => {
+  try {
+    const { contacts } = req.body || {};
+    if (!Array.isArray(contacts) || contacts.length === 0) {
+      return res.status(400).json({ success: false, error: "Contacts array is required" });
+    }
+    const summary = await importContactsFromInboxMessages(contacts);
+    return res.json({
+      success: true,
+      ...summary,
+      message: `Synced ${summary.importedCount} contact(s) into Audience & Leads!`,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message || "Failed to import inbox contacts" });
+  }
+});
+
+router.post("/inbox/reply", async (req: Request, res: Response) => {
+  try {
+    const { to, name, subject, messageText, htmlBody, mailboxId, senderEmail, inReplyTo, brand } = req.body || {};
+    if (!to || !String(to).includes("@")) {
+      return res.status(400).json({ success: false, error: "Valid recipient email is required" });
+    }
+    const rawBody = (htmlBody && String(htmlBody).trim()) || (messageText && String(messageText).trim());
+    if (!rawBody) {
+      return res.status(400).json({ success: false, error: "Reply message cannot be empty" });
+    }
+
+    const cleanEmail = String(to).trim().toLowerCase();
+    const replySubject = subject?.trim()
+      ? subject.trim().toLowerCase().startsWith("re:")
+        ? subject.trim()
+        : `Re: ${subject.trim()}`
+      : "Re: Hindustan Projects";
+
+    const resolved = await resolveEffectiveMailboxConfig({
+      mailboxId,
+      senderEmail,
+      brand,
+    });
+
+    const formattedHtml = htmlBody?.trim() ? String(htmlBody) : plainTextToEmailHtml(String(messageText));
+    const info = await sendOneEmail({
+      to: cleanEmail,
+      subject: replySubject,
+      htmlBody: formattedHtml,
+      textBody: messageText ? String(messageText) : undefined,
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      brand: brand || resolved.mailbox?.brand || "hipro",
+      customConfig: resolved.customConfig,
+      inReplyTo: inReplyTo || undefined,
+    });
+
+    await recordDirectDispatch({
+      to: cleanEmail,
+      name: name || undefined,
+      subject: replySubject,
+      brand: brand || resolved.mailbox?.brand || "hipro",
+      senderName: resolved.senderName,
+      senderEmail: resolved.senderEmail,
+      source: "inbox_reply",
+      success: true,
+    });
+
+    return res.json({
+      success: true,
+      message: `Reply delivered to ${cleanEmail} from ${resolved.senderEmail}!`,
+      messageId: (info as any).messageId,
+      senderEmail: resolved.senderEmail,
+    });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] Inbox reply error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to send reply" });
+  }
+});
+
+router.post("/ai-draft", async (req: Request, res: Response) => {
+  try {
+    const {
+      prompt,
+      mode = "compose",
+      brand = "hipro",
+      tone = "professional",
+      incomingSubject,
+      incomingBody,
+      incomingFromName,
+      recipientName,
+    } = req.body || {};
+
+    if (!prompt && !incomingSubject) {
+      return res.status(400).json({ success: false, error: "Please enter a brief prompt or instruction for AI." });
+    }
+
+    const draft = await generateAiEmailDraft({
+      prompt: String(prompt || ""),
+      mode: mode === "reply" ? "reply" : "compose",
+      brand: String(brand || "hipro"),
+      tone,
+      incomingSubject,
+      incomingBody,
+      incomingFromName,
+      recipientName,
+    });
+
+    return res.json({ success: true, ...draft });
+  } catch (err: any) {
+    console.error("[AUTOMAIL] AI draft error:", err);
+    return res.status(500).json({ success: false, error: err.message || "Failed to generate AI draft" });
+  }
+});
+
 // Unified Dispatch Logs (Direct CRM Emails + Campaign Broadcasts)
 router.get("/logs", async (req: Request, res: Response) => {
   try {
-    const { brand, status, search, limit = "50" } = req.query;
+    const { brand, status, senderEmail, search, limit = "50" } = req.query;
     const take = Math.min(200, Math.max(1, parseInt(String(limit), 10) || 50));
 
     const where: any = {};
     if (brand && brand !== "all") where.brand = String(brand);
     if (status && status !== "all") where.status = String(status);
+    if (senderEmail && senderEmail !== "all" && typeof senderEmail === "string" && senderEmail.trim()) {
+      where.campaign = {
+        senderEmail: { equals: senderEmail.trim(), mode: "insensitive" },
+      };
+    }
     if (search && typeof search === "string" && search.trim()) {
       where.OR = [
         { contactEmail: { contains: search.trim(), mode: "insensitive" } },

@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AutoMailNav from "@/components/admin/automail/AutoMailNav";
-import { BUSINESS_TEMPLATES, AutomailBusinessTemplate } from "@/lib/automailTemplates";
+import {
+  BUSINESS_TEMPLATES,
+  AutomailBusinessTemplate,
+  renderTemplatePreviewHtml,
+  renderTemplatePreviewSubject,
+} from "@/lib/automailTemplates";
 import {
   PenSquare,
   Eye,
@@ -31,6 +36,8 @@ import {
   ChevronDown,
   Wand2,
   ShieldCheck,
+  Monitor,
+  Smartphone,
 } from "lucide-react";
 
 const SMART_WORKFLOWS = [
@@ -131,6 +138,7 @@ export default function AutoMailCompose() {
     id: string;
     name: string;
     email: string;
+    aliases?: string[];
     brand: string;
     brandName?: string;
     isDefault?: boolean;
@@ -138,6 +146,8 @@ export default function AutoMailCompose() {
   const [selectedMailboxId, setSelectedMailboxId] = useState<string>("");
   const [htmlBody, setHtmlBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
+  const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
 
   // Dynamic Personalization Preview State
   const [previewPersonalized, setPreviewPersonalized] = useState(true);
@@ -190,6 +200,11 @@ export default function AutoMailCompose() {
   const [testEmailModal, setTestEmailModal] = useState(false);
   const [testEmailRecipient, setTestEmailRecipient] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+
+  // Write Email with AI state
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiTone, setAiTone] = useState<"professional" | "friendly" | "formal">("professional");
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   // Load audience counts & custom templates
   useEffect(() => {
@@ -430,6 +445,7 @@ export default function AutoMailCompose() {
   // 1-Click Smart Workflow Applicator
   const applySmartWorkflow = (wf: (typeof SMART_WORKFLOWS)[0]) => {
     const found = BUSINESS_TEMPLATES.find((t) => t.id === wf.templateId) || BUSINESS_TEMPLATES[0];
+    setActiveWorkflowId(wf.id);
     setHtmlBody(found.html);
     setSubject(wf.subject);
     setName(wf.title);
@@ -446,48 +462,63 @@ export default function AutoMailCompose() {
     });
   };
 
+  // Write Email with AI
+  const handleGenerateWithAi = async () => {
+    if (!aiPrompt.trim()) {
+      setToast({ message: "Enter what you want to write (e.g. 'Bhilwara 2000 sqft terrace waterproofing quote')", type: "error" });
+      return;
+    }
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/automail/ai-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: aiPrompt.trim(),
+          mode: "compose",
+          brand,
+          tone: aiTone,
+          recipientName: customClientName.trim() || previewTestName.trim() || "{{name}}",
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.bodyHtml) {
+        if (data.subject) setSubject(data.subject);
+        setHtmlBody(data.bodyHtml);
+        setShowPreview(true);
+        setToast({
+          message: `Email drafted with ${data.provider === "gemini" ? "Gemini AI" : "Smart Corporate AI"}! Review below & send.`,
+          type: "success",
+        });
+      } else {
+        setToast({ message: data.error || "Failed to generate email with AI", type: "error" });
+      }
+    } catch {
+      setToast({ message: "Network error generating AI email", type: "error" });
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
   // Render Real Client Visual Preview
   const getRenderedPreviewHtml = () => {
     if (!htmlBody) return "";
-    if (!previewPersonalized) return htmlBody;
-    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
-    const pFirstName = pName.split(" ")[0] || "Ramesh";
-    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
-    const pWebsite = brand === "hbs" ? "https://hindbuilding.hindustanprojects.in" : "https://www.hindustanprojects.in";
-    const pPhone = brand === "hbs" ? "+91 75970 00601" : "+91 75970 00601";
-    const pDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-    const pYear = String(new Date().getFullYear());
-
-    return htmlBody
-      .replace(/\{\{name\}\}/gi, pName)
-      .replace(/\{\{client_name\}\}/gi, pName)
-      .replace(/\{\{first_name\}\}/gi, pFirstName)
-      .replace(/\{\{firstName\}\}/gi, pFirstName)
-      .replace(/\{\{email\}\}/gi, pEmail)
-      .replace(/\{\{brand\}\}/gi, pBrand)
-      .replace(/\{\{company\}\}/gi, pBrand)
-      .replace(/\{\{website\}\}/gi, pWebsite)
-      .replace(/\{\{phone\}\}/gi, pPhone)
-      .replace(/\{\{date\}\}/gi, pDate)
-      .replace(/\{\{year\}\}/gi, pYear);
+    return renderTemplatePreviewHtml(htmlBody, {
+      brand,
+      name: previewTestName.trim() || customClientName.trim() || "Ramesh Sharma",
+      email: customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com",
+      personalized: previewPersonalized,
+    });
   };
 
   const getRenderedPreviewSubject = () => {
     if (!subject) return "";
-    if (!previewPersonalized) return subject;
-    const pName = previewTestName.trim() || customClientName.trim() || "Ramesh Sharma";
-    const pFirstName = pName.split(" ")[0] || "Ramesh";
-    const pEmail = customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com";
-    const pBrand = brand === "hbs" ? "Hind Building Solutions" : "Hindustan Projects";
-
-    return subject
-      .replace(/\{\{name\}\}/gi, pName)
-      .replace(/\{\{client_name\}\}/gi, pName)
-      .replace(/\{\{first_name\}\}/gi, pFirstName)
-      .replace(/\{\{firstName\}\}/gi, pFirstName)
-      .replace(/\{\{email\}\}/gi, pEmail)
-      .replace(/\{\{brand\}\}/gi, pBrand);
+    return renderTemplatePreviewSubject(subject, {
+      brand,
+      name: previewTestName.trim() || customClientName.trim() || "Ramesh Sharma",
+      email: customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com",
+      personalized: previewPersonalized,
+    });
   };
 
   const parseCustomRecipientList = (raw: string): Array<{ email: string; name?: string }> => {
@@ -865,30 +896,43 @@ export default function AutoMailCompose() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-            {SMART_WORKFLOWS.map((wf) => (
-              <button
-                key={wf.id}
-                type="button"
-                onClick={() => applySmartWorkflow(wf)}
-                className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 bg-slate-50/70 hover:bg-blue-50/60 text-left transition-all group flex flex-col justify-between shadow-2xs hover:shadow-xs active:scale-[0.98]"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <span className="text-base">{wf.icon}</span>
-                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-white text-slate-700 border border-slate-200">
-                      {wf.badge}
-                    </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            {SMART_WORKFLOWS.map((wf) => {
+              const isSelectedWf = activeWorkflowId === wf.id;
+              return (
+                <button
+                  key={wf.id}
+                  type="button"
+                  onClick={() => applySmartWorkflow(wf)}
+                  className={`p-3 rounded-xl border text-left transition-all group flex flex-col justify-between shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+                    isSelectedWf
+                      ? "border-blue-500 bg-blue-50/70 ring-2 ring-blue-500/15"
+                      : "border-slate-200 hover:border-blue-400 bg-slate-50/70 hover:bg-blue-50/40"
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1.5">
+                      <span className="text-base">{wf.icon}</span>
+                      <span
+                        className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+                          isSelectedWf
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-slate-700 border-slate-200"
+                        }`}
+                      >
+                        {isSelectedWf ? "Active" : wf.badge}
+                      </span>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug">
+                      {wf.title}
+                    </h4>
                   </div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-blue-700 leading-snug">
-                    {wf.title}
-                  </h4>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
-                  {wf.desc}
-                </p>
-              </button>
-            ))}
+                  <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                    {wf.desc}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -1144,33 +1188,60 @@ export default function AutoMailCompose() {
                 </Link>
               </div>
 
-              {/* Dynamic Configured Mailboxes Pills */}
+              {/* Dynamic Configured Mailboxes & Aliases Pills */}
               {configuredMailboxes.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {configuredMailboxes.map((mb) => {
-                    const isSelected = senderEmail.toLowerCase() === mb.email.toLowerCase();
+                    const isPrimarySelected = senderEmail.toLowerCase() === mb.email.toLowerCase();
                     return (
-                      <button
-                        key={mb.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMailboxId(mb.id);
-                          setSenderEmail(mb.email);
-                          setSenderName(mb.name);
-                          if (mb.brand && mb.brand !== "custom") {
-                            setBrand(mb.brand);
-                          }
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 ${
-                          isSelected
-                            ? "bg-slate-900 text-white shadow-xs"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-emerald-400" : "bg-slate-400"}`} />
-                        <span>{mb.email}</span>
-                        {mb.isDefault && <span className="text-[9px] text-amber-300">★</span>}
-                      </button>
+                      <div key={mb.id} className="contents">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedMailboxId(mb.id);
+                            setSenderEmail(mb.email);
+                            setSenderName(mb.name);
+                            if (mb.brand && mb.brand !== "custom") {
+                              setBrand(mb.brand);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 ${
+                            isPrimarySelected
+                              ? "bg-slate-900 text-white shadow-xs"
+                              : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${isPrimarySelected ? "bg-emerald-400" : "bg-slate-400"}`} />
+                          <span>{mb.email}</span>
+                          {mb.isDefault && <span className="text-[9px] text-amber-300">★</span>}
+                        </button>
+                        {(mb.aliases || []).map((alias) => {
+                          const isAliasSelected = senderEmail.toLowerCase() === alias.toLowerCase();
+                          return (
+                            <button
+                              key={`${mb.id}:${alias}`}
+                              type="button"
+                              onClick={() => {
+                                setSelectedMailboxId(mb.id);
+                                setSenderEmail(alias);
+                                setSenderName(mb.name);
+                                if (mb.brand && mb.brand !== "custom") {
+                                  setBrand(mb.brand);
+                                }
+                              }}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition-all flex items-center gap-1.5 border ${
+                                isAliasSelected
+                                  ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                                  : "bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100"
+                              }`}
+                              title={`Alias of ${mb.email}`}
+                            >
+                              <span className="text-[9px] uppercase opacity-75">Alias</span>
+                              <span>{alias}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     );
                   })}
                 </div>
@@ -1292,6 +1363,49 @@ export default function AutoMailCompose() {
           </div>
         </div>
 
+        {/* Write Email With AI Box */}
+        <div className="p-4 bg-gradient-to-r from-indigo-50/90 via-blue-50/70 to-indigo-50/90 border border-indigo-200 rounded-2xl space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs font-black text-indigo-950 uppercase tracking-wider">
+              <Wand2 className="w-4 h-4 text-indigo-600" />
+              <span>Write Email with AI (English / Hinglish)</span>
+            </div>
+            <select
+              value={aiTone}
+              onChange={(e) => setAiTone(e.target.value as any)}
+              className="px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-[11px] font-bold text-indigo-900 outline-none self-start sm:self-auto"
+            >
+              <option value="professional">Tone: Professional</option>
+              <option value="friendly">Tone: Friendly</option>
+              <option value="formal">Tone: Formal Corporate</option>
+            </select>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleGenerateWithAi();
+                }
+              }}
+              placeholder="Batayein kya likhna hai — e.g. 'Client ko 2500 sqft terrace waterproofing ka 10-year warranty quote bhejna hai'..."
+              className="flex-1 px-3.5 py-2.5 bg-white border border-indigo-200 rounded-xl text-xs font-medium outline-none focus:border-indigo-500"
+            />
+            <button
+              type="button"
+              disabled={aiGenerating || !aiPrompt.trim()}
+              onClick={handleGenerateWithAi}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all disabled:opacity-50 shrink-0"
+            >
+              {aiGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              <span>{aiGenerating ? "Drafting..." : "Generate with AI"}</span>
+            </button>
+          </div>
+        </div>
+
         {/* STEP 3: HTML Editor & Live Visual Preview */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -1339,6 +1453,29 @@ export default function AutoMailCompose() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1 p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice("desktop")}
+                      className={`p-1.5 rounded-md transition-all ${
+                        previewDevice === "desktop" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-400 hover:text-slate-700"
+                      }`}
+                      title="Desktop Width Preview"
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice("mobile")}
+                      className={`p-1.5 rounded-md transition-all ${
+                        previewDevice === "mobile" ? "bg-white text-slate-900 shadow-2xs" : "text-slate-400 hover:text-slate-700"
+                      }`}
+                      title="Mobile Width (375px) Preview"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <span>Sample Name:</span>
                     <input
@@ -1363,17 +1500,41 @@ export default function AutoMailCompose() {
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3">
+              <div
+                className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs space-y-3 mx-auto transition-all duration-200 ${
+                  previewDevice === "mobile" ? "w-[375px] max-w-full" : "w-full"
+                }`}
+              >
                 <div className="pb-3 border-b border-slate-100 text-xs text-slate-600 space-y-1">
                   <p><strong>From:</strong> <span className="font-medium text-slate-900">{senderName} &lt;{senderEmail}&gt;</span></p>
                   <p><strong>To:</strong> <span className="font-medium text-slate-900">{previewPersonalized ? `${previewTestName || "Ramesh Sharma"} <${customTo.split(/[\n,;]+/)[0]?.trim() || "ramesh.sharma@gmail.com"}>` : (customTo || "{{email}}")}</span></p>
                   <p><strong>Subject:</strong> <span className="font-bold text-slate-900">{getRenderedPreviewSubject() || "(No subject entered)"}</span></p>
                 </div>
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: getRenderedPreviewHtml() || '<p style="text-align: center; color: #94a3b8; padding: 40px;">No HTML content written yet. Click "Template Gallery" to load a pre-made business template!</p>',
-                  }}
-                />
+                {htmlBody.trim() ? (
+                  <iframe
+                    key={`compose-preview-${previewDevice}-${previewPersonalized}`}
+                    title="Compose Email Visual Preview"
+                    sandbox="allow-same-origin allow-popups"
+                    srcDoc={getRenderedPreviewHtml()}
+                    onLoad={(e) => {
+                      try {
+                        const iframe = e.currentTarget;
+                        const doc = iframe.contentDocument;
+                        if (doc?.body) {
+                          const h = Math.max(420, doc.documentElement.scrollHeight || doc.body.scrollHeight || 500);
+                          iframe.style.height = `${h + 16}px`;
+                        }
+                      } catch {
+                        // Ignore
+                      }
+                    }}
+                    className="w-full min-h-[440px] border-0 rounded-lg bg-white block"
+                  />
+                ) : (
+                  <p className="text-center text-slate-400 py-10 text-xs">
+                    No HTML content written yet. Click &ldquo;Template Gallery&rdquo; or &ldquo;Generate with AI&rdquo;!
+                  </p>
+                )}
               </div>
             </div>
           ) : (
@@ -1436,8 +1597,8 @@ export default function AutoMailCompose() {
               <Send className="w-4 h-4" />
               <span>
                 {recipientMode === "custom"
-                  ? `🚀 SEND EMAIL NOW (${customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0} RECIPIENT)`
-                  : `🚀 SEND BROADCAST NOW (${currentAudienceCount} CONTACTS)`}
+                  ? `Send Email Now (${customTo.trim() ? customTo.split(/[\n,;]+/).filter(Boolean).length : 0})`
+                  : `Send Broadcast Now (${currentAudienceCount})`}
               </span>
             </button>
           </div>
