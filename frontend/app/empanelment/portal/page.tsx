@@ -72,6 +72,27 @@ export default function VendorDashboardPage() {
       {/* PWA Install Prompt (shown only in web browser, hidden when already installed) */}
       <VendorPwaInstallBanner />
 
+      {/* Complete Your Profile / Passport Photo Prompt */}
+      {!loading && !app?.passportPhotoUrl && (
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <h2 className="text-xs sm:text-sm font-black text-amber-950">
+              Complete Your Profile — Upload Passport-Size Photo
+            </h2>
+            <p className="text-[11px] sm:text-xs text-amber-800">
+              Your passport-size photo is required for your official Hindustan Projects PVC Smart ID Card.
+            </p>
+          </div>
+          <Link
+            href="/empanelment/portal/profile"
+            className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+          >
+            <span>Upload Photo Now</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
       {/* ============================================================== */}
       {/* 1. WELCOME BANNER & STATUS */}
       {/* ============================================================== */}

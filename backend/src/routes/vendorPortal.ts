@@ -160,6 +160,12 @@ router.put("/profile", async (req: Request, res: Response) => {
       pincode,
       experienceYears,
       projectScale,
+      passportPhotoUrl,
+      bankName,
+      accountNumber,
+      bankAccountNo,
+      ifscCode,
+      bankIfsc,
     } = req.body;
 
     let updated: any = null;
@@ -181,6 +187,10 @@ router.put("/profile", async (req: Request, res: Response) => {
           projectScale: Array.isArray(projectScale)
             ? projectScale.join(", ")
             : projectScale?.trim() || undefined,
+          passportPhotoUrl: typeof passportPhotoUrl === "string" && passportPhotoUrl.trim() ? passportPhotoUrl.trim() : undefined,
+          bankName: bankName?.trim() || undefined,
+          accountNumber: (accountNumber || bankAccountNo)?.trim() || undefined,
+          ifscCode: (ifscCode || bankIfsc)?.trim().toUpperCase() || undefined,
         },
       });
     } catch {
@@ -255,11 +265,12 @@ router.post("/documents/reupload", async (req: Request, res: Response) => {
     const bankChequeUrl = req.body.bankChequeUrl || nested.bankChequeUrl;
     const msmeDocUrl = req.body.msmeDocUrl || nested.msmeDocUrl || nested.msmeCertificateUrl;
     const workExperienceDocUrl = req.body.workExperienceDocUrl || nested.workExperienceDocUrl;
+    const passportPhotoUrl = req.body.passportPhotoUrl || nested.passportPhotoUrl;
     const remarks = req.body.remarks || req.body.comments;
 
     const updateData: any = {
-      status: "UNDER_VERIFICATION",
-      currentStage: "Document Re-audit",
+      status: application.status === "APPROVED" ? "APPROVED" : "UNDER_VERIFICATION",
+      currentStage: application.status === "APPROVED" ? application.currentStage : "Document Re-audit",
     };
 
     if (aadharFrontUrl) updateData.aadharFrontUrl = aadharFrontUrl;
@@ -269,6 +280,7 @@ router.post("/documents/reupload", async (req: Request, res: Response) => {
     if (bankChequeUrl) updateData.bankChequeUrl = bankChequeUrl;
     if (msmeDocUrl) updateData.msmeDocUrl = msmeDocUrl;
     if (workExperienceDocUrl) updateData.workExperienceDocUrl = workExperienceDocUrl;
+    if (passportPhotoUrl) updateData.passportPhotoUrl = passportPhotoUrl;
 
     const updated = await prisma.vendorApplication.update({
       where: { id: application.id },

@@ -13,8 +13,45 @@ import {
   FileText,
   MapPin,
   Lock,
+  Camera,
 } from "lucide-react";
 import { useVendorPortal, vendorFetch } from "../context";
+
+async function compressPhoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 600;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(String(ev.target?.result || ""));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = () => reject(new Error("Invalid image file."));
+      img.src = String(ev.target?.result || "");
+    };
+    reader.onerror = () => reject(new Error("Failed to read image."));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function VendorProfilePage() {
   const { vendor, refreshVendor } = useVendorPortal();
@@ -30,6 +67,7 @@ export default function VendorProfilePage() {
     city: "",
     state: "",
     pincode: "",
+    passportPhotoUrl: "",
     bankAccountNo: "",
     bankIfsc: "",
     bankName: "",
@@ -48,11 +86,12 @@ export default function VendorProfilePage() {
             contactName: app.contactName || "",
             phone: app.phone || "",
             address: app.address || "",
-            city: app.city || "",
+            city: app.city || app.district || "",
             state: app.state || "",
             pincode: app.pincode || "",
-            bankAccountNo: app.bankAccountNo || "",
-            bankIfsc: app.bankIfsc || "",
+            passportPhotoUrl: app.passportPhotoUrl || "",
+            bankAccountNo: app.accountNumber || app.bankAccountNo || "",
+            bankIfsc: app.ifscCode || app.bankIfsc || "",
             bankName: app.bankName || "",
             bankBranch: app.bankBranch || "",
           });
@@ -122,6 +161,58 @@ export default function VendorProfilePage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Passport-Size Photo for Smart PVC ID Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-20 rounded-xl border-2 border-slate-300 bg-slate-100 overflow-hidden flex items-center justify-center shrink-0">
+              {formData.passportPhotoUrl ? (
+                <img
+                  src={formData.passportPhotoUrl}
+                  alt="Passport Photo"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Camera className="w-6 h-6 text-slate-400" />
+              )}
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">
+                  Passport-Size Photo (For PVC Smart Card)
+                </h2>
+                {!formData.passportPhotoUrl && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                    Required for ID Card
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                Upload a clear front-facing photo. This photo will appear on your official Hindustan Projects PVC ID Card.
+              </p>
+            </div>
+          </div>
+
+          <label className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shrink-0 transition-colors">
+            <Camera className="w-4 h-4" />
+            <span>{formData.passportPhotoUrl ? "Change Photo" : "Upload Photo"}</span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try {
+                  const dataUrl = await compressPhoto(file);
+                  setFormData((prev) => ({ ...prev, passportPhotoUrl: dataUrl }));
+                } catch (_err) {
+                  setError("Invalid photo file.");
+                }
+              }}
+            />
+          </label>
+        </div>
+
         {/* Verified Statutory Details (Read-only) */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">

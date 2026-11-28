@@ -25,6 +25,7 @@ export interface SmartCardVendor {
   createdAt?: string | null;
   pan?: string | null;
   gstin?: string | null;
+  passportPhotoUrl?: string | null;
 }
 
 interface SmartCardPreviewModalProps {
@@ -52,6 +53,7 @@ interface CardRenderProps {
   officialAddress: string;
   officialHelpline: string;
   officialEmail: string;
+  passportPhotoUrl?: string | null;
   isPrint?: boolean;
 }
 
@@ -70,6 +72,7 @@ function UnifiedCardFront({
   validThru,
   qrUrl,
   officialWebsite,
+  passportPhotoUrl,
   isPrint = false,
 }: CardRenderProps) {
   return (
@@ -116,7 +119,7 @@ function UnifiedCardFront({
       </div>
 
       {/* Middle Identity Section */}
-      <div className="px-3.5 py-1 sm:px-4 sm:py-2 my-auto flex-1 flex flex-col justify-center relative z-10">
+      <div className="px-3.5 py-1 sm:px-4 sm:py-2 my-auto flex-1 flex items-center justify-between gap-2.5 relative z-10">
         {/* Security HiPRO Logo Watermark */}
         <div className="absolute right-3 top-1/2 -translate-y-1/2 w-28 h-28 sm:w-36 sm:h-36 rounded-full border-2 border-dashed border-[#0F2C59]/15 pointer-events-none flex items-center justify-center p-3 select-none">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -127,37 +130,51 @@ function UnifiedCardFront({
           />
         </div>
 
-        {/* Tier Pill */}
-        <div>
-          <span
-            className={`text-[7.5px] sm:text-[8.5px] font-mono font-black tracking-wider px-2 py-0.5 rounded-full uppercase inline-block shadow-2xs ${
-              currentTier.code === "CLASS-C"
-                ? "bg-[#D9232A] text-white border border-red-700"
-                : "bg-[#0F2C59] text-amber-300 border border-amber-400"
-            }`}
-          >
-            {currentTier.label}
-          </span>
+        <div className="min-w-0 flex-1">
+          {/* Tier Pill */}
+          <div>
+            <span
+              className={`text-[7.5px] sm:text-[8.5px] font-mono font-black tracking-wider px-2 py-0.5 rounded-full uppercase inline-block shadow-2xs ${
+                currentTier.code === "CLASS-C"
+                  ? "bg-[#D9232A] text-white border border-red-700"
+                  : "bg-[#0F2C59] text-amber-300 border border-amber-400"
+              }`}
+            >
+              {currentTier.label}
+            </span>
+          </div>
+
+          {/* Company Name */}
+          <h3 className="text-xs sm:text-base font-black tracking-tight text-[#0F2C59] line-clamp-1 mt-1 leading-snug">
+            {companyName}
+          </h3>
+
+          {/* Contact & Category */}
+          <p className="text-[9px] sm:text-[10.5px] font-bold text-[#D9232A] mt-0.5 leading-snug">
+            {contactName} • {category}
+          </p>
+
+          <p className="text-[7.5px] sm:text-[8.5px] font-medium text-slate-500 mt-0.5 leading-snug">
+            📍 {city}, {state} • Approved Trade Partner
+          </p>
+
+          {/* Website line */}
+          <p className="text-[7.5px] sm:text-[8.5px] font-mono font-bold text-[#0F2C59] mt-0.5 leading-snug">
+            🌐 {officialWebsite}
+          </p>
         </div>
 
-        {/* Company Name */}
-        <h3 className="text-xs sm:text-base font-black tracking-tight text-[#0F2C59] line-clamp-1 mt-1 leading-snug">
-          {companyName}
-        </h3>
-
-        {/* Contact & Category */}
-        <p className="text-[9px] sm:text-[10.5px] font-bold text-[#D9232A] mt-0.5 leading-snug">
-          {contactName} • {category}
-        </p>
-
-        <p className="text-[7.5px] sm:text-[8.5px] font-medium text-slate-500 mt-0.5 leading-snug">
-          📍 {city}, {state} • Approved Trade Partner
-        </p>
-
-        {/* Website line */}
-        <p className="text-[7.5px] sm:text-[8.5px] font-mono font-bold text-[#0F2C59] mt-0.5 leading-snug">
-          🌐 {officialWebsite}
-        </p>
+        {/* Vendor Passport Photo on PVC Card */}
+        {passportPhotoUrl && (
+          <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl border-2 border-[#0F2C59] bg-slate-100 overflow-hidden shadow-sm shrink-0 relative z-10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={passportPhotoUrl}
+              alt={contactName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom Security & Verification Bar */}
@@ -446,6 +463,7 @@ export default function SmartCardPreviewModal({
     officialAddress,
     officialHelpline,
     officialEmail,
+    passportPhotoUrl: vendor.passportPhotoUrl || null,
   };
 
   const handlePrint = () => {
