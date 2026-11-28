@@ -79,12 +79,52 @@ export async function sendPhoneOtp(rawPhone: string): Promise<{
   }
 
   const msg91AuthKey = process.env.MSG91_AUTH_KEY?.trim().replace(/^["']|["']$/g, "");
+  const msg91TemplateId = process.env.MSG91_TEMPLATE_ID?.trim().replace(/^["']|["']$/g, "");
   const msg91TokenAuth = process.env.MSG91_TOKEN_AUTH?.trim().replace(/^["']|["']$/g, "");
   const msg91WidgetId =
     process.env.MSG91_WIDGET_ID?.trim().replace(/^["']|["']$/g, "") ||
     "366b426d6d35343439373933";
 
-  // 100% Server-Side MSG91 Widget API (keeps authkey secret on backend, no browser widget issues)
+  // 1. Primary: MSG91 Standard OTP v5 API (never IPBlocked on Render when Template ID is set)
+  if (msg91AuthKey && msg91TemplateId) {
+    const otp = String(Math.floor(1000 + Math.random() * 9000)); // 4-digit OTP
+    const url = new URL("https://control.msg91.com/api/v5/otp");
+    url.searchParams.set("template_id", msg91TemplateId);
+    url.searchParams.set("mobile", `91${phone}`);
+    url.searchParams.set("otp", otp);
+    url.searchParams.set("otp_expiry", "5");
+
+    const resp = await fetch(url.toString(), {
+      method: "POST",
+      headers: {
+        authkey: msg91AuthKey,
+        "Content-Type": "application/json",
+      },
+    });
+    const json: any = await resp.json().catch(() => ({}));
+    if (!resp.ok || json?.type !== "success") {
+      console.error("[VENDOR OTP] MSG91 v5/otp failed:", resp.status, json);
+      throw new Error(json?.message || "Failed to send SMS OTP via MSG91.");
+    }
+
+    otpStore.set(phone, {
+      otpHash: hashOtp(phone, otp),
+      mode: "DEMO", // Verified locally against otpHash
+      expiresAt: now + OTP_TTL_MS,
+      lastSentAt: now,
+      attempts: 0,
+    });
+
+    console.log(`[VENDOR OTP] MSG91 v5/otp live SMS sent to 91${phone}`);
+    return {
+      phone,
+      smsMode: "LIVE",
+      provider: "MSG91",
+      cooldownSeconds: 30,
+    };
+  }
+
+  // 2. Fallback: Server-Side MSG91 Widget API (works on clean IPs without Template ID)
   if ((msg91AuthKey || msg91TokenAuth) && msg91WidgetId) {
     let resp = await fetch("https://api.msg91.com/api/v5/widget/sendOtp", {
       method: "POST",
