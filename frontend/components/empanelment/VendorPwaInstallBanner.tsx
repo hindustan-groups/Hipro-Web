@@ -21,7 +21,9 @@ export default function VendorPwaInstallBanner() {
 
     // Register Vendor PWA service worker
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/vendor-sw.js").catch(() => {});
+      navigator.serviceWorker.register("/vendor-sw.js", { scope: "/empanelment" }).catch(() => {
+        navigator.serviceWorker.register("/vendor-sw.js").catch(() => {});
+      });
     }
 
     const standalone =
@@ -36,13 +38,35 @@ export default function VendorPwaInstallBanner() {
     const iosDevice = /iPhone|iPad|iPod/i.test(ua) && !(window as any).MSStream;
     setIsIos(iosDevice);
 
+    const existingPrompt = (window as any).__hiproDeferredInstallPrompt as BeforeInstallPromptEvent | undefined;
+    if (existingPrompt) {
+      setDeferredPrompt(existingPrompt);
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
+      (window as any).__hiproDeferredInstallPrompt = e;
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
+    const onPromptReady = () => {
+      const p = (window as any).__hiproDeferredInstallPrompt as BeforeInstallPromptEvent | undefined;
+      if (p) setDeferredPrompt(p);
+    };
+
+    const onInstalled = () => {
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+    };
+
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    window.addEventListener("hipro-pwa-prompt-ready", onPromptReady);
+    window.addEventListener("hipro-pwa-installed", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("hipro-pwa-prompt-ready", onPromptReady);
+      window.removeEventListener("hipro-pwa-installed", onInstalled);
+    };
   }, []);
 
   if (isStandalone || dismissed) return null;
